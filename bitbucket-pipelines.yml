@@ -6,7 +6,6 @@
 image: microsoft/dotnet:sdk
 
 definitions:
-  services: ... # Service definitions go there
   steps:
     - step: &Build-step
         name: Build solution
