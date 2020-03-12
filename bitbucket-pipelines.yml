@@ -1,39 +1,35 @@
-# This is a sample build configuration for .NET Core.
 # Check our guides at https://confluence.atlassian.com/x/5Q4SMw for more examples.
 # Only use spaces to indent your .yml configuration.
 # -----
-# You can specify a custom docker image from Docker Hub as your build environment.
-image: microsoft/dotnet:sdk
+image: atsquad/netcore-nodejs-aws-build-server:2.1.15-v1
 
 definitions:
   steps:
-    - step: &Build-step
+    - step: &Build-auto
         name: Build solution
+        caches:
+              - dotnetcore
         script:
-          - step:
-              caches:
-                - dotnetcore
-              script:
-                - export SOLUTION_NAME=theprojectgame
-                - dotnet build $SOLUTION_NAME
+          - export SOLUTION_NAME=theprojectgame.sln
+          - dotnet build $SOLUTION_NAME
     - step: &Test-manual
-        name: Test solution
-        trigger: manual
-        script: &Test-script
-          - step:
-              caches:
-                - dotnetcore
-              script:
-                - export SOLUTION_NAME=theprojectgame
-                - dotnet build $SOLUTION_NAME
+            name: Test solution
+            trigger: manual
+            script:
+              - dotnet test --no-build $SOLUTION_NAME
     - step: &Test-auto
-        name: Test solution
-        script: *Test-script
+            name: Test solution
+            script: 
+               - dotnet test --no-build $SOLUTION_NAME
 pipelines:
-  branches:
-    "{master, develop}":
-      - step: *Build-step
-      - step: *Test-auto
-    feature/*:
-      - step: *Build-step
-      - step: *Test-manual
+    branches:
+      master:
+        - step: *Build-auto
+        - step: *Test-auto
+      develop:
+        - step: *Build-auto
+        - step: *Test-auto
+    custom: 
+       build-test-manual:
+        - step: *Build-auto
+        - step: *Test-manual
