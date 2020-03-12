@@ -1,4 +1,3 @@
-using System;
 using Xunit;
 
 namespace SharedTests
@@ -8,7 +7,6 @@ namespace SharedTests
         [Fact]
         public void Test1()
         {
-
         }
     }
 }

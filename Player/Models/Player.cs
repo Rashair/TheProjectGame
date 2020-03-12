@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using Player.Models.Strategies;
+﻿using Player.Models.Strategies;
 using Shared;
 using Shared.Senders;
+using System;
+using System.Collections.Generic;
 
 namespace Player.Models
 {

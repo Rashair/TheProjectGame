@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using GameMaster.Models.Fields;
+﻿using GameMaster.Models.Fields;
 using Shared;
+using System;
+using System.Collections.Generic;
 
 namespace GameMaster.Models
 {

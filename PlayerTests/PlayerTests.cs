@@ -1,4 +1,3 @@
-using System;
 using Xunit;
 
 namespace Player.Tests
@@ -8,7 +7,6 @@ namespace Player.Tests
         [Fact]
         public void TestAcceptMessageMoveAccept()
         {
-
         }
     }
 }

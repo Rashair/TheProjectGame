@@ -1,5 +1,5 @@
-﻿using System;
-using GameMaster.Models.Fields;
+﻿using GameMaster.Models.Fields;
+using System;
 
 namespace GameMaster.Models.Pieces
 {
