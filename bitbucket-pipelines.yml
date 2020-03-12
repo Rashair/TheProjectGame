@@ -11,30 +11,30 @@ definitions:
     - step: &Build-step
         name: Build solution
         script:
-         - step:
-            caches:
-              - dotnetcore
-            script:
-              - export SOLUTION_NAME=theprojectgame
-              - dotnet build $SOLUTION_NAME
+          - step:
+              caches:
+                - dotnetcore
+              script:
+                - export SOLUTION_NAME=theprojectgame
+                - dotnet build $SOLUTION_NAME
     - step: &Test-manual
-            name: Test solution
-            trigger: manual
-            script: &Test-script
-             - step:
-                caches:
-                  - dotnetcore
-                script:
-                  - export SOLUTION_NAME=theprojectgame
-                  - dotnet build $SOLUTION_NAME
+        name: Test solution
+        trigger: manual
+        script: &Test-script
+          - step:
+              caches:
+                - dotnetcore
+              script:
+                - export SOLUTION_NAME=theprojectgame
+                - dotnet build $SOLUTION_NAME
     - step: &Test-auto
-            name: Test solution
-            script: *Test-script
+        name: Test solution
+        script: *Test-script
 pipelines:
-    branches:
-      '{master, develop}':
-        - step: *Build-step
-        - step: *Test-auto
-      feature/*:
-        - step: *Build-step
-        - step: *Test-manual
+  branches:
+    "{master, develop}":
+      - step: *Build-step
+      - step: *Test-auto
+    feature/*:
+      - step: *Build-step
+      - step: *Test-manual
