@@ -5,32 +5,18 @@ image: atsquad/netcore-nodejs-aws-build-server:2.1.15-v1
 
 definitions:
   steps:
-    - step: &Build-auto
-        name: Build solution
+    - step: &Build-and-test
+        name: Build and test solution
         caches:
               - dotnetcore
               - node
         script:
           - dotnet restore
-          - dotnet build $SOLUTION_NAME
-    - step: &Test-manual
-            name: Test solution
-            trigger: manual
-            script:
-              - dotnet test $SOLUTION_NAME
-    - step: &Test-auto
-            name: Test solution
-            script: 
-               - dotnet test $SOLUTION_NAME
+          - dotnet build --no-restore $SOLUTION_NAME
+          - dotnet test --no-build --no-restore $SOLUTION_NAME
 pipelines:
     branches:
       master:
-        - step: *Build-auto
-        - step: *Test-auto
+        - step: *Build-and-test
       develop:
-        - step: *Build-auto
-        - step: *Test-auto
-    custom: 
-       build-test-manual:
-        - step: *Build-auto
-        - step: *Test-manual
+        - step: *Build-and-test
