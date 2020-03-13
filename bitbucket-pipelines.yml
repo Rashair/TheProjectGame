@@ -10,7 +10,6 @@ definitions:
         caches:
               - dotnetcore
         script:
-          - export SOLUTION_NAME=theprojectgame.sln
           - dotnet build $SOLUTION_NAME
     - step: &Test-manual
             name: Test solution
