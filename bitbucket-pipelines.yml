@@ -7,6 +7,8 @@ definitions:
   steps:
     - step: &Build-and-test
         name: Build and test solution
+        services:
+              - docker
         caches:
               - docker
               - dotnetcore
