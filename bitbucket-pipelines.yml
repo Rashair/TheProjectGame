@@ -1,13 +1,14 @@
 # Check our guides at https://confluence.atlassian.com/x/5Q4SMw for more examples.
 # Only use spaces to indent your .yml configuration.
 # -----
-image: atsquad/netcore-nodejs-aws-build-server:2.1.15-v1
+image: rashair/dotnet-node-sdk
 
 definitions:
   steps:
     - step: &Build-and-test
         name: Build and test solution
         caches:
+              - docker
               - dotnetcore
               - node
         script:
