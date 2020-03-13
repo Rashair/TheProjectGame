@@ -9,17 +9,19 @@ definitions:
         name: Build solution
         caches:
               - dotnetcore
+              - node
         script:
+          - dotnet restore
           - dotnet build $SOLUTION_NAME
     - step: &Test-manual
             name: Test solution
             trigger: manual
             script:
-              - dotnet test --no-build $SOLUTION_NAME
+              - dotnet test $SOLUTION_NAME
     - step: &Test-auto
             name: Test solution
             script: 
-               - dotnet test --no-build $SOLUTION_NAME
+               - dotnet test $SOLUTION_NAME
 pipelines:
     branches:
       master:
