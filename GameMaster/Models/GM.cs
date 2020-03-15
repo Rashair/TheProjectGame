@@ -15,9 +15,16 @@ namespace GameMaster.Models
         internal int redTeamPoints;
         internal int blueTeamPoints;
 
-        public GM()
+        public GM(Configuration conf)
         {
-            // TODO : Initialize everything
+            this.conf = conf;
+            board = new AbstractField[conf.Height][];
+            for(int i = 0; i < conf.Height; ++i)
+            {
+                board[i] = new AbstractField[conf.Width];
+            }
+
+            // TODO : initialize rest
         }
 
         public void AcceptMessage()
@@ -43,7 +50,7 @@ namespace GameMaster.Models
         private void GeneratePiece()
         {
             var rand = new Random();
-            bool isSham = rand.Next(0, 100) <= conf.shamPieceProbability;
+            bool isSham = rand.Next(0, 100) <= conf.ShamPieceProbability;
             AbstractPiece piece;
             if (isSham)
             {
@@ -54,10 +61,10 @@ namespace GameMaster.Models
                 piece = new NormalPiece();
             }
 
-            int taskAreaStart = conf.goalAreaHeight;
-            int taskAreaEnd = conf.height - conf.goalAreaHeight;
+            int taskAreaStart = conf.GoalAreaHeight;
+            int taskAreaEnd = conf.Height - conf.GoalAreaHeight;
             int xCoord = rand.Next(taskAreaStart, taskAreaEnd);
-            int yCoord = rand.Next(0, conf.width);
+            int yCoord = rand.Next(0, conf.Width);
 
             board[xCoord][yCoord].Put(piece);
         }
