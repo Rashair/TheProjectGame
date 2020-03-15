@@ -66,7 +66,7 @@ namespace GameMasterTests
         {
             Assert.False(string.IsNullOrWhiteSpace(fieldName), $"{nameof(fieldName)} cannot be null or whitespace");
 
-            FieldInfo field = typeof(GM).GetField(fieldName, BindingFlags.NonPublic);
+            FieldInfo field = typeof(GM).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
 
             Assert.False(field == null, $"Field {fieldName} not found");
 
