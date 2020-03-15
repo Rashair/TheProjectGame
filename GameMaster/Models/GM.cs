@@ -1,4 +1,5 @@
 ﻿using GameMaster.Models.Fields;
+using GameMaster.Models.Pieces;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -8,11 +9,16 @@ namespace GameMaster.Models
     public class GM
     {
         private readonly Dictionary<int, GMPlayer> players;
-        private readonly AbstractField[][] map;
+        private readonly AbstractField[][] board;
         private static int[] legalKnowledgeReplies = new int[2]; // unique from documentation considered as static
         private Configuration conf;
         internal int redTeamPoints;
         internal int blueTeamPoints;
+
+        public GM()
+        {
+            // TODO : Initialize everything
+        }
 
         public void AcceptMessage()
         {
@@ -36,7 +42,24 @@ namespace GameMaster.Models
 
         private void GeneratePiece()
         {
-            throw new NotImplementedException();
+            var rand = new Random();
+            bool isSham = rand.Next(0, 100) <= conf.shamPieceProbability;
+            AbstractPiece piece;
+            if (isSham)
+            {
+                piece = new ShamPiece();
+            }
+            else
+            {
+                piece = new NormalPiece();
+            }
+
+            int taskAreaStart = conf.goalAreaHeight;
+            int taskAreaEnd = conf.height - conf.goalAreaHeight;
+            int xCoord = rand.Next(taskAreaStart, taskAreaEnd);
+            int yCoord = rand.Next(0, conf.width);
+
+            board[xCoord][yCoord].Put(piece);
         }
 
         private void ForwardKnowledgeQuestion()
