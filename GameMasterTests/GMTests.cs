@@ -1,6 +1,9 @@
 using GameMaster.Models;
 using GameMaster.Models.Fields;
+using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
+using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Xunit;
 
@@ -14,8 +17,11 @@ namespace GameMasterTests
         {
         }
 
-        [Fact]
-        public void TestGeneratePieceOnce()
+        [Theory]
+        [InlineData(1)]
+        [InlineData(10)]
+        [InlineData(100)]
+        public void TestGeneratePieceXTimes(int x)
         {
             // Arrange
             var conf = new MockConfiguration();
@@ -23,7 +29,10 @@ namespace GameMasterTests
             var method = GetMethod("GeneratePiece");
 
             // Act
-            method.Invoke(gameMaster, new object[] { });
+            for (int i = 0; i < x; ++i)
+            {
+                method.Invoke(gameMaster, new object[] { });
+            }
 
             // Assert 
             int pieceCount = 0;
@@ -38,7 +47,7 @@ namespace GameMasterTests
                     {
                         if (taskField.ContainsPieces())
                         {
-                            ++pieceCount;
+                            pieceCount += GetPieceCount(taskField);
                         }
                     }
                     else
@@ -48,29 +57,46 @@ namespace GameMasterTests
                 }
             }
 
-            Assert.Equal(1, pieceCount);
+            Assert.Equal(x, pieceCount);
         }
 
-        private MethodInfo GetMethod(string methodName)
+        private int GetPieceCount(TaskField taskField)
+        {
+            var taskFieldInfo = GetField("pieces", typeof(TaskField));
+            var pieces = (HashSet<AbstractPiece>)taskFieldInfo.GetValue(taskField);
+            return pieces.Count;
+        }
+
+        private MethodInfo GetMethod(string methodName, Type type)
         {
             Assert.False(string.IsNullOrWhiteSpace(methodName), $"{nameof(methodName)} cannot be null or whitespace");
 
-            MethodInfo method = typeof(GM).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
+            MethodInfo method = type.GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
 
             Assert.False(method == null, $"Method {methodName} not found");
 
             return method;
         }
 
-        private FieldInfo GetField(string fieldName)
+        private MethodInfo GetMethod(string methodName)
+        {
+            return GetMethod(methodName, typeof(GM));
+        }
+
+        private FieldInfo GetField(string fieldName, Type type)
         {
             Assert.False(string.IsNullOrWhiteSpace(fieldName), $"{nameof(fieldName)} cannot be null or whitespace");
 
-            FieldInfo field = typeof(GM).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
 
             Assert.False(field == null, $"Field {fieldName} not found");
 
             return field;
+        }
+
+        private FieldInfo GetField(string fieldName)
+        {
+            return GetField(fieldName, typeof(GM));
         }
     }
 }
