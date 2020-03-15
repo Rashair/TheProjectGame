@@ -32,7 +32,7 @@ namespace GameMaster.Models.Fields
 
         public bool ContainsPieces()
         {
-            throw new NotImplementedException();
+            return pieces.Count > 0;
         }
 
         public int[] GetPosition()
