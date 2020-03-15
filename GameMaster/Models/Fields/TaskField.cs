@@ -12,7 +12,8 @@ namespace GameMaster.Models.Fields
 
         public override bool Put(AbstractPiece piece)
         {
-            throw new NotImplementedException();
+            this.pieces.Add(piece);
+            return false;
         }
     }
 }
