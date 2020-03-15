@@ -19,12 +19,38 @@ namespace GameMaster.Models
         {
             this.conf = conf;
             board = new AbstractField[conf.Height][];
-            for(int i = 0; i < conf.Height; ++i)
+            for(int i = 0; i < board.Length; ++i)
             {
                 board[i] = new AbstractField[conf.Width];
             }
 
+            Func<AbstractField> nonGoalFieldGenerator = () => new NonGoalField();
+            for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
+            {
+                FillBoardRow(rowIt, nonGoalFieldGenerator);
+            }
+
+            Func<AbstractField> taskFieldGenerator = () => new TaskField();
+            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
+            for (int rowIt = conf.GoalAreaHeight; rowIt < secondGoalAreaStart; ++rowIt)
+            {
+                FillBoardRow(rowIt, taskFieldGenerator);
+            }
+
+            for (int rowIt = secondGoalAreaStart; rowIt < conf.Height; ++rowIt)
+            {
+                FillBoardRow(rowIt, nonGoalFieldGenerator);
+            }
+
             // TODO : initialize rest
+        }
+
+        private void FillBoardRow(int row, Func<AbstractField> getField)
+        {
+            for(int col = 0; col < board[row].Length; ++col)
+            {
+                board[row][col] = getField();
+            }
         }
 
         public void AcceptMessage()
