@@ -1,4 +1,3 @@
-using System;
 using Xunit;
 
 namespace CommunicationServerTests
@@ -8,7 +7,6 @@ namespace CommunicationServerTests
         [Fact]
         public void TestSendMessageToAgent()
         {
-
         }
     }
 }

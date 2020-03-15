@@ -3,7 +3,7 @@ using System;
 
 namespace GameMaster.Models.Pieces
 {
-    public class ShamPiece : AbstractPiece
+    public class NormalPiece : AbstractPiece
     {
         public override bool CheckForSham()
         {

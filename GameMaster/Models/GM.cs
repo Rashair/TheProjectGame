@@ -1,6 +1,7 @@
-﻿using System;
+﻿using GameMaster.Models.Fields;
+using Shared;
+using System;
 using System.Collections.Generic;
-using GameMaster.Models.Fields;
 
 namespace GameMaster.Models
 {
@@ -23,7 +24,7 @@ namespace GameMaster.Models
             throw new NotImplementedException();
         }
 
-        internal void Discover(AbstractField field)
+        internal Dictionary<Direction, int> Discover(AbstractField field)
         {
             throw new NotImplementedException();
         }

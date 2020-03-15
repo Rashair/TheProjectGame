@@ -2,6 +2,6 @@
 {
     public interface IStrategy
     {
-        void MakeDecision();
+        void MakeDecision(Player player);
     }
 }

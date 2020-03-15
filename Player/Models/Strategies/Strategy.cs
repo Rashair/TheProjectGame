@@ -4,7 +4,7 @@ namespace Player.Models.Strategies
 {
     public class Strategy : IStrategy
     {
-        public void MakeDecision()
+        public void MakeDecision(Player player)
         {
             throw new NotImplementedException();
         }

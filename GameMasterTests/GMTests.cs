@@ -1,4 +1,3 @@
-using System;
 using Xunit;
 
 namespace GameMasterTests
@@ -8,7 +7,6 @@ namespace GameMasterTests
         [Fact]
         public void TestAcceptMessageMoveMessage()
         {
-
         }
     }
 }
