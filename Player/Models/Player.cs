@@ -1,6 +1,5 @@
 using Newtonsoft.Json;
 using Player.Clients;
-using Player.Models.Messages;
 using Player.Models.Payloads;
 using Player.Models.Strategies;
 using Shared;
@@ -43,11 +42,13 @@ namespace Player.Models
 
         public void JoinTheGame()
         {
-            JoinGameRequestMessage message = new JoinGameRequestMessage()
+            AgentMessage message = new AgentMessage()
             {
                 messageID = (int)MessageID.JoinTheGame,
-                teamID = team.ToString(),
-                //payload = 
+                payload = JsonConvert.SerializeObject(new JoinGamePayload()
+                {
+                    teamID = team.ToString()
+                })
             };
             Communicate(message);
         }
@@ -68,33 +69,35 @@ namespace Player.Models
 
         public void Move(Directions _direction)
         {
-            MoveMessage message = new MoveMessage()
+            AgentMessage message = new AgentMessage()
             {
                 messageID = (int)MessageID.Move,
                 agentID = id,
-                //payload = ,
-                direction = _direction.ToString()
+                payload = JsonConvert.SerializeObject(new MovePayload() 
+                {
+                    direction = _direction.ToString()
+                })                
             };
             Communicate(message);
         }
 
         public void Put()
         {
-            RegularMessage message = new RegularMessage()
+            AgentMessage message = new AgentMessage()
             {
                 messageID = (int)MessageID.Put,
-                agentID = id
+                agentID = id,
+                payload = JsonConvert.SerializeObject(new EmptyPayload())
             };
             Communicate(message);
         }
 
         public void BegForInfo()
         {
-            BegForInfoMessage message = new BegForInfoMessage()
+            AgentMessage message = new AgentMessage()
             {
                 messageID = (int)MessageID.BegForInfo,
-                agentID = id,
-                //payload = ,
+                agentID = id
             };
             
             Random rnd = new Random();
@@ -103,7 +106,12 @@ namespace Player.Models
             {
                 index = rnd.Next(0, teamMates.Length - 1);
             }
-            message.askedAgentID = teamMates[index];
+
+            message.payload = JsonConvert.SerializeObject(new BegForInfoPayload()
+            {
+                askedAgentID = teamMates[index]
+            });
+
             Communicate(message);
         }
 
@@ -112,40 +120,46 @@ namespace Player.Models
             if (waitingPlayers.Count < 1)
                 return;
 
-            GiveInfoMessage message = new GiveInfoMessage()
+            AgentMessage message = new AgentMessage()
             {
                 messageID = (int)MessageID.GiveInfo,
-                agentID = id,
-                //payload = ,              
-                distances = new int[boardSize.x, boardSize.y],
-                redTeamGoalAreaInformations = new GoalInfo[boardSize.x, boardSize.y],
-                blueTeamGoalAreaInformations = new GoalInfo[boardSize.x, boardSize.y],
+                agentID = id           
+                
             };
+
+            var response = new GiveInfoPayload();
             if (toLeader)
-                message.respondToID = leaderId;
+                response.respondToID = leaderId;
             else
             {
-                message.respondToID = waitingPlayers[0];
+                response.respondToID = waitingPlayers[0];
                 waitingPlayers.RemoveAt(0);
             }
 
+            response.distances = new int[boardSize.x, boardSize.y];
+            response.redTeamGoalAreaInformations = new GoalInfo[boardSize.x, boardSize.y];
+            response.blueTeamGoalAreaInformations = new GoalInfo[boardSize.x, boardSize.y];
+
             for (int i = 0; i <board.Length; ++i)
             {
-                message.distances[i / boardSize.y, i % boardSize.y] = board[i / boardSize.y, i % boardSize.y].distToPiece;
+                response.distances[i / boardSize.y, i % boardSize.y] = board[i / boardSize.y, i % boardSize.y].distToPiece;
                 if(team == Team.Red)
                 {
-                    message.redTeamGoalAreaInformations[i / boardSize.y, i % boardSize.y] = board[i / boardSize.y, i % boardSize.y].goalInfo;
-                    message.blueTeamGoalAreaInformations[i / boardSize.y, i % boardSize.y] = GoalInfo.IDK;
+                    response.redTeamGoalAreaInformations[i / boardSize.y, i % boardSize.y] = board[i / boardSize.y, i % boardSize.y].goalInfo;
+                    response.blueTeamGoalAreaInformations[i / boardSize.y, i % boardSize.y] = GoalInfo.IDK;
 
                 }
                 else
                 {
-                    message.blueTeamGoalAreaInformations[i / boardSize.y, i % boardSize.y] = board[i / boardSize.y, i % boardSize.y].goalInfo;
-                    message.redTeamGoalAreaInformations[i / boardSize.y, i % boardSize.y] = GoalInfo.IDK;
+                    response.blueTeamGoalAreaInformations[i / boardSize.y, i % boardSize.y] = board[i / boardSize.y, i % boardSize.y].goalInfo;
+                    response.redTeamGoalAreaInformations[i / boardSize.y, i % boardSize.y] = GoalInfo.IDK;
                 }
             }
             
             waitingPlayers.RemoveAt(0);
+
+            message.payload = JsonConvert.SerializeObject(response);
+
             Communicate(message);
         }
 
@@ -161,20 +175,22 @@ namespace Player.Models
 
         public void CheckPiece()
         {
-            RegularMessage message = new RegularMessage()
+            AgentMessage message = new AgentMessage()
             {
                 messageID = (int)MessageID.CheckPiece,
-                agentID = id
+                agentID = id,
+                payload = JsonConvert.SerializeObject(new EmptyPayload())
             };
             Communicate(message);
         }
 
         public void Discover()
         {
-            RegularMessage message = new RegularMessage()
+            AgentMessage message = new AgentMessage()
             {
                 messageID = (int)MessageID.Discover,
-                agentID = id
+                agentID = id,
+                payload = JsonConvert.SerializeObject(new EmptyPayload())
             };
             Communicate(message);
         }
@@ -280,7 +296,7 @@ namespace Player.Models
             strategy.MakeDecision(this);
         }
 
-        private async void Communicate(Message message)
+        private async void Communicate(AgentMessage message)
         {
             //await client.SendAsync(message);
         }
