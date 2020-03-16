@@ -1,5 +1,6 @@
 ﻿using GameMaster.Models.Pieces;
 using System;
+using System.Linq;
 
 namespace GameMaster.Models.Fields
 {
@@ -7,12 +8,15 @@ namespace GameMaster.Models.Fields
     {
         public override void PickUp(GMPlayer player)
         {
-            throw new NotImplementedException();
+            var piece = pieces.First();
+            player.SetHolding(piece);
+            pieces.Remove(piece);
         }
 
         public override bool Put(AbstractPiece piece)
         {
-            throw new NotImplementedException();
+            this.pieces.Add(piece);
+            return false;
         }
     }
 }

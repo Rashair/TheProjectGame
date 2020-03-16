@@ -9,7 +9,12 @@ namespace GameMaster.Models.Fields
         private readonly int x;
         private readonly int y;
         private GMPlayer whosHere;
-        private HashSet<AbstractPiece> pieces;
+        protected HashSet<AbstractPiece> pieces;
+
+        public AbstractField()
+        {
+            pieces = new HashSet<AbstractPiece>();
+        }
 
         public void Leave(GMPlayer player)
         {
@@ -27,7 +32,7 @@ namespace GameMaster.Models.Fields
 
         public bool ContainsPieces()
         {
-            throw new NotImplementedException();
+            return pieces.Count > 0;
         }
 
         public int[] GetPosition()
