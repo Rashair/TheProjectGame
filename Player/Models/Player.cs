@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Newtonsoft.Json;
 using Player.Models.Messages;
 using Player.Models.Strategies;
@@ -22,10 +23,12 @@ namespace Player.Models
         private IStrategy strategy;
         public int[] teamMates;
         public (int x, int y) boardSize;
+        private bool working;
+        private int leaderId;
 
-        public Player()
+        public Player(Team _team)
         {
-            throw new NotImplementedException();
+            team = _team;
         }
 
         public void JoinTheGame()
@@ -41,12 +44,16 @@ namespace Player.Models
 
         public void Start()
         {
-            throw new NotImplementedException();
+            working = true;
+            while(working)
+            {
+                Penalty();
+            }
         }
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            working = false;
         }
 
         public void Move(Directions _direction)
@@ -58,6 +65,7 @@ namespace Player.Models
                 //payload = ,
                 direction = _direction.ToString()
             };
+            Communicate(JsonConvert.SerializeObject(message));
         }
 
         public void Put()
@@ -67,6 +75,7 @@ namespace Player.Models
                 messageID = (int)MessageID.Put,
                 agentID = id
             };
+            Communicate(JsonConvert.SerializeObject(message));
         }
 
         public void BegForInfo()
@@ -88,7 +97,7 @@ namespace Player.Models
             Communicate(JsonConvert.SerializeObject(message));
         }
 
-        public void GiveInfo()
+        public void GiveInfo(bool toLeader = false)
         {
             if (waitingPlayers.Count < 1)
                 return;
@@ -97,12 +106,18 @@ namespace Player.Models
             {
                 messageID = (int)MessageID.GiveInfo,
                 agentID = id,
-                //payload = ,
-                respondToID = waitingPlayers[0],
+                //payload = ,              
                 distances = new int[boardSize.x, boardSize.y],
                 redTeamGoalAreaInformations = new GoalInfo[boardSize.x, boardSize.y],
                 blueTeamGoalAreaInformations = new GoalInfo[boardSize.x, boardSize.y],
             };
+            if (toLeader)
+                message.respondToID = leaderId;
+            else
+            {
+                message.respondToID = waitingPlayers[0];
+                waitingPlayers.RemoveAt(0);
+            }
 
             for (int i = 0; i <board.Length; ++i)
             {
@@ -120,13 +135,17 @@ namespace Player.Models
                 }
             }
             
-            waitingPlayers.RemoveAt(0);
             Communicate(JsonConvert.SerializeObject(message));
         }
 
-        public void RequestsResponse()
+        public void RequestsResponse(int respondToID, bool _isLeader = false)
         {
-            throw new NotImplementedException();
+            if (_isLeader)
+            {
+                GiveInfo(_isLeader);
+            }
+            else
+                waitingPlayers.Add(respondToID);
         }
 
         public void CheckPiece()
@@ -156,7 +175,7 @@ namespace Player.Models
 
         public void MakeDecisionFromStrategy()
         {
-            throw new NotImplementedException();
+            strategy.MakeDecision(this);
         }
 
         private void Communicate(string message)
@@ -166,7 +185,9 @@ namespace Player.Models
 
         private void Penalty()
         {
-            throw new NotImplementedException();
+            Thread.Sleep(penaltyTime);
+            penaltyTime = 0;
+            MakeDecisionFromStrategy();
         }
     }
 }
