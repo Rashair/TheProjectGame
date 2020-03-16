@@ -19,7 +19,7 @@ namespace Player.Models.Messages
     public class RegularMessage: Message
     {
         public int agentID;
-        public int payload;
+        public int? payload;
     }
 
     public class MoveMessage: RegularMessage
@@ -36,7 +36,7 @@ namespace Player.Models.Messages
     {
         public int respondToID;
         public int[,] distances;
-        public GoalAreaInformations[,] redTeamGoalAreaInformations;
-        public GoalAreaInformations[,] blueTeamGoalAreaInformations;
+        public GoalInfo[,] redTeamGoalAreaInformations;
+        public GoalInfo[,] blueTeamGoalAreaInformations;
     }
 }
