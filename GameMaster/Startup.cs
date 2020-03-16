@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using GameMaster.Managers;
+
 namespace GameMaster
 {
     public class Startup
@@ -26,6 +28,9 @@ namespace GameMaster
             {
                 configuration.RootPath = "ClientApp/build";
             });
+
+            services.AddSingleton<ClientManager>();
+            services.AddSingleton<PlyerManager>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
