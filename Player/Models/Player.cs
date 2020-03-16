@@ -122,11 +122,13 @@ namespace Player.Models
                 agentID = id
 
             };
+
+            var response = new GiveInfoPayload();
             if (toLeader)
-                message.respondToID = leaderId;
+                response.respondToID = leaderId;
             else
             {
-                message.respondToID = waitingPlayers[0];
+                response.respondToID = waitingPlayers[0];
                 waitingPlayers.RemoveAt(0);
             }
 
