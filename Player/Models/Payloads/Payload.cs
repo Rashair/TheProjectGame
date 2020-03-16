@@ -4,35 +4,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Player.Models.Messages
-{
-    public class Message
-    {
-        public int messageID;
+namespace Player.Models.Payloads
+{   
+    public class EmptyPayload
+    {     
     }
 
-    public class JoinGameRequestMessage: Message
+    public class JoinGamePayload
     {
         public string teamID;
     }
 
-    public class RegularMessage: Message
-    {
-        public int agentID;
-        public int? payload;
-    }
-
-    public class MoveMessage: RegularMessage
+    public class MovePayload
     {
         public string direction;
     }
 
-    public class BegForInfoMessage: RegularMessage
+    public class BegForInfoPayload
     {
         public int askedAgentID;
     }
 
-    public class GiveInfoMessage: RegularMessage
+    public class GiveInfoPayload
     {
         public int respondToID;
         public int[,] distances;
