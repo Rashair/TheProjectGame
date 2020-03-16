@@ -1,8 +1,10 @@
-﻿using Player.Models.Strategies;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using Player.Models.Messages;
+using Player.Models.Strategies;
 using Shared;
 using Shared.Senders;
-using System;
-using System.Collections.Generic;
 
 namespace Player.Models
 {
@@ -27,7 +29,12 @@ namespace Player.Models
 
         public void JoinTheGame()
         {
-            throw new NotImplementedException();
+            JoinGameRequestMessage message = new JoinGameRequestMessage()
+            {
+                messageID = (int)MessageID.JoinTheGame,
+                teamID = team.ToString(),
+            };
+            Communicate(JsonConvert.SerializeObject(message));
         }
 
         public void Start()
@@ -80,7 +87,7 @@ namespace Player.Models
             throw new NotImplementedException();
         }
 
-        private void Communicate()
+        private void Communicate(string message)
         {
             throw new NotImplementedException();
         }
