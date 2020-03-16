@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using Shared.Models.Messages;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Player.Clients;
+using Player.Models.Messages;
 using Player.Models.Payloads;
 using Player.Models.Strategies;
 using Shared;
+using Shared.Models.Messages;
 using Shared.Senders;
-using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks.Dataflow;
-using Player.Clients;
 
 namespace Player.Models
 {
@@ -40,7 +39,12 @@ namespace Player.Models
 
         public void JoinTheGame()
         {
-            throw new NotImplementedException();
+            JoinGameRequestMessage message = new JoinGameRequestMessage()
+            {
+                messageID = (int)MessageID.JoinTheGame,
+                teamID = team.ToString(),
+            };
+            Communicate(message);
         }
 
         public async void Start()
@@ -53,7 +57,7 @@ namespace Player.Models
             throw new NotImplementedException();
         }
 
-        public void Move(Directions _direction)
+        public void Move(Direction _direction)
         {
             throw new NotImplementedException();
         }
@@ -184,9 +188,9 @@ namespace Player.Models
             throw new NotImplementedException();
         }
 
-        private async void Communicate(AgentMessage message)
+        private async void Communicate(Message message)
         {
-            await client.SendAsync(message);
+            //await client.SendAsync(message);
         }
 
         private void Penalty()
