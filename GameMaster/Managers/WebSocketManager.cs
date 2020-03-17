@@ -5,19 +5,22 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using GameMaster.Messages;
-
 namespace GameMaster.Managers 
 {
-    public abstract class WebSocketManager<M> : SocketManager<WebSocket, M>
+    public class WebSocketManager<M> : SocketManager<WebSocket, M>
     {
         public override bool IsSame(WebSocket a, WebSocket b) => a == b;
         public override async Task CloseSocketAsync(WebSocket socket) 
-            => await socket.CloseAsync(
+        {
+            if (socket.State == WebSocketState.Open)
+            {
+                await socket.CloseAsync(
                     closeStatus: WebSocketCloseStatus.NormalClosure, 
                     statusDescription: "Closed by the WebSocketManager",
                     cancellationToken: CancellationToken.None
                 );
+            }
+        }
         public override async Task SendMessageAsync(WebSocket socket, M message)
         {
             if (socket.State == WebSocketState.Open)
@@ -32,11 +35,5 @@ namespace GameMaster.Managers
                 );
             }
         }
-    }
-    public class ClientManager : WebSocketManager<IClientMessage>
-    {
-    }
-    public class PlyerManager : WebSocketManager<IPlayerMessage>
-    {
     }
 }

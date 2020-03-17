@@ -19,7 +19,7 @@ namespace GameMaster.Managers
         public T GetSocketById(string id) => _sockets.FirstOrDefault(p => p.Key == id).Value;
         public ConcurrentDictionary<string, T> GetAll() => _sockets;
         public bool AddSocket(T socket) => _sockets.TryAdd(CreateSocketId(), socket);
-        public async Task<bool> RemoveSocket(string id)
+        public async Task<bool> RemoveSocketAsync(string id)
         {
             bool removed = _sockets.TryRemove(id, out T socket);
             if (removed)
