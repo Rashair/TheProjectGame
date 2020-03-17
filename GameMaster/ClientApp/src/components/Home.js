@@ -15,9 +15,30 @@ export class Home extends Component {
             responsePenalty: gameConfigData.responsePenalty,
             boardX: gameConfigData.boardX,
             boardY: gameConfigData.boardY,
-            goalAreaHight: gameConfigData.goalAreaHight,
+            goalAreaHeight: gameConfigData.goalAreaHeight,
             numberOfGoals: gameConfigData.numberOfGoals,
             numberOfPieces: gameConfigData.numberOfPieces,
+            shamPieceProbability: 0,
+        }
+
+        this.sendData = () => {
+            var xhttp = new XMLHttpRequest();
+           
+            xhttp.open('POST', 'Configuration', true);
+
+            var data = new FormData();
+            data.append('MovePenalty', this.state.movePenalty);
+            data.append('AskPenalty', this.state.askPenalty);
+            data.append('DiscoveryPenalty', this.state.discoveryPenalty);
+            data.append('PutPenalty', this.state.putPenalty);
+            data.append('CheckPenalty', this.state.checkForShamPenalty);
+            data.append('ResponsePenalty', this.state.responsePenalty);
+            data.append('Width', this.state.boardX);
+            data.append('Height', this.state.boardY);
+            data.append('GoalAreaHeight', this.state.goalAreaHeight);
+            data.append('NumberOfGoals', this.state.numberOfGoals);
+            data.append('ShamPieceProbability', this.state.shamPieceProbability);
+            xhttp.send(data);
         }
     }
   displayName = Home.name
@@ -92,8 +113,8 @@ export class Home extends Component {
                 <label>Rozmiar pola bramkowego:</label>
                 <fieldset>
                       <label>Wysokość: </label>
-                      <input type="number" name="goalAreaHeight" value={this.state.goalAreaHight}
-                          onChange={e => this.setState({ goalAreaHight: e.target.value })} />
+                      <input type="number" name="goalAreaHeight" value={this.state.goalAreaHeight}
+                          onChange={e => this.setState({ goalAreaHeight: e.target.value })} />
                 </fieldset>
             </fieldset>
 
@@ -112,7 +133,8 @@ export class Home extends Component {
             <fieldset>
                 <label>Prawdopodobieństwo, że pojawiający się fragment jest fragmentem ﬁkcyjnym: </label>
                 <label>0.</label>
-                <input type="number" />
+                  <input type="number" name="shamPieceProbability" value={this.state.shamPieceProbability}
+                      onChange={e => this.setState({ shamPieceProbability: e.target.value })} />
             </fieldset>
 
             <fieldset>
@@ -126,7 +148,7 @@ export class Home extends Component {
                 <input type="number" />
             </fieldset>
 
-            <input type="submit" value="Zapisz" />
+              <input type="submit" value="Zapisz" onClick={this.sendData} />
         </form>
     );
   }

@@ -9,7 +9,7 @@ const gameConfigData = {
   "responsePenalty": 1000,
   "boardX": 40,
   "boardY": 40,
-  "goalAreaHight": 5,
+  "goalAreaHeight": 5,
   "numberOfGoals": 5,
   "numberOfPieces": 10
 }
