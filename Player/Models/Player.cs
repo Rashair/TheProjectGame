@@ -78,8 +78,8 @@ namespace Player.Models
 
         public BufferBlock<GMMessage> bufferBlock = new BufferBlock<GMMessage>(); //temporary data abstraction
 
-        public bool? isPieceSham = null;
-        public Penalties penaltiesTimes = null;
+
+        public Penalties penaltiesTimes;
 
         public void AcceptMessage()
         {
@@ -90,12 +90,10 @@ namespace Player.Models
                 {
                     case (int)MessageID.CheckAnswer:
                         CheckAnswerPayload payload1 = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.payload);
-                        if (payload1.sham) isPieceSham = true;
-                        else isPieceSham = false;
+                        if (payload1.sham) havePiece = false;
                         break;
                     case (int)MessageID.DestructionAnswer:
                         EmptyAnswerPayload payload2 = JsonConvert.DeserializeObject<EmptyAnswerPayload>(message.payload);
-                        isPieceSham = null;
                         havePiece = false;
                         break;
                     case (int)MessageID.DiscoverAnswer:
@@ -168,12 +166,10 @@ namespace Player.Models
                     case (int)MessageID.PickAnswer:
                         EmptyAnswerPayload payload9 = JsonConvert.DeserializeObject<EmptyAnswerPayload>(message.payload);
                         havePiece = true;
-                        isPieceSham = null;
                         break;
                     case (int)MessageID.PutAnswer:
                         EmptyAnswerPayload payload10 = JsonConvert.DeserializeObject<EmptyAnswerPayload>(message.payload);
                         havePiece = false;
-                        isPieceSham = null;
                         break;
                     default:
                         break;
