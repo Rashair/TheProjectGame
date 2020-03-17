@@ -4,8 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Managers;
+using GameMaster.Models.Messages;
+using Shared.Models.Messages;
 
 namespace GameMaster
 {
@@ -29,8 +32,9 @@ namespace GameMaster
                 configuration.RootPath = "ClientApp/build";
             });
 
-            services.AddSingleton<ClientManager>();
-            services.AddSingleton<PlyerManager>();
+            services.AddSingleton<WebSocketManager<ClientMessage>>();
+            services.AddSingleton<WebSocketManager<GMMessage>>();
+            services.AddSingleton<BufferBlock<AgentMessage>>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

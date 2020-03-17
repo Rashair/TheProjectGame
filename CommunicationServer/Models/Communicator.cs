@@ -1,4 +1,4 @@
-﻿using CommunicationServer.Models.Messages;
+﻿using Shared.Models.Messages;
 using Shared.Senders;
 using System;
 using System.Collections.Generic;
