@@ -78,12 +78,13 @@ namespace Player.Models
             throw new NotImplementedException();
         }
 
+        BufferBlock<GMMessage> bufferBlock = new BufferBlock<GMMessage>(); //temporary data abstraction
+
         public bool? isPieceSham = null;
         public Penalties penaltiesTimes = null;
 
         public void AcceptMessage()
         {
-            BufferBlock<GMMessage> bufferBlock = new BufferBlock<GMMessage>(); //temporary data abstraction
             GMMessage message;
             if (bufferBlock.TryReceive(null, out message))
             {
@@ -180,17 +181,17 @@ namespace Player.Models
             throw new NotImplementedException();
         }
 
-        private class Client
+        private class ClientWebSocket
         {
             public async Task SendAsync(AgentMessage message)
             {
                 throw new NotImplementedException();
             }
         } //temporary data abstraction
+        ClientWebSocket client = new ClientWebSocket(); //temporary data abstraction
 
         private void Communicate(AgentMessage message)
         {
-            Client client = new Client();
             Task result = client.SendAsync(message);
         }
 
