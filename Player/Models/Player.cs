@@ -180,9 +180,18 @@ namespace Player.Models
             throw new NotImplementedException();
         }
 
-        private void Communicate()
+        private class Client
         {
-            throw new NotImplementedException();
+            public async Task SendAsync(AgentMessage message)
+            {
+                throw new NotImplementedException();
+            }
+        } //temporary data abstraction
+
+        private void Communicate(AgentMessage message)
+        {
+            Client client = new Client();
+            Task result = client.SendAsync(message);
         }
 
         private void Penalty()
