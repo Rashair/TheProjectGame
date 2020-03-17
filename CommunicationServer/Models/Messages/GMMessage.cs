@@ -2,8 +2,7 @@
 {
     public class GMMessage
     {
-        public int messageID;
-        public int agentID;
+        public int id;
         public string payload;
     }
 }

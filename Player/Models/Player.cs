@@ -7,8 +7,6 @@ using Player.Models.Payloads;
 using Player.Models.Strategies;
 using Shared;
 using Shared.Senders;
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -30,7 +28,7 @@ namespace Player.Models
 
         public Player(Team _team)
         {
-            throw new NotImplementedException();
+            team = _team;
         }
 
         public void JoinTheGame()
@@ -78,7 +76,7 @@ namespace Player.Models
             throw new NotImplementedException();
         }
 
-        BufferBlock<GMMessage> bufferBlock = new BufferBlock<GMMessage>(); //temporary data abstraction
+        public BufferBlock<GMMessage> bufferBlock = new BufferBlock<GMMessage>(); //temporary data abstraction
 
         public bool? isPieceSham = null;
         public Penalties penaltiesTimes = null;
@@ -88,20 +86,20 @@ namespace Player.Models
             GMMessage message;
             if (bufferBlock.TryReceive(null, out message))
             {
-                switch(message.messageID)
+                switch(message.id)
                 {
                     case (int)MessageID.CheckAnswer:
-                        CheckAnswerPayload payload1 = (CheckAnswerPayload)JsonConvert.DeserializeObject(message.payload);
+                        CheckAnswerPayload payload1 = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.payload);
                         if (payload1.sham) isPieceSham = true;
                         else isPieceSham = false;
                         break;
                     case (int)MessageID.DestructionAnswer:
-                        EmptyAnswerPayload payload2 = (EmptyAnswerPayload)JsonConvert.DeserializeObject(message.payload);
+                        EmptyAnswerPayload payload2 = JsonConvert.DeserializeObject<EmptyAnswerPayload>(message.payload);
                         isPieceSham = null;
                         havePiece = false;
                         break;
                     case (int)MessageID.DiscoverAnswer:
-                        DiscoveryAnswerPayload payload3 = (DiscoveryAnswerPayload)JsonConvert.DeserializeObject(message.payload);
+                        DiscoveryAnswerPayload payload3 = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.payload);
                         board[position.Item1, position.Item2].distToPiece = payload3.distanceFromCurrent;
                         board[position.Item1 + 1, position.Item2].distToPiece = payload3.distanceE;
                         board[position.Item1 - 1, position.Item2].distToPiece = payload3.distanceW;
@@ -113,25 +111,32 @@ namespace Player.Models
                         board[position.Item1 - 1, position.Item2 + 1].distToPiece = payload3.distanceSW;
                         break;
                     case (int)MessageID.EndGame:
-                        EndGamePayload payload4 = (EndGamePayload)JsonConvert.DeserializeObject(message.payload);
+                        EndGamePayload payload4 = JsonConvert.DeserializeObject<EndGamePayload>(message.payload);
                         //winner not used
                         Stop();
                         break;
                     case (int)MessageID.StartGame:
-                        StartGamePayload payload5 = (StartGamePayload)JsonConvert.DeserializeObject(message.payload);
+                        StartGamePayload payload5 = JsonConvert.DeserializeObject<StartGamePayload>(message.payload);
                         id = payload5.agentID;
                         teamMates = payload5.alliesIDs;
                         if (id == payload5.leaderID) isLeader = true;
                         else isLeader = false;
                         team = (Team)Enum.Parse(typeof(Team), payload5.teamId);
                         board = new Field[payload5.boardSize.x, payload5.boardSize.y];
+                        for (int i = 0; i < payload5.boardSize.x; i++)
+                        {
+                            for (int j = 0; j < payload5.boardSize.y; j++)
+                            {
+                                board[i, j] = new Field();
+                            }
+                        }
                         penaltiesTimes = payload5.penalties;
                         position = new Tuple<int, int>(payload5.position.x, payload5.position.y);
                         //enemiesIDs, goalAreaSize, numberOfPlayers, numberOfPieces, numberOfGoals, shamPieceProbability not used
                         JoinTheGame();
                         break;
                     case (int)MessageID.BegForInfoForwarded:
-                        BegForInfoForwardedPayload payload6 = (BegForInfoForwardedPayload)JsonConvert.DeserializeObject(message.payload);
+                        BegForInfoForwardedPayload payload6 = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.payload);
                         if (team == (Team)Enum.Parse(typeof(Team), payload6.teamId))
                         {
                             if (payload6.leader)
@@ -145,7 +150,7 @@ namespace Player.Models
                         }
                         break;
                     case (int)MessageID.JoinTheGameAnswer:
-                        JoinAnswerPayload payload7 = (JoinAnswerPayload)JsonConvert.DeserializeObject(message.payload);
+                        JoinAnswerPayload payload7 = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.payload);
                         if (id == payload7.agentID)
                         {
                             if (payload7.accepted) Start();
@@ -153,7 +158,7 @@ namespace Player.Models
                         }
                         break;
                     case (int)MessageID.MoveAnswer:
-                        MoveAnswerPayload payload8 = (MoveAnswerPayload)JsonConvert.DeserializeObject(message.payload);
+                        MoveAnswerPayload payload8 = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.payload);
                         if (payload8.madeMove)
                         {
                             position = new Tuple<int, int>(payload8.currentPosition.x, payload8.currentPosition.y);
@@ -161,12 +166,12 @@ namespace Player.Models
                         }
                         break;
                     case (int)MessageID.PickAnswer:
-                        EmptyAnswerPayload payload9 = (EmptyAnswerPayload)JsonConvert.DeserializeObject(message.payload);
+                        EmptyAnswerPayload payload9 = JsonConvert.DeserializeObject<EmptyAnswerPayload>(message.payload);
                         havePiece = true;
                         isPieceSham = null;
                         break;
                     case (int)MessageID.PutAnswer:
-                        EmptyAnswerPayload payload10 = (EmptyAnswerPayload)JsonConvert.DeserializeObject(message.payload);
+                        EmptyAnswerPayload payload10 = JsonConvert.DeserializeObject<EmptyAnswerPayload>(message.payload);
                         havePiece = false;
                         isPieceSham = null;
                         break;
@@ -181,14 +186,14 @@ namespace Player.Models
             throw new NotImplementedException();
         }
 
-        private class ClientWebSocket
+        public class ClientWebSocket
         {
             public async Task SendAsync(AgentMessage message)
             {
                 throw new NotImplementedException();
             }
         } //temporary data abstraction
-        ClientWebSocket client = new ClientWebSocket(); //temporary data abstraction
+        public ClientWebSocket client = new ClientWebSocket(); //temporary data abstraction
 
         private void Communicate(AgentMessage message)
         {
