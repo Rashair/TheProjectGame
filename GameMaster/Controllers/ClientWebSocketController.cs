@@ -18,9 +18,10 @@ namespace GameMaster.Controllers
         public override void OnConnected(WebSocket socket) => _manager.AddSocket(socket);
         public override async Task OnDisconnectedAsync(WebSocket socket) 
             => await _manager.RemoveSocketAsync(_manager.GetId(socket));
-        public override async Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
+        public override Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
             // Ignoring client messages
+            return Task.CompletedTask;
         }
     } 
 }
