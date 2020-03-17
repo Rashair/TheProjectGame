@@ -15,7 +15,7 @@ namespace GameMaster.Controllers
     {
         private readonly BufferBlock<AgentMessage> _queue;
         private readonly WebSocketManager<GMMessage> _manager;
-        public PlayerWebSocketController(BufferBlock<AgentMessage> queue, WebSocketManager<GMMessage> manager) : base()
+        public PlayerWebSocketController(BufferBlock<AgentMessage> queue, WebSocketManager<GMMessage> manager)
         {
             _queue = queue;
             _manager = manager;

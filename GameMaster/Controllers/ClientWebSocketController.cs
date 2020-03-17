@@ -11,7 +11,7 @@ namespace GameMaster.Controllers
     public class ClientWebSocketController : WebSocketController
     {
         private readonly WebSocketManager<ClientMessage> _manager;
-        public ClientWebSocketController(WebSocketManager<ClientMessage> manager) : base()
+        public ClientWebSocketController(WebSocketManager<ClientMessage> manager)
         {
             _manager = manager;
         }
