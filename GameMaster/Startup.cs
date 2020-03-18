@@ -32,7 +32,7 @@ namespace GameMaster
                 configuration.RootPath = "ClientApp/build";
             });
 
-            services.AddSingleton<WebSocketManager<ClientMessage>>();
+            services.AddSingleton<WebSocketManager<BackendMessage>>();
             services.AddSingleton<WebSocketManager<GMMessage>>();
             services.AddSingleton<BufferBlock<AgentMessage>>();
         }

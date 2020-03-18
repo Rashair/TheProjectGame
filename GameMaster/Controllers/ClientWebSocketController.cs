@@ -8,16 +8,11 @@ using GameMaster.Models.Messages;
 namespace GameMaster.Controllers
 {
     [Route("ws/client")]
-    public class ClientWebSocketController : WebSocketController
+    public class ClientWebSocketController : WebSocketController<BackendMessage>
     {
-        private readonly WebSocketManager<ClientMessage> _manager;
-        public ClientWebSocketController(WebSocketManager<ClientMessage> manager)
+        public ClientWebSocketController(WebSocketManager<BackendMessage> manager) : base(manager)
         {
-            _manager = manager;
         }
-        public override void OnConnected(WebSocket socket) => _manager.AddSocket(socket);
-        public override async Task OnDisconnectedAsync(WebSocket socket) 
-            => await _manager.RemoveSocketAsync(_manager.GetId(socket));
         public override Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
             // Ignoring client messages

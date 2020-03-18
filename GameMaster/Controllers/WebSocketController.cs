@@ -5,13 +5,27 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
+using GameMaster.Managers;
+
 namespace GameMaster.Controllers
 {
-    public abstract class WebSocketController : Controller
+    public abstract class WebSocketController<T> : Controller
     {
         private const int _BUFFER_SIZE = 1024 * 4;
-        public abstract void OnConnected(WebSocket socket);
-        public abstract Task OnDisconnectedAsync(WebSocket socket);
+        private readonly WebSocketManager<T> _manager;
+        public WebSocketManager<T> Manager => _manager;
+        public WebSocketController(WebSocketManager<T> manager)
+        {
+            manager = _manager;
+        }
+        public virtual void OnConnected(WebSocket socket)
+        {
+            Manager.AddSocket(socket);
+        }
+        public virtual async Task OnDisconnectedAsync(WebSocket socket)
+        {
+            await Manager.RemoveSocketAsync(Manager.GetId(socket));
+        }
         public abstract Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer);
         [HttpGet]
         public async Task<IActionResult> Get()
