@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace GameMaster.Managers 
 {
-    public class WebSocketManager<M> : SocketManager<WebSocket, M>
+    public class WebSocketManager<T> : SocketManager<WebSocket, T>
     {
-        public override bool IsSame(WebSocket a, WebSocket b) => a == b;
-        public override async Task CloseSocketAsync(WebSocket socket) 
+        protected override bool IsSame(WebSocket a, WebSocket b) => a == b;
+        protected override async Task CloseSocketAsync(WebSocket socket) 
         {
             if (socket.State == WebSocketState.Open)
             {
@@ -21,7 +21,7 @@ namespace GameMaster.Managers
                 );
             }
         }
-        public override async Task SendMessageAsync(WebSocket socket, M message)
+        protected override async Task SendMessageAsync(WebSocket socket, T message)
         {
             if (socket.State == WebSocketState.Open)
             {

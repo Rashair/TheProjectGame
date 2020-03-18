@@ -11,18 +11,14 @@ using Shared.Models.Messages;
 namespace GameMaster.Controllers
 {
     [Route("ws/player")]
-    public class PlayerWebSocketController : WebSocketController
+    public class PlayerWebSocketController : WebSocketController<GMMessage>
     {
         private readonly BufferBlock<AgentMessage> _queue;
-        private readonly WebSocketManager<GMMessage> _manager;
-        public PlayerWebSocketController(BufferBlock<AgentMessage> queue, WebSocketManager<GMMessage> manager)
+        public PlayerWebSocketController(BufferBlock<AgentMessage> queue, WebSocketManager<GMMessage> manager) 
+            : base(manager)
         {
             _queue = queue;
-            _manager = manager;
         }
-        public override void OnConnected(WebSocket socket) => _manager.AddSocket(socket);
-        public override async Task OnDisconnectedAsync(WebSocket socket) 
-            => await _manager.RemoveSocketAsync(_manager.GetId(socket));
         public override async Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
             string json = Encoding.UTF8.GetString(buffer, 0, result.Count);

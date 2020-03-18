@@ -1,7 +1,7 @@
 namespace GameMaster.Models.Messages
 {
-    public class ClientMessage
+    public class BackendMessage
     {
-        // TODO Implement propper 
+        // TODO Propper implementation 
     }
 }
