@@ -11,33 +11,45 @@ namespace GameMaster.Models.Fields
         private GMPlayer whosHere;
         protected HashSet<AbstractPiece> pieces;
 
-        public AbstractField()
+        public AbstractField(int _x, int _y)
         {
+            x = _x;
+            y = _y;
+            whosHere = null;
             pieces = new HashSet<AbstractPiece>();
         }
 
         public void Leave(GMPlayer player)
         {
-            throw new NotImplementedException();
+            if (whosHere != null) whosHere = null;
         }
-
-        public abstract void PickUp(GMPlayer player);
+        // oryginalnie zwracało void co jest niezgodne
+        public abstract bool PickUp(GMPlayer player);
 
         public abstract bool Put(AbstractPiece piece);
 
+        public abstract bool PutSham(AbstractPiece piece);
+
         public bool MoveHere(GMPlayer player)
         {
-            throw new NotImplementedException();
+            if (whosHere == null && player != null)
+            {
+                player.Move(this); whosHere = player; return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public bool ContainsPieces()
         {
-            return pieces.Count > 0;
+            return (pieces.Count > 0);
         }
 
         public int[] GetPosition()
         {
-            throw new NotImplementedException();
+            return new int[2] { x, y };
         }
     }
 }
