@@ -11,12 +11,9 @@ using Xunit;
 
 namespace GameMaster.Tests
 {
-    class FieldsTest
+    public class FieldsTest
     {
-
-
-
-
+        
         public class MoveHereTestData : IEnumerable<object[]>
         {
             public IEnumerator<object[]> GetEnumerator()
