@@ -26,12 +26,16 @@ namespace GameMaster.Controllers
         {
             await Manager.RemoveSocketAsync(Manager.GetId(socket));
         }
+        public virtual bool AcceptConnection()
+        {
+            return true;
+        }
         public abstract Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer);
         [HttpGet]
         public async Task<IActionResult> Get()
         {
             HttpContext context = ControllerContext.HttpContext;
-            if (!context.WebSockets.IsWebSocketRequest)
+            if (!context.WebSockets.IsWebSocketRequest || !AcceptConnection()) 
                 return BadRequest();
             WebSocket socket = await context.WebSockets.AcceptWebSocketAsync();
             OnConnected(socket);
