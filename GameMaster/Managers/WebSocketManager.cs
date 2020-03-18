@@ -9,7 +9,10 @@ namespace GameMaster.Managers
 {
     public class WebSocketManager<T> : SocketManager<WebSocket, T>
     {
-        protected override bool IsSame(WebSocket a, WebSocket b) => a == b;
+        protected override bool IsSame(WebSocket a, WebSocket b)
+        {
+            return a == b;
+        }
         protected override async Task CloseSocketAsync(WebSocket socket) 
         {
             if (socket.State == WebSocketState.Open)

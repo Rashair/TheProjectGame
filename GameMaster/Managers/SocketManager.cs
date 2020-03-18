@@ -11,9 +11,18 @@ namespace GameMaster.Managers
         protected abstract bool IsSame(T a, T b);
         protected abstract Task CloseSocketAsync(T socket);
         protected abstract Task SendMessageAsync(T socket, M message);
-        public string GetId(T socket) => _sockets.FirstOrDefault(p => IsSame(p.Value, socket)).Key;
-        public T GetSocketById(string id) => _sockets.FirstOrDefault(p => p.Key == id).Value;
-        public bool AddSocket(T socket) => _sockets.TryAdd(CreateSocketId(), socket);
+        public string GetId(T socket)
+        {
+            return _sockets.FirstOrDefault(p => IsSame(p.Value, socket)).Key;
+        }
+        public T GetSocketById(string id)
+        {
+            return _sockets.FirstOrDefault(p => p.Key == id).Value;
+        }
+        public bool AddSocket(T socket)
+        {
+            return _sockets.TryAdd(CreateSocketId(), socket);
+        }
         public async Task<bool> RemoveSocketAsync(string id)
         {
             bool removed = _sockets.TryRemove(id, out T socket);
@@ -23,10 +32,17 @@ namespace GameMaster.Managers
             }
             return removed;
         }
-        public async Task SendMessageAsync(string id, M message) => await SendMessageAsync(GetSocketById(id), message);
-        public async Task SendMessageToAllAsync(M message) 
-            => await Task.WhenAll(from p in _sockets select SendMessageAsync(p.Value, message));
-        private string CreateSocketId() => Guid.NewGuid().ToString();
-        private ConcurrentDictionary<string, T> GetAll() => _sockets;
+        public async Task SendMessageAsync(string id, M message)
+        {
+            await SendMessageAsync(GetSocketById(id), message);
+        }
+        public async Task SendMessageToAllAsync(M message)
+        {
+            await Task.WhenAll(from p in _sockets select SendMessageAsync(p.Value, message));
+        }
+        private string CreateSocketId()
+        {
+            return Guid.NewGuid().ToString();
+        }
     }
 }
