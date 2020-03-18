@@ -1,9 +1,8 @@
+using GameMaster.Managers;
+using GameMaster.Models.Messages;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-
-using GameMaster.Managers;
-using GameMaster.Models.Messages;
 
 namespace GameMaster.Controllers
 {
@@ -13,10 +12,11 @@ namespace GameMaster.Controllers
         public ClientWebSocketController(WebSocketManager<BackendMessage> manager) : base(manager)
         {
         }
+
         public override Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
             // Ignoring client messages
             return Task.CompletedTask;
         }
-    } 
+    }
 }

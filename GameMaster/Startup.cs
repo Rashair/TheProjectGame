@@ -1,14 +1,13 @@
+using GameMaster.Managers;
+using GameMaster.Models.Messages;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.Threading.Tasks.Dataflow;
-
-using GameMaster.Managers;
-using GameMaster.Models.Messages;
 using Shared.Models.Messages;
+using System.Threading.Tasks.Dataflow;
 
 namespace GameMaster
 {
@@ -53,6 +52,7 @@ namespace GameMaster
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
+            app.UseWebSockets();
 
             app.UseMvc(routes =>
             {
