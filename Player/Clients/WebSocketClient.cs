@@ -3,40 +3,25 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace Player.Clients
 {
-    // TODO delete after merge, use from share
-    public class AgentMessage
-    {
-    }
-
-    public class GMMessage
-    {
-    }
-
-    public class WebSocketClient<R, S>
+    public class WebSocketClient<R, S> : ISocketClient<R, S>
     {
         private const int _BUFFER_SIZE = 1024 * 4;
-        private readonly IConfiguration _config;
         private readonly ClientWebSocket _client;
 
-        // TODO get from config
-        public Uri ConnectUri => new Uri("");
-        public WebSocketState State => _client.State;
+        public bool IsOpen => _client.State == WebSocketState.Open;
 
-        public WebSocketClient(IConfiguration config)
+        public WebSocketClient()
         {
-            _config = config;
             _client = new ClientWebSocket();
         }
 
-        public async Task ConnectAsync()
+        public async Task ConnectAsync(Uri uri)
         {
-            await _client.ConnectAsync(ConnectUri, CancellationToken.None);
+            await _client.ConnectAsync(uri, CancellationToken.None);
         }
 
         public async Task CloseAsync()
