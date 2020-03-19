@@ -21,9 +21,6 @@ namespace GameMaster.Models
         public GM(Configuration conf)
         {
             this.conf = conf;
-            
-
-            // TODO : initialize rest
         }
 
         private void FillBoardRow(int row, Func<AbstractField> getField)
