@@ -7,6 +7,8 @@ using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
 using Moq;
+using System.Collections.Generic;
+using static GameMaster.Tests.ReflectionHelpers;
 using Xunit;
 
 namespace GameMaster.Tests
@@ -56,7 +58,7 @@ namespace GameMaster.Tests
             Assert.Equal(x, pieceCount);
         }
 
-        private int GetPieceCount(TaskField taskField)
+        private static int GetPieceCount(TaskField taskField)
         {
             var taskFieldInfo = typeof(AbstractField).GetProperty("Pieces",
                 BindingFlags.NonPublic | BindingFlags.Instance);
@@ -64,38 +66,7 @@ namespace GameMaster.Tests
             return pieces.Count;
         }
 
-        private MethodInfo GetMethod(string methodName, Type type)
-        {
-            Assert.False(string.IsNullOrWhiteSpace(methodName), $"{nameof(methodName)} cannot be null or whitespace");
-
-            MethodInfo method = type.GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
-
-            Assert.False(method == null, $"Method {methodName} not found");
-
-            return method;
-        }
-
-        private MethodInfo GetMethod(string methodName)
-        {
-            return GetMethod(methodName, typeof(GM));
-        }
-
-        private FieldInfo GetField(string fieldName, Type type)
-        {
-            Assert.False(string.IsNullOrWhiteSpace(fieldName), $"{nameof(fieldName)} cannot be null or whitespace");
-
-            FieldInfo field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-
-            Assert.False(field == null, $"Field {fieldName} not found");
-
-            return field;
-        }
-
-        private FieldInfo GetField(string fieldName)
-        {
-            return GetField(fieldName, typeof(GM));
-        }
-
+   
         [Fact]
         public void TestNormalPieceCheck()
         {
