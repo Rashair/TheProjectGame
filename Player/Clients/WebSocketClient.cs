@@ -33,11 +33,6 @@ namespace Player.Clients
             );
         }
 
-        /// <returns>
-        /// (bool notClosed, R value)
-        /// If notClosed is false then the socket is closed and value is the default value of a R type, otherwise value
-        /// is deserialized from socket message.
-        /// </returns>
         public async Task<(bool, R)> ReceiveAsync()
         {
             byte[] buffer = new byte[_BUFFER_SIZE];
