@@ -9,6 +9,12 @@ namespace Player.Clients
 
         Task ConnectAsync(Uri uri);
         Task CloseAsync();
+
+        /// <returns>
+        /// (bool notClosed, R value)
+        /// If notClosed is false then the socket is closed and value is set to default(R) otherwise,
+        /// the value is obtained from deserialization of the socket message.
+        /// </returns>
         Task<(bool, R)> ReceiveAsync();
         Task SendAsync(S message);
     }
