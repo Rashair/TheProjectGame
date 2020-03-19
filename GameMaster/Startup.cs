@@ -28,12 +28,6 @@ namespace GameMaster
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-
-            services.AddSingleton<Configuration>();
-            services.AddSingleton<GM>();
-            services.AddHostedService<GMService>();
-
-
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -42,7 +36,11 @@ namespace GameMaster
 
             services.AddSingleton<WebSocketManager<BackendMessage>>();
             services.AddSingleton<WebSocketManager<GMMessage>>();
-            services.AddSingleton<BufferBlock<PlayerMessage>>();
+            services.AddSingleton<BufferBlock<AgentMessage>>();
+
+            services.AddSingleton<Configuration>();
+            services.AddSingleton<GM>();
+            services.AddHostedService<GMService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
