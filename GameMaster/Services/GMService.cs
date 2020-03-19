@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GameMaster.Services
 {
-    public class GMService : IHostedService
+    public class GMService : BackgroundService
     {
         private readonly GM gameMaster;
 
@@ -17,15 +17,26 @@ namespace GameMaster.Services
             this.gameMaster = gameMaster;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public override Task StartAsync(CancellationToken cancellationToken)
         {
+            base.StartAsync(cancellationToken);
+
             gameMaster.StartGame();
 
             return Task.CompletedTask;
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            gameMaster.AcceptMessage();
+
+            return Task.CompletedTask;
+        }
+
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            base.StopAsync(cancellationToken);
+
             gameMaster.EndGame();
 
             return Task.CompletedTask;

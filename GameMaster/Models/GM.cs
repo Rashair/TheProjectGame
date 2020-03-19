@@ -31,9 +31,6 @@ namespace GameMaster.Models
         public GM(Configuration conf, BufferBlock<PlayerMessage> _queue, WebSocketManager<GMMessage> _manager)
         {
             this.conf = conf;
-            
-
-            // TODO : initialize rest
         }
 
         private void FillBoardRow(int row, Func<AbstractField> getField)
