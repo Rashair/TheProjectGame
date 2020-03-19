@@ -31,6 +31,21 @@ namespace GameMaster.Models
         public GM(Configuration conf, BufferBlock<PlayerMessage> _queue, WebSocketManager<GMMessage> _manager)
         {
             this.conf = conf;
+            
+
+            // TODO : initialize rest
+        }
+
+        private void FillBoardRow(int row, Func<AbstractField> getField)
+        {
+            for(int col = 0; col < board[row].Length; ++col)
+            {
+                board[row][col] = getField();
+            }
+        }
+
+        internal void StartGame()
+        {
             board = new AbstractField[conf.Height][];
             for (int i = 0; i < board.Length; ++i)
             {

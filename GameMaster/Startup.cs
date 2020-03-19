@@ -2,6 +2,7 @@ using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Managers;
 using GameMaster.Models.Messages;
+using GameMaster.Models;
 using GameMaster.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,7 +29,10 @@ namespace GameMaster
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
 
+            services.AddSingleton<Configuration>();
+            services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
+
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>

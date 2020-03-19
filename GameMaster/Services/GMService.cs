@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using GameMaster.Models;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,20 +9,26 @@ using System.Threading.Tasks;
 namespace GameMaster.Services
 {
     public class GMService : IHostedService
-    { 
+    {
+        private readonly GM gameMaster;
+
+        public GMService(GM gameMaster)
+        {
+            this.gameMaster = gameMaster;
+        }
+
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            gameMaster.StartGame();
+
+            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
-        }
+            gameMaster.EndGame();
 
-        public void Dispose()
-        {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
     }
 }
