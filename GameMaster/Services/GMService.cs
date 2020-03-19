@@ -1,8 +1,6 @@
 ﻿using GameMaster.Models;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,9 +26,26 @@ namespace GameMaster.Services
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            gameMaster.AcceptMessage();
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                TryToAcceptMessage();
+                Thread.Sleep(50);
+            }
 
             return Task.CompletedTask;
+        }
+
+        private void TryToAcceptMessage()
+        {
+            try
+            {
+                gameMaster.AcceptMessage();
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine($"Error occurred executing {nameof(gameMaster.AcceptMessage)}\n" +
+                    ex.Message);
+            }
         }
 
         public override Task StopAsync(CancellationToken cancellationToken)
