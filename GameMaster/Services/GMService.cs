@@ -24,15 +24,13 @@ namespace GameMaster.Services
             return Task.CompletedTask;
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
                 TryToAcceptMessage();
-                Thread.Sleep(50);
+                await Task.Delay(50);
             }
-
-            return Task.CompletedTask;
         }
 
         private void TryToAcceptMessage()
