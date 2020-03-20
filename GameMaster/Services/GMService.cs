@@ -15,9 +15,9 @@ namespace GameMaster.Services
             this.gameMaster = gameMaster;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await gameMaster.AcceptMessage(stoppingToken);
+            return gameMaster.AcceptMessage(stoppingToken);
         }
     }
 }
