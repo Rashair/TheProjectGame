@@ -30,6 +30,8 @@ namespace GameMaster.Models
 
         public int MaximumNumberOfPiecesOnBoard { get; set; }
 
+        public int NumberOfTeamPlayers { get; set; }
+
         public double ShamPieceProbability { get; set; } // percentage
         public int NumberOfPlayersPerTeam { get; set; }
     }

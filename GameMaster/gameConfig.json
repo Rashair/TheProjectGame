@@ -1,9 +1,9 @@
 {
   "CsIP": "192.168.0.0",
   "CsPort": 3729,
-  "MovePenalty": 1522,
+  "MovePenalty": 1500,
   "AskPenalty": 1000,
-  "DiscoverPenalty": 0,
+  "DiscoverPenalty": 700,
   "PutPenalty": 500,
   "CheckPenalty": 700,
   "ResponsePenalty": 1000,
@@ -12,5 +12,6 @@
   "GoalAreaHeight": 5,
   "NumberOfGoals": 5,
   "NumberOfPieces": 10,
+  "NumberOfTeamPlayers": 10,
   "ShamPieceProbability": 0.5
 }
