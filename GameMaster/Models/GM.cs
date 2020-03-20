@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using Shared;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GameMaster.Models
 {
@@ -24,6 +28,27 @@ namespace GameMaster.Models
         public GM(Configuration conf)
         {
             this.conf = conf;
+        }
+
+        public async Task AcceptMessage(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                if (WasGameStarted)
+                {
+                    Console.WriteLine("Do sth");
+                }
+                else
+                {
+                    // For debugging purposes
+                    Console.WriteLine("Do nothing");
+                }
+            }
+        }
+
+        internal Dictionary<Direction, int> Discover(AbstractField field)
+        {
+            throw new NotImplementedException();
         }
 
         internal void StartGame()
