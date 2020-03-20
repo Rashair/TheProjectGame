@@ -10,13 +10,13 @@ namespace GameMaster.Controllers
 {
     public abstract class WebSocketController<T> : Controller
     {
-        private const int _BUFFER_SIZE = 1024 * 4;
-        private readonly WebSocketManager<T> _manager;
-        public WebSocketManager<T> Manager => _manager;
+        private const int BUFFER_SIZE = 1024 * 4;
+
+        public WebSocketManager<T> Manager { get; }
 
         public WebSocketController(WebSocketManager<T> manager)
         {
-            manager = _manager;
+            Manager = manager;
         }
 
         public abstract Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer);
@@ -44,7 +44,7 @@ namespace GameMaster.Controllers
                 return BadRequest();
             WebSocket socket = await context.WebSockets.AcceptWebSocketAsync();
             OnConnected(socket);
-            byte[] buffer = new byte[_BUFFER_SIZE];
+            byte[] buffer = new byte[BUFFER_SIZE];
             WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer),
                 CancellationToken.None);
             while (!result.CloseStatus.HasValue)
