@@ -10,7 +10,7 @@ namespace GameMaster.Controllers
     {
         [HttpPost]
         [Route("/Configuration")]
-        public void PostConfiguration(ConfigurationToFile model)
+        public void PostConfiguration(Configuration model)
         {
             string gameConfigString = JsonConvert.SerializeObject(model);
 

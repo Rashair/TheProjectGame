@@ -40,18 +40,18 @@ export class Home extends Component {
             var data = new FormData();
             data.append('CsIP', this.state.ip);
             data.append('CsPort', this.state.port);
-            data.append('movePenalty', this.state.movePenalty);
-            data.append('askPenalty', this.state.askPenalty);
-            data.append('discoveryPenalty', this.state.discoveryPenalty);
-            data.append('putPenalty', this.state.putPenalty);
-            data.append('checkForShamPenalty', this.state.checkForShamPenalty);
-            data.append('responsePenalty', this.state.responsePenalty);
-            data.append('boardX', this.state.boardX);
-            data.append('boardY', this.state.boardY);
-            data.append('goalAreaHeight', this.state.goalAreaHeight);
-            data.append('numberOfGoals', this.state.numberOfGoals);
-            data.append('numberOfPieces', this.state.numberOfPieces);
-            data.append('shamPieceProbability', this.state.shamPieceProbability);
+            data.append('MovePenalty', this.state.movePenalty);
+            data.append('AskPenalty', this.state.askPenalty);
+            data.append('DiscoveryPenalty', this.state.discoveryPenalty);
+            data.append('PutPenalty', this.state.putPenalty);
+            data.append('CheckPenalty', this.state.checkForShamPenalty);
+            data.append('ResponsePenalty', this.state.responsePenalty);
+            data.append('Width', this.state.boardX);
+            data.append('Height', this.state.boardY);
+            data.append('GoalAreaHeight', this.state.goalAreaHeight);
+            data.append('NumberOfGoals', this.state.numberOfGoals);
+            data.append('NumberOfPieces', this.state.numberOfPieces);
+            data.append('ShamPieceProbability', this.state.shamPieceProbability);
             xhr.send(data);
             
         }
