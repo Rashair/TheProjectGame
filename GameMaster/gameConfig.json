@@ -1,1 +1,1 @@
-{"MovePenalty":1500,"AskPenalty":1000,"DiscoverPenalty":0,"PutPenalty":500,"CheckPenalty":700,"ResponsePenalty":1000,"Width":40,"Height":41,"NumberOfGoals":5,"GoalAreaHeight":5,"ShamPieceProbability":0}
+{"CsIP":"192.168.0.0","CsPort":3729,"movePenalty":1500,"askPenalty":1000,"discoverPenalty":0,"putPenalty":500,"checkForShamPenalty":700,"responsePenalty":1000,"boardX":40,"boardY":40,"goalAreaHeight":5,"numberOfGoals":5,"numberOfPieces":10,"shamPieceProbability":0.5}

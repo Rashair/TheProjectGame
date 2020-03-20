@@ -13,7 +13,6 @@ namespace GameMaster.Controllers
         public void PostConfiguration(ConfigurationToFile model)
         {
             string gameConfigString = JsonConvert.SerializeObject(model);
-            string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
             using (StreamWriter outputFile = new StreamWriter("gameConfig.json"))
             {

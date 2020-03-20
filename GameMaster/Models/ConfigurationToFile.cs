@@ -2,26 +2,32 @@
 {
     public class ConfigurationToFile
     {
-        public int MovePenalty { get; set; }
+        public string CsIP { get; set; }
 
-        public int AskPenalty { get; set; }
+        public int CsPort { get; set; }
+        
+        public int movePenalty { get; set; }
 
-        public int DiscoverPenalty { get; set; }
+        public int askPenalty { get; set; }
 
-        public int PutPenalty { get; set; }
+        public int discoverPenalty { get; set; }
 
-        public int CheckPenalty { get; set; }
+        public int putPenalty { get; set; }
 
-        public int ResponsePenalty { get; set; }
+        public int checkForShamPenalty { get; set; }
 
-        public int Width { get; set; }
+        public int responsePenalty { get; set; }
 
-        public int Height { get; set; }
+        public int boardX { get; set; }
 
-        public int NumberOfGoals { get; set; }
+        public int boardY { get; set; }
 
-        public int GoalAreaHeight { get; set; }
+        public int goalAreaHeight { get; set; }
 
-        public int ShamPieceProbability { get; set; }
+        public int numberOfGoals { get; set; }
+
+        public int numberOfPieces { get; set; }
+
+        public double shamPieceProbability { get; set; }
     }
 }
