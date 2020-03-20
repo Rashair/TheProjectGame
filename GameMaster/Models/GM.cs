@@ -9,26 +9,21 @@ namespace GameMaster.Models
 {
     public class GM
     {
-        private static int[] legalKnowledgeReplies = new int[2]; // unique from documentation considered as static
-        private readonly Dictionary<int, GMPlayer> players;
-        private readonly AbstractField[][] board;
+        private static readonly int[] legalKnowledgeReplies = new int[2]; // unique from documentation considered as static
+
+        private Dictionary<int, GMPlayer> players;
+        private AbstractField[][] board;
         private Configuration conf;
 
-        internal int RedTeamPoints { get; set; }
+        internal int redTeamPoints;
+        internal int blueTeamPoints;
+        
+        public bool WasGameStarted { get; set; }
 
-        internal int BlueTeamPoints { get; set; }
 
         public GM(Configuration conf)
         {
             this.conf = conf;
-        }
-
-        private void FillBoardRow(int row, Func<AbstractField> getField)
-        {
-            for(int col = 0; col < board[row].Length; ++col)
-            {
-                board[row][col] = getField();
-            }
         }
 
         internal void StartGame()
@@ -60,6 +55,18 @@ namespace GameMaster.Models
             // TODO : initialize rest
         }
 
+            // TODO : initialize rest
+            players = new Dictionary<int, GMPlayer>();
+
+            WasGameStarted = true;
+        }
+
+        private void FillBoardRow(int row, Func<AbstractField> getField)
+        {
+            for (int col = 0; col < board[row].Length; ++col)
+            {
+                board[row][col] = getField();
+            }
         private void FillBoardRow(int row, Func<int, int, AbstractField> getField)
         {
             for (int col = 0; col < board[row].Length; ++col)
@@ -82,6 +89,7 @@ namespace GameMaster.Models
         {
             throw new NotImplementedException();
         }
+
 
         internal void EndGame()
         {

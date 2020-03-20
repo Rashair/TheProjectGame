@@ -15,21 +15,15 @@ namespace GameMaster.Services
             this.gameMaster = gameMaster;
         }
 
-        public override Task StartAsync(CancellationToken cancellationToken)
-        {
-            base.StartAsync(cancellationToken);
-
-            gameMaster.StartGame();
-
-            return Task.CompletedTask;
-        }
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            if (gameMaster.WasGameStarted)
             {
-                TryToAcceptMessage();
-                await Task.Delay(50);
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    TryToAcceptMessage();
+                    await Task.Delay(50);
+                }
             }
         }
 
@@ -44,15 +38,6 @@ namespace GameMaster.Services
                 Console.Out.WriteLine($"Error occurred executing {nameof(gameMaster.AcceptMessage)}\n" +
                     ex.Message);
             }
-        }
-
-        public override Task StopAsync(CancellationToken cancellationToken)
-        {
-            base.StopAsync(cancellationToken);
-
-            gameMaster.EndGame();
-
-            return Task.CompletedTask;
         }
     }
 }
