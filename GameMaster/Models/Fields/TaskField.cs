@@ -16,8 +16,7 @@ namespace GameMaster.Models.Fields
                 pieces.Remove(pieces.ElementAt(0));
                 return true;
             }
-            else return false;
-
+            return false;
         }
 
         public override bool Put(AbstractPiece piece)

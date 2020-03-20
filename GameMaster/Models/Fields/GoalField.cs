@@ -5,7 +5,7 @@ namespace GameMaster.Models.Fields
 {
     public class GoalField : AbstractField
     {
-        public GoalField(int _x, int _y) : base(_x, _y) { }
+        public GoalField(int x, int y) : base(x, y) { }
         public override bool PickUp(GMPlayer player)
         {
             return false;

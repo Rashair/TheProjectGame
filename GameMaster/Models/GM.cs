@@ -24,7 +24,6 @@ namespace GameMaster.Models
                 board[i] = new AbstractField[conf.Width];
             }
 
-            //int x = 0; int y=0;
             Func<int, int, AbstractField> nonGoalFieldGenerator = (int x, int y) => new NonGoalField(x, y);
             for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
             {
