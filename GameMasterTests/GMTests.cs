@@ -24,6 +24,8 @@ namespace GameMaster.Tests
             // Arrange
             var conf = new MockConfiguration();
             var gameMaster = new GM(conf);
+            var startGame = GetMethod("StartGame");
+            startGame.Invoke(gameMaster, null);
             var method = GetMethod("GeneratePiece");
 
             // Act
