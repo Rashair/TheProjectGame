@@ -126,9 +126,9 @@ namespace GameMasterTests
         [Fact]
         public void TestShamPiecePut()
         {
-            NormalPiece piece = new NormalPiece();
+            ShamPiece piece = new ShamPiece();
             Mock<NonGoalField> field = new Mock<NonGoalField>();
-            field.Setup(m => m.PutSham(piece)).Returns(true);
+            field.Setup(m => m.PutSham(piece)).Returns(false);
             Assert.False(piece.Put(field.Object));
         }
     }
