@@ -1,5 +1,4 @@
 ﻿using GameMaster.Models.Fields;
-using System;
 
 namespace GameMaster.Models.Pieces
 {
@@ -8,11 +7,6 @@ namespace GameMaster.Models.Pieces
         public override bool CheckForSham()
         {
             return true;
-        }
-
-        public override bool Put(AbstractField abstractField)
-        {
-            return abstractField.PutSham(this);
         }
     }
 }

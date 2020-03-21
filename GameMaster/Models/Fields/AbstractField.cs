@@ -25,8 +25,6 @@ namespace GameMaster.Models.Fields
 
         public abstract bool Put(AbstractPiece piece);
 
-        public abstract bool PutSham(AbstractPiece piece);
-
         public bool MoveHere(GMPlayer player)
         {
             throw new NotImplementedException();
