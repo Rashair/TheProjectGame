@@ -123,7 +123,7 @@ namespace Player.Models
 
             };
 
-            var response = new GiveInfoPayload();
+            GiveInfoPayload response = new GiveInfoPayload(); //TODO
             if (toLeader)
                 response.respondToID = leaderId;
             else
