@@ -3,6 +3,7 @@
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using Shared;
+using Shared.Models.Enums;
 using Shared.Senders;
 
 namespace GameMaster.Models
@@ -11,19 +12,20 @@ namespace GameMaster.Models
     {
         private int id;
         private int messageCorrelationId;
-        public Team team;
         private bool isLeader;
         private AbstractPiece holding;
         private AbstractField position;
         private DateTime lockedTill;
         private ISender messageService;
 
-        public string SocketID;
+        public string SocketID { get; set; }
 
-        public GMPlayer(int _id, Team _team)
+        public Team Team { get; private set; }
+
+        public GMPlayer(int id, Team team)
         {
-            id = _id;
-            team = _team;
+            this.id = id;
+            this.Team = team;
         }
 
         public bool TryLock(TimeSpan timeSpan)

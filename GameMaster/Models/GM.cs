@@ -9,6 +9,7 @@ using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using Newtonsoft.Json;
 using Shared;
+using Shared.Models.Enums;
 using Shared.Models.Messages;
 using Shared.Models.Payloads;
 using Shared.Payloads;
@@ -113,7 +114,7 @@ namespace GameMaster.Models
                         bool point = players[message.AgentID].Put();
                         if (point)
                         {
-                            if (players[message.AgentID].team == Team.Red) redTeamPoints++;
+                            if (players[message.AgentID].Team == Team.Red) redTeamPoints++;
                             else blueTeamPoints++;
                         }
                         break;
