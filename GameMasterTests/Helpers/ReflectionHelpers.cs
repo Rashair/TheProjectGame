@@ -3,7 +3,7 @@ using System;
 using System.Reflection;
 using Xunit;
 
-namespace GameMaster.Tests
+namespace GameMaster.Tests.Helpers
 {
     internal static class ReflectionHelpers
     {
@@ -37,6 +37,16 @@ namespace GameMaster.Tests
         public static FieldInfo GetField(string fieldName)
         {
             return GetField(fieldName, typeof(GM));
+        }
+
+        public static T GetValue<T>(string fieldName, object obj, Type type)
+        {
+            return (T)GetField(fieldName, type).GetValue(obj);
+        }
+
+        public static T GetValue<T>(string fieldName, object obj)
+        {
+            return GetValue<T>(fieldName, obj, typeof(GM));
         }
     }
 }

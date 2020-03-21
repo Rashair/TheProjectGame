@@ -25,5 +25,10 @@ namespace GameMaster.Models
         public int GoalAreaHeight { get; set; }
 
         public int ShamPieceProbability { get; set; } // percentage
+
+        public int MaximumNumberOfPiecesOnBoard { get; set; }
+        public int GeneratePieceInterval { get; set; }
+
+        public int NumberOfPlayersPerTeam { get; set; }
     }
 }
