@@ -14,9 +14,11 @@ namespace GameMaster.Models.Fields
         public override bool Put(AbstractPiece piece)
         {
             if (this.ContainsPieces() == false)
-            { this.pieces.Add(piece); return true; }
-            else
-                return false;
+            {
+                this.pieces.Add(piece);
+                return true;
+            }
+            return false;
         }
 
         public override bool PutSham(AbstractPiece piece)
