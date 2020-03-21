@@ -19,18 +19,18 @@ namespace GameMaster.Models
         {
             this.conf = conf;
             board = new AbstractField[conf.Height][];
-            for(int i = 0; i < board.Length; ++i)
+            for (int i = 0; i < board.Length; ++i)
             {
                 board[i] = new AbstractField[conf.Width];
             }
 
-            Func<AbstractField> nonGoalFieldGenerator = () => new NonGoalField();
+            Func<int, int, AbstractField> nonGoalFieldGenerator = (int x, int y) => new NonGoalField(x, y);
             for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
             {
                 FillBoardRow(rowIt, nonGoalFieldGenerator);
             }
 
-            Func<AbstractField> taskFieldGenerator = () => new TaskField();
+            Func<int, int, AbstractField> taskFieldGenerator = (int x, int y) => new TaskField(x, y);
             int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
             for (int rowIt = conf.GoalAreaHeight; rowIt < secondGoalAreaStart; ++rowIt)
             {
@@ -45,11 +45,11 @@ namespace GameMaster.Models
             // TODO : initialize rest
         }
 
-        private void FillBoardRow(int row, Func<AbstractField> getField)
+        private void FillBoardRow(int row, Func<int, int, AbstractField> getField)
         {
-            for(int col = 0; col < board[row].Length; ++col)
+            for (int col = 0; col < board[row].Length; ++col)
             {
-                board[row][col] = getField();
+                board[row][col] = getField(row, col);
             }
         }
 

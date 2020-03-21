@@ -6,16 +6,27 @@ namespace GameMaster.Models.Fields
 {
     public class TaskField : AbstractField
     {
-        public override void PickUp(GMPlayer player)
+        public TaskField(int x, int y) : base(x, y) { }
+        public override bool PickUp(GMPlayer player)
         {
-            var piece = pieces.First();
-            player.SetHolding(piece);
-            pieces.Remove(piece);
+            if (this.ContainsPieces())
+            {
+
+                player.SetHolding(pieces.ElementAt(0));
+                pieces.Remove(pieces.ElementAt(0));
+                return true;
+            }
+            return false;
         }
 
         public override bool Put(AbstractPiece piece)
         {
-            this.pieces.Add(piece);
+            return pieces.Add(piece);
+        }
+
+        public override bool PutSham(AbstractPiece piece)
+        {
+            pieces.Add(piece);
             return false;
         }
     }
