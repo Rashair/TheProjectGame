@@ -174,11 +174,6 @@ namespace GameMaster.Models
             }
         }
 
-        public void GenerateGUI()
-        {
-            throw new NotImplementedException();
-        }
-
         internal async Task Work(CancellationToken cancellationToken)
         {
             bool shouldGeneratePiece = true;
