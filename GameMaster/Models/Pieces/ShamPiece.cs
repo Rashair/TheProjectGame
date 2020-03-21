@@ -1,6 +1,4 @@
-﻿using GameMaster.Models.Fields;
-
-namespace GameMaster.Models.Pieces
+﻿namespace GameMaster.Models.Pieces
 {
     public class ShamPiece : AbstractPiece
     {
