@@ -3,7 +3,7 @@ using System;
 
 namespace GameMaster.Models.Fields
 {
-    internal class GoalField : AbstractField
+    public class GoalField : AbstractField
     {
         public override void PickUp(GMPlayer player)
         {

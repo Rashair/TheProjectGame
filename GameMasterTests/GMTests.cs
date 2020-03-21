@@ -98,5 +98,35 @@ namespace GameMasterTests
         {
             return GetField(fieldName, typeof(GM));
         }
+
+        [Fact]
+        public void TestNormalPieceCheck()
+        {
+            NormalPiece piece = new NormalPiece();
+            Assert.False(piece.CheckForSham());
+        }
+
+        [Fact]
+        public void TestShamPieceCheck()
+        {
+            ShamPiece piece = new ShamPiece();
+            Assert.True(piece.CheckForSham());
+        }
+
+        [Fact]
+        public void TestNormalPiecePut()
+        {
+            NormalPiece piece = new NormalPiece();
+            GoalField field = new GoalField();
+            Assert.Equal(piece.Put(field), field.Put(piece));
+        }
+
+        [Fact]
+        public void TestShamPiecePut()
+        {
+            NormalPiece piece = new NormalPiece();
+            NonGoalField field = new NonGoalField();
+            Assert.Equal(piece.Put(field), field.Put(piece));
+        }
     }
 }
