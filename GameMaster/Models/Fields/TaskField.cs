@@ -18,5 +18,10 @@ namespace GameMaster.Models.Fields
             this.pieces.Add(piece);
             return false;
         }
+
+        public override bool PutSham(AbstractPiece piece)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
