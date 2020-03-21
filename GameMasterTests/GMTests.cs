@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Xunit;
+using Moq;
 
 namespace GameMasterTests
 {
@@ -117,16 +118,18 @@ namespace GameMasterTests
         public void TestNormalPiecePut()
         {
             NormalPiece piece = new NormalPiece();
-            GoalField field = new GoalField();
-            Assert.Equal(piece.Put(field), field.Put(piece));
+            Mock<GoalField> field = new Mock<GoalField>();
+            field.Setup(m => m.Put(piece)).Returns(true);
+            Assert.True(piece.Put(field.Object));
         }
 
         [Fact]
         public void TestShamPiecePut()
         {
             NormalPiece piece = new NormalPiece();
-            NonGoalField field = new NonGoalField();
-            Assert.Equal(piece.Put(field), field.Put(piece));
+            Mock<NonGoalField> field = new Mock<NonGoalField>();
+            field.Setup(m => m.Put(piece)).Returns(false);
+            Assert.False(piece.Put(field.Object));
         }
     }
 }
