@@ -7,19 +7,16 @@ using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
 using Moq;
+using Shared.Models.Messages;
 using System.Collections.Generic;
+using System.Threading.Tasks.Dataflow;
 using Xunit;
-using static GameMaster.Tests.ReflectionHelpers;
+using static GameMaster.Tests.Helpers.ReflectionHelpers;
 
 namespace GameMaster.Tests
 {
     public class GMTests
     {
-        [Fact]
-        public void TestAcceptMessageMoveMessage()
-        {
-        }
-
         [Theory]
         [InlineData(1)]
         [InlineData(10)]
@@ -28,7 +25,8 @@ namespace GameMaster.Tests
         {
             // Arrange
             var conf = new MockConfiguration();
-            var gameMaster = new GM(conf);
+            var queue = new BufferBlock<PlayerMessage>();
+            var gameMaster = new GM(conf, queue);
             var startGame = GetMethod("StartGame");
             startGame.Invoke(gameMaster, null);
             var method = GetMethod("GeneratePiece");
@@ -36,7 +34,7 @@ namespace GameMaster.Tests
             // Act
             for (int i = 0; i < x; ++i)
             {
-                method.Invoke(gameMaster, new object[] { });
+                method.Invoke(gameMaster, null);
             }
 
             // Assert
@@ -73,7 +71,6 @@ namespace GameMaster.Tests
             return pieces.Count;
         }
 
-   
         [Fact]
         public void TestNormalPieceCheck()
         {

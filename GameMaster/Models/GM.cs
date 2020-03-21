@@ -4,45 +4,41 @@ using System.Collections.Generic;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using Shared.Models.Enums;
+using Shared.Models.Messages;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
+using System.Timers;
 
 namespace GameMaster.Models
 {
     public class GM
     {
-        private static readonly int[] legalKnowledgeReplies = new int[2]; // unique from documentation considered as static
+        private Configuration conf;
+        private BufferBlock<PlayerMessage> queue;
 
+        private readonly int[] legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;
         private AbstractField[][] board;
-        private Configuration conf;
+        private int piecesOnBoard;
 
-        internal int redTeamPoints;
-        internal int blueTeamPoints;
+        private int redTeamPoints;
+        private int blueTeamPoints;
 
         public bool WasGameStarted { get; set; }
 
-        public GM(Configuration conf)
+        public GM(Configuration conf, BufferBlock<PlayerMessage> queue)
         {
             this.conf = conf;
+            this.queue = queue;
+            legalKnowledgeReplies = new int[2];
         }
 
-        public async Task AcceptMessage(CancellationToken cancellationToken)
+        public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                if (WasGameStarted)
-                {
-                    Console.WriteLine("Do sth");
-                }
-                else
-                {
-                    // For debugging purposes
-                    Console.WriteLine("Do nothing");
-                }
-            }
+            // TODO decrement `piecesOnBoard` on Put Message
         }
 
         internal Dictionary<Direction, int> Discover(AbstractField field)
@@ -51,6 +47,16 @@ namespace GameMaster.Models
         }
 
         internal void StartGame()
+        {
+            InitializeBoard();
+
+            // TODO : initialize rest
+            players = new Dictionary<int, GMPlayer>();
+
+            WasGameStarted = true;
+        }
+
+        private void InitializeBoard()
         {
             board = new AbstractField[conf.Height][];
             for (int i = 0; i < board.Length; ++i)
@@ -75,11 +81,6 @@ namespace GameMaster.Models
             {
                 FillBoardRow(rowIt, nonGoalFieldGenerator);
             }
-
-            // TODO : initialize rest
-            players = new Dictionary<int, GMPlayer>();
-
-            WasGameStarted = true;
         }
 
         private void FillBoardRow(int row, Func<AbstractField> getField)
@@ -111,15 +112,54 @@ namespace GameMaster.Models
             throw new NotImplementedException();
         }
 
-
-        internal void Work()
+        internal async Task Work(CancellationToken cancellationToken)
         {
+            bool shouldGeneratePiece = true;
+            var timer = PrepareGeneratePieceTimer((sender, e) =>
+            {
+                if (piecesOnBoard < conf.MaximumNumberOfPiecesOnBoard)
+                {
+                    shouldGeneratePiece = true;
+                }
+            });
+            TimeSpan cancellationTimespan = TimeSpan.FromMilliseconds(50);
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                if (queue.Count > 0)
+                {
+                    int maxMessagesToRead = Math.Min(conf.NumberOfPlayersPerTeam, queue.Count);
+                    for (int i = 0; i < maxMessagesToRead; ++i)
+                    {
+                        var message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
+                        await AcceptMessage(message, cancellationToken);
+                        if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
+                        {
+                            EndGame();
+                            break;
+                        }
+                    }
+                }
 
+                if (shouldGeneratePiece)
+                {
+                    timer.Stop();
+                    GeneratePiece();
+                    shouldGeneratePiece = false;
+                    timer.Start();
+                }
+            }
         }
 
-        internal void EndGame()
+        private System.Timers.Timer PrepareGeneratePieceTimer(ElapsedEventHandler elapsed)
         {
-            throw new NotImplementedException();
+            var timer = new System.Timers.Timer()
+            {
+                Interval = conf.GeneratePieceInterval,
+                AutoReset = true,
+            };
+            timer.Elapsed += elapsed;
+
+            return timer;
         }
 
         private void GeneratePiece()
@@ -142,6 +182,7 @@ namespace GameMaster.Models
             int yCoord = rand.Next(0, conf.Width);
 
             board[xCoord][yCoord].Put(piece);
+            piecesOnBoard += 1;
         }
 
         private void ForwardKnowledgeQuestion()
@@ -150,6 +191,11 @@ namespace GameMaster.Models
         }
 
         private void ForwardKnowledgeReply()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void EndGame()
         {
             throw new NotImplementedException();
         }
