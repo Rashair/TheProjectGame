@@ -1,13 +1,11 @@
 ﻿using GameMaster.Models;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using Xunit;
 
 namespace GameMaster.Tests
 {
-    static class ReflectionHelpers
+    internal static class ReflectionHelpers
     {
         public static MethodInfo GetMethod(string methodName, Type type)
         {
