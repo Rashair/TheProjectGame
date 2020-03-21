@@ -1,35 +1,12 @@
-﻿using Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
 
 namespace Player.Models.Payloads
 {
-    public class EmptyPayload
+    public abstract class Payload
     {
-    }
-
-    public class JoinGamePayload
-    {
-        public string teamID;
-    }
-
-    public class MovePayload
-    {
-        public string direction;
-    }
-
-    public class BegForInfoPayload
-    {
-        public int askedAgentID;
-    }
-
-    public class GiveInfoPayload
-    {
-        public int respondToID;
-        public int[,] distances;
-        public GoalInfo[,] redTeamGoalAreaInformations;
-        public GoalInfo[,] blueTeamGoalAreaInformations;
+        public string Serialize()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
     }
 }
