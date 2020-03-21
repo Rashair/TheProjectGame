@@ -83,33 +83,12 @@ namespace GameMaster.Models
             }
         }
 
-        private void FillBoardRow(int row, Func<AbstractField> getField)
-        {
-            for (int col = 0; col < board[row].Length; ++col)
-            {
-                board[row][col] = getField();
-            }
         private void FillBoardRow(int row, Func<int, int, AbstractField> getField)
         {
             for (int col = 0; col < board[row].Length; ++col)
             {
                 board[row][col] = getField(row, col);
             }
-        }
-
-        public void AcceptMessage()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void GenerateGUI()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal Dictionary<Direction, int> Discover(AbstractField field)
-        {
-            throw new NotImplementedException();
         }
 
         internal async Task Work(CancellationToken cancellationToken)
