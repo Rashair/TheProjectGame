@@ -128,7 +128,7 @@ namespace GameMasterTests
         {
             NormalPiece piece = new NormalPiece();
             Mock<NonGoalField> field = new Mock<NonGoalField>();
-            field.Setup(m => m.Put(piece)).Returns(false);
+            field.Setup(m => m.PutSham(piece)).Returns(true);
             Assert.False(piece.Put(field.Object));
         }
     }
