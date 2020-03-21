@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
-using Shared;
+using Shared.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Threading;
