@@ -14,5 +14,10 @@ namespace GameMaster.Models.Fields
         {
             throw new NotImplementedException();
         }
+
+        public override bool PutSham(AbstractPiece piece)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

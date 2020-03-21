@@ -7,12 +7,12 @@ namespace GameMaster.Models.Pieces
     {
         public override bool CheckForSham()
         {
-            throw new NotImplementedException();
+            return false;
         }
 
         public override bool Put(AbstractField abstractField)
         {
-            throw new NotImplementedException();
+            return abstractField.Put(this);
         }
     }
 }
