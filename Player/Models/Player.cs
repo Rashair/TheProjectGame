@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using CommunicationServer.Models.Messages;
+using Shared.Models.Messages;
 using Newtonsoft.Json;
 using Player.Models.Payloads;
 using Player.Models.Strategies;
@@ -9,6 +9,7 @@ using Shared;
 using Shared.Senders;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Player.Clients;
 
 namespace Player.Models
 {
@@ -26,9 +27,15 @@ namespace Player.Models
         private IStrategy strategy;
         public int[] teamMates;
 
-        public Player(Team _team)
+        private Penalties penaltiesTimes;
+        private BufferBlock<GMMessage> queue;
+        private WebSocketClient<GMMessage, AgentMessage> client;
+
+        public Player(Team _team, BufferBlock<GMMessage> _queue, WebSocketClient<GMMessage, AgentMessage> _client)
         {
             team = _team;
+            queue = _queue;
+            client = _client;
         }
 
         public void JoinTheGame()
@@ -36,7 +43,7 @@ namespace Player.Models
             throw new NotImplementedException();
         }
 
-        public void Start()
+        public async void Start()
         {
             throw new NotImplementedException();
         }
@@ -76,15 +83,10 @@ namespace Player.Models
             throw new NotImplementedException();
         }
 
-        public BufferBlock<GMMessage> bufferBlock = new BufferBlock<GMMessage>(); //temporary data abstraction
-
-
-        public Penalties penaltiesTimes;
-
         public void AcceptMessage()
         {
             GMMessage message;
-            if (bufferBlock.TryReceive(null, out message))
+            if (queue.TryReceive(null, out message))
             {
                 switch(message.id)
                 {
@@ -182,18 +184,9 @@ namespace Player.Models
             throw new NotImplementedException();
         }
 
-        public class ClientWebSocket
+        private async void Communicate(AgentMessage message)
         {
-            public async Task SendAsync(AgentMessage message)
-            {
-                throw new NotImplementedException();
-            }
-        } //temporary data abstraction
-        public ClientWebSocket client = new ClientWebSocket(); //temporary data abstraction
-
-        private void Communicate(AgentMessage message)
-        {
-            Task result = client.SendAsync(message);
+            await client.SendAsync(message);
         }
 
         private void Penalty()

@@ -1,4 +1,4 @@
-﻿namespace CommunicationServer.Models.Messages
+﻿namespace Shared.Models.Messages
 {
     public class GMMessage
     {

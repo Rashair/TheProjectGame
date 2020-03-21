@@ -3,12 +3,13 @@ using Xunit;
 using Moq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using CommunicationServer.Models.Messages;
+using Shared.Models.Messages;
 using Player.Models.Payloads;
 using Newtonsoft.Json;
 using Player.Models;
 using System;
 using System.Collections.Generic;
+using Player.Clients;
 
 namespace Player.Tests
 {
@@ -17,9 +18,6 @@ namespace Player.Tests
         [Fact]
         public void TestAcceptMessageMoveAccept()
         {
-            Team team = Team.Red;
-            var player = new Player.Models.Player(team);
-
             MoveAnswerPayload payload = new MoveAnswerPayload();
             payload.madeMove = true;
             payload.currentPosition = new Position();
@@ -34,7 +32,9 @@ namespace Player.Tests
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             input.Post<GMMessage>(message);
-            player.bufferBlock = input;
+
+            Team team = Team.Red;
+            var player = new Player.Models.Player(team, input, new WebSocketClient<GMMessage, AgentMessage>());
 
             player.board = new Field[1, 1];
             player.board[0, 0] = new Field();
@@ -47,9 +47,6 @@ namespace Player.Tests
         [Fact]
         public void TestAcceptMessageDiscoverAccept()
         {
-            Team team = Team.Red;
-            var player = new Player.Models.Player(team);
-
             DiscoveryAnswerPayload payload = new DiscoveryAnswerPayload();
             payload.distanceFromCurrent = 0;
             payload.distanceE = 0;
@@ -68,7 +65,9 @@ namespace Player.Tests
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             input.Post<GMMessage>(message);
-            player.bufferBlock = input;
+
+            Team team = Team.Red;
+            var player = new Player.Models.Player(team, input, new WebSocketClient<GMMessage, AgentMessage>());
 
             player.board = new Field[3, 3];
             for (int i = 0; i < 3; i++)
@@ -88,9 +87,6 @@ namespace Player.Tests
         [Fact]
         public void TestAcceptMessageBegForInfoAccept()
         {
-            Team team = Team.Red;
-            var player = new Player.Models.Player(team);
-
             BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload();
             payload.askingID = 1;
             payload.leader = false;
@@ -103,7 +99,9 @@ namespace Player.Tests
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             input.Post<GMMessage>(message);
-            player.bufferBlock = input;
+
+            Team team = Team.Red;
+            var player = new Player.Models.Player(team, input, new WebSocketClient<GMMessage, AgentMessage>());
 
             player.waitingPlayers = new List<int>();
 

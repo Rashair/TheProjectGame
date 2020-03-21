@@ -2,6 +2,9 @@
 using Shared;
 using System;
 using System.Collections.Generic;
+using GameMaster.Managers;
+using System.Threading.Tasks.Dataflow;
+using Shared.Models.Messages;
 
 namespace GameMaster.Models
 {
@@ -13,6 +16,15 @@ namespace GameMaster.Models
         private Configuration conf;
         internal int redTeamPoints;
         internal int blueTeamPoints;
+
+        private BufferBlock<GMMessage> queue;
+        private WebSocketManager<GMMessage> manager;
+
+        public GM(BufferBlock<GMMessage> _queue, WebSocketManager<GMMessage> _manager)
+        {
+            queue = _queue;
+            manager = _manager;
+        }
 
         public void AcceptMessage()
         {
