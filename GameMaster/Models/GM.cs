@@ -252,6 +252,7 @@ namespace GameMaster.Models
             }
         }
 
+
         private void GeneratePiece()
         {
             var rand = new Random();
