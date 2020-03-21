@@ -2,11 +2,11 @@ using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Xunit;
-using Moq;
 
 namespace GameMasterTests
 {
@@ -128,7 +128,7 @@ namespace GameMasterTests
         {
             ShamPiece piece = new ShamPiece();
             Mock<NonGoalField> field = new Mock<NonGoalField>();
-            field.Setup(m => m.PutSham(piece)).Returns(false);
+            field.Setup(m => m.Put(piece)).Returns(false);
             Assert.False(piece.Put(field.Object));
         }
     }
