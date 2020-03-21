@@ -21,9 +21,8 @@ namespace GameMaster.Models
 
         internal int redTeamPoints;
         internal int blueTeamPoints;
-        
-        public bool WasGameStarted { get; set; }
 
+        public bool WasGameStarted { get; set; }
 
         public GM(Configuration conf)
         {
@@ -78,9 +77,6 @@ namespace GameMaster.Models
             }
 
             // TODO : initialize rest
-        }
-
-            // TODO : initialize rest
             players = new Dictionary<int, GMPlayer>();
 
             WasGameStarted = true;
@@ -114,7 +110,6 @@ namespace GameMaster.Models
         {
             throw new NotImplementedException();
         }
-
 
         internal void EndGame()
         {

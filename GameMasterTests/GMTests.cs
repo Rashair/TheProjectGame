@@ -8,13 +8,18 @@ using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
 using Moq;
 using System.Collections.Generic;
-using static GameMaster.Tests.ReflectionHelpers;
 using Xunit;
+using static GameMaster.Tests.ReflectionHelpers;
 
 namespace GameMaster.Tests
 {
     public class GMTests
     {
+        [Fact]
+        public void TestAcceptMessageMoveMessage()
+        {
+        }
+
         [Theory]
         [InlineData(1)]
         [InlineData(10)]
