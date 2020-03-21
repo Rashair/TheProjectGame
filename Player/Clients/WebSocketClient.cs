@@ -9,55 +9,51 @@ namespace Player.Clients
 {
     public class WebSocketClient<R, S> : ISocketClient<R, S>
     {
-        private const int BUFFER_SIZE = 1024 * 4;
-        private readonly ClientWebSocket client;
+        private const int _BUFFER_SIZE = 1024 * 4;
+        private readonly ClientWebSocket _client;
 
-        public bool IsOpen => client.State == WebSocketState.Open;
+        public bool IsOpen => _client.State == WebSocketState.Open;
 
         public WebSocketClient()
         {
-            client = new ClientWebSocket();
+            _client = new ClientWebSocket();
         }
 
-        public async Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
+        public async Task ConnectAsync(Uri uri)
         {
-            await client.ConnectAsync(uri, cancellationToken);
+            await _client.ConnectAsync(uri, CancellationToken.None);
         }
 
-        public async Task CloseAsync(CancellationToken cancellationToken)
+        public async Task CloseAsync()
         {
-            await client.CloseAsync(
+            await _client.CloseAsync(
                 closeStatus: WebSocketCloseStatus.NormalClosure,
                 statusDescription: "Closed by the WebSocketClient",
-                cancellationToken: cancellationToken
+                cancellationToken: CancellationToken.None
             );
         }
 
-        public async Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
+        public async Task<(bool, R)> ReceiveAsync()
         {
-            byte[] buffer = new byte[BUFFER_SIZE];
-            WebSocketReceiveResult result = await client.ReceiveAsync(new ArraySegment<byte>(buffer),
-                cancellationToken);
-            if (cancellationToken.IsCancellationRequested || result.CloseStatus.HasValue)
+            byte[] buffer = new byte[_BUFFER_SIZE];
+            WebSocketReceiveResult result = await _client.ReceiveAsync(new ArraySegment<byte>(buffer),
+                CancellationToken.None);
+            if (result.CloseStatus.HasValue)
                 return (false, default(R));
             string json = Encoding.UTF8.GetString(buffer, 0, result.Count);
             R message = JsonConvert.DeserializeObject<R>(json);
             return (true, message);
         }
-
-        public async Task SendAsync(S message, CancellationToken cancellationToken)
+        public async Task SendAsync(S message)
         {
-            if (!cancellationToken.IsCancellationRequested)
-            {
-                string serialized = JsonConvert.SerializeObject(message);
-                byte[] buffer = Encoding.UTF8.GetBytes(serialized);
-                await client.SendAsync(
-                    buffer: new ArraySegment<byte>(buffer, 0, buffer.Length),
-                    messageType: WebSocketMessageType.Text,
-                    endOfMessage: true,
-                    cancellationToken: cancellationToken
-                );
-            }
+            string serialized = JsonConvert.SerializeObject(message);
+            byte[] buffer = Encoding.UTF8.GetBytes(serialized);
+            await _client.SendAsync(
+                buffer: new ArraySegment<byte>(buffer, 0, buffer.Length),
+                messageType: WebSocketMessageType.Text,
+                endOfMessage: true,
+                cancellationToken: CancellationToken.None
+            );
         }
     }
 }

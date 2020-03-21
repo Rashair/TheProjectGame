@@ -3,6 +3,9 @@ using GameMaster.Models.Pieces;
 using Shared;
 using System;
 using System.Collections.Generic;
+using GameMaster.Managers;
+using System.Threading.Tasks.Dataflow;
+using Shared.Models.Messages;
 
 namespace GameMaster.Models
 {
@@ -15,7 +18,10 @@ namespace GameMaster.Models
         internal int redTeamPoints;
         internal int blueTeamPoints;
 
-        public GM(Configuration conf)
+        private BufferBlock<GMMessage> queue;
+        private WebSocketManager<GMMessage> manager;
+
+        public GM(Configuration conf, BufferBlock<GMMessage> _queue, WebSocketManager<GMMessage> _manager)
         {
             this.conf = conf;
             board = new AbstractField[conf.Height][];
@@ -41,6 +47,9 @@ namespace GameMaster.Models
             {
                 FillBoardRow(rowIt, nonGoalFieldGenerator);
             }
+
+            queue = _queue;
+            manager = _manager;
 
             // TODO : initialize rest
         }

@@ -1,4 +1,4 @@
-namespace GameMaster.Models.Messages
+﻿namespace GameMaster.Models.Messages
 {
     public class BackendMessage
     {
