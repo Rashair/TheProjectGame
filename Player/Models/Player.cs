@@ -59,7 +59,8 @@ namespace Player.Models
             client = client;
         }
 
-        public void JoinTheGame()
+        // JoinTheGame before
+        internal void StartGame()
         {
             JoinGamePayload payload = new JoinGamePayload()
             {
@@ -73,7 +74,8 @@ namespace Player.Models
             Communicate(message);
         }
 
-        public async Task Start()
+        // Start before
+        internal void Work()
         {
             working = true;
             while (working)
@@ -84,7 +86,8 @@ namespace Player.Models
             }
         }
 
-        public void Stop()
+        // Stop before
+        internal void EndGame()
         {
             working = false;
         }

@@ -173,6 +173,10 @@ namespace GameMaster.Models
             throw new NotImplementedException();
         }
 
+        internal void Work()
+        {
+        }
+
         internal void EndGame()
         {
             throw new NotImplementedException();
