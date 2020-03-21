@@ -2,6 +2,7 @@ using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -97,6 +98,38 @@ namespace GameMasterTests
         private FieldInfo GetField(string fieldName)
         {
             return GetField(fieldName, typeof(GM));
+        }
+
+        [Fact]
+        public void TestNormalPieceCheck()
+        {
+            NormalPiece piece = new NormalPiece();
+            Assert.False(piece.CheckForSham());
+        }
+
+        [Fact]
+        public void TestShamPieceCheck()
+        {
+            ShamPiece piece = new ShamPiece();
+            Assert.True(piece.CheckForSham());
+        }
+
+        [Fact]
+        public void TestNormalPiecePut()
+        {
+            NormalPiece piece = new NormalPiece();
+            Mock<GoalField> field = new Mock<GoalField>();
+            field.Setup(m => m.Put(piece)).Returns(true);
+            Assert.True(piece.Put(field.Object));
+        }
+
+        [Fact]
+        public void TestShamPiecePut()
+        {
+            ShamPiece piece = new ShamPiece();
+            Mock<NonGoalField> field = new Mock<NonGoalField>();
+            field.Setup(m => m.Put(piece)).Returns(false);
+            Assert.False(piece.Put(field.Object));
         }
     }
 }
