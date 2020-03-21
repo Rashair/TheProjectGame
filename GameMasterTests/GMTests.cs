@@ -117,7 +117,8 @@ namespace GameMasterTests
         [Fact]
         public void TestNormalPiecePut()
         {
-            int x = 3, y = 4;
+            int x = 3;
+            int y = 4;
             NormalPiece piece = new NormalPiece();
             Mock<GoalField> field = new Mock<GoalField>(x,y);
             field.Setup(m => m.Put(piece)).Returns(true);
@@ -127,7 +128,8 @@ namespace GameMasterTests
         [Fact]
         public void TestShamPiecePut()
         {
-            int x = 3, y = 4;
+            int x = 3;
+            int y = 4;
             ShamPiece piece = new ShamPiece();
             Mock<NonGoalField> field = new Mock<NonGoalField>(x,y);
             field.Setup(m => m.Put(piece)).Returns(false);
