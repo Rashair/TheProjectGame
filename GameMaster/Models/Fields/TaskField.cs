@@ -6,7 +6,7 @@ namespace GameMaster.Models.Fields
 {
     public class TaskField : AbstractField
     {
-        public TaskField(int _x, int _y) : base(_x, _y) { }
+        public TaskField(int x, int y) : base(x, y) { }
         public override bool PickUp(GMPlayer player)
         {
             if (this.ContainsPieces())
