@@ -43,7 +43,7 @@ namespace GameMaster.Models.Fields
 
         public bool ContainsPieces()
         {
-            return (pieces.Count > 0);
+            return pieces.Count > 0;
         }
 
         public int[] GetPosition()
