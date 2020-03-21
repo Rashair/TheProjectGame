@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Player.Clients;
 using Shared.Models.Messages;
 using System;
@@ -11,24 +12,27 @@ namespace Player.Services
 {
     public class SocketService : BackgroundService
     {
-        private readonly IConfiguration conf;
-        private readonly BufferBlock<GMMessage> queue;
         private readonly ISocketClient<GMMessage, AgentMessage> client;
+        private readonly IConfiguration conf;
+        // TODO switch to our logger, when ready
+        private readonly ILogger logger;
+        private readonly BufferBlock<GMMessage> queue;
 
-        // TODO from config
+        // TODO from player config, when ready
         public Uri ConnectUri => new Uri("ws://localhost:8111/palyer");
 
-        public SocketService(IConfiguration conf, BufferBlock<GMMessage> queue,
-            ISocketClient<GMMessage, AgentMessage> client)
+        public SocketService(ISocketClient<GMMessage, AgentMessage> client, IConfiguration conf,
+            ILogger<SocketService> logger, BufferBlock<GMMessage> queue)
         {
-            this.conf = conf;
-            this.queue = queue;
             this.client = client;
+            this.conf = conf;
+            this.logger = logger;
+            this.queue = queue;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // TODO add reconnect policy
+            // TODO add reconnect policy in the future
             if (!stoppingToken.IsCancellationRequested)
             {
                 await client.ConnectAsync(ConnectUri, stoppingToken);
@@ -36,10 +40,9 @@ namespace Player.Services
                 (bool result, GMMessage message) = await client.ReceiveAsync(stoppingToken);
                 while (!stoppingToken.IsCancellationRequested && result)
                 {
-                    // TODO switch to logger
                     bool sended = await queue.SendAsync(message, stoppingToken);
                     if (!sended)
-                        Console.WriteLine($"SocketService| GMMessage id: {message.id} has been lost");
+                        logger.LogWarning($"SocketService| GMMessage id: {message.id} has been lost");
                     (result, message) = await client.ReceiveAsync(stoppingToken);
                 }
             }
