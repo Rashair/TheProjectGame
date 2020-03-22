@@ -32,21 +32,26 @@ namespace GameMaster.Tests
             var startGame = GetMethod("StartGame");
 
             //Act
-            await hostedService.StartAsync(CancellationToken.None);
-            await Task.Delay(500);
+            
             int count = 0;
             int expected = 10;
-            for (; count < expected; ++count)
+            int delay = 500;
+            await Task.Run(async () =>
             {
-                await Task.Delay(10);
-                await Task.Yield();
-            }
+                await hostedService.StartAsync(CancellationToken.None);
+                await Task.Delay(delay);
+                for (; count < expected; ++count)
+                {
+                    await Task.Delay(10);
+                    await Task.Yield();
+                }
 
-            startGame.Invoke(gameMaster, null);
-            
-            int delay = 4 * conf.GeneratePieceInterval;
-            await Task.Delay(delay);
-            await hostedService.StopAsync(CancellationToken.None);
+                startGame.Invoke(gameMaster, null);
+
+                int waitForGeneratePieceDelay = 4 * conf.GeneratePieceInterval;
+                await Task.Delay(waitForGeneratePieceDelay);
+                await hostedService.StopAsync(CancellationToken.None);
+            });
 
             // Assert
             Assert.Equal(expected, count);
@@ -73,9 +78,12 @@ namespace GameMaster.Tests
 
             //Act
             int delay = 500;
-            await hostedService.StartAsync(CancellationToken.None);
-            await Task.Delay(delay);
-            await hostedService.StopAsync(CancellationToken.None);
+            await Task.Run(async () =>
+            {
+                await hostedService.StartAsync(CancellationToken.None);
+                await Task.Delay(delay);
+                await hostedService.StopAsync(CancellationToken.None);
+            });
 
             // Assert
             int minimumNumberOfPieces = Math.Min((delay / conf.GeneratePieceInterval) - 1,
@@ -108,9 +116,13 @@ namespace GameMaster.Tests
             startGame.Invoke(gameMaster, null);
 
             //Act
-            await hostedService.StartAsync(CancellationToken.None);
-            await Task.Delay(500);
-            await hostedService.StopAsync(CancellationToken.None);
+            int delay = 500;
+            await Task.Run(async () =>
+            {
+                await hostedService.StartAsync(CancellationToken.None);
+                await Task.Delay(delay);
+                await hostedService.StopAsync(CancellationToken.None);
+            });
 
             // Assert
             Assert.Equal(0, queue.Count);
@@ -141,9 +153,12 @@ namespace GameMaster.Tests
 
             //Act
             int delay = 500;
-            await hostedService.StartAsync(CancellationToken.None);
-            await Task.Delay(delay);
-            await hostedService.StopAsync(CancellationToken.None);
+            await Task.Run(async () =>
+            {
+                await hostedService.StartAsync(CancellationToken.None);
+                await Task.Delay(delay);
+                await hostedService.StopAsync(CancellationToken.None);
+            });
 
             // Assert
             Assert.Equal(0, queue.Count);

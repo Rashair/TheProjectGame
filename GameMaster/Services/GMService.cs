@@ -20,6 +20,7 @@ namespace GameMaster.Services
 
             if (!cancellationToken.IsCancellationRequested)
             {
+                // Task.Run is important - if gameMaster have nothing to do blocks thread
                 await Task.Run(() => gameMaster.Work(cancellationToken));
             }
         }
