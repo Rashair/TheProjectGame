@@ -72,6 +72,7 @@ namespace Player.Models
             working = true;
             while (working)
             {
+                await Task.Run(() => AcceptMessage());
                 await Task.Run(() => MakeDecisionFromStrategy());
                 await Task.Run(() => Penalty());
             }
