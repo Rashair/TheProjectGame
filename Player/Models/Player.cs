@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using CommunicationServer.Models.Messages;
-using Newtonsoft.Json;
 using Player.Models.Payloads;
 using Player.Models.Strategies;
 using Shared;
 using Shared.Senders;
 using System.Threading.Tasks;
 using Shared.Enums;
+using Shared.Models.Messages;
+
 namespace Player.Models
 {
     public class Player
