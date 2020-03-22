@@ -15,7 +15,7 @@ namespace GameMaster.Tests
 {
     public class GMServiceTests
     {
-        [Fact(Timeout = 1000)]
+        [Fact(Timeout = 1500)]
         public async Task TestExecuteAsyncShouldNotBlock()
         {
             // Arrange
@@ -28,6 +28,8 @@ namespace GameMaster.Tests
 
             var serviceProvider = services.BuildServiceProvider();
             var hostedService = serviceProvider.GetService<IHostedService>();
+            var gameMaster = serviceProvider.GetService<GM>();
+            var startGame = GetMethod("StartGame");
 
             //Act
             await hostedService.StartAsync(CancellationToken.None);
@@ -37,11 +39,19 @@ namespace GameMaster.Tests
             for (; count < expected; ++count)
             {
                 await Task.Delay(10);
+                await Task.Yield();
             }
+
+            startGame.Invoke(gameMaster, null);
+            
+            int delay = 4 * conf.GeneratePieceInterval;
+            await Task.Delay(delay);
             await hostedService.StopAsync(CancellationToken.None);
 
             // Assert
             Assert.Equal(expected, count);
+            int numberOfPieces = GetValue<int>("piecesOnBoard", gameMaster);
+            Assert.True(numberOfPieces > 0, "GM Should generate at least one piece");
         }
 
         [Fact(Timeout = 1000)]
