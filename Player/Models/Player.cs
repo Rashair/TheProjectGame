@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 using Newtonsoft.Json;
 using Player.Clients;
+=======
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+>>>>>>> Fixes after rebase
 using Player.Models.Payloads;
 using Player.Models.Strategies;
 using Shared;
@@ -12,6 +18,10 @@ using System.Threading.Tasks.Dataflow;
 
 using System.Threading.Tasks;
 using Shared.Enums;
+<<<<<<< HEAD
+=======
+using Shared.Models.Messages;
+>>>>>>> Fixes after rebase
 
 namespace Player.Models
 {
@@ -163,15 +173,11 @@ namespace Player.Models
                     response.redTeamGoalAreaInformations[i / boardSize.y, i % boardSize.y] = GoalInfo.IDK;
                 }
             }
-<<<<<<< HEAD
             
             waitingPlayers.RemoveAt(0);
 
             message.payload = JsonConvert.SerializeObject(response);
 
-=======
-            message.payload = response.Serialize();
->>>>>>> Code refactor
             Communicate(message);
         }
 
