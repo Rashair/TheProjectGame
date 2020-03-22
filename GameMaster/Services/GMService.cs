@@ -20,7 +20,7 @@ namespace GameMaster.Services
 
             if (!cancellationToken.IsCancellationRequested)
             {
-                await gameMaster.Work(cancellationToken);
+                await Task.Run(() => gameMaster.Work(cancellationToken));
             }
         }
 
