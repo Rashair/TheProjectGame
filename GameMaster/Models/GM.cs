@@ -24,7 +24,7 @@ namespace GameMaster.Models
         private readonly BufferBlock<PlayerMessage> queue;
         private ISocketManager<WebSocket, GMMessage> socketManager;
 
-        private readonly int[] legalKnowledgeReplies;
+        private readonly HashSet<(int, int)> legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;
         private AbstractField[][] board;
         private int piecesOnBoard;
@@ -34,14 +34,13 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; set; }
 
-        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, ILogger<GM> logger,
-            WebSocketManager<GMMessage> socketManager)
+        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, ILogger<GM> logger, WebSocketManager<GMMessage> socketManager)
         {
             this.logger = logger;
             this.conf = conf;
             this.queue = queue;
             this.socketManager = socketManager;
-            legalKnowledgeReplies = new int[2];
+            legalKnowledgeReplies = new HashSet<(int, int)>();
         }
 
         public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
@@ -284,7 +283,18 @@ namespace GameMaster.Models
 
         private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
+            if (legalKnowledgeReplies.Contains((playerMessage.PlayerID, payload.RespondToID)))
+            {
+                legalKnowledgeReplies.Remove((playerMessage.PlayerID, payload.RespondToID));
+                GMMessage answer = new GMMessage();
+                GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload();
+                answerPayload.AnsweringID = playerMessage.PlayerID;
+                answerPayload.Distances = payload.Distances;
+                answerPayload.RedTeamGoalAreaInformations = payload.RedTeamGoalAreaInformations;
+                answerPayload.BlueTeamGoalAreaInformations = payload.BlueTeamGoalAreaInformations;
+                await socketManager.SendMessageAsync(payload.RespondToID.ToString(), answer, cancellationToken);
+            }
         }
 
         internal void EndGame()
