@@ -94,6 +94,7 @@
     <Rule Id="SA1306" Action="Error" />
     <Rule Id="SA1307" Action="Error" />
     <Rule Id="SA1308" Action="Error" />
+    <Rule Id="SA1309" Action="Error" />
     <Rule Id="SA1310" Action="Error" />
     <Rule Id="SA1311" Action="Error" />
     <Rule Id="SA1312" Action="Error" />
