@@ -53,6 +53,7 @@ namespace GameMaster.Controllers
                 await OnMessageAsync(socket, result, buffer);
                 result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             }
+
             await OnDisconnectedAsync(socket);
             return Ok();
         }

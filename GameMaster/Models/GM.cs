@@ -15,12 +15,14 @@ namespace GameMaster.Models
 {
     public class GM
     {
+        private static int[] legalKnowledgeReplies = new int[2]; // unique from documentation considered as static
         private readonly Dictionary<int, GMPlayer> players;
         private readonly AbstractField[][] board;
-        private static int[] legalKnowledgeReplies = new int[2]; // unique from documentation considered as static
         private Configuration conf;
-        internal int redTeamPoints;
-        internal int blueTeamPoints;
+
+        internal int RedTeamPoints { get; set; }
+
+        internal int BlueTeamPoints { get; set; }
 
         private BufferBlock<PlayerMessage> queue;
         private WebSocketManager<GMMessage> manager;

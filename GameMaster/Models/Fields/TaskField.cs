@@ -14,21 +14,22 @@ namespace GameMaster.Models.Fields
         {
             if (this.ContainsPieces())
             {
-                player.SetHolding(pieces.ElementAt(0));
-                pieces.Remove(pieces.ElementAt(0));
+                player.SetHolding(Pieces.ElementAt(0));
+                Pieces.Remove(Pieces.ElementAt(0));
                 return true;
             }
+
             return false;
         }
 
         public override bool Put(AbstractPiece piece)
         {
-            return pieces.Add(piece);
+            return Pieces.Add(piece);
         }
 
         public override bool PutSham(AbstractPiece piece)
         {
-            pieces.Add(piece);
+            Pieces.Add(piece);
             return false;
         }
     }

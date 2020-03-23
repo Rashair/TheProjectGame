@@ -17,15 +17,16 @@ namespace GameMaster.Models.Fields
         {
             if (this.ContainsPieces() == false)
             {
-                this.pieces.Add(piece);
+                this.Pieces.Add(piece);
                 return true;
             }
+
             return false;
         }
 
         public override bool PutSham(AbstractPiece piece)
         {
-            pieces.Add(piece);
+            Pieces.Add(piece);
             return true;
         }
     }

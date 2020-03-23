@@ -2,7 +2,8 @@
 {
     public class GMMessage
     {
-        public int id;
-        public string payload;
+        public int Id { get; set; }
+
+        public string Payload { get; set; }
     }
 }

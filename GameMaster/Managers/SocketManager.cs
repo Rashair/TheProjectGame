@@ -37,6 +37,7 @@ namespace GameMaster.Managers
             {
                 await CloseSocketAsync(socket);
             }
+
             return removed;
         }
 
