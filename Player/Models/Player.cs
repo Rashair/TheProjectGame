@@ -8,6 +8,7 @@ using Shared.Models.Payloads;
 using Shared.Senders;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks.Dataflow;
 
 namespace Player.Models
@@ -191,7 +192,8 @@ namespace Player.Models
 
         private async void Communicate(AgentMessage message)
         {
-            await client.SendAsync(message);
+            CancellationToken ct = new CancellationToken();
+            await client.SendAsync(message, ct);
         }
 
         private void Penalty()
