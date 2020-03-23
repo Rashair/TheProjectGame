@@ -1,11 +1,13 @@
 ﻿using GameMaster.Models.Pieces;
-using System;
 
 namespace GameMaster.Models.Fields
 {
     public class GoalField : AbstractField
     {
-        public GoalField(int x, int y) : base(x, y) { }
+        public GoalField(int x, int y) : base(x, y)
+        {
+        }
+
         public override bool PickUp(GMPlayer player)
         {
             return false;

@@ -1,19 +1,14 @@
 ﻿using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
-using GameMaster.Tests.Mocks;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using Xunit;
-
 
 namespace GameMaster.Tests
 {
     public class FieldsTests
     {
-
         public class MoveHereTestData : IEnumerable<object[]>
         {
             public IEnumerator<object[]> GetEnumerator()
@@ -23,6 +18,7 @@ namespace GameMaster.Tests
                 yield return new object[] { new List<GMPlayer> { null, new GMPlayer() }, true };
                 yield return new object[] { new List<GMPlayer> { null }, false };
             }
+
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
@@ -38,7 +34,7 @@ namespace GameMaster.Tests
             {
                 result = taskField.MoveHere(p);
             }
-            // Assert 
+            // Assert
             Assert.Equal(expected, result);
         }
 
@@ -50,6 +46,7 @@ namespace GameMaster.Tests
                 yield return new object[] { new List<AbstractPiece> { new NormalPiece() }, true };
                 yield return new object[] { new List<AbstractPiece> { new ShamPiece() }, true };
             }
+
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
@@ -65,7 +62,7 @@ namespace GameMaster.Tests
             {
                 result = goalField.Put(p);
             }
-            // Assert 
+            // Assert
             Assert.Equal(expected, result);
         }
 
@@ -89,7 +86,7 @@ namespace GameMaster.Tests
             {
                 result = taskField.PickUp(mPlayer);
             }
-            // Assert 
+            // Assert
             Assert.Equal(expected, result);
         }
     }

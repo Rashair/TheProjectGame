@@ -1,11 +1,8 @@
 ﻿using GameMaster.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameMaster.Tests.Mocks
 {
-    class MockConfiguration : Configuration
+    internal class MockConfiguration : Configuration
     {
         public MockConfiguration() : base()
         {

@@ -1,17 +1,18 @@
 ﻿using GameMaster.Models.Pieces;
-using System;
 using System.Linq;
 
 namespace GameMaster.Models.Fields
 {
     public class TaskField : AbstractField
     {
-        public TaskField(int x, int y) : base(x, y) { }
+        public TaskField(int x, int y) : base(x, y)
+        {
+        }
+
         public override bool PickUp(GMPlayer player)
         {
             if (this.ContainsPieces())
             {
-
                 player.SetHolding(pieces.ElementAt(0));
                 pieces.Remove(pieces.ElementAt(0));
                 return true;
