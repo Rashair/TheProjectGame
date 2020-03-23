@@ -1,7 +1,9 @@
+using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
+using Shared.Models.Messages;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -25,7 +27,7 @@ namespace GameMasterTests
         {
             // Arrange
             var conf = new MockConfiguration();
-            var gameMaster = new GM(conf);
+            var gameMaster = new GM(conf, new WebSocketManager<GMMessage>());
             var method = GetMethod("GeneratePiece");
 
             // Act

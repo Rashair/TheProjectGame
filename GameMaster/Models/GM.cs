@@ -1,13 +1,12 @@
-﻿using GameMaster.Models.Fields;
+﻿using GameMaster.Managers;
+using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
+using Newtonsoft.Json;
 using Shared;
+using Shared.Models.Messages;
+using Shared.Models.Payloads;
 using System;
 using System.Collections.Generic;
-using GameMaster.Managers;
-using Shared.Models.Messages;
-using System.Threading.Tasks;
-using Shared.Models.Payloads;
-using Newtonsoft.Json;
 
 namespace GameMaster.Models
 {
@@ -115,12 +114,18 @@ namespace GameMaster.Models
             if (legalKnowledgeReplies.Contains((message.agentID, payload.respondToID)))
             {
                 legalKnowledgeReplies.Remove((message.agentID, payload.respondToID));
-                GMMessage answer = new GMMessage();
-                GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload();
-                answerPayload.answeringID = message.agentID;
-                answerPayload.distances = payload.distances;
-                answerPayload.redTeamGoalAreaInformations = payload.redTeamGoalAreaInformations;
-                answerPayload.blueTeamGoalAreaInformations = payload.blueTeamGoalAreaInformations;
+                GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload()
+                {
+                    answeringID = message.agentID,
+                    distances = payload.distances,
+                    redTeamGoalAreaInformations = payload.redTeamGoalAreaInformations,
+                    blueTeamGoalAreaInformations = payload.blueTeamGoalAreaInformations
+                };
+                GMMessage answer = new GMMessage()
+                {
+                    id = payload.respondToID,
+                    payload = JsonConvert.SerializeObject(answerPayload)
+                };
                 await manager.SendMessageAsync(payload.respondToID.ToString(), answer);
             }
         }
