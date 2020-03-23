@@ -10,7 +10,7 @@ namespace Player.Clients
 {
     public class WebSocketClient<R, S> : ISocketClient<R, S>
     {
-        private const int BUFFER_SIZE = 1024 * 4;
+        private const int BufferSize = 1024 * 4;
         private readonly ClientWebSocket client;
 
         public bool IsOpen => client.State == WebSocketState.Open;
@@ -35,7 +35,7 @@ namespace Player.Clients
 
         public async Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
         {
-            byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] buffer = new byte[BufferSize];
             WebSocketReceiveResult result = await client.ReceiveAsync(new ArraySegment<byte>(buffer),
                 cancellationToken);
             if (cancellationToken.IsCancellationRequested || result.CloseStatus.HasValue)
