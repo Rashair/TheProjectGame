@@ -10,7 +10,14 @@
       ],
       "usingDirectivesPlacement": "outsideNamespace",
       "blankLinesBetweenUsingGroups": "require",
-      "systemUsingDirectivesFirst": true
+    },
+    "maintainabilityRules": {
+      "topLevelTypes": [
+        "class",
+        "enum",
+        "interface",
+        "struct"
+      ] 
     }
   }
 }
