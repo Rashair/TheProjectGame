@@ -12,7 +12,7 @@ namespace Player.Services
 {
     public class SocketService : BackgroundService
     {
-        private readonly ISocketClient<GMMessage, AgentMessage> client;
+        private readonly ISocketClient<GMMessage, PlayerMessage> client;
         private readonly IConfiguration conf;
         // TODO switch to our logger, when ready
         private readonly ILogger logger;
@@ -21,7 +21,7 @@ namespace Player.Services
         // TODO from player config, when ready
         public Uri ConnectUri => new Uri("ws://localhost:8111/palyer");
 
-        public SocketService(ISocketClient<GMMessage, AgentMessage> client, IConfiguration conf,
+        public SocketService(ISocketClient<GMMessage, PlayerMessage> client, IConfiguration conf,
             ILogger<SocketService> logger, BufferBlock<GMMessage> queue)
         {
             this.client = client;
