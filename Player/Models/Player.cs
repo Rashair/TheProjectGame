@@ -321,7 +321,8 @@ namespace Player.Models
 
         private async void Communicate(PlayerMessage message)
         {
-            await client.SendAsync(message);
+            CancellationToken ct = new CancellationToken();
+            await client.SendAsync(message, ct);
         }
 
         private void Penalty()
