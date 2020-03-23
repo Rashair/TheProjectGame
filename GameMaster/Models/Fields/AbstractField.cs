@@ -11,23 +11,34 @@ namespace GameMaster.Models.Fields
         private GMPlayer whosHere;
         protected HashSet<AbstractPiece> pieces;
 
-        public AbstractField()
+        public AbstractField(int x, int y)
         {
+            this.x = x;
+            this.y = y;
             pieces = new HashSet<AbstractPiece>();
         }
 
         public void Leave(GMPlayer player)
         {
-            throw new NotImplementedException();
+              whosHere = null;
         }
 
-        public abstract void PickUp(GMPlayer player);
+        //originally returned void 
+        public abstract bool PickUp(GMPlayer player);
 
         public abstract bool Put(AbstractPiece piece);
 
+        public abstract bool PutSham(AbstractPiece piece);
+
         public bool MoveHere(GMPlayer player)
         {
-            throw new NotImplementedException();
+            if (whosHere == null && player != null)
+            {
+                player.Move(this);
+                whosHere = player;
+                return true;
+            }
+            return false;
         }
 
         public bool ContainsPieces()
@@ -37,7 +48,7 @@ namespace GameMaster.Models.Fields
 
         public int[] GetPosition()
         {
-            throw new NotImplementedException();
+            return new int[2] { x, y };
         }
     }
 }

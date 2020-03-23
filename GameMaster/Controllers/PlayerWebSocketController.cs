@@ -12,19 +12,19 @@ namespace GameMaster.Controllers
     [Route("ws/player")]
     public class PlayerWebSocketController : WebSocketController<GMMessage>
     {
-        private readonly BufferBlock<AgentMessage> _queue;
+        private readonly BufferBlock<AgentMessage> queue;
 
         public PlayerWebSocketController(BufferBlock<AgentMessage> queue, WebSocketManager<GMMessage> manager)
             : base(manager)
         {
-            _queue = queue;
+            this.queue = queue;
         }
 
         public override async Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
             string json = Encoding.UTF8.GetString(buffer, 0, result.Count);
             AgentMessage message = JsonConvert.DeserializeObject<AgentMessage>(json);
-            await _queue.SendAsync(message);
+            await queue.SendAsync(message);
         }
     }
 }
