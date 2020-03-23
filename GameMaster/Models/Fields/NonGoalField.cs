@@ -4,7 +4,8 @@ namespace GameMaster.Models.Fields
 {
     public class NonGoalField : AbstractField
     {
-        public NonGoalField(int x, int y) : base(x, y)
+        public NonGoalField(int x, int y)
+            : base(x, y)
         {
         }
 

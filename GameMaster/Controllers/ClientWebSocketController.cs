@@ -10,7 +10,8 @@ namespace GameMaster.Controllers
     [Route("ws/client")]
     public class ClientWebSocketController : WebSocketController<BackendMessage>
     {
-        public ClientWebSocketController(WebSocketManager<BackendMessage> manager) : base(manager)
+        public ClientWebSocketController(WebSocketManager<BackendMessage> manager)
+            : base(manager)
         {
         }
 

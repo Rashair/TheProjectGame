@@ -4,7 +4,7 @@ namespace GameMaster.Tests.Mocks
 {
     internal class MockConfiguration : Configuration
     {
-        public MockConfiguration() : base()
+        public MockConfiguration()
         {
             this.Height = 12;
             this.Width = 10;
