@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -287,12 +286,18 @@ namespace GameMaster.Models
             if (legalKnowledgeReplies.Contains((playerMessage.PlayerID, payload.RespondToID)))
             {
                 legalKnowledgeReplies.Remove((playerMessage.PlayerID, payload.RespondToID));
-                GMMessage answer = new GMMessage();
-                GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload();
-                answerPayload.AnsweringID = playerMessage.PlayerID;
-                answerPayload.Distances = payload.Distances;
-                answerPayload.RedTeamGoalAreaInformations = payload.RedTeamGoalAreaInformations;
-                answerPayload.BlueTeamGoalAreaInformations = payload.BlueTeamGoalAreaInformations;
+                GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload()
+                {
+                    AnsweringID = playerMessage.PlayerID,
+                    Distances = payload.Distances,
+                    RedTeamGoalAreaInformations = payload.RedTeamGoalAreaInformations,
+                    BlueTeamGoalAreaInformations = payload.BlueTeamGoalAreaInformations,
+                };
+                GMMessage answer = new GMMessage()
+                {
+                    Id = GMMessageID.GiveInfoForwarded,
+                    Payload = JsonConvert.SerializeObject(answerPayload),
+                };
                 await socketManager.SendMessageAsync(payload.RespondToID.ToString(), answer, cancellationToken);
             }
         }
