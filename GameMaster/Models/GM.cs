@@ -91,12 +91,16 @@ namespace GameMaster.Models
                         JoinGamePayload payload1 = JsonConvert.DeserializeObject<JoinGamePayload>(message.payload);
                         int key = players.Count;
                         bool accepted = players.TryAdd(key, new GMPlayer(key, (Team)Enum.Parse(typeof(Team), payload1.teamID)));
-                        GMMessage answer1 = new GMMessage();
-                        answer1.id = 107;
-                        JoinAnswerPayload answer1Payload = new JoinAnswerPayload();
-                        answer1Payload.accepted = accepted;
-                        answer1Payload.agentID = key;
-                        answer1.payload = JsonConvert.SerializeObject(answer1Payload);
+                        JoinAnswerPayload answer1Payload = new JoinAnswerPayload()
+                        {
+                            accepted = accepted,
+                            agentID = key
+                        };
+                        GMMessage answer1 = new GMMessage()
+                        {
+                            id = 107,
+                            payload = JsonConvert.SerializeObject(answer1Payload)
+                        };
                         await manager.SendMessageAsync(players[key].SocketID, answer1);
                         break;
                     case (int)MessageID.Move:
@@ -123,10 +127,12 @@ namespace GameMaster.Models
                     case (int)MessageID.Pick:
                         int[] position2 = players[message.agentID].GetPosition();
                         board[position2[0]][position2[1]].PickUp(players[message.agentID]);
-                        GMMessage answer2 = new GMMessage();
-                        answer2.id = 109;
                         EmptyPayload answer2Payload = new EmptyPayload();
-                        answer2.payload = JsonConvert.SerializeObject(answer2Payload);
+                        GMMessage answer2 = new GMMessage()
+                        {
+                            id = 109,
+                            payload = JsonConvert.SerializeObject(answer2Payload)
+                        };
                         await manager.SendMessageAsync(players[message.agentID].SocketID, answer2);
                         break;
                     case (int)MessageID.Put:
