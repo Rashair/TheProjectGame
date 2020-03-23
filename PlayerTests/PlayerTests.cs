@@ -17,17 +17,21 @@ namespace Player.Tests
         [Fact]
         public void TestAcceptMessageMoveAccept()
         {
-            MoveAnswerPayload payload = new MoveAnswerPayload();
-            payload.madeMove = true;
-            payload.currentPosition = new Position();
-            payload.currentPosition.x = 0;
-            payload.currentPosition.y = 0;
-            payload.closestPiece = 0;
-            string payloadstring = JsonConvert.SerializeObject(payload);
-
-            GMMessage message = new GMMessage();
-            message.payload = payloadstring;
-            message.id = (int)MessageID.MoveAnswer;
+            MoveAnswerPayload payload = new MoveAnswerPayload()
+            {
+                madeMove = true,
+                currentPosition = new Position()
+                {
+                    x = 0,
+                    y = 0
+                },
+                closestPiece = 0
+            };
+            GMMessage message = new GMMessage()
+            {
+                id = (int)MessageID.MoveAnswer,
+                payload = JsonConvert.SerializeObject(payload)
+            };
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             input.Post<GMMessage>(message);
@@ -46,21 +50,23 @@ namespace Player.Tests
         [Fact]
         public void TestAcceptMessageDiscoverAccept()
         {
-            DiscoveryAnswerPayload payload = new DiscoveryAnswerPayload();
-            payload.distanceFromCurrent = 0;
-            payload.distanceE = 0;
-            payload.distanceW = 0;
-            payload.distanceS = 0;
-            payload.distanceN = 0;
-            payload.distanceNE = 0;
-            payload.distanceSE = 0;
-            payload.distanceNW = 0;
-            payload.distanceNE = 0;
-            string payloadstring = JsonConvert.SerializeObject(payload);
-
-            GMMessage message = new GMMessage();
-            message.payload = payloadstring;
-            message.id = (int)MessageID.MoveAnswer;
+            DiscoveryAnswerPayload payload = new DiscoveryAnswerPayload()
+            {
+                distanceFromCurrent = 0,
+                distanceE = 0,
+                distanceW = 0,
+                distanceS = 0,
+                distanceN = 0,
+                distanceNE = 0,
+                distanceSE = 0,
+                distanceNW = 0,
+                distanceSW = 0
+            };
+            GMMessage message = new GMMessage()
+            {
+                id = (int)MessageID.MoveAnswer,
+                payload = JsonConvert.SerializeObject(payload)
+            };
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             input.Post<GMMessage>(message);
@@ -86,15 +92,17 @@ namespace Player.Tests
         [Fact]
         public void TestAcceptMessageBegForInfoAccept()
         {
-            BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload();
-            payload.askingID = 1;
-            payload.leader = false;
-            payload.teamId = "Red";
-            string payloadstring = JsonConvert.SerializeObject(payload);
-
-            GMMessage message = new GMMessage();
-            message.payload = payloadstring;
-            message.id = (int)MessageID.BegForInfoForwarded;
+            BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
+            {
+                askingID = 1,
+                leader = false,
+                teamId = "Red"
+            };
+            GMMessage message = new GMMessage()
+            {
+                id = (int)MessageID.BegForInfoForwarded,
+                payload = JsonConvert.SerializeObject(payload)
+            };
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             input.Post<GMMessage>(message);
