@@ -17,5 +17,4 @@
     <ProjectReference Include="..\CommunicationServer\CommunicationServer.csproj" />
   </ItemGroup>
 
-  <Import Project="../Directory.Build.props" />
 </Project>

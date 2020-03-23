@@ -17,5 +17,4 @@
     <ProjectReference Include="..\GameMaster\GameMaster.csproj" />
   </ItemGroup>
 
-  <Import Project="../Directory.Build.props" />
 </Project>

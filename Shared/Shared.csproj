@@ -4,5 +4,4 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
-  <Import Project="../Directory.Build.props" />
 </Project>
