@@ -22,7 +22,7 @@ namespace GameMaster.Models.Fields
             whosHere = null;
         }
 
-        //originally returned void
+        // originally returned void
         public abstract bool PickUp(GMPlayer player);
 
         public abstract bool Put(AbstractPiece piece);
