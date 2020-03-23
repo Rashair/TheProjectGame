@@ -27,7 +27,7 @@ namespace GameMaster.Models
         private Dictionary<int, GMPlayer> players;
         private AbstractField[][] board;
         private int piecesOnBoard;
-
+        private SocketManager<WebSocket, GMMessage> socketManager;
         private int redTeamPoints;
         private int blueTeamPoints;
 
@@ -275,9 +275,22 @@ namespace GameMaster.Models
             piecesOnBoard += 1;
         }
 
-        private async Task ForwardKnowledgeQuestion(PlayerMessage playerMessage, CancellationToken cancellationToken)
+        private void ForwardKnowledgeQuestion(AgentMessage agentMessage)
         {
-            throw new NotImplementedException();
+            BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(agentMessage.payload);
+            ForwardKnowledgeQuestionPayload payload = new ForwardKnowledgeQuestionPayload()
+            {
+                askingID = agentMessage.agentID,
+                leader = players[agentMessage.agentID.ToString()].IsLeader,
+                teamId = players[agentMessage.agentID.ToString()].Team
+            };
+            GMMessage gmMessage = new GMMessage()
+            { 
+                id = begPayload.askedAgentID,
+                payload = agentMessage.payload
+            };
+
+            socketManager.SendMessageAsync(GMMessageType.ForwardKnowledgeQuestion.ToString(), gmMessage);
         }
 
         private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
