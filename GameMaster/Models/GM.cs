@@ -184,6 +184,7 @@ namespace GameMaster.Models
             }
             return discoveryResult;
         }
+        private HashSet<string> waitingKnowledgeRequests;
 
         internal void StartGame()
         {
@@ -220,6 +221,9 @@ namespace GameMaster.Models
             {
                 FillBoardRow(rowIt, nonGoalFieldGenerator);
             }
+
+            waitingKnowledgeRequests = new HashSet<string>();
+            // TODO : initialize rest
         }
 
         private void FillBoardRow(int row, Func<int, int, AbstractField> getField)
@@ -275,7 +279,7 @@ namespace GameMaster.Models
             piecesOnBoard += 1;
         }
 
-        private void ForwardKnowledgeQuestion(AgentMessage agentMessage)
+        private async Task ForwardKnowledgeQuestion(AgentMessage agentMessage)
         {
             BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(agentMessage.payload);
             ForwardKnowledgeQuestionPayload payload = new ForwardKnowledgeQuestionPayload()
@@ -290,7 +294,8 @@ namespace GameMaster.Models
                 payload = agentMessage.payload
             };
 
-            socketManager.SendMessageAsync(GMMessageType.ForwardKnowledgeQuestion.ToString(), gmMessage);
+            waitingKnowledgeRequests.Add(agentMessage.agentID.ToString() + begPayload.askedAgentID.ToString());
+            await socketManager.SendMessageAsync(GMMessageType.ForwardKnowledgeQuestion.ToString(), gmMessage);
         }
 
         private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
