@@ -22,8 +22,7 @@ namespace GameMaster.Managers
                 await socket.CloseAsync(
                     closeStatus: WebSocketCloseStatus.NormalClosure,
                     statusDescription: "Closed by the WebSocketManager",
-                    cancellationToken: CancellationToken.None
-                );
+                    cancellationToken: CancellationToken.None);
             }
         }
 
@@ -37,8 +36,7 @@ namespace GameMaster.Managers
                     buffer: new ArraySegment<byte>(buffer, 0, buffer.Length),
                     messageType: WebSocketMessageType.Text,
                     endOfMessage: true,
-                    cancellationToken: CancellationToken.None
-                );
+                    cancellationToken: CancellationToken.None);
             }
         }
     }
