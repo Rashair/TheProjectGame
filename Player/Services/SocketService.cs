@@ -1,12 +1,13 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
+
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Player.Clients;
 using Shared.Models.Messages;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace Player.Services
 {

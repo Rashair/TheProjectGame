@@ -1,11 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+
 using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
 using Xunit;
 
 namespace GameMasterTests

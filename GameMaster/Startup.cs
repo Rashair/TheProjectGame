@@ -1,3 +1,5 @@
+using System.Threading.Tasks.Dataflow;
+
 using GameMaster.Managers;
 using GameMaster.Models.Messages;
 using Microsoft.AspNetCore.Builder;
@@ -7,7 +9,6 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Models.Messages;
-using System.Threading.Tasks.Dataflow;
 
 namespace GameMaster
 {

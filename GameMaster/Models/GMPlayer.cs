@@ -1,8 +1,9 @@
-﻿using GameMaster.Models.Fields;
+﻿using System;
+
+using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using Shared;
 using Shared.Senders;
-using System;
 
 namespace GameMaster.Models
 {

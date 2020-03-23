@@ -1,8 +1,9 @@
-﻿using GameMaster.Models;
+﻿using System.Collections;
+using System.Collections.Generic;
+
+using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
-using System.Collections;
-using System.Collections.Generic;
 using Xunit;
 
 namespace GameMaster.Tests
