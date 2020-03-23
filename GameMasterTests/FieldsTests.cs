@@ -29,11 +29,13 @@ namespace GameMaster.Tests
             // Arrange
             TaskField taskField = new TaskField(2, 2);
             bool result = false;
+
             // Act
             foreach (GMPlayer p in players)
             {
                 result = taskField.MoveHere(p);
             }
+
             // Assert
             Assert.Equal(expected, result);
         }
@@ -57,11 +59,13 @@ namespace GameMaster.Tests
             // Arrange
             GoalField goalField = new GoalField(5, 0);
             bool result = false;
+
             // Act
             foreach (AbstractPiece p in pieces)
             {
                 result = goalField.Put(p);
             }
+
             // Assert
             Assert.Equal(expected, result);
         }
@@ -81,11 +85,13 @@ namespace GameMaster.Tests
                 taskField.Put(new NormalPiece());
             }
             bool result = false;
+
             // Act
             for (int i = 0; i < numPick; i++)
             {
                 result = taskField.PickUp(mPlayer);
             }
+
             // Assert
             Assert.Equal(expected, result);
         }
