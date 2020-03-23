@@ -9,15 +9,10 @@ using GameMaster.Tests.Mocks;
 using Moq;
 using Xunit;
 
-namespace GameMasterTests
+namespace GameMaster.Tests
 {
     public class GMTests
     {
-        [Fact]
-        public void TestAcceptMessageMoveMessage()
-        {
-        }
-
         [Theory]
         [InlineData(1)]
         [InlineData(10)]
@@ -63,7 +58,8 @@ namespace GameMasterTests
 
         private int GetPieceCount(TaskField taskField)
         {
-            var taskFieldInfo = GetField("pieces", typeof(TaskField));
+            var taskFieldInfo = typeof(AbstractField).GetProperty("Pieces",
+                BindingFlags.NonPublic | BindingFlags.Instance);
             var pieces = (HashSet<AbstractPiece>)taskFieldInfo.GetValue(taskField);
             return pieces.Count;
         }
