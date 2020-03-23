@@ -97,8 +97,7 @@ namespace GameMaster.Models
                         answer1Payload.accepted = accepted;
                         answer1Payload.agentID = key;
                         answer1.payload = JsonConvert.SerializeObject(answer1Payload);
-                        //zmiana numeru socketa z message.agentID.ToString() na key.ToString()
-                        await manager.SendMessageAsync(key.ToString(), answer1);
+                        await manager.SendMessageAsync(players[key].SocketID, answer1);
                         break;
                     case (int)MessageID.Move:
                         MovePayload payload2 = JsonConvert.DeserializeObject<MovePayload>(message.payload);
@@ -128,7 +127,7 @@ namespace GameMaster.Models
                         answer2.id = 109;
                         EmptyAnswerPayload answer2Payload = new EmptyAnswerPayload();
                         answer2.payload = JsonConvert.SerializeObject(answer2Payload);
-                        await manager.SendMessageAsync(message.agentID.ToString(), answer2);
+                        await manager.SendMessageAsync(players[message.agentID].SocketID, answer2);
                         break;
                     case (int)MessageID.Put:
                         bool point = players[message.agentID].Put();

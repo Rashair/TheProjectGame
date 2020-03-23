@@ -17,6 +17,8 @@ namespace GameMaster.Models
         private DateTime LockedTill;
         private ISender messageService;
 
+        public string SocketID;
+
         public GMPlayer(int _id, Team _team)
         {
             id = _id;
