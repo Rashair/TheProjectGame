@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using GameMaster.Managers;
 using System.Threading.Tasks.Dataflow;
 using Shared.Models.Messages;
+using Newtonsoft.Json;
+using Shared.Models.Payloads;
+using System.Threading.Tasks;
 
 namespace GameMaster.Models
 {
@@ -18,10 +21,10 @@ namespace GameMaster.Models
         internal int redTeamPoints;
         internal int blueTeamPoints;
 
-        private BufferBlock<GMMessage> queue;
+        private BufferBlock<PlayerMessage> queue;
         private WebSocketManager<GMMessage> manager;
 
-        public GM(Configuration conf, BufferBlock<GMMessage> _queue, WebSocketManager<GMMessage> _manager)
+        public GM(Configuration conf, BufferBlock<PlayerMessage> _queue, WebSocketManager<GMMessage> _manager)
         {
             this.conf = conf;
             board = new AbstractField[conf.Height][];
@@ -62,9 +65,88 @@ namespace GameMaster.Models
             }
         }
 
-        public void AcceptMessage()
+        public async void AcceptMessage()
         {
-            throw new NotImplementedException();
+            PlayerMessage message;
+            if (queue.TryReceive(null, out message))
+            {
+                switch (message.messageID)
+                {
+                    case (int)MessageID.CheckPiece:
+                        EmptyPayload payload1 = JsonConvert.DeserializeObject<EmptyPayload>(message.payload);
+                        players[message.agentID].CheckHolding();
+                        break;
+                    case (int)MessageID.PieceDestruction:
+                        EmptyPayload payload2 = JsonConvert.DeserializeObject<EmptyPayload>(message.payload);
+                        players[message.agentID].DestroyHolding();
+                        break;
+                    case (int)MessageID.Discover:
+                        EmptyPayload payload3 = JsonConvert.DeserializeObject<EmptyPayload>(message.payload);
+                        players[message.agentID].Discover(this);
+                        break;
+                    case (int)MessageID.GiveInfo:
+                        ForwardKnowledgeReply(message);
+                        break;
+                    case (int)MessageID.BegForInfo:
+                        ForwardKnowledgeQuestion(message);
+                        break;
+                    case (int)MessageID.JoinTheGame:
+                        JoinGamePayload payload6 = JsonConvert.DeserializeObject<JoinGamePayload>(message.payload);
+                        int key = players.Count;
+                        bool accepted = players.TryAdd(key, new GMPlayer(key, (Team)Enum.Parse(typeof(Team), payload6.teamID)));
+                        GMMessage answer1 = new GMMessage();
+                        answer1.id = 107;
+                        JoinAnswerPayload answer1Payload = new JoinAnswerPayload();
+                        answer1Payload.accepted = accepted;
+                        answer1Payload.agentID = key;
+                        answer1.payload = JsonConvert.SerializeObject(answer1Payload);
+                        //zmiana numeru socketa z message.agentID.ToString() na key.ToString()
+                        await manager.SendMessageAsync(key.ToString(), answer1);
+                        break;
+                    case (int)MessageID.Move:
+                        MovePayload payload7 = JsonConvert.DeserializeObject<MovePayload>(message.payload);
+                        AbstractField field = null;
+                        int[] position1 = players[message.agentID].GetPosition();
+                        switch ((Directions)Enum.Parse(typeof(Directions), payload7.direction))
+                        {
+                            case Directions.N:
+                                if (position1[1] + 1 < board.GetLength(1)) field = board[position1[0]][position1[1] + 1];
+                                break;
+                            case Directions.S:
+                                if (position1[1] - 1 >= 0) field = board[position1[0]][position1[1] - 1];
+                                break;
+                            case Directions.W:
+                                if (position1[0] + 1 < board.GetLength(0)) field = board[position1[0] + 1][position1[1]];
+                                break;
+                            case Directions.E:
+                                if (position1[0] - 1 >= 0) field = board[position1[0] - 1][position1[1]];
+                                break;
+                        }
+                        players[message.agentID].Move(field);
+                        break;
+                    case (int)MessageID.Pick:
+                        EmptyPayload payload8 = JsonConvert.DeserializeObject<EmptyPayload>(message.payload);
+                        int[] position2 = players[message.agentID].GetPosition();
+                        board[position2[0]][position2[1]].PickUp(players[message.agentID]);
+                        GMMessage answer2 = new GMMessage();
+                        answer2.id = 109;
+                        EmptyAnswerPayload answer2Payload = new EmptyAnswerPayload();
+                        answer2.payload = JsonConvert.SerializeObject(answer2Payload);
+                        await manager.SendMessageAsync(message.agentID.ToString(), answer2);
+                        break;
+                    case (int)MessageID.Put:
+                        EmptyPayload payload9 = JsonConvert.DeserializeObject<EmptyPayload>(message.payload);
+                        bool point = players[message.agentID].Put();
+                        if (point)
+                        {
+                            if (players[message.agentID].team == Team.Red) redTeamPoints++;
+                            else blueTeamPoints++;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
         public void GenerateGUI()
@@ -104,12 +186,12 @@ namespace GameMaster.Models
             board[xCoord][yCoord].Put(piece);
         }
 
-        private void ForwardKnowledgeQuestion()
+        private async void ForwardKnowledgeQuestion(PlayerMessage agentMessage)
         {
             throw new NotImplementedException();
         }
 
-        private void ForwardKnowledgeReply()
+        private async void ForwardKnowledgeReply(PlayerMessage agentMessage)
         {
             throw new NotImplementedException();
         }

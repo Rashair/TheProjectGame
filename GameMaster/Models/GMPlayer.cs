@@ -10,12 +10,18 @@ namespace GameMaster.Models
     {
         private int id;
         private int messageCorrelationId;
-        private Team team;
+        public Team team;
         private bool isLeader;
         private AbstractPiece holding;
         private AbstractField position;
         private DateTime LockedTill;
         private ISender messageService;
+
+        public GMPlayer(int _id, Team _team)
+        {
+            id = _id;
+            team = _team;
+        }
 
         public bool TryLock(TimeSpan timeSpan)
         {

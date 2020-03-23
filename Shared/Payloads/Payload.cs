@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Player.Models.Payloads
+namespace Shared.Models.Payloads
 {
     public abstract class Payload
     {
