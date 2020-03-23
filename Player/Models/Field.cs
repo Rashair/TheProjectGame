@@ -1,4 +1,6 @@
-﻿namespace Player.Models
+﻿using Shared;
+
+namespace Player.Models
 {
     public class Field
     {

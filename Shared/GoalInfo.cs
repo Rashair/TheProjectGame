@@ -1,4 +1,4 @@
-﻿namespace Shared.Models
+﻿namespace Shared
 {
     public enum GoalInfo { IDK, DiscoveredNotGoal, DiscoveredGoal };
 }

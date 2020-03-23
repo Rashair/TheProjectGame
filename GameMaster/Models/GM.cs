@@ -1,14 +1,14 @@
-﻿using GameMaster.Models.Fields;
+using GameMaster.Managers;
+using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
+using Newtonsoft.Json;
 using Shared;
+using Shared.Models.Messages;
+using Shared.Models.Payloads;
+using Shared.Payloads;
 using System;
 using System.Collections.Generic;
-using GameMaster.Managers;
 using System.Threading.Tasks.Dataflow;
-using Shared.Models.Messages;
-using Newtonsoft.Json;
-using Shared.Models.Payloads;
-using System.Threading.Tasks;
 
 namespace GameMaster.Models
 {
@@ -125,7 +125,7 @@ namespace GameMaster.Models
                         board[position2[0]][position2[1]].PickUp(players[message.agentID]);
                         GMMessage answer2 = new GMMessage();
                         answer2.id = 109;
-                        EmptyAnswerPayload answer2Payload = new EmptyAnswerPayload();
+                        EmptyPayload answer2Payload = new EmptyPayload();
                         answer2.payload = JsonConvert.SerializeObject(answer2Payload);
                         await manager.SendMessageAsync(players[message.agentID].SocketID, answer2);
                         break;
