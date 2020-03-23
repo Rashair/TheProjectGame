@@ -16,7 +16,7 @@ namespace CommunicationServer.Models
             throw new NotImplementedException();
         }
 
-        public void SendMessageToGM(AgentMessage agentMessage)
+        public void SendMessageToGM(PlayerMessage agentMessage)
         {
             throw new NotImplementedException();
         }

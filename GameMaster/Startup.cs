@@ -33,7 +33,7 @@ namespace GameMaster
 
             services.AddSingleton<WebSocketManager<BackendMessage>>();
             services.AddSingleton<WebSocketManager<GMMessage>>();
-            services.AddSingleton<BufferBlock<AgentMessage>>();
+            services.AddSingleton<BufferBlock<PlayerMessage>>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
