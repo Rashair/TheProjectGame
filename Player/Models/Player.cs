@@ -59,6 +59,7 @@ namespace Player.Models
             PlayerMessage message = new PlayerMessage()
             {
                 messageID = (int)MessageType.JoinTheGame,
+                agentID = id,
                 payload = payload.Serialize()
             };
             Communicate(message);
