@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using Shared.Models.Messages;
-using Newtonsoft.Json;
-using Shared.Models.Payloads;
+﻿using Newtonsoft.Json;
+using Player.Clients;
 using Player.Models.Strategies;
 using Shared;
+using Shared.Models.Messages;
+using Shared.Payloads;
 using Shared.Senders;
-using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks.Dataflow;
-using Player.Clients;
 
 namespace Player.Models
 {

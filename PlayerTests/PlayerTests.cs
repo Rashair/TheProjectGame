@@ -1,15 +1,13 @@
+using Newtonsoft.Json;
+using Player.Clients;
+using Player.Models;
 using Shared;
-using Xunit;
-using Moq;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using Shared.Models.Messages;
 using Shared.Models.Payloads;
-using Newtonsoft.Json;
-using Player.Models;
 using System;
 using System.Collections.Generic;
-using Player.Clients;
+using System.Threading.Tasks.Dataflow;
+using Xunit;
 
 namespace Player.Tests
 {
