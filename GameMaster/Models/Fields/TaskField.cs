@@ -1,5 +1,6 @@
-﻿using GameMaster.Models.Pieces;
-using System.Linq;
+﻿using System.Linq;
+
+using GameMaster.Models.Pieces;
 
 namespace GameMaster.Models.Fields
 {

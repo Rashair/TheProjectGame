@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Microsoft.AspNetCore.Mvc;
 
 namespace GameMaster.Controllers
 {
@@ -28,7 +29,9 @@ namespace GameMaster.Controllers
         public class WeatherForecast
         {
             public string DateFormatted { get; set; }
+
             public int TemperatureC { get; set; }
+
             public string Summary { get; set; }
 
             public int TemperatureF

@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks.Dataflow;
+
 using GameMaster.Managers;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
@@ -6,9 +10,6 @@ using Shared;
 using Shared.Models.Messages;
 using Shared.Models.Payloads;
 using Shared.Payloads;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks.Dataflow;
 
 namespace GameMaster.Models
 {

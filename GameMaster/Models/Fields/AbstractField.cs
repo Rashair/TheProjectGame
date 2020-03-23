@@ -1,5 +1,6 @@
-﻿using GameMaster.Models.Pieces;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
+using GameMaster.Models.Pieces;
 
 namespace GameMaster.Models.Fields
 {

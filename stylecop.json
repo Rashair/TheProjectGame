@@ -8,7 +8,9 @@
         "constant",
         "accessibility"
       ],
-      "usingDirectivesPlacement": "outsideNamespace"
+      "usingDirectivesPlacement": "outsideNamespace",
+      "blankLinesBetweenUsingGroups": "require",
+      "systemUsingDirectivesFirst": true
     }
   }
 }

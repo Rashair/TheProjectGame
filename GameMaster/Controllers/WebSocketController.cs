@@ -1,10 +1,11 @@
-using GameMaster.Managers;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+
+using GameMaster.Managers;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GameMaster.Controllers
 {
