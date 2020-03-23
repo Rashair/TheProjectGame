@@ -22,7 +22,7 @@ namespace Player.Models
         private int penaltyTime;
         private IStrategy strategy;
         private bool working;
-        public readonly Team team;
+        public Team team;
         public bool IsLeader { get; private set; }
         public bool HavePiece { get; private set; }
         public Field[,] Board { get; private set; }
@@ -33,6 +33,13 @@ namespace Player.Models
         public (int x, int y) BoardSize { get; private set; }
 
         private Penalties penaltiesTimes;
+        private string winner;
+        private int[] enemiesIDs;
+        private int goalAreaSize;
+        private NumberOfPlayers numberOfPlayers;
+        private int numberOfPieces;
+        private int numberOfGoals;
+        private float shamPieceProbability;
         private BufferBlock<GMMessage> queue;
         private WebSocketClient<GMMessage, PlayerMessage> client;
 
@@ -169,7 +176,7 @@ namespace Player.Models
                 }
             }
             
-            waitingPlayers.RemoveAt(0);
+            WaitingPlayers.RemoveAt(0);
 
             message.payload = JsonConvert.SerializeObject(response);
 
@@ -221,83 +228,85 @@ namespace Player.Models
                 {
                     case (int)MessageID.CheckAnswer:
                         CheckAnswerPayload payload1 = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.payload);
-                        if (payload1.sham) havePiece = false;
+                        if (payload1.sham) HavePiece = false;
                         break;
                     case (int)MessageID.DestructionAnswer:
-                        EmptyAnswerPayload payload2 = JsonConvert.DeserializeObject<EmptyAnswerPayload>(message.payload);
-                        havePiece = false;
+                        HavePiece = false;
                         break;
                     case (int)MessageID.DiscoverAnswer:
-                        DiscoveryAnswerPayload payload3 = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.payload);
-                        board[position.Item1, position.Item2].distToPiece = payload3.distanceFromCurrent;
-                        board[position.Item1 + 1, position.Item2].distToPiece = payload3.distanceE;
-                        board[position.Item1 - 1, position.Item2].distToPiece = payload3.distanceW;
-                        board[position.Item1, position.Item2 + 1].distToPiece = payload3.distanceS;
-                        board[position.Item1, position.Item2 - 1].distToPiece = payload3.distanceN;
-                        board[position.Item1 + 1, position.Item2 + 1].distToPiece = payload3.distanceSE;
-                        board[position.Item1 - 1, position.Item2 - 1].distToPiece = payload3.distanceNW;
-                        board[position.Item1 + 1, position.Item2 - 1].distToPiece = payload3.distanceNE;
-                        board[position.Item1 - 1, position.Item2 + 1].distToPiece = payload3.distanceSW;
+                        DiscoveryAnswerPayload payload2 = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.payload);
+                        Board[Position.Item1, Position.Item2].distToPiece = payload2.distanceFromCurrent;
+                        Board[Position.Item1 + 1, Position.Item2].distToPiece = payload2.distanceE;
+                        Board[Position.Item1 - 1, Position.Item2].distToPiece = payload2.distanceW;
+                        Board[Position.Item1, Position.Item2 + 1].distToPiece = payload2.distanceS;
+                        Board[Position.Item1, Position.Item2 - 1].distToPiece = payload2.distanceN;
+                        Board[Position.Item1 + 1, Position.Item2 + 1].distToPiece = payload2.distanceSE;
+                        Board[Position.Item1 - 1, Position.Item2 - 1].distToPiece = payload2.distanceNW;
+                        Board[Position.Item1 + 1, Position.Item2 - 1].distToPiece = payload2.distanceNE;
+                        Board[Position.Item1 - 1, Position.Item2 + 1].distToPiece = payload2.distanceSW;
                         break;
                     case (int)MessageID.EndGame:
-                        EndGamePayload payload4 = JsonConvert.DeserializeObject<EndGamePayload>(message.payload);
-                        //winner not used
+                        EndGamePayload payload3 = JsonConvert.DeserializeObject<EndGamePayload>(message.payload);
+                        winner = payload3.winner;
                         Stop();
                         break;
                     case (int)MessageID.StartGame:
-                        StartGamePayload payload5 = JsonConvert.DeserializeObject<StartGamePayload>(message.payload);
-                        id = payload5.agentID;
-                        teamMatesIds = payload5.alliesIDs;
-                        if (id == payload5.leaderID) isLeader = true;
-                        else isLeader = false;
-                        team = (Team)Enum.Parse(typeof(Team), payload5.teamId);
-                        board = new Field[payload5.boardSize.x, payload5.boardSize.y];
-                        for (int i = 0; i < payload5.boardSize.x; i++)
+                        StartGamePayload payload4 = JsonConvert.DeserializeObject<StartGamePayload>(message.payload);
+                        id = payload4.agentID;
+                        TeamMatesIds = payload4.alliesIDs;
+                        if (id == payload4.leaderID) IsLeader = true;
+                        else IsLeader = false;
+                        team = (Team)Enum.Parse(typeof(Team), payload4.teamId);
+                        Board = new Field[payload4.boardSize.x, payload4.boardSize.y];
+                        for (int i = 0; i < payload4.boardSize.x; i++)
                         {
-                            for (int j = 0; j < payload5.boardSize.y; j++)
+                            for (int j = 0; j < payload4.boardSize.y; j++)
                             {
-                                board[i, j] = new Field();
+                                Board[i, j] = new Field();
                             }
                         }
-                        penaltiesTimes = payload5.penalties;
-                        position = new Tuple<int, int>(payload5.position.x, payload5.position.y);
-                        //enemiesIDs, goalAreaSize, numberOfPlayers, numberOfPieces, numberOfGoals, shamPieceProbability not used
+                        penaltiesTimes = payload4.penalties;
+                        Position = new Tuple<int, int>(payload4.position.x, payload4.position.y);
+                        enemiesIDs = payload4.enemiesIDs;
+                        goalAreaSize = payload4.goalAreaSize;
+                        numberOfPlayers = payload4.numberOfPlayers;
+                        numberOfPieces = payload4.numberOfPieces;
+                        numberOfGoals = payload4.numberOfGoals;
+                        shamPieceProbability = payload4.shamPieceProbability;
                         Start();
                         break;
                     case (int)MessageID.BegForInfoForwarded:
-                        BegForInfoForwardedPayload payload6 = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.payload);
-                        if (team == (Team)Enum.Parse(typeof(Team), payload6.teamId))
+                        BegForInfoForwardedPayload payload5 = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.payload);
+                        if (team == (Team)Enum.Parse(typeof(Team), payload5.teamId))
                         {
-                            if (payload6.leader)
+                            if (payload5.leader)
                             {
                                 GiveInfo(true);
                             }
                             else
                             {
-                                waitingPlayers.Add(payload6.askingID);
+                                WaitingPlayers.Add(payload5.askingID);
                             }
                         }
                         break;
                     case (int)MessageID.JoinTheGameAnswer:
-                        JoinAnswerPayload payload7 = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.payload);
-                        if (id != payload7.agentID) id = payload7.agentID;
-                        if (!payload7.accepted) Stop();
+                        JoinAnswerPayload payload6 = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.payload);
+                        if (id != payload6.agentID) id = payload6.agentID;
+                        if (!payload6.accepted) Stop();
                         break;
                     case (int)MessageID.MoveAnswer:
-                        MoveAnswerPayload payload8 = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.payload);
-                        if (payload8.madeMove)
+                        MoveAnswerPayload payload7 = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.payload);
+                        if (payload7.madeMove)
                         {
-                            position = new Tuple<int, int>(payload8.currentPosition.x, payload8.currentPosition.y);
-                            board[position.Item1, position.Item2].distToPiece = payload8.closestPiece;
+                            Position = new Tuple<int, int>(payload7.currentPosition.x, payload7.currentPosition.y);
+                            Board[Position.Item1, Position.Item2].distToPiece = payload7.closestPiece;
                         }
                         break;
                     case (int)MessageID.PickAnswer:
-                        EmptyAnswerPayload payload9 = JsonConvert.DeserializeObject<EmptyAnswerPayload>(message.payload);
-                        havePiece = true;
+                        HavePiece = true;
                         break;
                     case (int)MessageID.PutAnswer:
-                        EmptyAnswerPayload payload10 = JsonConvert.DeserializeObject<EmptyAnswerPayload>(message.payload);
-                        havePiece = false;
+                        HavePiece = false;
                         break;
                     default:
                         break;
