@@ -5,5 +5,5 @@
         IDK,
         DiscoveredNotGoal,
         DiscoveredGoal,
-    };
+    }
 }
