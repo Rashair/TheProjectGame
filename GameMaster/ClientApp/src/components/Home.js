@@ -18,72 +18,72 @@ export class Home extends Component {
             goalAreaHeight: gameConfigData.goalAreaHeight,
             numberOfGoals: gameConfigData.numberOfGoals,
             numberOfPieces: gameConfigData.numberOfPieces,
-            numberOfTeamPlayers: gameConfigData.numberOfTeamPlayers, 
+            numberOfTeamPlayers: gameConfigData.numberOfTeamPlayers,
             shamPieceProbability: gameConfigData.shamPieceProbability,
         }
 
-        this.sendData = (event) => {
-            event.preventDefault();
-            var xhr = new XMLHttpRequest();
+        this.sendData = this.sendData.bind(this);
+    }
 
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    var status = xhr.status;
-                    if (status === 0 || (200 >= status && status < 400)) {
-                        alert('Zmiany zostały zapisane.');
-                    } else {
-                        alert('Coś poszło nie tak, spróbuj ponownie.');
-                    }
+    sendData(event) {
+        event.preventDefault();
+        var xhr = new XMLHttpRequest();
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                var status = xhr.status;
+                if (this.readyState == 4 && this.status == 200) {
+                    alert('Zmiany zostały zapisane.');
+                } else {
+                    alert('Coś poszło nie tak, spróbuj ponownie.');
                 }
-            };
-
-            let readyToSend = true;
-            if (this.state.goalAreaHeight * this.state.boardX < this.state.numberOfGoals) {
-                alert('Liczba celów w przestrzeni bramkowej nie może być większa niż liczba pól w tym obszarze.');
-                readyToSend = false;
             }
+        };
 
-            if (2 * this.state.numberOfTeamPlayers >( this.state.boardX * this.state.boardY)) {
-                alert('Liczba agentów w obu drużynach nie może przekraczać liczby pól na planszy.');
-                readyToSend = false;
-            }
+        let readyToSend = true;
+        if (this.state.goalAreaHeight * this.state.boardX < this.state.numberOfGoals) {
+            alert('Liczba celów w przestrzeni bramkowej nie może być większa niż liczba pól w tym obszarze.');
+            readyToSend = false;
+        }
 
-            if (this.state.movePenalty < 0 || this.state.askPenalty < 0 || this.state.discoveryPenalty < 0 || this.state.putPenalty < 0 ||
-                this.state.checkForShamPenalty < 0 || this.state.responsePenalty < 0) {
-                alert('Kara musi być wartością nieujemną.');
-                readyToSend = false;
-            }
+        if (2 * this.state.numberOfTeamPlayers > (this.state.boardX * this.state.boardY)) {
+            alert('Liczba agentów w obu drużynach nie może przekraczać liczby pól na planszy.');
+            readyToSend = false;
+        }
 
-            if (this.state.boardX < 0 || this.state.boardY < 0 || this.state.goalAreaHeight < 0 || this.state.numberOfTeamPlayers < 0
-                || this.state.numberOfGoals < 0 || this.state.numberOfPieces < 0 || this.state.shamPieceProbability < 0) {
-                alert('Parametry nie mogą przyjmować wartości ujemnych.');
-                readyToSend = false;
-            }
-            if (readyToSend) {
-                xhr.open('POST', 'Configuration', true);
+        if (this.state.movePenalty < 0 || this.state.askPenalty < 0 || this.state.discoveryPenalty < 0 || this.state.putPenalty < 0 ||
+            this.state.checkForShamPenalty < 0 || this.state.responsePenalty < 0) {
+            alert('Kara musi być wartością nieujemną.');
+            readyToSend = false;
+        }
 
-                var data = new FormData();
-                data.append('CsIP', this.state.ip);
-                data.append('CsPort', this.state.port);
-                data.append('MovePenalty', this.state.movePenalty);
-                data.append('AskPenalty', this.state.askPenalty);
-                data.append('DiscoverPenalty', this.state.discoveryPenalty);
-                data.append('PutPenalty', this.state.putPenalty);
-                data.append('CheckPenalty', this.state.checkForShamPenalty);
-                data.append('ResponsePenalty', this.state.responsePenalty);
-                data.append('Width', this.state.boardX);
-                data.append('Height', this.state.boardY);
-                data.append('GoalAreaHeight', this.state.goalAreaHeight);
-                data.append('NumberOfGoals', this.state.numberOfGoals);
-                data.append('NumberOfPieces', this.state.numberOfPieces);
-                data.append('NumberOfTeamPlayers', this.state.numberOfTeamPlayers);
-                data.append('ShamPieceProbability', this.state.shamPieceProbability);
-                xhr.send(data);
-            }
-            
+        if (this.state.boardX < 0 || this.state.boardY < 0 || this.state.goalAreaHeight < 0 || this.state.numberOfTeamPlayers < 0
+            || this.state.numberOfGoals < 0 || this.state.numberOfPieces < 0 || this.state.shamPieceProbability < 0) {
+            alert('Parametry nie mogą przyjmować wartości ujemnych.');
+            readyToSend = false;
+        }
+        if (readyToSend) {
+            xhr.open('POST', 'Configuration', true);
+
+            var data = new FormData();
+            data.append('CsIP', this.state.ip);
+            data.append('CsPort', this.state.port);
+            data.append('MovePenalty', this.state.movePenalty);
+            data.append('AskPenalty', this.state.askPenalty);
+            data.append('DiscoverPenalty', this.state.discoveryPenalty);
+            data.append('PutPenalty', this.state.putPenalty);
+            data.append('CheckPenalty', this.state.checkForShamPenalty);
+            data.append('ResponsePenalty', this.state.responsePenalty);
+            data.append('Width', this.state.boardX);
+            data.append('Height', this.state.boardY);
+            data.append('GoalAreaHeight', this.state.goalAreaHeight);
+            data.append('NumberOfGoals', this.state.numberOfGoals);
+            data.append('NumberOfPieces', this.state.numberOfPieces);
+            data.append('NumberOfTeamPlayers', this.state.numberOfTeamPlayers);
+            data.append('ShamPieceProbability', this.state.shamPieceProbability);
+            xhr.send(data);
         }
     }
-    displayName = Home.name
 
     render() {
         return (
