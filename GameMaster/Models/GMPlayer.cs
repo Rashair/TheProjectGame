@@ -32,7 +32,7 @@ namespace GameMaster.Models
 
         public void Move(AbstractField field)
         {
-            throw new NotImplementedException();
+            position = field;
         }
 
         public void DestroyHolding()
@@ -57,7 +57,7 @@ namespace GameMaster.Models
 
         internal void SetHolding(AbstractPiece piece)
         {
-            throw new NotImplementedException();
+            holding = piece;
         }
 
         internal int[] GetPosition()

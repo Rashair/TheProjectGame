@@ -1,6 +1,6 @@
-﻿namespace Shared
+﻿namespace Shared.Models
 {
-    public class Position
+    public class BoardSize
     {
         public int x;
         public int y;

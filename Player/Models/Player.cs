@@ -2,8 +2,9 @@
 using Player.Clients;
 using Player.Models.Strategies;
 using Shared;
+using Shared.Models;
 using Shared.Models.Messages;
-using Shared.Payloads;
+using Shared.Models.Payloads;
 using Shared.Senders;
 using System;
 using System.Collections.Generic;

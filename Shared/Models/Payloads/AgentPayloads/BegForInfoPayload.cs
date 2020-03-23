@@ -1,4 +1,4 @@
-﻿namespace Shared.Payloads
+﻿namespace Shared.Models.Payloads
 {
     public class BegForInfoPayload
     {

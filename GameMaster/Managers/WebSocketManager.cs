@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 ﻿using Newtonsoft.Json;
+=======
+using Newtonsoft.Json;
+>>>>>>> 2bf0805ab06bf8ebcfc306f753508ddec701f5a1
 using System;
 using System.Net.WebSockets;
 using System.Text;
