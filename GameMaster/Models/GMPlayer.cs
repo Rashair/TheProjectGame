@@ -15,7 +15,7 @@ namespace GameMaster.Models
         private bool isLeader;
         private AbstractPiece holding;
         private AbstractField position;
-        private DateTime LockedTill;
+        private DateTime lockedTill;
         private ISender messageService;
 
         public bool TryLock(TimeSpan timeSpan)
