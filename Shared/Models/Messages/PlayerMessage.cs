@@ -1,6 +1,6 @@
 ﻿namespace Shared.Models.Messages
 {
-    public class AgentMessage
+    public class PlayerMessage
     {
         public int messageID;
         public int agentID;

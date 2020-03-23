@@ -1,27 +1,16 @@
-<<<<<<< HEAD
 using Newtonsoft.Json;
 using Player.Clients;
-=======
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
->>>>>>> Fixes after rebase
 using Player.Models.Payloads;
 using Player.Models.Strategies;
 using Shared;
+using Shared.Enums;
 using Shared.Models.Messages;
 using Shared.Senders;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks.Dataflow;
-
 using System.Threading.Tasks;
-using Shared.Enums;
-<<<<<<< HEAD
-=======
-using Shared.Models.Messages;
->>>>>>> Fixes after rebase
+using System.Threading.Tasks.Dataflow;
 
 namespace Player.Models
 {
@@ -37,16 +26,16 @@ namespace Player.Models
         public Tuple<int, int> position;
         public List<int> waitingPlayers;
         private IStrategy strategy;
-        public int[] teamMates;
+        public int[] teamMatesIds;
         public (int x, int y) boardSize;
         private bool working;
         private int leaderId;
 
         private Penalties penaltiesTimes;
         private BufferBlock<GMMessage> queue;
-        private WebSocketClient<GMMessage, AgentMessage> client;
+        private WebSocketClient<GMMessage, PlayerMessage> client;
 
-        public Player(Team _team, BufferBlock<GMMessage> _queue, WebSocketClient<GMMessage, AgentMessage> _client)
+        public Player(Team _team, BufferBlock<GMMessage> _queue, WebSocketClient<GMMessage, PlayerMessage> _client)
         {
             team = _team;
             queue = _queue;
@@ -59,7 +48,7 @@ namespace Player.Models
             {
                 teamID = team.ToString()
             };
-            AgentMessage message = new AgentMessage()
+            PlayerMessage message = new PlayerMessage()
             {
                 messageID = (int)MessageType.JoinTheGame,
                 payload = payload.Serialize()
@@ -67,7 +56,7 @@ namespace Player.Models
             Communicate(message);
         }
 
-        public async void Start()
+        public async Task Start()
         {
             working = true;
             while (working)
@@ -89,7 +78,7 @@ namespace Player.Models
             {
                 direction = direction.ToString()
             };
-            AgentMessage message = new AgentMessage()
+            PlayerMessage message = new PlayerMessage()
             {
                 messageID = (int)MessageType.Move,
                 agentID = id,
@@ -101,7 +90,7 @@ namespace Player.Models
         public void Put()
         {
             EmptyPayload payload = new EmptyPayload();
-            AgentMessage message = new AgentMessage()
+            PlayerMessage message = new PlayerMessage()
             {
                 messageID = (int)MessageType.Put,
                 agentID = id,
@@ -112,22 +101,22 @@ namespace Player.Models
 
         public void BegForInfo()
         {
-            AgentMessage message = new AgentMessage()
+            PlayerMessage message = new PlayerMessage()
             {
                 messageID = (int)MessageType.BegForInfo,
                 agentID = id
             };
 
             Random rnd = new Random();
-            int index = rnd.Next(0, teamMates.Length - 1);
-            while (teamMates[index] == id)
+            int index = rnd.Next(0, teamMatesIds.Length - 1);
+            if (teamMatesIds[index] == id)
             {
-                index = rnd.Next(0, teamMates.Length - 1);
+                index = (index + 1) % teamMatesIds.Length;
             }
 
             BegForInfoPayload payload = new BegForInfoPayload()
             {
-                askedAgentID = teamMates[index]
+                askedAgentID = teamMatesIds[index]
             };
             message.payload = payload.Serialize();
 
@@ -139,7 +128,7 @@ namespace Player.Models
             if (waitingPlayers.Count < 1 && !toLeader)
                 return;
 
-            AgentMessage message = new AgentMessage()
+            PlayerMessage message = new PlayerMessage()
             {
                 messageID = (int)MessageType.GiveInfo,
                 agentID = id
@@ -148,7 +137,9 @@ namespace Player.Models
 
             GiveInfoPayload response = new GiveInfoPayload();
             if (toLeader)
+            {
                 response.respondToID = leaderId;
+            }
             else
             {
                 response.respondToID = waitingPlayers[0];
@@ -161,17 +152,19 @@ namespace Player.Models
 
             for (int i = 0; i < board.Length; ++i)
             {
-                response.distances[i / boardSize.y, i % boardSize.y] = board[i / boardSize.y, i % boardSize.y].distToPiece;
+                int row = i / boardSize.y;
+                int col = i % boardSize.y;
+                response.distances[row, col] = board[row, col].distToPiece;
                 if (team == Team.Red)
                 {
-                    response.redTeamGoalAreaInformations[i / boardSize.y, i % boardSize.y] = board[i / boardSize.y, i % boardSize.y].goalInfo;
-                    response.blueTeamGoalAreaInformations[i / boardSize.y, i % boardSize.y] = GoalInfo.IDK;
+                    response.redTeamGoalAreaInformations[row, col] = board[row, col].goalInfo;
+                    response.blueTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
 
                 }
                 else
                 {
-                    response.blueTeamGoalAreaInformations[i / boardSize.y, i % boardSize.y] = board[i / boardSize.y, i % boardSize.y].goalInfo;
-                    response.redTeamGoalAreaInformations[i / boardSize.y, i % boardSize.y] = GoalInfo.IDK;
+                    response.blueTeamGoalAreaInformations[row, col] = board[row, col].goalInfo;
+                    response.redTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
                 }
             }
             
@@ -189,12 +182,14 @@ namespace Player.Models
                 GiveInfo(isFromLeader);
             }
             else
+            {
                 waitingPlayers.Add(respondToID);
+            }
         }
 
-        private AgentMessage CreateMessage(MessageType type, Payload payload)
+        private PlayerMessage CreateMessage(MessageType type, Payload payload)
         {
-            return new AgentMessage()
+            return new PlayerMessage()
             {
                 messageID = (int)type,
                 agentID = id,
@@ -205,14 +200,14 @@ namespace Player.Models
         public void CheckPiece()
         {
             EmptyPayload payload = new EmptyPayload();
-            AgentMessage message = CreateMessage(MessageType.CheckPiece, payload);
+            PlayerMessage message = CreateMessage(MessageType.CheckPiece, payload);
             Communicate(message);
         }
 
         public void Discover()
         {
             EmptyPayload payload = new EmptyPayload();
-            AgentMessage message = CreateMessage(MessageType.Discover, payload);
+            PlayerMessage message = CreateMessage(MessageType.Discover, payload);
             Communicate(message);
         }
 
@@ -251,7 +246,7 @@ namespace Player.Models
                     case (int)MessageID.StartGame:
                         StartGamePayload payload5 = JsonConvert.DeserializeObject<StartGamePayload>(message.payload);
                         id = payload5.agentID;
-                        teamMates = payload5.alliesIDs;
+                        teamMatesIds = payload5.alliesIDs;
                         if (id == payload5.leaderID) isLeader = true;
                         else isLeader = false;
                         team = (Team)Enum.Parse(typeof(Team), payload5.teamId);
@@ -317,9 +312,9 @@ namespace Player.Models
             strategy.MakeDecision(this);
         }
 
-        private async void Communicate(AgentMessage message)
+        private async void Communicate(PlayerMessage message)
         {
-            //await client.SendAsync(message);
+            await client.SendAsync(message);
         }
 
         private void Penalty()

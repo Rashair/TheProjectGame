@@ -15,7 +15,7 @@ namespace Player
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ISocketClient<GMMessage, AgentMessage>, WebSocketClient<GMMessage, AgentMessage>>();
+            services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, WebSocketClient<GMMessage, PlayerMessage>>();
             services.AddSingleton<BufferBlock<GMMessage>>();
 
             services.AddHostedService<SocketService>();
