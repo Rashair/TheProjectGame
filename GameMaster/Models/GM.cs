@@ -37,15 +37,12 @@ namespace GameMaster.Models
                 switch (message.messageID)
                 {
                     case (int)MessageID.CheckPiece:
-                        EmptyPayload payload1 = JsonConvert.DeserializeObject<EmptyPayload>(message.payload);
                         players[message.agentID].CheckHolding();
                         break;
                     case (int)MessageID.PieceDestruction:
-                        EmptyPayload payload2 = JsonConvert.DeserializeObject<EmptyPayload>(message.payload);
                         players[message.agentID].DestroyHolding();
                         break;
                     case (int)MessageID.Discover:
-                        EmptyPayload payload3 = JsonConvert.DeserializeObject<EmptyPayload>(message.payload);
                         players[message.agentID].Discover(this);
                         break;
                     case (int)MessageID.GiveInfo:
@@ -55,9 +52,9 @@ namespace GameMaster.Models
                         ForwardKnowledgeQuestion(message);
                         break;
                     case (int)MessageID.JoinTheGame:
-                        JoinGamePayload payload6 = JsonConvert.DeserializeObject<JoinGamePayload>(message.payload);
+                        JoinGamePayload payload1 = JsonConvert.DeserializeObject<JoinGamePayload>(message.payload);
                         int key = players.Count;
-                        bool accepted = players.TryAdd(key, new GMPlayer(key, (Team)Enum.Parse(typeof(Team), payload6.teamID)));
+                        bool accepted = players.TryAdd(key, new GMPlayer(key, (Team)Enum.Parse(typeof(Team), payload1.teamID)));
                         GMMessage answer1 = new GMMessage();
                         answer1.id = 107;
                         JoinAnswerPayload answer1Payload = new JoinAnswerPayload();
@@ -68,10 +65,10 @@ namespace GameMaster.Models
                         await manager.SendMessageAsync(key.ToString(), answer1);
                         break;
                     case (int)MessageID.Move:
-                        MovePayload payload7 = JsonConvert.DeserializeObject<MovePayload>(message.payload);
+                        MovePayload payload2 = JsonConvert.DeserializeObject<MovePayload>(message.payload);
                         AbstractField field = null;
                         int[] position1 = players[message.agentID].GetPosition();
-                        switch ((Directions)Enum.Parse(typeof(Directions), payload7.direction))
+                        switch ((Directions)Enum.Parse(typeof(Directions), payload2.direction))
                         {
                             case Directions.N:
                                 if (position1[1] + 1 < map.GetLength(1)) field = map[position1[0]][position1[1] + 1];
@@ -89,7 +86,6 @@ namespace GameMaster.Models
                         players[message.agentID].Move(field);
                         break;
                     case (int)MessageID.Pick:
-                        EmptyPayload payload8 = JsonConvert.DeserializeObject<EmptyPayload>(message.payload);
                         int[] position2 = players[message.agentID].GetPosition();
                         map[position2[0]][position2[1]].PickUp(players[message.agentID]);
                         GMMessage answer2 = new GMMessage();
@@ -99,7 +95,6 @@ namespace GameMaster.Models
                         await manager.SendMessageAsync(message.agentID.ToString(), answer2);
                         break;
                     case (int)MessageID.Put:
-                        EmptyPayload payload9 = JsonConvert.DeserializeObject<EmptyPayload>(message.payload);
                         bool point = players[message.agentID].Put();
                         if (point)
                         {
