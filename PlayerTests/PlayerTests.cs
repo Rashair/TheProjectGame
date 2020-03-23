@@ -4,7 +4,7 @@ using Moq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Shared.Models.Messages;
-using Player.Models.Payloads;
+using Shared.Models.Payloads;
 using Newtonsoft.Json;
 using Player.Models;
 using System;

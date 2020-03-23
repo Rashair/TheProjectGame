@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Shared.Models.Messages;
 using Newtonsoft.Json;
-using Player.Models.Payloads;
+using Shared.Models.Payloads;
 using Player.Models.Strategies;
 using Shared;
 using Shared.Senders;
@@ -133,7 +133,7 @@ namespace Player.Models
                         penaltiesTimes = payload5.penalties;
                         position = new Tuple<int, int>(payload5.position.x, payload5.position.y);
                         //enemiesIDs, goalAreaSize, numberOfPlayers, numberOfPieces, numberOfGoals, shamPieceProbability not used
-                        JoinTheGame();
+                        Start();
                         break;
                     case (int)MessageID.BegForInfoForwarded:
                         BegForInfoForwardedPayload payload6 = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.payload);
@@ -151,11 +151,8 @@ namespace Player.Models
                         break;
                     case (int)MessageID.JoinTheGameAnswer:
                         JoinAnswerPayload payload7 = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.payload);
-                        if (id == payload7.agentID)
-                        {
-                            if (payload7.accepted) Start();
-                            else Stop();
-                        }
+                        if (id != payload7.agentID) id = payload7.agentID;
+                        if (!payload7.accepted) Stop();
                         break;
                     case (int)MessageID.MoveAnswer:
                         MoveAnswerPayload payload8 = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.payload);
