@@ -114,7 +114,7 @@ namespace Player.Models
 
         public void GiveInfo(bool toLeader = false)
         {
-            if (waitingPlayers.Count < 1)
+            if (waitingPlayers.Count < 1 && !toLeader)
                 return;
 
             AgentMessage message = new AgentMessage()
@@ -124,16 +124,7 @@ namespace Player.Models
 
             };
 
-            GiveInfoPayload response = new GiveInfoPayload(); //TODO
-            if (toLeader)
-                response.respondToID = leaderId;
-            else
-            {
-                response.respondToID = waitingPlayers[0];
-                waitingPlayers.RemoveAt(0);
-            }
-
-            GiveInfoPayload response = new GiveInfoPayload(); //TODO
+            GiveInfoPayload response = new GiveInfoPayload();
             if (toLeader)
                 response.respondToID = leaderId;
             else
