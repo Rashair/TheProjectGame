@@ -123,7 +123,7 @@ namespace GameMaster.Models
                 };
                 GMMessage answer = new GMMessage()
                 {
-                    id = payload.respondToID,
+                    id = 111,
                     payload = JsonConvert.SerializeObject(answerPayload)
                 };
                 await manager.SendMessageAsync(payload.respondToID.ToString(), answer);
