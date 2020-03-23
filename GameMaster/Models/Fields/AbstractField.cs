@@ -9,13 +9,14 @@ namespace GameMaster.Models.Fields
         private readonly int x;
         private readonly int y;
         private GMPlayer whosHere;
-        protected HashSet<AbstractPiece> pieces;
+
+        protected HashSet<AbstractPiece> Pieces { get; set; }
 
         public AbstractField(int x, int y)
         {
             this.x = x;
             this.y = y;
-            pieces = new HashSet<AbstractPiece>();
+            Pieces = new HashSet<AbstractPiece>();
         }
 
         public void Leave(GMPlayer player)
@@ -38,12 +39,13 @@ namespace GameMaster.Models.Fields
                 whosHere = player;
                 return true;
             }
+
             return false;
         }
 
         public bool ContainsPieces()
         {
-            return pieces.Count > 0;
+            return Pieces.Count > 0;
         }
 
         public int[] GetPosition()

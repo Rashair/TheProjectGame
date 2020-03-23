@@ -15,13 +15,13 @@ namespace GameMaster.Models.Fields
 
         public override bool Put(AbstractPiece piece)
         {
-            pieces.Add(piece);
+            Pieces.Add(piece);
             return false;
         }
 
         public override bool PutSham(AbstractPiece piece)
         {
-            pieces.Add(piece);
+            Pieces.Add(piece);
             return true;
         }
     }
