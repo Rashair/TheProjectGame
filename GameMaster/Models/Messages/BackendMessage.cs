@@ -2,6 +2,6 @@
 {
     public class BackendMessage
     {
-        // TODO Propper implementation 
+        // TODO Propper implementation
     }
 }

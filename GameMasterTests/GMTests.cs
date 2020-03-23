@@ -12,7 +12,6 @@ namespace GameMasterTests
 {
     public class GMTests
     {
-
         [Fact]
         public void TestAcceptMessageMoveMessage()
         {
@@ -35,16 +34,16 @@ namespace GameMasterTests
                 method.Invoke(gameMaster, new object[] { });
             }
 
-            // Assert 
+            // Assert
             int pieceCount = 0;
             var fieldInfo = GetField("board");
             AbstractField[][] board = (AbstractField[][])fieldInfo.GetValue(gameMaster);
             for (int i = 0; i < board.Length; ++i)
             {
-                for(int j = 0; j < board[i].Length; ++j)
+                for (int j = 0; j < board[i].Length; ++j)
                 {
                     var field = board[i][j];
-                    if(board[i][j] is TaskField taskField)
+                    if (board[i][j] is TaskField taskField)
                     {
                         if (taskField.ContainsPieces())
                         {
@@ -54,7 +53,7 @@ namespace GameMasterTests
                     else
                     {
                         Assert.False(field.ContainsPieces(), "Pieces should not be generated on goal area");
-                    }   
+                    }
                 }
             }
 
@@ -120,7 +119,7 @@ namespace GameMasterTests
             int x = 3;
             int y = 4;
             NormalPiece piece = new NormalPiece();
-            Mock<GoalField> field = new Mock<GoalField>(x,y);
+            Mock<GoalField> field = new Mock<GoalField>(x, y);
             field.Setup(m => m.Put(piece)).Returns(true);
             Assert.True(piece.Put(field.Object));
         }
@@ -131,7 +130,7 @@ namespace GameMasterTests
             int x = 3;
             int y = 4;
             ShamPiece piece = new ShamPiece();
-            Mock<NonGoalField> field = new Mock<NonGoalField>(x,y);
+            Mock<NonGoalField> field = new Mock<NonGoalField>(x, y);
             field.Setup(m => m.Put(piece)).Returns(false);
             Assert.False(piece.Put(field.Object));
         }

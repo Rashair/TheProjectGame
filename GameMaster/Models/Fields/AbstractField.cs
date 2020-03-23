@@ -1,5 +1,4 @@
 ﻿using GameMaster.Models.Pieces;
-using System;
 using System.Collections.Generic;
 
 namespace GameMaster.Models.Fields
@@ -20,10 +19,10 @@ namespace GameMaster.Models.Fields
 
         public void Leave(GMPlayer player)
         {
-              whosHere = null;
+            whosHere = null;
         }
 
-        //originally returned void 
+        //originally returned void
         public abstract bool PickUp(GMPlayer player);
 
         public abstract bool Put(AbstractPiece piece);

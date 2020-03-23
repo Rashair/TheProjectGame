@@ -10,7 +10,9 @@ namespace GameMaster.Managers
         private ConcurrentDictionary<string, T> _sockets = new ConcurrentDictionary<string, T>();
 
         protected abstract bool IsSame(T a, T b);
+
         protected abstract Task CloseSocketAsync(T socket);
+
         protected abstract Task SendMessageAsync(T socket, M message);
 
         public string GetId(T socket)
