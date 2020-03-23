@@ -57,5 +57,4 @@
     </ItemGroup>
   </Target>
 
-  <Import Project="../Directory.Build.props" />
 </Project>

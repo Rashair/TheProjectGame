@@ -25,5 +25,4 @@
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
-  <Import Project="../Directory.Build.props" />
 </Project>
