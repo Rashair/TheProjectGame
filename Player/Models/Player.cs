@@ -15,18 +15,18 @@ namespace Player.Models
     {
         private int id;
         private ISender sender;
-        public int penaltyTime;
-        public Team team;
-        public bool isLeader;
-        public bool havePiece;
-        public Field[,] board;
-        public Tuple<int, int> position;
-        public List<int> waitingPlayers;
+        private int penaltyTime;
         private IStrategy strategy;
-        public int[] teamMatesIds;
-        public (int x, int y) boardSize;
         private bool working;
-        private int leaderId;
+        public readonly Team team;
+        public bool IsLeader { get; private set; }
+        public bool HavePiece { get; private set; }
+        public Field[,] Board { get; private set; }
+        public Tuple<int, int> Position { get; private set; }
+        public List<int> WaitingPlayers { get; private set; }
+        public int[] TeamMatesIds { get; private set; }
+        public int LeaderId { get; private set; }
+        public (int x, int y) BoardSize { get; private set; }
 
         public Player(Team team)
         {
@@ -99,14 +99,14 @@ namespace Player.Models
             };
 
             Random rnd = new Random();
-            int index = rnd.Next(0, teamMatesIds.Length - 1);
-            if (teamMatesIds[index] == id)
+            int index = rnd.Next(0, TeamMatesIds.Length - 1);
+            if (TeamMatesIds[index] == id)
             {
-                index = (index + 1) % teamMatesIds.Length;
+                index = (index + 1) % TeamMatesIds.Length;
             }
             BegForInfoPayload payload = new BegForInfoPayload()
             {
-                askedAgentID = teamMatesIds[index]
+                askedAgentID = TeamMatesIds[index]
             };
             message.payload = payload.Serialize();
             Communicate(message);
@@ -114,7 +114,7 @@ namespace Player.Models
 
         public void GiveInfo(bool toLeader = false)
         {
-            if (waitingPlayers.Count < 1 && !toLeader)
+            if (WaitingPlayers.Count < 1 && !toLeader)
                 return;
 
             PlayerMessage message = new PlayerMessage()
@@ -127,32 +127,32 @@ namespace Player.Models
             GiveInfoPayload response = new GiveInfoPayload();
             if (toLeader)
             {
-                response.respondToID = leaderId;
+                response.respondToID = LeaderId;
             }
             else
             {
-                response.respondToID = waitingPlayers[0];
-                waitingPlayers.RemoveAt(0);
+                response.respondToID = WaitingPlayers[0];
+                WaitingPlayers.RemoveAt(0);
             }
 
-            response.distances = new int[boardSize.x, boardSize.y];
-            response.redTeamGoalAreaInformations = new GoalInfo[boardSize.x, boardSize.y];
-            response.blueTeamGoalAreaInformations = new GoalInfo[boardSize.x, boardSize.y];
+            response.distances = new int[BoardSize.x, BoardSize.y];
+            response.redTeamGoalAreaInformations = new GoalInfo[BoardSize.x, BoardSize.y];
+            response.blueTeamGoalAreaInformations = new GoalInfo[BoardSize.x, BoardSize.y];
 
-            for (int i = 0; i < board.Length; ++i)
+            for (int i = 0; i < Board.Length; ++i)
             {
-                int row = i / boardSize.y;
-                int col = i % boardSize.y;
-                response.distances[row, col] = board[row, col].distToPiece;
+                int row = i / BoardSize.y;
+                int col = i % BoardSize.y;
+                response.distances[row, col] = Board[row, col].distToPiece;
                 if (team == Team.Red)
                 {
-                    response.redTeamGoalAreaInformations[row, col] = board[row, col].goalInfo;
+                    response.redTeamGoalAreaInformations[row, col] = Board[row, col].goalInfo;
                     response.blueTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
 
                 }
                 else
                 {
-                    response.blueTeamGoalAreaInformations[row, col] = board[row, col].goalInfo;
+                    response.blueTeamGoalAreaInformations[row, col] = Board[row, col].goalInfo;
                     response.redTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
                 }
             }
@@ -168,7 +168,7 @@ namespace Player.Models
             }
             else
             {
-                waitingPlayers.Add(respondToID);
+                WaitingPlayers.Add(respondToID);
             }
         }
 
