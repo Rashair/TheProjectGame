@@ -30,8 +30,7 @@ namespace Player.Clients
             await client.CloseAsync(
                 closeStatus: WebSocketCloseStatus.NormalClosure,
                 statusDescription: "Closed by the WebSocketClient",
-                cancellationToken: cancellationToken
-            );
+                cancellationToken: cancellationToken);
         }
 
         public async Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
@@ -56,8 +55,7 @@ namespace Player.Clients
                     buffer: new ArraySegment<byte>(buffer, 0, buffer.Length),
                     messageType: WebSocketMessageType.Text,
                     endOfMessage: true,
-                    cancellationToken: cancellationToken
-                );
+                    cancellationToken: cancellationToken);
             }
         }
     }
