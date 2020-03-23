@@ -1,6 +1,21 @@
 {
   "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
   "settings": {
+    "maintainabilityRules": {
+      "topLevelTypes": [
+        "class",
+        "enum",
+        "interface",
+        "struct"
+      ]
+    },
+    "namingRules": {
+      "allowedHungarianPrefixes": [
+        "gm",
+        "x",
+        "y"
+      ]
+    },
     "orderingRules": {
       "elementOrder": [
         "kind",
@@ -11,16 +26,8 @@
       "usingDirectivesPlacement": "outsideNamespace",
       "blankLinesBetweenUsingGroups": "require"
     },
-    "maintainabilityRules": {
-      "topLevelTypes": [
-        "class",
-        "enum",
-        "interface",
-        "struct"
-      ]
-    },
     "layoutRules": {
-      "newlineAtEndOfFile": "require" 
+      "newlineAtEndOfFile": "require"
     }
   }
 }

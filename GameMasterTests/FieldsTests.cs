@@ -79,7 +79,7 @@ namespace GameMaster.Tests
         public void PickUpTaskTest(int numPut, int numPick, bool expected)
         {
             // Arrange
-            GMPlayer mPlayer = new GMPlayer();
+            GMPlayer gmPlayer = new GMPlayer();
             TaskField taskField = new TaskField(2, 2);
             for (int i = 0; i < numPut; i++)
             {
@@ -90,7 +90,7 @@ namespace GameMaster.Tests
             // Act
             for (int i = 0; i < numPick; i++)
             {
-                result = taskField.PickUp(mPlayer);
+                result = taskField.PickUp(gmPlayer);
             }
 
             // Assert
