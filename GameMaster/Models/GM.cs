@@ -3,6 +3,11 @@ using GameMaster.Models.Pieces;
 using Shared;
 using System;
 using System.Collections.Generic;
+using GameMaster.Managers;
+using Shared.Models.Messages;
+using System.Threading.Tasks;
+using Shared.Models.Payloads;
+using Newtonsoft.Json;
 
 namespace GameMaster.Models
 {
@@ -10,12 +15,14 @@ namespace GameMaster.Models
     {
         private readonly Dictionary<int, GMPlayer> players;
         private readonly AbstractField[][] board;
-        private static int[] legalKnowledgeReplies = new int[2]; // unique from documentation considered as static
+        private static HashSet<(int, int)> legalKnowledgeReplies; // unique from documentation considered as static
         private Configuration conf;
         internal int redTeamPoints;
         internal int blueTeamPoints;
 
-        public GM(Configuration conf)
+        private WebSocketManager<GMMessage> manager;
+
+        public GM(Configuration conf, WebSocketManager<GMMessage> _manager)
         {
             this.conf = conf;
             board = new AbstractField[conf.Height][];
@@ -41,6 +48,8 @@ namespace GameMaster.Models
             {
                 FillBoardRow(rowIt, nonGoalFieldGenerator);
             }
+
+            manager = _manager;
 
             // TODO : initialize rest
         }
@@ -100,9 +109,20 @@ namespace GameMaster.Models
             throw new NotImplementedException();
         }
 
-        private void ForwardKnowledgeReply()
+        private async void ForwardKnowledgeReply(AgentMessage message)
         {
-            throw new NotImplementedException();
+            GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(message.payload);
+            if (legalKnowledgeReplies.Contains((message.agentID, payload.respondToID)))
+            {
+                legalKnowledgeReplies.Remove((message.agentID, payload.respondToID));
+                GMMessage answer = new GMMessage();
+                GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload();
+                answerPayload.answeringID = message.agentID;
+                answerPayload.distances = payload.distances;
+                answerPayload.redTeamGoalAreaInformations = payload.redTeamGoalAreaInformations;
+                answerPayload.blueTeamGoalAreaInformations = payload.blueTeamGoalAreaInformations;
+                await manager.SendMessageAsync(payload.respondToID.ToString(), answer);
+            }
         }
     }
 }
