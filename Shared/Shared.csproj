@@ -12,4 +12,5 @@
     </PackageReference>
   </ItemGroup>
 
+  <Import Project="../Directory.Build.props" />
 </Project>

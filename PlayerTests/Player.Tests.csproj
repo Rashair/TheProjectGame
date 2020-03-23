@@ -23,4 +23,5 @@
     <ProjectReference Include="..\Player\Player.csproj" />
   </ItemGroup>
 
+  <Import Project="../Directory.Build.props" />
 </Project>
