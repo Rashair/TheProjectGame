@@ -34,6 +34,8 @@
     <Rule Id="SA1208" Action="Error" />
     <Rule Id="SA1210" Action="Error" />
     <Rule Id="SA1305" Action="Error" />
+    <Rule Id="SA1307" Action="Error" />
+    <Rule Id="SA1401" Action="Error" />
     <Rule Id="SA1402" Action="Error" />
     <Rule Id="SA1403" Action="Error" />
     <Rule Id="SA1500" Action="Error" />
