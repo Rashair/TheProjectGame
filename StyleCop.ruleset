@@ -121,10 +121,14 @@
     <Rule Id="SA1507" Action="Error" />
     <Rule Id="SA1508" Action="Error" />
     <Rule Id="SA1509" Action="Error" />
+    <Rule Id="SA1510" Action="Error" />
+    <Rule Id="SA1511" Action="Error" />
     <Rule Id="SA1512" Action="Error" />
     <Rule Id="SA1513" Action="None" />
+    <Rule Id="SA1514" Action="None" />
     <Rule Id="SA1515" Action="Error" />
     <Rule Id="SA1516" Action="Error" />
+    <Rule Id="SA1517" Action="Error" />
     <Rule Id="SA1518" Action="Error" />
     <Rule Id="SA1519" Action="Error" />
     <Rule Id="SA1520" Action="Error" />
@@ -154,6 +158,7 @@
     <Rule Id="SA1625" Action="None" />
     <Rule Id="SA1626" Action="Error" />
     <Rule Id="SA1627" Action="None" />
+    <Rule Id="SA1629" Action="None" />
     <Rule Id="SA1633" Action="None" />
     <Rule Id="SA1634" Action="None" />
     <Rule Id="SA1635" Action="None" />
@@ -162,5 +167,13 @@
     <Rule Id="SA1638" Action="None" />
     <Rule Id="SA1640" Action="None" />
     <Rule Id="SA1641" Action="None" />
+    <Rule Id="SA1642" Action="None" />
+    <Rule Id="SA1643" Action="None" />
+    <Rule Id="SA1648" Action="None" />
+    <Rule Id="SA1649" Action="Error" />
+    <Rule Id="SA1651" Action="None" />
+  </Rules>
+  <Rules AnalyzerId="xunit.analyzers" RuleNamespace="xunit.analyzers">
+    <Rule Id="xUnit2005" Action="Error" />
   </Rules>
 </RuleSet>
