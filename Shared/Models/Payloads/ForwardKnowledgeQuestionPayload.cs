@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Shared.Models.Payloads
+﻿namespace Shared.Models.Payloads
 {
     public class ForwardKnowledgeQuestionPayload : Payload
     {
-        public int askingID;
-        public bool leader;
-        public Team teamId;
+        public int AskingID { get; set; }
+
+        public bool Leader { get; set; }
+
+        public Team TeamId { get; set; }
     }
 }

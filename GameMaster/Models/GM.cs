@@ -23,7 +23,7 @@ namespace GameMaster.Models
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketManager<WebSocket, GMMessage> socketManager;
 
-        private readonly HashSet<(int, int)> legalKnowledgeReplies;
+        private HashSet<(int, int)> legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;
         private AbstractField[][] board;
         private int piecesOnBoard;
@@ -222,7 +222,7 @@ namespace GameMaster.Models
                 FillBoardRow(rowIt, nonGoalFieldGenerator);
             }
 
-            waitingKnowledgeRequests = new HashSet<string>();
+            legalKnowledgeReplies = new HashSet<(int, int)>();
 
             // TODO : initialize rest
         }
@@ -285,18 +285,19 @@ namespace GameMaster.Models
             BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(playerMessage.Payload);
             ForwardKnowledgeQuestionPayload payload = new ForwardKnowledgeQuestionPayload()
             {
-                askingID = playerMessage.AgentID,
-                leader = players[playerMessage.AgentID].IsLeader,
-                teamId = players[playerMessage.AgentID].Team,
+                AskingID = playerMessage.AgentID,
+                Leader = players[playerMessage.AgentID].IsLeader,
+                TeamId = players[playerMessage.AgentID].Team,
             };
             GMMessage gmMessage = new GMMessage()
             {
+                MessageID = (int)GMMessageType.ForwardKnowledgeQuestion,
                 Id = begPayload.askedAgentID,
                 Payload = playerMessage.Payload,
             };
 
-            waitingKnowledgeRequests.Add(playerMessage.AgentID.ToString() + begPayload.askedAgentID.ToString());
-            await socketManager.SendMessageAsync(GMMessageType.ForwardKnowledgeQuestion.ToString(), gmMessage);
+            legalKnowledgeReplies.Add((playerMessage.AgentID, begPayload.askedAgentID));
+            await socketManager.SendMessageAsync(players[begPayload.askedAgentID].SocketID, gmMessage);
         }
 
         private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
