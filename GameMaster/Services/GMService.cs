@@ -10,9 +10,12 @@ namespace GameMaster.Services
     {
         private readonly GM gameMaster;
 
+        public int WaitForStartDelay { get; private set; }
+
         public GMService(GM gameMaster)
         {
             this.gameMaster = gameMaster;
+            WaitForStartDelay = 1000;
         }
 
         protected async override Task ExecuteAsync(CancellationToken cancellationToken)
