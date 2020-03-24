@@ -291,14 +291,7 @@ namespace Player.Models
                         BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
                         if (team == payloadBeg.TeamId)
                         {
-                            if (payloadBeg.Leader)
-                            {
-                                GiveInfo(true);
-                            }
-                            else
-                            {
-                                WaitingPlayers.Add(payloadBeg.AskingID);
-                            }
+                            RequestsResponse(payloadBeg.AskingID, payloadBeg.Leader);
                         }
                         break;
                     case GMMessageID.JoinTheGameAnswer:
