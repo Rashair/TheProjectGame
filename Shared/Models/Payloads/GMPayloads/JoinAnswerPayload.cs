@@ -1,8 +1,9 @@
 ﻿namespace Shared.Models.Payloads
 {
-    public class JoinAnswerPayload
+    public class JoinAnswerPayload : Payload
     {
-        public bool accepted;
-        public int agentID;
+        public bool Accepted { get; set; }
+
+        public int AgentID { get; set; }
     }
 }

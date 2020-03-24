@@ -2,7 +2,8 @@
 {
     public class NumberOfPlayers
     {
-        public int allies;
-        public int enemies;
+        public int Allies { get; set; }
+
+        public int Enemies { get; set; }
     }
 }

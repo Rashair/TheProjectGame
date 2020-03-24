@@ -1,7 +1,7 @@
 ﻿namespace Shared.Models.Payloads
 {
-    public class EndGamePayload
+    public class EndGamePayload : Payload
     {
-        public string winner;
+        public string Winner { get; set; }
     }
 }

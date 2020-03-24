@@ -1,16 +1,17 @@
-using GameMaster.Managers;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
+using GameMaster.Managers;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
 namespace GameMaster.Controllers
 {
     public abstract class WebSocketController<T> : Controller
     {
-        private const int BUFFER_SIZE = 1024 * 4;
+        private const int BufferSize = 1024 * 4;
 
         public WebSocketManager<T> Manager { get; }
 
@@ -44,7 +45,7 @@ namespace GameMaster.Controllers
                 return BadRequest();
             WebSocket socket = await context.WebSockets.AcceptWebSocketAsync();
             OnConnected(socket);
-            byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] buffer = new byte[BufferSize];
             WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer),
                 CancellationToken.None);
             while (!result.CloseStatus.HasValue)
@@ -52,6 +53,7 @@ namespace GameMaster.Controllers
                 await OnMessageAsync(socket, result, buffer);
                 result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             }
+
             await OnDisconnectedAsync(socket);
             return Ok();
         }

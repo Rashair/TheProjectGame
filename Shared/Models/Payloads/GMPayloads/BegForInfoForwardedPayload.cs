@@ -1,9 +1,11 @@
 ﻿namespace Shared.Models.Payloads
 {
-    public class BegForInfoForwardedPayload
+    public class BegForInfoForwardedPayload : Payload
     {
-        public int askingID;
-        public bool leader;
-        public string teamId;
+        public int AskingID { get; set; }
+
+        public bool Leader { get; set; }
+
+        public string TeamId { get; set; }
     }
 }

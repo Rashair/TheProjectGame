@@ -1,7 +1,7 @@
 ﻿namespace Shared.Models.Payloads
 {
-    public class JoinGamePayload
+    public class JoinGamePayload : Payload
     {
-        public string teamID;
+        public string TeamID { get; set; }
     }
 }

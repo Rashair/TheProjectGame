@@ -1,7 +1,7 @@
 ﻿namespace Shared.Models.Payloads
 {
-    public class MovePayload
+    public class MovePayload : Payload
     {
-        public string direction;
+        public string Direction { get; set; }
     }
 }

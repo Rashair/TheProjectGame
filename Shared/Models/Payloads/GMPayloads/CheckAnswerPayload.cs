@@ -1,7 +1,7 @@
 ﻿namespace Shared.Models.Payloads
 {
-    public class CheckAnswerPayload
+    public class CheckAnswerPayload : Payload
     {
-        public bool sham;
+        public bool Sham { get; set; }
     }
 }

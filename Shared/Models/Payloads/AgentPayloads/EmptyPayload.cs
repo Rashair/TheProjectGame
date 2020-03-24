@@ -1,6 +1,6 @@
 ﻿namespace Shared.Models.Payloads
 {
-    public class EmptyPayload
+    public class EmptyPayload : Payload
     {
     }
 }

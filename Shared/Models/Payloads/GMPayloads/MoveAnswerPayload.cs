@@ -1,9 +1,11 @@
 ﻿namespace Shared.Models.Payloads
 {
-    public class MoveAnswerPayload
+    public class MoveAnswerPayload : Payload
     {
-        public bool madeMove;
-        public Position currentPosition;
-        public int closestPiece;
+        public bool MadeMove { get; set; }
+
+        public Position CurrentPosition { get; set; }
+
+        public int ClosestPiece { get; set; }
     }
 }

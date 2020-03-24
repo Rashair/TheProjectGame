@@ -1,13 +1,12 @@
+using System.Threading.Tasks.Dataflow;
+
 using Newtonsoft.Json;
 using Player.Clients;
-using Player.Models;
+using Player.Models.Strategies;
 using Shared;
 using Shared.Models;
 using Shared.Models.Messages;
 using Shared.Models.Payloads;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks.Dataflow;
 using Xunit;
 
 namespace Player.Tests
@@ -15,106 +14,163 @@ namespace Player.Tests
     public class PlayerTests
     {
         [Fact]
-        public void TestAcceptMessageMoveAccept()
+        public void TestAcceptMessageMoveAcceptAsync()
         {
-            MoveAnswerPayload payload = new MoveAnswerPayload()
+            MoveAnswerPayload payloadMove = new MoveAnswerPayload()
             {
-                madeMove = true,
-                currentPosition = new Position()
+                MadeMove = true,
+                CurrentPosition = new Position()
                 {
-                    x = 0,
-                    y = 0
+                    X = 0,
+                    Y = 0,
                 },
-                closestPiece = 0
+                ClosestPiece = 0,
             };
-            GMMessage message = new GMMessage()
+            GMMessage messageMove = new GMMessage()
             {
-                id = (int)MessageID.MoveAnswer,
-                payload = JsonConvert.SerializeObject(payload)
+                Id = (int)MessageID.MoveAnswer,
+                Payload = JsonConvert.SerializeObject(payloadMove),
+            };
+
+            StartGamePayload payloadStart = new StartGamePayload
+            {
+                AgentID = 1,
+                AlliesIDs = new int[1] { 2 },
+                LeaderID = 1,
+                EnemiesIDs = new int[2] { 3, 4 },
+                TeamId = "Red",
+                BoardSize = new BoardSize { X = 3,  Y = 3 },
+                GoalAreaSize = 1,
+                NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
+                NumberOfPieces = 2,
+                NumberOfGoals = 2,
+                Penalties = new Penalties { Move = "0", CheckForSham = "0", Discovery = "0", DestroyPiece = "0", PutPiece = "0", InformationExchange = "0" },
+                ShamPieceProbability = 0.5f,
+                Position = new Position { X = 1, Y = 1 },
+            };
+            GMMessage messageStart = new GMMessage()
+            {
+                Id = (int)MessageID.StartGame,
+                Payload = JsonConvert.SerializeObject(payloadStart),
             };
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post<GMMessage>(message);
+            input.Post<GMMessage>(messageStart);
+            input.Post<GMMessage>(messageMove);
 
             Team team = Team.Red;
-            var player = new Player.Models.Player(team, input, new WebSocketClient<GMMessage, AgentMessage>());
-
-            player.board = new Field[1, 1];
-            player.board[0, 0] = new Field();
+            var player = new Player.Models.Player(team, new Strategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
 
             player.AcceptMessage();
+            player.AcceptMessage();
 
-            Assert.Equal(0, player.board[0, 0].distToPiece);
+            Assert.Equal(0, player.Board[0, 0].DistToPiece);
         }
 
         [Fact]
-        public void TestAcceptMessageDiscoverAccept()
+        public void TestAcceptMessageDiscoverAcceptAsync()
         {
-            DiscoveryAnswerPayload payload = new DiscoveryAnswerPayload()
+            DiscoveryAnswerPayload payloadDiscover = new DiscoveryAnswerPayload()
             {
-                distanceFromCurrent = 0,
-                distanceE = 0,
-                distanceW = 0,
-                distanceS = 0,
-                distanceN = 0,
-                distanceNE = 0,
-                distanceSE = 0,
-                distanceNW = 0,
-                distanceSW = 0
+                DistanceFromCurrent = 0,
+                DistanceE = 0,
+                DistanceW = 0,
+                DistanceS = 0,
+                DistanceN = 0,
+                DistanceNE = 0,
+                DistanceSE = 0,
+                DistanceNW = 0,
+                DistanceSW = 0,
             };
-            GMMessage message = new GMMessage()
+            GMMessage messageDiscover = new GMMessage()
             {
-                id = (int)MessageID.MoveAnswer,
-                payload = JsonConvert.SerializeObject(payload)
+                Id = (int)MessageID.MoveAnswer,
+                Payload = JsonConvert.SerializeObject(payloadDiscover),
+            };
+
+            StartGamePayload payloadStart = new StartGamePayload
+            {
+                AgentID = 1,
+                AlliesIDs = new int[1] { 2 },
+                LeaderID = 1,
+                EnemiesIDs = new int[2] { 3, 4 },
+                TeamId = "Red",
+                BoardSize = new BoardSize { X = 3, Y = 3 },
+                GoalAreaSize = 1,
+                NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
+                NumberOfPieces = 2,
+                NumberOfGoals = 2,
+                Penalties = new Penalties { Move = "0", CheckForSham = "0", Discovery = "0", DestroyPiece = "0", PutPiece = "0", InformationExchange = "0" },
+                ShamPieceProbability = 0.5f,
+                Position = new Position { X = 1, Y = 1 },
+            };
+            GMMessage messageStart = new GMMessage()
+            {
+                Id = (int)MessageID.StartGame,
+                Payload = JsonConvert.SerializeObject(payloadStart),
             };
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post<GMMessage>(message);
+            input.Post<GMMessage>(messageStart);
+            input.Post<GMMessage>(messageDiscover);
 
             Team team = Team.Red;
-            var player = new Player.Models.Player(team, input, new WebSocketClient<GMMessage, AgentMessage>());
-
-            player.board = new Field[3, 3];
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    player.board[i, j] = new Field();
-                }
-            }
-            player.position = new Tuple<int, int>(1, 1);
+            var player = new Player.Models.Player(team, new Strategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
 
             player.AcceptMessage();
+            player.AcceptMessage();
 
-            Assert.Equal(0, player.board[0, 0].distToPiece);
+            Assert.Equal(0, player.Board[0, 0].DistToPiece);
         }
 
         [Fact]
-        public void TestAcceptMessageBegForInfoAccept()
+        public void TestAcceptMessageBegForInfoAcceptAsync()
         {
-            BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
+            BegForInfoForwardedPayload payloadBeg = new BegForInfoForwardedPayload()
             {
-                askingID = 1,
-                leader = false,
-                teamId = "Red"
+                AskingID = 2,
+                Leader = false,
+                TeamId = "Red",
             };
-            GMMessage message = new GMMessage()
+            GMMessage messageBeg = new GMMessage()
             {
-                id = (int)MessageID.BegForInfoForwarded,
-                payload = JsonConvert.SerializeObject(payload)
+                Id = (int)MessageID.BegForInfoForwarded,
+                Payload = JsonConvert.SerializeObject(payloadBeg),
+            };
+
+            StartGamePayload payloadStart = new StartGamePayload
+            {
+                AgentID = 1,
+                AlliesIDs = new int[1] { 2 },
+                LeaderID = 1,
+                EnemiesIDs = new int[2] { 3, 4 },
+                TeamId = "Red",
+                BoardSize = new BoardSize { X = 3, Y = 3 },
+                GoalAreaSize = 1,
+                NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
+                NumberOfPieces = 2,
+                NumberOfGoals = 2,
+                Penalties = new Penalties { Move = "0", CheckForSham = "0", Discovery = "0", DestroyPiece = "0", PutPiece = "0", InformationExchange = "0" },
+                ShamPieceProbability = 0.5f,
+                Position = new Position { X = 1, Y = 1 },
+            };
+            GMMessage messageStart = new GMMessage()
+            {
+                Id = (int)MessageID.StartGame,
+                Payload = JsonConvert.SerializeObject(payloadStart),
             };
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post<GMMessage>(message);
+            input.Post<GMMessage>(messageStart);
+            input.Post<GMMessage>(messageBeg);
 
             Team team = Team.Red;
-            var player = new Player.Models.Player(team, input, new WebSocketClient<GMMessage, AgentMessage>());
-
-            player.waitingPlayers = new List<int>();
+            var player = new Player.Models.Player(team, new Strategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
 
             player.AcceptMessage();
+            player.AcceptMessage();
 
-            Assert.Single(player.waitingPlayers);
+            Assert.Single(player.WaitingPlayers);
         }
     }
 }

@@ -2,11 +2,16 @@
 {
     public class Penalties
     {
-        public string move;
-        public string checkForSham;
-        public string discovery;
-        public string destroyPiece;
-        public string putPiece;
-        public string informationExchange;
+        public string Move { get; set; }
+
+        public string CheckForSham { get; set; }
+
+        public string Discovery { get; set; }
+
+        public string DestroyPiece { get; set; }
+
+        public string PutPiece { get; set; }
+
+        public string InformationExchange { get; set; }
     }
 }

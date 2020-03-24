@@ -1,15 +1,16 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Newtonsoft.Json;
+
 namespace Player.Clients
 {
     public class WebSocketClient<R, S> : ISocketClient<R, S>
     {
-        private const int BUFFER_SIZE = 1024 * 4;
+        private const int BufferSize = 1024 * 4;
         private readonly ClientWebSocket client;
 
         public bool IsOpen => client.State == WebSocketState.Open;
@@ -29,13 +30,12 @@ namespace Player.Clients
             await client.CloseAsync(
                 closeStatus: WebSocketCloseStatus.NormalClosure,
                 statusDescription: "Closed by the WebSocketClient",
-                cancellationToken: cancellationToken
-            );
+                cancellationToken: cancellationToken);
         }
 
         public async Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
         {
-            byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] buffer = new byte[BufferSize];
             WebSocketReceiveResult result = await client.ReceiveAsync(new ArraySegment<byte>(buffer),
                 cancellationToken);
             if (cancellationToken.IsCancellationRequested || result.CloseStatus.HasValue)
@@ -55,8 +55,7 @@ namespace Player.Clients
                     buffer: new ArraySegment<byte>(buffer, 0, buffer.Length),
                     messageType: WebSocketMessageType.Text,
                     endOfMessage: true,
-                    cancellationToken: cancellationToken
-                );
+                    cancellationToken: cancellationToken);
             }
         }
     }

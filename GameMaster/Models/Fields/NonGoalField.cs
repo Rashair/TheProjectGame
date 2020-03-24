@@ -1,11 +1,14 @@
 ﻿using GameMaster.Models.Pieces;
-using System;
 
 namespace GameMaster.Models.Fields
 {
     public class NonGoalField : AbstractField
     {
-        public NonGoalField(int x, int y) : base(x, y) { }
+        public NonGoalField(int x, int y)
+            : base(x, y)
+        {
+        }
+
         public override bool PickUp(GMPlayer player)
         {
             return false;
@@ -13,13 +16,13 @@ namespace GameMaster.Models.Fields
 
         public override bool Put(AbstractPiece piece)
         {
-            pieces.Add(piece);
+            Pieces.Add(piece);
             return false;
         }
 
         public override bool PutSham(AbstractPiece piece)
         {
-            pieces.Add(piece);
+            Pieces.Add(piece);
             return true;
         }
     }
