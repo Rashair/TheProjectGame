@@ -1,16 +1,7 @@
-﻿namespace Shared
+﻿namespace Shared.Enums
 {
-    public enum MessageID
+    public enum GMMessageID
     {
-        CheckPiece = 1,
-        PieceDestruction,
-        Discover,
-        GiveInfo,
-        BegForInfo,
-        JoinTheGame,
-        Move,
-        Pick,
-        Put,
         CheckAnswer = 101,
         DestructionAnswer,
         DiscoverAnswer,
@@ -21,5 +12,6 @@
         MoveAnswer,
         PickAnswer,
         PutAnswer,
+        GiveInfoForwarded,
     }
 }

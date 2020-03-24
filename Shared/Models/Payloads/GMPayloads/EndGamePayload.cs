@@ -2,6 +2,6 @@
 {
     public class EndGamePayload : Payload
     {
-        public string Winner { get; set; }
+        public Team Winner { get; set; }
     }
 }

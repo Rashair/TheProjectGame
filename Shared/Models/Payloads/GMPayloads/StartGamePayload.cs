@@ -2,7 +2,7 @@
 {
     public class StartGamePayload : Payload
     {
-        public int AgentID { get; set; }
+        public int PlayerID { get; set; }
 
         public int[] AlliesIDs { get; set; }
 
@@ -10,7 +10,7 @@
 
         public int[] EnemiesIDs { get; set; }
 
-        public string TeamId { get; set; }
+        public Team TeamId { get; set; }
 
         public BoardSize BoardSize { get; set; }
 

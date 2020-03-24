@@ -4,6 +4,6 @@
     {
         public bool Accepted { get; set; }
 
-        public int AgentID { get; set; }
+        public int PlayerID { get; set; }
     }
 }

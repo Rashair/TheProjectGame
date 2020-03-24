@@ -24,7 +24,7 @@ namespace Player.Models
         private IStrategy strategy;
         private bool working;
         private Penalties penaltiesTimes;
-        private string winner;
+        private Team winner;
         private int[] enemiesIDs;
         private int goalAreaSize;
         private NumberOfPlayers numberOfPlayers;
@@ -64,11 +64,11 @@ namespace Player.Models
         {
             JoinGamePayload payload = new JoinGamePayload()
             {
-                TeamID = team.ToString(),
+                TeamID = team,
             };
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = (int)MessageType.JoinTheGame,
+                MessageID = PlayerMessageID.JoinTheGame,
                 Payload = payload.Serialize(),
             };
             Communicate(message);
@@ -90,16 +90,16 @@ namespace Player.Models
             working = false;
         }
 
-        public void Move(Direction direction)
+        public void Move(Directions direction)
         {
             MovePayload payload = new MovePayload()
             {
-                Direction = direction.ToString(),
+                Direction = direction,
             };
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = (int)MessageType.Move,
-                AgentID = id,
+                MessageID = PlayerMessageID.Move,
+                PlayerID = id,
                 Payload = payload.Serialize(),
             };
             Communicate(message);
@@ -110,8 +110,8 @@ namespace Player.Models
             EmptyPayload payload = new EmptyPayload();
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = (int)MessageType.Put,
-                AgentID = id,
+                MessageID = PlayerMessageID.Put,
+                PlayerID = id,
                 Payload = payload.Serialize(),
             };
             Communicate(message);
@@ -121,8 +121,8 @@ namespace Player.Models
         {
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = (int)MessageType.BegForInfo,
-                AgentID = id,
+                MessageID = PlayerMessageID.BegForInfo,
+                PlayerID = id,
             };
 
             Random rnd = new Random();
@@ -133,7 +133,7 @@ namespace Player.Models
             }
             BegForInfoPayload payload = new BegForInfoPayload()
             {
-                AskedAgentID = TeamMatesIds[index],
+                AskedPlayerID = TeamMatesIds[index],
             };
             message.Payload = payload.Serialize();
             Communicate(message);
@@ -146,8 +146,8 @@ namespace Player.Models
 
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = (int)MessageType.GiveInfo,
-                AgentID = id,
+                MessageID = PlayerMessageID.GiveInfo,
+                PlayerID = id,
             };
 
             GiveInfoPayload response = new GiveInfoPayload();
@@ -197,12 +197,12 @@ namespace Player.Models
             }
         }
 
-        private PlayerMessage CreateMessage(MessageType type, Payload payload)
+        private PlayerMessage CreateMessage(PlayerMessageID type, Payload payload)
         {
             return new PlayerMessage()
             {
-                MessageID = (int)type,
-                AgentID = id,
+                MessageID = type,
+                PlayerID = id,
                 Payload = payload.Serialize(),
             };
         }
@@ -210,14 +210,14 @@ namespace Player.Models
         public void CheckPiece()
         {
             EmptyPayload payload = new EmptyPayload();
-            PlayerMessage message = CreateMessage(MessageType.CheckPiece, payload);
+            PlayerMessage message = CreateMessage(PlayerMessageID.CheckPiece, payload);
             Communicate(message);
         }
 
         public void Discover()
         {
             EmptyPayload payload = new EmptyPayload();
-            PlayerMessage message = CreateMessage(MessageType.Discover, payload);
+            PlayerMessage message = CreateMessage(PlayerMessageID.Discover, payload);
             Communicate(message);
         }
 
@@ -228,14 +228,14 @@ namespace Player.Models
             {
                 switch (message.Id)
                 {
-                    case (int)MessageID.CheckAnswer:
+                    case GMMessageID.CheckAnswer:
                         CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
                         if (payloadCheck.Sham) HavePiece = false;
                         break;
-                    case (int)MessageID.DestructionAnswer:
+                    case GMMessageID.DestructionAnswer:
                         HavePiece = false;
                         break;
-                    case (int)MessageID.DiscoverAnswer:
+                    case GMMessageID.DiscoverAnswer:
                         DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
                         Board[Position.Item1, Position.Item2].DistToPiece = payloadDiscover.DistanceFromCurrent;
                         Board[Position.Item1 + 1, Position.Item2].DistToPiece = payloadDiscover.DistanceE;
@@ -247,18 +247,18 @@ namespace Player.Models
                         Board[Position.Item1 + 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceNE;
                         Board[Position.Item1 - 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceSW;
                         break;
-                    case (int)MessageID.EndGame:
+                    case GMMessageID.EndGame:
                         EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
                         winner = payloadEnd.Winner;
                         Stop();
                         break;
-                    case (int)MessageID.StartGame:
+                    case GMMessageID.StartGame:
                         StartGamePayload payloadStart = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
-                        id = payloadStart.AgentID;
+                        id = payloadStart.PlayerID;
                         TeamMatesIds = payloadStart.AlliesIDs;
                         if (id == payloadStart.LeaderID) IsLeader = true;
                         else IsLeader = false;
-                        team = (Team)Enum.Parse(typeof(Team), payloadStart.TeamId);
+                        team = payloadStart.TeamId;
                         Board = new Field[payloadStart.BoardSize.X, payloadStart.BoardSize.Y];
                         for (int i = 0; i < payloadStart.BoardSize.X; i++)
                         {
@@ -277,9 +277,9 @@ namespace Player.Models
                         shamPieceProbability = payloadStart.ShamPieceProbability;
                         WaitingPlayers = new List<int>();
                         break;
-                    case (int)MessageID.BegForInfoForwarded:
+                    case GMMessageID.BegForInfoForwarded:
                         BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
-                        if (team == (Team)Enum.Parse(typeof(Team), payloadBeg.TeamId))
+                        if (team == payloadBeg.TeamId)
                         {
                             if (payloadBeg.Leader)
                             {
@@ -291,12 +291,12 @@ namespace Player.Models
                             }
                         }
                         break;
-                    case (int)MessageID.JoinTheGameAnswer:
+                    case GMMessageID.JoinTheGameAnswer:
                         JoinAnswerPayload payloadJoin = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.Payload);
-                        if (id != payloadJoin.AgentID) id = payloadJoin.AgentID;
+                        if (id != payloadJoin.PlayerID) id = payloadJoin.PlayerID;
                         if (!payloadJoin.Accepted) Stop();
                         break;
-                    case (int)MessageID.MoveAnswer:
+                    case GMMessageID.MoveAnswer:
                         MoveAnswerPayload payloadMove = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
                         if (payloadMove.MadeMove)
                         {
@@ -304,10 +304,10 @@ namespace Player.Models
                             Board[Position.Item1, Position.Item2].DistToPiece = payloadMove.ClosestPiece;
                         }
                         break;
-                    case (int)MessageID.PickAnswer:
+                    case GMMessageID.PickAnswer:
                         HavePiece = true;
                         break;
-                    case (int)MessageID.PutAnswer:
+                    case GMMessageID.PutAnswer:
                         HavePiece = false;
                         break;
                     default:

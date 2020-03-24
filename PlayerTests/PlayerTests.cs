@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Player.Clients;
 using Player.Models.Strategies;
 using Shared;
+using Shared.Enums;
 using Shared.Models;
 using Shared.Models.Messages;
 using Shared.Models.Payloads;
@@ -28,17 +29,17 @@ namespace Player.Tests
             };
             GMMessage messageMove = new GMMessage()
             {
-                Id = (int)MessageID.MoveAnswer,
+                Id = GMMessageID.MoveAnswer,
                 Payload = JsonConvert.SerializeObject(payloadMove),
             };
 
             StartGamePayload payloadStart = new StartGamePayload
             {
-                AgentID = 1,
+                PlayerID = 1,
                 AlliesIDs = new int[1] { 2 },
                 LeaderID = 1,
                 EnemiesIDs = new int[2] { 3, 4 },
-                TeamId = "Red",
+                TeamId = Team.Red,
                 BoardSize = new BoardSize { X = 3,  Y = 3 },
                 GoalAreaSize = 1,
                 NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
@@ -50,7 +51,7 @@ namespace Player.Tests
             };
             GMMessage messageStart = new GMMessage()
             {
-                Id = (int)MessageID.StartGame,
+                Id = GMMessageID.StartGame,
                 Payload = JsonConvert.SerializeObject(payloadStart),
             };
 
@@ -84,17 +85,17 @@ namespace Player.Tests
             };
             GMMessage messageDiscover = new GMMessage()
             {
-                Id = (int)MessageID.MoveAnswer,
+                Id = GMMessageID.MoveAnswer,
                 Payload = JsonConvert.SerializeObject(payloadDiscover),
             };
 
             StartGamePayload payloadStart = new StartGamePayload
             {
-                AgentID = 1,
+                PlayerID = 1,
                 AlliesIDs = new int[1] { 2 },
                 LeaderID = 1,
                 EnemiesIDs = new int[2] { 3, 4 },
-                TeamId = "Red",
+                TeamId = Team.Red,
                 BoardSize = new BoardSize { X = 3, Y = 3 },
                 GoalAreaSize = 1,
                 NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
@@ -106,7 +107,7 @@ namespace Player.Tests
             };
             GMMessage messageStart = new GMMessage()
             {
-                Id = (int)MessageID.StartGame,
+                Id = GMMessageID.StartGame,
                 Payload = JsonConvert.SerializeObject(payloadStart),
             };
 
@@ -130,21 +131,21 @@ namespace Player.Tests
             {
                 AskingID = 2,
                 Leader = false,
-                TeamId = "Red",
+                TeamId = Team.Red,
             };
             GMMessage messageBeg = new GMMessage()
             {
-                Id = (int)MessageID.BegForInfoForwarded,
+                Id = GMMessageID.BegForInfoForwarded,
                 Payload = JsonConvert.SerializeObject(payloadBeg),
             };
 
             StartGamePayload payloadStart = new StartGamePayload
             {
-                AgentID = 1,
+                PlayerID = 1,
                 AlliesIDs = new int[1] { 2 },
                 LeaderID = 1,
                 EnemiesIDs = new int[2] { 3, 4 },
-                TeamId = "Red",
+                TeamId = Team.Red,
                 BoardSize = new BoardSize { X = 3, Y = 3 },
                 GoalAreaSize = 1,
                 NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
@@ -156,7 +157,7 @@ namespace Player.Tests
             };
             GMMessage messageStart = new GMMessage()
             {
-                Id = (int)MessageID.StartGame,
+                Id = GMMessageID.StartGame,
                 Payload = JsonConvert.SerializeObject(payloadStart),
             };
 

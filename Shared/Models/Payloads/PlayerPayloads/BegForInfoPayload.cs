@@ -2,6 +2,6 @@
 {
     public class BegForInfoPayload : Payload
     {
-        public int AskedAgentID { get; set; }
+        public int AskedPlayerID { get; set; }
     }
 }

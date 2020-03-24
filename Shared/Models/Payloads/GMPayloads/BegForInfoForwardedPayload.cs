@@ -6,6 +6,6 @@
 
         public bool Leader { get; set; }
 
-        public string TeamId { get; set; }
+        public Team TeamId { get; set; }
     }
 }
