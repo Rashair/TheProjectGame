@@ -1,7 +1,8 @@
-﻿using GameMaster.Models;
-using Microsoft.Extensions.Hosting;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+
+using GameMaster.Models;
+using Microsoft.Extensions.Hosting;
 
 namespace GameMaster.Services
 {

@@ -2,8 +2,7 @@
 
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
-using Shared;
-using Shared.Models.Enums;
+using Shared.Enums;
 using Shared.Senders;
 
 namespace GameMaster.Models
