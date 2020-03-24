@@ -8,6 +8,7 @@ using System.Timers;
 using GameMaster.Managers;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Shared;
 using Shared.Enums;
@@ -19,6 +20,7 @@ namespace GameMaster.Models
 {
     public class GM
     {
+        private ILogger logger;
         private Configuration conf;
         private BufferBlock<PlayerMessage> queue;
         private WebSocketManager<GMMessage> manager;
@@ -33,8 +35,9 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; set; }
 
-        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> manager)
+        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> manager, ILogger logger)
         {
+            this.logger = logger;
             this.conf = conf;
             this.queue = queue;
             this.manager = manager;
@@ -192,7 +195,16 @@ namespace GameMaster.Models
                     int maxMessagesToRead = Math.Min(conf.NumberOfPlayersPerTeam, queue.Count);
                     for (int i = 0; i < maxMessagesToRead; ++i)
                     {
-                        var message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
+                        PlayerMessage message = null;
+                        try
+                        {
+                             message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
+                        }
+                        catch (OperationCanceledException e)
+                        {
+                            logger.LogWarning($"Message retrieve was cancelled: {e.Message}");
+                        }
+
                         await AcceptMessage(message, cancellationToken);
                         if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
                         {
