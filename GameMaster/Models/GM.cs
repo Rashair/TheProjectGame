@@ -15,9 +15,9 @@ namespace GameMaster.Models
 {
     public class GM
     {
-        private ILogger logger;
-        private Configuration conf;
-        private BufferBlock<PlayerMessage> queue;
+        private readonly ILogger logger;
+        private readonly Configuration conf;
+        private readonly BufferBlock<PlayerMessage> queue;
 
         private readonly int[] legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;
@@ -94,20 +94,12 @@ namespace GameMaster.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
-            bool shouldGeneratePiece = true;
-            var timer = PrepareGeneratePieceTimer((sender, e) =>
-            {
-                if (piecesOnBoard < conf.MaximumNumberOfPiecesOnBoard)
-                {
-                    shouldGeneratePiece = true;
-                }
-            });
             TimeSpan cancellationTimespan = TimeSpan.FromMilliseconds(50);
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (queue.Count > 0)
                 {
-                    int maxMessagesToRead = Math.Min(conf.NumberOfPlayersPerTeam, queue.Count);
+                    int maxMessagesToRead = Math.Min(conf.GeneratePieceInterval, queue.Count);
                     for (int i = 0; i < maxMessagesToRead; ++i)
                     {
                         PlayerMessage message = null;
@@ -129,26 +121,11 @@ namespace GameMaster.Models
                     }
                 }
 
-                if (shouldGeneratePiece)
+                if (piecesOnBoard < conf.MaximumNumberOfPiecesOnBoard)
                 {
-                    timer.Stop();
                     GeneratePiece();
-                    shouldGeneratePiece = false;
-                    timer.Start();
                 }
             }
-        }
-
-        private System.Timers.Timer PrepareGeneratePieceTimer(ElapsedEventHandler elapsed)
-        {
-            var timer = new System.Timers.Timer()
-            {
-                Interval = conf.GeneratePieceInterval,
-                AutoReset = true,
-            };
-            timer.Elapsed += elapsed;
-
-            return timer;
         }
 
         private void GeneratePiece()
