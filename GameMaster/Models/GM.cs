@@ -66,26 +66,26 @@ namespace GameMaster.Models
                         ForwardKnowledgeQuestion(message);
                         break;
                     case (int)MessageID.JoinTheGame:
-                        JoinGamePayload payload1 = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
+                        JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
                         int key = players.Count;
-                        bool accepted = players.TryAdd(key, new GMPlayer(key, (Team)Enum.Parse(typeof(Team), payload1.TeamID)));
-                        JoinAnswerPayload answer1Payload = new JoinAnswerPayload()
+                        bool accepted = players.TryAdd(key, new GMPlayer(key, (Team)Enum.Parse(typeof(Team), payloadJoin.TeamID)));
+                        JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
                         {
                             accepted = accepted,
                             agentID = key,
                         };
-                        GMMessage answer1 = new GMMessage()
+                        GMMessage answerJoin = new GMMessage()
                         {
                             Id = 107,
-                            Payload = JsonConvert.SerializeObject(answer1Payload),
+                            Payload = JsonConvert.SerializeObject(answerJoinPayload),
                         };
-                        await manager.SendMessageAsync(players[key].SocketID, answer1);
+                        await manager.SendMessageAsync(players[key].SocketID, answerJoin);
                         break;
                     case (int)MessageID.Move:
-                        MovePayload payload2 = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
+                        MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
                         AbstractField field = null;
                         int[] position1 = players[message.AgentID].GetPosition();
-                        switch ((Directions)Enum.Parse(typeof(Directions), payload2.Direction))
+                        switch ((Directions)Enum.Parse(typeof(Directions), payloadMove.Direction))
                         {
                             case Directions.N:
                                 if (position1[1] + 1 < board.GetLength(1)) field = board[position1[0]][position1[1] + 1];
@@ -105,13 +105,13 @@ namespace GameMaster.Models
                     case (int)MessageID.Pick:
                         int[] position2 = players[message.AgentID].GetPosition();
                         board[position2[0]][position2[1]].PickUp(players[message.AgentID]);
-                        EmptyPayload answer2Payload = new EmptyPayload();
-                        GMMessage answer2 = new GMMessage()
+                        EmptyPayload answerPickPayload = new EmptyPayload();
+                        GMMessage answerPick = new GMMessage()
                         {
                             Id = 109,
-                            Payload = JsonConvert.SerializeObject(answer2Payload),
+                            Payload = JsonConvert.SerializeObject(answerPickPayload),
                         };
-                        await manager.SendMessageAsync(players[message.AgentID].SocketID, answer2);
+                        await manager.SendMessageAsync(players[message.AgentID].SocketID, answerPick);
                         break;
                     case (int)MessageID.Put:
                         bool point = players[message.AgentID].Put();
