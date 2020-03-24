@@ -223,6 +223,7 @@ namespace GameMaster.Models
             }
 
             waitingKnowledgeRequests = new HashSet<string>();
+
             // TODO : initialize rest
         }
 
@@ -279,22 +280,22 @@ namespace GameMaster.Models
             piecesOnBoard += 1;
         }
 
-        private async Task ForwardKnowledgeQuestion(AgentMessage agentMessage)
+        private async Task ForwardKnowledgeQuestion(PlayerMessage playerMessage)
         {
-            BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(agentMessage.payload);
+            BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(playerMessage.Payload);
             ForwardKnowledgeQuestionPayload payload = new ForwardKnowledgeQuestionPayload()
             {
-                askingID = agentMessage.agentID,
-                leader = players[agentMessage.agentID.ToString()].IsLeader,
-                teamId = players[agentMessage.agentID.ToString()].Team
+                askingID = playerMessage.AgentID,
+                leader = players[playerMessage.AgentID].IsLeader,
+                teamId = players[playerMessage.AgentID].Team,
             };
             GMMessage gmMessage = new GMMessage()
-            { 
-                id = begPayload.askedAgentID,
-                payload = agentMessage.payload
+            {
+                Id = begPayload.askedAgentID,
+                Payload = playerMessage.Payload,
             };
 
-            waitingKnowledgeRequests.Add(agentMessage.agentID.ToString() + begPayload.askedAgentID.ToString());
+            waitingKnowledgeRequests.Add(playerMessage.AgentID.ToString() + begPayload.askedAgentID.ToString());
             await socketManager.SendMessageAsync(GMMessageType.ForwardKnowledgeQuestion.ToString(), gmMessage);
         }
 
