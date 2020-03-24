@@ -1,6 +1,7 @@
-﻿using GameMaster.Models;
-using System;
+﻿using System;
 using System.Reflection;
+
+using GameMaster.Models;
 using Xunit;
 
 namespace GameMaster.Tests.Helpers

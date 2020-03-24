@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 
 using Player.Models.Payloads;
 using Player.Models.Strategies;
-using Shared;
 using Shared.Enums;
-using Shared.Models.Messages;
+using Shared.Messages;
 using Shared.Senders;
 
 namespace Player.Models
@@ -59,7 +58,7 @@ namespace Player.Models
         }
 
         // Start before
-        internal void Work()
+        internal async Task WorkAsync()
         {
             working = true;
             while (working)
