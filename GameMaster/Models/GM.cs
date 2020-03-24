@@ -34,7 +34,7 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; set; }
 
-        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<WebSocket, GMMessage> manager, ILogger logger)
+        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> manager, ILogger logger)
         {
             this.logger = logger;
             this.conf = conf;
@@ -59,10 +59,10 @@ namespace GameMaster.Models
                         players[message.PlayerID].Discover(this);
                         break;
                     case PlayerMessageID.GiveInfo:
-                        ForwardKnowledgeReply(message);
+                        await ForwardKnowledgeReply(message);
                         break;
                     case PlayerMessageID.BegForInfo:
-                        ForwardKnowledgeQuestion(message);
+                        await ForwardKnowledgeQuestion(message);
                         break;
                     case PlayerMessageID.JoinTheGame:
                         JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
@@ -87,16 +87,28 @@ namespace GameMaster.Models
                         switch (payloadMove.Direction)
                         {
                             case Directions.N:
-                                if (position1[1] + 1 < board.GetLength(1)) field = board[position1[0]][position1[1] + 1];
+                                if (position1[1] + 1 < board.GetLength(1))
+                                {
+                                    field = board[position1[0]][position1[1] + 1];
+                                }
                                 break;
                             case Directions.S:
-                                if (position1[1] - 1 >= 0) field = board[position1[0]][position1[1] - 1];
+                                if (position1[1] - 1 >= 0)
+                                {
+                                    field = board[position1[0]][position1[1] - 1];
+                                }
                                 break;
                             case Directions.E:
-                                if (position1[0] + 1 < board.GetLength(0)) field = board[position1[0] + 1][position1[1]];
+                                if (position1[0] + 1 < board.GetLength(0))
+                                {
+                                    field = board[position1[0] + 1][position1[1]];
+                                }
                                 break;
                             case Directions.W:
-                                if (position1[0] - 1 >= 0) field = board[position1[0] - 1][position1[1]];
+                                if (position1[0] - 1 >= 0)
+                                {
+                                    field = board[position1[0] - 1][position1[1]];
+                                }
                                 break;
                         }
                         players[message.PlayerID].Move(field);
@@ -116,8 +128,14 @@ namespace GameMaster.Models
                         bool point = players[message.PlayerID].Put();
                         if (point)
                         {
-                            if (players[message.PlayerID].Team == Team.Red) redTeamPoints++;
-                            else blueTeamPoints++;
+                            if (players[message.PlayerID].Team == Team.Red)
+                            {
+                                redTeamPoints++;
+                            }
+                            else
+                            {
+                                blueTeamPoints++;
+                            }
                         }
                         break;
                     default:
