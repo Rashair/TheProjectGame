@@ -328,13 +328,13 @@ namespace Player.Models
                             for (int j = 0; j < payloadGive.Distances.GetLength(1); j++)
                             {
                                 if (payloadGive.Distances[i, j] != -1) Board[i, j].DistToPiece = payloadGive.Distances[i, j];
-                                if (team == Team.Red)
+                                if (payloadGive.RedTeamGoalAreaInformations[i, j] != GoalInfo.IDK)
                                 {
-                                    if (payloadGive.RedTeamGoalAreaInformations[i, j] != GoalInfo.IDK) Board[i, j].GoalInfo = payloadGive.RedTeamGoalAreaInformations[i, j];
+                                    Board[i, j].GoalInfo = payloadGive.RedTeamGoalAreaInformations[i, j];
                                 }
-                                else
+                                else if (payloadGive.BlueTeamGoalAreaInformations[i, j] != GoalInfo.IDK)
                                 {
-                                    if (payloadGive.BlueTeamGoalAreaInformations[i, j] != GoalInfo.IDK) Board[i, j].GoalInfo = payloadGive.BlueTeamGoalAreaInformations[i, j];
+                                    Board[i, j].GoalInfo = payloadGive.BlueTeamGoalAreaInformations[i, j];
                                 }
                             }
                         }
