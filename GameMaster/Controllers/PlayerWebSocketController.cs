@@ -6,7 +6,7 @@ using System.Threading.Tasks.Dataflow;
 using GameMaster.Managers;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Shared.Messages;
+using Shared.Models.Messages;
 
 namespace GameMaster.Controllers
 {

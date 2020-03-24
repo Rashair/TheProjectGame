@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Player.Clients;
-using Shared.Messages;
+using Shared.Models.Messages;
 
 namespace Player.Services
 {

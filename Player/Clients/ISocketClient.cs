@@ -7,6 +7,7 @@ namespace Player.Clients
     public interface ISocketClient<R, S>
     {
         bool IsOpen { get; }
+
         Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
 
         Task CloseAsync(CancellationToken cancellationToken);

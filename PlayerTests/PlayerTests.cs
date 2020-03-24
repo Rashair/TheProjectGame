@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks.Dataflow;
+
 using Newtonsoft.Json;
 using Player.Clients;
 using Player.Models;
@@ -6,9 +10,6 @@ using Shared.Enums;
 using Shared.Models;
 using Shared.Models.Messages;
 using Shared.Models.Payloads;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks.Dataflow;
 using Xunit;
 
 namespace Player.Tests
@@ -24,9 +25,9 @@ namespace Player.Tests
                 currentPosition = new Position()
                 {
                     x = 0,
-                    y = 0
+                    y = 0,
                 },
-                closestPiece = 0
+                closestPiece = 0,
             };
             GMMessage message = new GMMessage()
             {
@@ -67,7 +68,7 @@ namespace Player.Tests
 
             player.AcceptMessage();
 
-            Assert.Equal(0, player.board[0, 0].distToPiece);
+            Assert.Equal(0, player.Position.Item1);
         }
 
         [Fact]
@@ -87,7 +88,7 @@ namespace Player.Tests
             };
             GMMessage messageDiscover = new GMMessage()
             {
-                Id = GMMessageID.MoveAnswer,
+                Id = GMMessageID.DiscoverAnswer,
                 Payload = JsonConvert.SerializeObject(payloadDiscover),
             };
 
