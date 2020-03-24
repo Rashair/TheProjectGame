@@ -312,6 +312,14 @@ namespace Player.Models
                         {
                             Position = new Tuple<int, int>(payloadMove.CurrentPosition.X, payloadMove.CurrentPosition.Y);
                             Board[Position.Item1, Position.Item2].DistToPiece = payloadMove.ClosestPiece;
+                            EmptyPayload answerPickPayload = new EmptyPayload();
+                            PlayerMessage messageStart = new PlayerMessage()
+                            {
+                                MessageID = PlayerMessageID.Pick,
+                                PlayerID = id,
+                                Payload = JsonConvert.SerializeObject(answerPickPayload),
+                            };
+                            Communicate(messageStart);
                         }
                         break;
                     case GMMessageID.PickAnswer:
