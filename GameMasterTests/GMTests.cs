@@ -1,16 +1,15 @@
-using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
 using Moq;
-using Shared.Models.Messages;
-using System.Collections.Generic;
-using System.Threading.Tasks.Dataflow;
+using Shared.Messages;
 using Xunit;
+
 using static GameMaster.Tests.Helpers.ReflectionHelpers;
 
 namespace GameMaster.Tests
@@ -63,7 +62,7 @@ namespace GameMaster.Tests
             Assert.Equal(x, pieceCount);
         }
 
-        private static int GetPieceCount(TaskField taskField)
+        private int GetPieceCount(TaskField taskField)
         {
             var taskFieldInfo = typeof(AbstractField).GetProperty("Pieces",
                 BindingFlags.NonPublic | BindingFlags.Instance);

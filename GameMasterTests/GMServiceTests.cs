@@ -1,14 +1,16 @@
-﻿using GameMaster.Models;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
+
+using GameMaster.Models;
 using GameMaster.Services;
 using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Shared.Models.Messages;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
+using Shared.Messages;
 using Xunit;
+
 using static GameMaster.Tests.Helpers.ReflectionHelpers;
 
 namespace GameMaster.Tests
@@ -31,8 +33,7 @@ namespace GameMaster.Tests
             var gameMaster = serviceProvider.GetService<GM>();
             var startGame = GetMethod("StartGame");
 
-            //Act
-            
+            // Act
             int count = 0;
             int expected = 10;
             int delay = 500;
@@ -76,7 +77,7 @@ namespace GameMaster.Tests
             var startGame = GetMethod("StartGame");
             startGame.Invoke(gameMaster, null);
 
-            //Act
+            // Act
             int delay = 500;
             await Task.Run(async () =>
             {
@@ -105,7 +106,7 @@ namespace GameMaster.Tests
             {
                 queue.Post(new PlayerMessage());
             }
-            services.AddSingleton<BufferBlock<PlayerMessage>>(queue);
+            services.AddSingleton(queue);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
 
@@ -115,7 +116,7 @@ namespace GameMaster.Tests
             var startGame = GetMethod("StartGame");
             startGame.Invoke(gameMaster, null);
 
-            //Act
+            // Act
             int delay = 500;
             await Task.Run(async () =>
             {
@@ -151,7 +152,7 @@ namespace GameMaster.Tests
             var startGame = GetMethod("StartGame");
             startGame.Invoke(gameMaster, null);
 
-            //Act
+            // Act
             int delay = 500;
             await Task.Run(async () =>
             {
