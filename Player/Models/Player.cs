@@ -1,13 +1,14 @@
-﻿using Player.Models.Payloads;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Player.Models.Payloads;
 using Player.Models.Strategies;
 using Shared;
 using Shared.Enums;
 using Shared.Models.Messages;
 using Shared.Senders;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Player.Models
 {
@@ -18,31 +19,40 @@ namespace Player.Models
         private int penaltyTime;
         private IStrategy strategy;
         private bool working;
-        public readonly Team team;
+
         public bool IsLeader { get; private set; }
+
         public bool HavePiece { get; private set; }
+
         public Field[,] Board { get; private set; }
+
         public Tuple<int, int> Position { get; private set; }
+
         public List<int> WaitingPlayers { get; private set; }
+
         public int[] TeamMatesIds { get; private set; }
+
         public int LeaderId { get; private set; }
+
         public (int x, int y) BoardSize { get; private set; }
+
+        public Team Team { get; }
 
         public Player(Team team)
         {
-            this.team = team;
+            this.Team = team;
         }
 
         public void JoinTheGame()
         {
             JoinGamePayload payload = new JoinGamePayload()
             {
-                teamID = team.ToString()
+                TeamID = Team.ToString(),
             };
             PlayerMessage message = new PlayerMessage()
             {
-                messageID = (int)MessageType.JoinTheGame,
-                payload = payload.Serialize()
+                MessageID = (int)MessageType.JoinTheGame,
+                Payload = payload.Serialize(),
             };
             Communicate(message);
         }
@@ -67,13 +77,13 @@ namespace Player.Models
         {
             MovePayload payload = new MovePayload()
             {
-                direction = direction.ToString()
+                Direction = direction.ToString(),
             };
             PlayerMessage message = new PlayerMessage()
             {
-                messageID = (int)MessageType.Move,
-                agentID = id,
-                payload = payload.Serialize()
+                MessageID = (int)MessageType.Move,
+                AgentID = id,
+                Payload = payload.Serialize(),
             };
             Communicate(message);
         }
@@ -83,9 +93,9 @@ namespace Player.Models
             EmptyPayload payload = new EmptyPayload();
             PlayerMessage message = new PlayerMessage()
             {
-                messageID = (int)MessageType.Put,
-                agentID = id,
-                payload = payload.Serialize()
+                MessageID = (int)MessageType.Put,
+                AgentID = id,
+                Payload = payload.Serialize(),
             };
             Communicate(message);
         }
@@ -94,8 +104,8 @@ namespace Player.Models
         {
             PlayerMessage message = new PlayerMessage()
             {
-                messageID = (int)MessageType.BegForInfo,
-                agentID = id
+                MessageID = (int)MessageType.BegForInfo,
+                AgentID = id,
             };
 
             Random rnd = new Random();
@@ -106,9 +116,9 @@ namespace Player.Models
             }
             BegForInfoPayload payload = new BegForInfoPayload()
             {
-                askedAgentID = TeamMatesIds[index]
+                AskedAgentID = TeamMatesIds[index],
             };
-            message.payload = payload.Serialize();
+            message.Payload = payload.Serialize();
             Communicate(message);
         }
 
@@ -119,44 +129,42 @@ namespace Player.Models
 
             PlayerMessage message = new PlayerMessage()
             {
-                messageID = (int)MessageType.GiveInfo,
-                agentID = id
-
+                MessageID = (int)MessageType.GiveInfo,
+                AgentID = id,
             };
 
             GiveInfoPayload response = new GiveInfoPayload();
             if (toLeader)
             {
-                response.respondToID = LeaderId;
+                response.RespondToID = LeaderId;
             }
             else
             {
-                response.respondToID = WaitingPlayers[0];
+                response.RespondToID = WaitingPlayers[0];
                 WaitingPlayers.RemoveAt(0);
             }
 
-            response.distances = new int[BoardSize.x, BoardSize.y];
-            response.redTeamGoalAreaInformations = new GoalInfo[BoardSize.x, BoardSize.y];
-            response.blueTeamGoalAreaInformations = new GoalInfo[BoardSize.x, BoardSize.y];
+            response.Distances = new int[BoardSize.x, BoardSize.y];
+            response.RedTeamGoalAreaInformations = new GoalInfo[BoardSize.x, BoardSize.y];
+            response.BlueTeamGoalAreaInformations = new GoalInfo[BoardSize.x, BoardSize.y];
 
             for (int i = 0; i < Board.Length; ++i)
             {
                 int row = i / BoardSize.y;
                 int col = i % BoardSize.y;
-                response.distances[row, col] = Board[row, col].distToPiece;
-                if (team == Team.Red)
+                response.Distances[row, col] = Board[row, col].DistToPiece;
+                if (Team == Team.Red)
                 {
-                    response.redTeamGoalAreaInformations[row, col] = Board[row, col].goalInfo;
-                    response.blueTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
-
+                    response.RedTeamGoalAreaInformations[row, col] = Board[row, col].GoalInfo;
+                    response.BlueTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
                 }
                 else
                 {
-                    response.blueTeamGoalAreaInformations[row, col] = Board[row, col].goalInfo;
-                    response.redTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
+                    response.BlueTeamGoalAreaInformations[row, col] = Board[row, col].GoalInfo;
+                    response.RedTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
                 }
             }
-            message.payload = response.Serialize();
+            message.Payload = response.Serialize();
             Communicate(message);
         }
 
@@ -176,9 +184,9 @@ namespace Player.Models
         {
             return new PlayerMessage()
             {
-                messageID = (int)type,
-                agentID = id,
-                payload = payload.Serialize()
+                MessageID = (int)type,
+                AgentID = id,
+                Payload = payload.Serialize(),
             };
         }
 

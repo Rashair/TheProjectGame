@@ -1,12 +1,13 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
+
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Player.Clients;
 using Shared.Models.Messages;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace Player.Services
 {
@@ -14,6 +15,7 @@ namespace Player.Services
     {
         private readonly ISocketClient<GMMessage, PlayerMessage> client;
         private readonly IConfiguration conf;
+
         // TODO switch to our logger, when ready
         private readonly ILogger logger;
         private readonly BufferBlock<GMMessage> queue;
@@ -42,7 +44,7 @@ namespace Player.Services
                 {
                     bool sended = await queue.SendAsync(message, stoppingToken);
                     if (!sended)
-                        logger.LogWarning($"SocketService| GMMessage id: {message.id} has been lost");
+                        logger.LogWarning($"SocketService| GMMessage id: {message.Id} has been lost");
                     (result, message) = await client.ReceiveAsync(stoppingToken);
                 }
             }

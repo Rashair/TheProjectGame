@@ -1,7 +1,8 @@
-﻿using Shared.Models.Messages;
-using Shared.Senders;
-using System;
+﻿using System;
 using System.Collections.Generic;
+
+using Shared.Models.Messages;
+using Shared.Senders;
 
 namespace CommunicationServer.Models
 {

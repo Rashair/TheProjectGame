@@ -2,8 +2,10 @@
 {
     public class Field
     {
-        public GoalInfo goalInfo;
-        public bool playerInfo;
-        public int distToPiece;
+        public GoalInfo GoalInfo { get; set; }
+
+        public bool PlayerInfo { get; set; }
+
+        public int DistToPiece { get; set; }
     }
 }

@@ -1,6 +1,6 @@
-﻿using GameMaster.Models.Pieces;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
+using GameMaster.Models.Pieces;
 
 namespace GameMaster.Models.Fields
 {
@@ -9,21 +9,22 @@ namespace GameMaster.Models.Fields
         private readonly int x;
         private readonly int y;
         private GMPlayer whosHere;
-        protected HashSet<AbstractPiece> pieces;
+
+        protected HashSet<AbstractPiece> Pieces { get; set; }
 
         public AbstractField(int x, int y)
         {
             this.x = x;
             this.y = y;
-            pieces = new HashSet<AbstractPiece>();
+            Pieces = new HashSet<AbstractPiece>();
         }
 
         public void Leave(GMPlayer player)
         {
-              whosHere = null;
+            whosHere = null;
         }
 
-        //originally returned void 
+        // originally returned void
         public abstract bool PickUp(GMPlayer player);
 
         public abstract bool Put(AbstractPiece piece);
@@ -38,12 +39,13 @@ namespace GameMaster.Models.Fields
                 whosHere = player;
                 return true;
             }
+
             return false;
         }
 
         public bool ContainsPieces()
         {
-            return pieces.Count > 0;
+            return Pieces.Count > 0;
         }
 
         public int[] GetPosition()

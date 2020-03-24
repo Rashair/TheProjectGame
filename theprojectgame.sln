@@ -11,15 +11,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameMaster", "GameMaster\Ga
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csproj", "{725E648B-A337-4684-A305-0E078F956CA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameMaster.Tests", "GameMasterTests\GameMaster.Tests.csproj", "{49AC3508-B1BD-4FD6-85B5-30A17BDA8414}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameMaster.Tests", "GameMasterTests\GameMaster.Tests.csproj", "{49AC3508-B1BD-4FD6-85B5-30A17BDA8414}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunicationServer.Tests", "CommunicationServerTests\CommunicationServer.Tests.csproj", "{A6FE922B-29AF-453F-8666-8E970C0C77B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunicationServer.Tests", "CommunicationServerTests\CommunicationServer.Tests.csproj", "{A6FE922B-29AF-453F-8666-8E970C0C77B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.Tests", "PlayerTests\Player.Tests.csproj", "{484808C0-FF23-4E43-9326-EB9AA1BDE0D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.Tests", "PlayerTests\Player.Tests.csproj", "{484808C0-FF23-4E43-9326-EB9AA1BDE0D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Tests", "SharedTests\Shared.Tests.csproj", "{CF2A6B1F-376F-4682-92D8-CBFB8507C0CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.Tests", "SharedTests\Shared.Tests.csproj", "{CF2A6B1F-376F-4682-92D8-CBFB8507C0CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{319743E1-A59C-44C5-A951-6F310417165C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{319743E1-A59C-44C5-A951-6F310417165C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommunicationServer.Dir", "CommunicationServer.Dir", "{0C3A9D45-0B82-491E-8B34-80DD77E064D1}"
 EndProject
@@ -28,6 +28,13 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Player.Dir", "Player.Dir", "{15B1B56B-576C-4F76-9545-3D4BF8BC9CFC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared.Dir", "Shared.Dir", "{9FFC9D17-4224-425C-9860-9EABD57BE363}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{424C60A1-A2F7-4B0B-B522-390C2125627B}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		stylecop.json = stylecop.json
+		StyleCop.ruleset = StyleCop.ruleset
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
