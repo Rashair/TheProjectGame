@@ -120,10 +120,10 @@ namespace GameMaster.Models
                             case Directions.S:
                                 if (position1[1] - 1 >= 0) field = board[position1[0]][position1[1] - 1];
                                 break;
-                            case Directions.W:
+                            case Directions.E:
                                 if (position1[0] + 1 < board.GetLength(0)) field = board[position1[0] + 1][position1[1]];
                                 break;
-                            case Directions.E:
+                            case Directions.W:
                                 if (position1[0] - 1 >= 0) field = board[position1[0] - 1][position1[1]];
                                 break;
                         }
