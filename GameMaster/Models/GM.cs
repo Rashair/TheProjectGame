@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using GameMaster.Models.Fields;
-using GameMaster.Models.Pieces;
-using Shared.Models.Enums;
-using Shared.Models.Messages;
-using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using System.Timers;
+
+using GameMaster.Models.Fields;
+using GameMaster.Models.Pieces;
+using Shared.Enums;
+using Shared.Messages;
 
 namespace GameMaster.Models
 {
