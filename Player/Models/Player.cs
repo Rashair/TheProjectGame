@@ -230,7 +230,10 @@ namespace Player.Models
                 {
                     case GMMessageID.CheckAnswer:
                         CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
-                        if (payloadCheck.Sham) HavePiece = false;
+                        if (payloadCheck.Sham)
+                        {
+                            HavePiece = false;
+                        }
                         break;
                     case GMMessageID.DestructionAnswer:
                         HavePiece = false;
@@ -256,8 +259,14 @@ namespace Player.Models
                         StartGamePayload payloadStart = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
                         id = payloadStart.PlayerID;
                         TeamMatesIds = payloadStart.AlliesIDs;
-                        if (id == payloadStart.LeaderID) IsLeader = true;
-                        else IsLeader = false;
+                        if (id == payloadStart.LeaderID)
+                        {
+                            IsLeader = true;
+                        }
+                        else
+                        {
+                            IsLeader = false;
+                        }
                         team = payloadStart.TeamId;
                         Board = new Field[payloadStart.BoardSize.X, payloadStart.BoardSize.Y];
                         for (int i = 0; i < payloadStart.BoardSize.X; i++)
@@ -289,7 +298,10 @@ namespace Player.Models
                     case GMMessageID.JoinTheGameAnswer:
                         JoinAnswerPayload payloadJoin = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.Payload);
                         id = payloadJoin.PlayerID;
-                        if (!payloadJoin.Accepted) Stop();
+                        if (!payloadJoin.Accepted)
+                        {
+                            Stop();
+                        }
                         break;
                     case GMMessageID.MoveAnswer:
                         MoveAnswerPayload payloadMove = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
@@ -319,7 +331,10 @@ namespace Player.Models
                         {
                             for (int j = 0; j < payloadGive.Distances.GetLength(1); j++)
                             {
-                                if (payloadGive.Distances[i, j] != -1) Board[i, j].DistToPiece = payloadGive.Distances[i, j];
+                                if (payloadGive.Distances[i, j] != -1)
+                                {
+                                    Board[i, j].DistToPiece = payloadGive.Distances[i, j];
+                                }
                                 if (payloadGive.RedTeamGoalAreaInformations[i, j] != GoalInfo.IDK)
                                 {
                                     Board[i, j].GoalInfo = payloadGive.RedTeamGoalAreaInformations[i, j];
