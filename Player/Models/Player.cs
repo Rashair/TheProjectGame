@@ -240,12 +240,12 @@ namespace Player.Models
                         Board[Position.Item1, Position.Item2].DistToPiece = payloadDiscover.DistanceFromCurrent;
                         Board[Position.Item1 + 1, Position.Item2].DistToPiece = payloadDiscover.DistanceE;
                         Board[Position.Item1 - 1, Position.Item2].DistToPiece = payloadDiscover.DistanceW;
-                        Board[Position.Item1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceS;
-                        Board[Position.Item1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceN;
-                        Board[Position.Item1 + 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceSE;
-                        Board[Position.Item1 - 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceNW;
-                        Board[Position.Item1 + 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceNE;
-                        Board[Position.Item1 - 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceSW;
+                        Board[Position.Item1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceN;
+                        Board[Position.Item1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceS;
+                        Board[Position.Item1 + 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceSE;
+                        Board[Position.Item1 - 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceNW;
+                        Board[Position.Item1 + 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceNE;
+                        Board[Position.Item1 - 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceSW;
                         break;
                     case GMMessageID.EndGame:
                         EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
