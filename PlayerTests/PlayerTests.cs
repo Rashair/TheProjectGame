@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 using Newtonsoft.Json;
@@ -17,7 +18,7 @@ namespace Player.Tests
     public class PlayerTests
     {
         [Fact]
-        public void TestAcceptMessageDiscoverAccept()
+        public async Task TestAcceptMessageDiscoverAccept()
         {
             DiscoveryAnswerPayload payloadDiscover = new DiscoveryAnswerPayload()
             {
@@ -75,13 +76,14 @@ namespace Player.Tests
             }
             player.position = new Tuple<int, int>(1, 1);
 
-            player.AcceptMessage();
+            await player.AcceptMessage();
+            await player.AcceptMessage();
 
             Assert.Equal(0, player.board[0, 0].distToPiece);
         }
 
         [Fact]
-        public void TestAcceptMessageBegForInfoAccept()
+        public async Task TestAcceptMessageBegForInfoAccept()
         {
             BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
             {
@@ -125,7 +127,8 @@ namespace Player.Tests
 
             player.waitingPlayers = new List<int>();
 
-            player.AcceptMessage();
+            await player.AcceptMessage();
+            await player.AcceptMessage();
 
             Assert.Single(player.waitingPlayers);
         }

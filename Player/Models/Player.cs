@@ -58,8 +58,7 @@ namespace Player.Models
             this.client = client;
         }
 
-        // JoinTheGame before
-        internal void JoinTheGame()
+        internal async Task JoinTheGame()
         {
             JoinGamePayload payload = new JoinGamePayload()
             {
@@ -70,7 +69,7 @@ namespace Player.Models
                 MessageID = PlayerMessageID.JoinTheGame,
                 Payload = payload.Serialize(),
             };
-            Communicate(message);
+            await Communicate(message);
         }
 
         // Start before
@@ -91,7 +90,7 @@ namespace Player.Models
             working = false;
         }
 
-        public void Move(Directions direction)
+        public async Task Move(Directions direction)
         {
             MovePayload payload = new MovePayload()
             {
@@ -103,10 +102,10 @@ namespace Player.Models
                 PlayerID = id,
                 Payload = payload.Serialize(),
             };
-            Communicate(message);
+            await Communicate(message);
         }
 
-        public void Put()
+        public async Task Put()
         {
             EmptyPayload payload = new EmptyPayload();
             PlayerMessage message = new PlayerMessage()
@@ -115,10 +114,10 @@ namespace Player.Models
                 PlayerID = id,
                 Payload = payload.Serialize(),
             };
-            Communicate(message);
+            await Communicate(message);
         }
 
-        public void BegForInfo()
+        public async Task BegForInfo()
         {
             PlayerMessage message = new PlayerMessage()
             {
@@ -140,10 +139,10 @@ namespace Player.Models
 
             message.Payload = payload.Serialize();
 
-            Communicate(message);
+            await Communicate(message);
         }
 
-        public void GiveInfo(bool toLeader = false)
+        public async Task GiveInfo(bool toLeader = false)
         {
             if (WaitingPlayers.Count < 1 && !toLeader)
                 return;
@@ -190,14 +189,14 @@ namespace Player.Models
 
             message.Payload = response.Serialize();
 
-            Communicate(message);
+            await Communicate(message);
         }
 
-        public void RequestsResponse(int respondToID, bool isFromLeader = false)
+        public async Task RequestsResponse(int respondToID, bool isFromLeader = false)
         {
             if (isFromLeader)
             {
-                GiveInfo(isFromLeader);
+                await GiveInfo(isFromLeader);
             }
             else
             {
@@ -215,21 +214,21 @@ namespace Player.Models
             };
         }
 
-        public void CheckPiece()
+        public async Task CheckPiece()
         {
             EmptyPayload payload = new EmptyPayload();
             PlayerMessage message = CreateMessage(PlayerMessageID.CheckPiece, payload);
-            Communicate(message);
+            await Communicate(message);
         }
 
-        public void Discover()
+        public async Task Discover()
         {
             EmptyPayload payload = new EmptyPayload();
             PlayerMessage message = CreateMessage(PlayerMessageID.Discover, payload);
-            Communicate(message);
+            await Communicate(message);
         }
 
-        public void AcceptMessage()
+        public async Task AcceptMessage()
         {
             GMMessage message;
             if (queue.TryReceive(null, out message))
@@ -291,12 +290,12 @@ namespace Player.Models
                         BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
                         if (team == payloadBeg.TeamId)
                         {
-                            RequestsResponse(payloadBeg.AskingID, payloadBeg.Leader);
+                            await RequestsResponse(payloadBeg.AskingID, payloadBeg.Leader);
                         }
                         break;
                     case GMMessageID.JoinTheGameAnswer:
                         JoinAnswerPayload payloadJoin = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.Payload);
-                        if (id != payloadJoin.PlayerID) id = payloadJoin.PlayerID;
+                        id = payloadJoin.PlayerID;
                         if (!payloadJoin.Accepted) Stop();
                         break;
                     case GMMessageID.MoveAnswer:
@@ -312,7 +311,7 @@ namespace Player.Models
                                 PlayerID = id,
                                 Payload = JsonConvert.SerializeObject(messagePickPayload),
                             };
-                            Communicate(messagePick);
+                            await Communicate(messagePick);
                         }
                         break;
                     case GMMessageID.PickAnswer:
@@ -350,7 +349,7 @@ namespace Player.Models
             strategy.MakeDecision(this);
         }
 
-        private async void Communicate(PlayerMessage message)
+        private async Task Communicate(PlayerMessage message)
         {
             CancellationToken ct = CancellationToken.None;
             await client.SendAsync(message, ct);
