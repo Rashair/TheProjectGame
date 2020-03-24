@@ -15,6 +15,7 @@ namespace Player.Services
     {
         private readonly ISocketClient<GMMessage, PlayerMessage> client;
         private readonly IConfiguration conf;
+
         // TODO switch to our logger, when ready
         private readonly ILogger logger;
         private readonly BufferBlock<GMMessage> queue;

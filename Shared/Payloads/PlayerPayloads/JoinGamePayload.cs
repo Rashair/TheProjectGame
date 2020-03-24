@@ -2,6 +2,6 @@
 {
     public class JoinGamePayload : Payload
     {
-        public string teamID;
+        public string TeamID { get; set; }
     }
 }

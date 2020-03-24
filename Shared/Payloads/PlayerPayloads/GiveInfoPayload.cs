@@ -2,9 +2,12 @@
 {
     public class GiveInfoPayload : Payload
     {
-        public int respondToID;
-        public int[,] distances;
-        public GoalInfo[,] redTeamGoalAreaInformations;
-        public GoalInfo[,] blueTeamGoalAreaInformations;
+        public int[,] Distances { get; set; }
+
+        public int RespondToID { get; set; }
+
+        public GoalInfo[,] RedTeamGoalAreaInformations { get; set; }
+
+        public GoalInfo[,] BlueTeamGoalAreaInformations { get; set; }
     }
 }

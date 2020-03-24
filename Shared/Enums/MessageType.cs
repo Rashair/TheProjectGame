@@ -10,6 +10,6 @@
         JoinTheGame,
         Move,
         Pick,
-        Put
-    };
+        Put,
+    }
 }
