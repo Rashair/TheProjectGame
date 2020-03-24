@@ -2,6 +2,6 @@
 {
     public class MovePayload : Payload
     {
-        public string Direction { get; set; }
+        public Directions Direction { get; set; }
     }
 }

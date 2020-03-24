@@ -2,6 +2,8 @@ using Newtonsoft.Json;
 using Player.Clients;
 using Player.Models;
 using Shared;
+using Shared.Enums;
+using Shared.Models;
 using Shared.Models.Messages;
 using Shared.Models.Payloads;
 using System;
@@ -28,8 +30,30 @@ namespace Player.Tests
             };
             GMMessage message = new GMMessage()
             {
-                id = (int)MessageID.MoveAnswer,
-                payload = JsonConvert.SerializeObject(payload)
+                Id = GMMessageID.MoveAnswer,
+                Payload = JsonConvert.SerializeObject(payloadMove),
+            };
+
+            StartGamePayload payloadStart = new StartGamePayload
+            {
+                PlayerID = 1,
+                AlliesIDs = new int[1] { 2 },
+                LeaderID = 1,
+                EnemiesIDs = new int[2] { 3, 4 },
+                TeamId = Team.Red,
+                BoardSize = new BoardSize { X = 3,  Y = 3 },
+                GoalAreaSize = 1,
+                NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
+                NumberOfPieces = 2,
+                NumberOfGoals = 2,
+                Penalties = new Penalties { Move = "0", CheckForSham = "0", Discovery = "0", DestroyPiece = "0", PutPiece = "0", InformationExchange = "0" },
+                ShamPieceProbability = 0.5f,
+                Position = new Position { X = 1, Y = 1 },
+            };
+            GMMessage messageStart = new GMMessage()
+            {
+                Id = GMMessageID.StartGame,
+                Payload = JsonConvert.SerializeObject(payloadStart),
             };
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
@@ -49,22 +73,44 @@ namespace Player.Tests
         [Fact]
         public void TestAcceptMessageDiscoverAccept()
         {
-            DiscoveryAnswerPayload payload = new DiscoveryAnswerPayload()
+            DiscoveryAnswerPayload payloadDiscover = new DiscoveryAnswerPayload()
             {
-                distanceFromCurrent = 0,
-                distanceE = 0,
-                distanceW = 0,
-                distanceS = 0,
-                distanceN = 0,
-                distanceNE = 0,
-                distanceSE = 0,
-                distanceNW = 0,
-                distanceSW = 0
+                DistanceFromCurrent = 0,
+                DistanceE = 0,
+                DistanceW = 0,
+                DistanceS = 0,
+                DistanceN = 0,
+                DistanceNE = 0,
+                DistanceSE = 0,
+                DistanceNW = 0,
+                DistanceSW = 0,
+            };
+            GMMessage messageDiscover = new GMMessage()
+            {
+                Id = GMMessageID.MoveAnswer,
+                Payload = JsonConvert.SerializeObject(payloadDiscover),
+            };
+
+            StartGamePayload payloadStart = new StartGamePayload
+            {
+                PlayerID = 1,
+                AlliesIDs = new int[1] { 2 },
+                LeaderID = 1,
+                EnemiesIDs = new int[2] { 3, 4 },
+                TeamId = Team.Red,
+                BoardSize = new BoardSize { X = 3, Y = 3 },
+                GoalAreaSize = 1,
+                NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
+                NumberOfPieces = 2,
+                NumberOfGoals = 2,
+                Penalties = new Penalties { Move = "0", CheckForSham = "0", Discovery = "0", DestroyPiece = "0", PutPiece = "0", InformationExchange = "0" },
+                ShamPieceProbability = 0.5f,
+                Position = new Position { X = 1, Y = 1 },
             };
             GMMessage message = new GMMessage()
             {
-                id = (int)MessageID.MoveAnswer,
-                payload = JsonConvert.SerializeObject(payload)
+                Id = GMMessageID.StartGame,
+                Payload = JsonConvert.SerializeObject(payloadStart),
             };
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
@@ -93,14 +139,36 @@ namespace Player.Tests
         {
             BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
             {
-                askingID = 1,
-                leader = false,
-                teamId = "Red"
+                AskingID = 2,
+                Leader = false,
+                TeamId = Team.Red,
             };
             GMMessage message = new GMMessage()
             {
-                id = (int)MessageID.BegForInfoForwarded,
-                payload = JsonConvert.SerializeObject(payload)
+                Id = GMMessageID.BegForInfoForwarded,
+                Payload = JsonConvert.SerializeObject(payloadBeg),
+            };
+
+            StartGamePayload payloadStart = new StartGamePayload
+            {
+                PlayerID = 1,
+                AlliesIDs = new int[1] { 2 },
+                LeaderID = 1,
+                EnemiesIDs = new int[2] { 3, 4 },
+                TeamId = Team.Red,
+                BoardSize = new BoardSize { X = 3, Y = 3 },
+                GoalAreaSize = 1,
+                NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
+                NumberOfPieces = 2,
+                NumberOfGoals = 2,
+                Penalties = new Penalties { Move = "0", CheckForSham = "0", Discovery = "0", DestroyPiece = "0", PutPiece = "0", InformationExchange = "0" },
+                ShamPieceProbability = 0.5f,
+                Position = new Position { X = 1, Y = 1 },
+            };
+            GMMessage messageStart = new GMMessage()
+            {
+                Id = GMMessageID.StartGame,
+                Payload = JsonConvert.SerializeObject(payloadStart),
             };
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();

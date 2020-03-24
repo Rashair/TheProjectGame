@@ -12,9 +12,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Shared;
 using Shared.Enums;
-using Shared.Messages;
+using Shared.Models.Messages;
 using Shared.Models.Payloads;
-using Shared.Payloads;
 
 namespace GameMaster.Models
 {
@@ -50,42 +49,42 @@ namespace GameMaster.Models
             {
                 switch (message.MessageID)
                 {
-                    case (int)MessageID.CheckPiece:
-                        players[message.AgentID].CheckHolding();
+                    case PlayerMessageID.CheckPiece:
+                        players[message.PlayerID].CheckHolding();
                         break;
-                    case (int)MessageID.PieceDestruction:
-                        players[message.AgentID].DestroyHolding();
+                    case PlayerMessageID.PieceDestruction:
+                        players[message.PlayerID].DestroyHolding();
                         break;
-                    case (int)MessageID.Discover:
-                        players[message.AgentID].Discover(this);
+                    case PlayerMessageID.Discover:
+                        players[message.PlayerID].Discover(this);
                         break;
-                    case (int)MessageID.GiveInfo:
+                    case PlayerMessageID.GiveInfo:
                         ForwardKnowledgeReply(message);
                         break;
-                    case (int)MessageID.BegForInfo:
+                    case PlayerMessageID.BegForInfo:
                         ForwardKnowledgeQuestion(message);
                         break;
-                    case (int)MessageID.JoinTheGame:
+                    case PlayerMessageID.JoinTheGame:
                         JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
                         int key = players.Count;
-                        bool accepted = players.TryAdd(key, new GMPlayer(key, (Team)Enum.Parse(typeof(Team), payloadJoin.TeamID)));
+                        bool accepted = players.TryAdd(key, new GMPlayer(key, payloadJoin.TeamID));
                         JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
                         {
-                            accepted = accepted,
-                            agentID = key,
+                            Accepted = accepted,
+                            PlayerID = key,
                         };
                         GMMessage answerJoin = new GMMessage()
                         {
-                            Id = 107,
+                            Id = GMMessageID.JoinTheGameAnswer,
                             Payload = JsonConvert.SerializeObject(answerJoinPayload),
                         };
                         await manager.SendMessageAsync(players[key].SocketID, answerJoin);
                         break;
-                    case (int)MessageID.Move:
+                    case PlayerMessageID.Move:
                         MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
                         AbstractField field = null;
-                        int[] position1 = players[message.AgentID].GetPosition();
-                        switch ((Directions)Enum.Parse(typeof(Directions), payloadMove.Direction))
+                        int[] position1 = players[message.PlayerID].GetPosition();
+                        switch (payloadMove.Direction)
                         {
                             case Directions.N:
                                 if (position1[1] + 1 < board.GetLength(1)) field = board[position1[0]][position1[1] + 1];
@@ -100,24 +99,24 @@ namespace GameMaster.Models
                                 if (position1[0] - 1 >= 0) field = board[position1[0] - 1][position1[1]];
                                 break;
                         }
-                        players[message.AgentID].Move(field);
+                        players[message.PlayerID].Move(field);
                         break;
-                    case (int)MessageID.Pick:
-                        int[] position2 = players[message.AgentID].GetPosition();
-                        board[position2[0]][position2[1]].PickUp(players[message.AgentID]);
+                    case PlayerMessageID.Pick:
+                        int[] position2 = players[message.PlayerID].GetPosition();
+                        board[position2[0]][position2[1]].PickUp(players[message.PlayerID]);
                         EmptyPayload answerPickPayload = new EmptyPayload();
                         GMMessage answerPick = new GMMessage()
                         {
-                            Id = 109,
+                            Id = GMMessageID.PickAnswer,
                             Payload = JsonConvert.SerializeObject(answerPickPayload),
                         };
-                        await manager.SendMessageAsync(players[message.AgentID].SocketID, answerPick);
+                        await manager.SendMessageAsync(players[message.PlayerID].SocketID, answerPick);
                         break;
-                    case (int)MessageID.Put:
-                        bool point = players[message.AgentID].Put();
+                    case PlayerMessageID.Put:
+                        bool point = players[message.PlayerID].Put();
                         if (point)
                         {
-                            if (players[message.AgentID].Team == Team.Red) redTeamPoints++;
+                            if (players[message.PlayerID].Team == Team.Red) redTeamPoints++;
                             else blueTeamPoints++;
                         }
                         break;
@@ -259,12 +258,12 @@ namespace GameMaster.Models
             piecesOnBoard += 1;
         }
 
-        private async void ForwardKnowledgeQuestion(PlayerMessage agentMessage)
+        private async void ForwardKnowledgeQuestion(PlayerMessage playerMessage)
         {
             throw new NotImplementedException();
         }
 
-        private async void ForwardKnowledgeReply(PlayerMessage agentMessage)
+        private async void ForwardKnowledgeReply(PlayerMessage playerMessage)
         {
             throw new NotImplementedException();
         }

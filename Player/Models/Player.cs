@@ -9,20 +9,30 @@ using Player.Clients;
 using Player.Models.Strategies;
 using Shared;
 using Shared.Enums;
-using Shared.Messages;
+using Shared.Models.Messages;
 using Shared.Models.Payloads;
-using Shared.Payloads;
 using Shared.Senders;
 
 namespace Player.Models
 {
     public class Player
     {
+        private BufferBlock<GMMessage> queue;
+        private WebSocketClient<GMMessage, PlayerMessage> client;
+
         private int id;
         private ISender sender;
         private int penaltyTime;
         private IStrategy strategy;
         private bool working;
+        private Penalties penaltiesTimes;
+        private Team winner;
+        private int[] enemiesIDs;
+        private int goalAreaSize;
+        private NumberOfPlayers numberOfPlayers;
+        private int numberOfPieces;
+        private int numberOfGoals;
+        private float shamPieceProbability;
         private Team team;
 
         public bool IsLeader { get; private set; }
@@ -41,22 +51,11 @@ namespace Player.Models
 
         public (int x, int y) BoardSize { get; private set; }
 
-        private Penalties penaltiesTimes;
-        private string winner;
-        private int[] enemiesIDs;
-        private int goalAreaSize;
-        private NumberOfPlayers numberOfPlayers;
-        private int numberOfPieces;
-        private int numberOfGoals;
-        private float shamPieceProbability;
-        private BufferBlock<GMMessage> queue;
-        private WebSocketClient<GMMessage, PlayerMessage> client;
-
         public Player(Team team, BufferBlock<GMMessage> queue, WebSocketClient<GMMessage, PlayerMessage> client)
         {
-            team = team;
-            queue = queue;
-            client = client;
+            this.team = team;
+            this.queue = queue;
+            this.client = client;
         }
 
         // JoinTheGame before
@@ -64,11 +63,11 @@ namespace Player.Models
         {
             JoinGamePayload payload = new JoinGamePayload()
             {
-                TeamID = team.ToString(),
+                TeamID = team,
             };
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = (int)MessageType.JoinTheGame,
+                MessageID = PlayerMessageID.JoinTheGame,
                 Payload = payload.Serialize(),
             };
             Communicate(message);
@@ -92,16 +91,16 @@ namespace Player.Models
             working = false;
         }
 
-        public void Move(Direction direction)
+        public void Move(Directions direction)
         {
             MovePayload payload = new MovePayload()
             {
-                Direction = direction.ToString(),
+                Direction = direction,
             };
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = (int)MessageType.Move,
-                AgentID = id,
+                MessageID = PlayerMessageID.Move,
+                PlayerID = id,
                 Payload = payload.Serialize(),
             };
             Communicate(message);
@@ -112,8 +111,8 @@ namespace Player.Models
             EmptyPayload payload = new EmptyPayload();
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = (int)MessageType.Put,
-                AgentID = id,
+                MessageID = PlayerMessageID.Put,
+                PlayerID = id,
                 Payload = payload.Serialize(),
             };
             Communicate(message);
@@ -123,8 +122,8 @@ namespace Player.Models
         {
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = (int)MessageType.BegForInfo,
-                AgentID = id,
+                MessageID = PlayerMessageID.BegForInfo,
+                PlayerID = id,
             };
 
             Random rnd = new Random();
@@ -136,7 +135,7 @@ namespace Player.Models
 
             BegForInfoPayload payload = new BegForInfoPayload()
             {
-                AskedAgentID = TeamMatesIds[index],
+                AskedPlayerID = TeamMatesIds[index],
             };
 
             message.Payload = payload.Serialize();
@@ -151,8 +150,8 @@ namespace Player.Models
 
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = (int)MessageType.GiveInfo,
-                AgentID = id,
+                MessageID = PlayerMessageID.GiveInfo,
+                PlayerID = id,
             };
 
             GiveInfoPayload response = new GiveInfoPayload();
@@ -206,12 +205,12 @@ namespace Player.Models
             }
         }
 
-        private PlayerMessage CreateMessage(MessageType type, Payload payload)
+        private PlayerMessage CreateMessage(PlayerMessageID type, Payload payload)
         {
             return new PlayerMessage()
             {
-                MessageID = (int)type,
-                AgentID = id,
+                MessageID = type,
+                PlayerID = id,
                 Payload = payload.Serialize(),
             };
         }
@@ -219,14 +218,14 @@ namespace Player.Models
         public void CheckPiece()
         {
             EmptyPayload payload = new EmptyPayload();
-            PlayerMessage message = CreateMessage(MessageType.CheckPiece, payload);
+            PlayerMessage message = CreateMessage(PlayerMessageID.CheckPiece, payload);
             Communicate(message);
         }
 
         public void Discover()
         {
             EmptyPayload payload = new EmptyPayload();
-            PlayerMessage message = CreateMessage(MessageType.Discover, payload);
+            PlayerMessage message = CreateMessage(PlayerMessageID.Discover, payload);
             Communicate(message);
         }
 
@@ -237,86 +236,86 @@ namespace Player.Models
             {
                 switch (message.Id)
                 {
-                    case (int)MessageID.CheckAnswer:
+                    case GMMessageID.CheckAnswer:
                         CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
-                        if (payloadCheck.sham) HavePiece = false;
+                        if (payloadCheck.Sham) HavePiece = false;
                         break;
-                    case (int)MessageID.DestructionAnswer:
+                    case GMMessageID.DestructionAnswer:
                         HavePiece = false;
                         break;
-                    case (int)MessageID.DiscoverAnswer:
+                    case GMMessageID.DiscoverAnswer:
                         DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
-                        Board[Position.Item1, Position.Item2].DistToPiece = payloadDiscover.distanceFromCurrent;
-                        Board[Position.Item1 + 1, Position.Item2].DistToPiece = payloadDiscover.distanceE;
-                        Board[Position.Item1 - 1, Position.Item2].DistToPiece = payloadDiscover.distanceW;
-                        Board[Position.Item1, Position.Item2 + 1].DistToPiece = payloadDiscover.distanceS;
-                        Board[Position.Item1, Position.Item2 - 1].DistToPiece = payloadDiscover.distanceN;
-                        Board[Position.Item1 + 1, Position.Item2 + 1].DistToPiece = payloadDiscover.distanceSE;
-                        Board[Position.Item1 - 1, Position.Item2 - 1].DistToPiece = payloadDiscover.distanceNW;
-                        Board[Position.Item1 + 1, Position.Item2 - 1].DistToPiece = payloadDiscover.distanceNE;
-                        Board[Position.Item1 - 1, Position.Item2 + 1].DistToPiece = payloadDiscover.distanceSW;
+                        Board[Position.Item1, Position.Item2].DistToPiece = payloadDiscover.DistanceFromCurrent;
+                        Board[Position.Item1 + 1, Position.Item2].DistToPiece = payloadDiscover.DistanceE;
+                        Board[Position.Item1 - 1, Position.Item2].DistToPiece = payloadDiscover.DistanceW;
+                        Board[Position.Item1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceS;
+                        Board[Position.Item1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceN;
+                        Board[Position.Item1 + 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceSE;
+                        Board[Position.Item1 - 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceNW;
+                        Board[Position.Item1 + 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceNE;
+                        Board[Position.Item1 - 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceSW;
                         break;
-                    case (int)MessageID.EndGame:
+                    case GMMessageID.EndGame:
                         EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
-                        winner = payloadEnd.winner;
+                        winner = payloadEnd.Winner;
                         Stop();
                         break;
-                    case (int)MessageID.StartGame:
+                    case GMMessageID.StartGame:
                         StartGamePayload payloadStart = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
-                        id = payloadStart.agentID;
-                        TeamMatesIds = payloadStart.alliesIDs;
-                        if (id == payloadStart.leaderID) IsLeader = true;
+                        id = payloadStart.PlayerID;
+                        TeamMatesIds = payloadStart.AlliesIDs;
+                        if (id == payloadStart.LeaderID) IsLeader = true;
                         else IsLeader = false;
-                        team = (Team)Enum.Parse(typeof(Team), payloadStart.teamId);
-                        Board = new Field[payloadStart.boardSize.x, payloadStart.boardSize.y];
-                        for (int i = 0; i < payloadStart.boardSize.x; i++)
+                        team = payloadStart.TeamId;
+                        Board = new Field[payloadStart.BoardSize.X, payloadStart.BoardSize.Y];
+                        for (int i = 0; i < payloadStart.BoardSize.X; i++)
                         {
-                            for (int j = 0; j < payloadStart.boardSize.y; j++)
+                            for (int j = 0; j < payloadStart.BoardSize.Y; j++)
                             {
                                 Board[i, j] = new Field();
                             }
                         }
-                        penaltiesTimes = payloadStart.penalties;
-                        Position = new Tuple<int, int>(payloadStart.position.x, payloadStart.position.y);
-                        enemiesIDs = payloadStart.enemiesIDs;
-                        goalAreaSize = payloadStart.goalAreaSize;
-                        numberOfPlayers = payloadStart.numberOfPlayers;
-                        numberOfPieces = payloadStart.numberOfPieces;
-                        numberOfGoals = payloadStart.numberOfGoals;
-                        shamPieceProbability = payloadStart.shamPieceProbability;
+                        penaltiesTimes = payloadStart.Penalties;
+                        Position = new Tuple<int, int>(payloadStart.Position.X, payloadStart.Position.Y);
+                        enemiesIDs = payloadStart.EnemiesIDs;
+                        goalAreaSize = payloadStart.GoalAreaSize;
+                        numberOfPlayers = payloadStart.NumberOfPlayers;
+                        numberOfPieces = payloadStart.NumberOfPieces;
+                        numberOfGoals = payloadStart.NumberOfGoals;
+                        shamPieceProbability = payloadStart.ShamPieceProbability;
                         WaitingPlayers = new List<int>();
                         break;
-                    case (int)MessageID.BegForInfoForwarded:
+                    case GMMessageID.BegForInfoForwarded:
                         BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
-                        if (team == (Team)Enum.Parse(typeof(Team), payloadBeg.teamId))
+                        if (team == payloadBeg.TeamId)
                         {
-                            if (payloadBeg.leader)
+                            if (payloadBeg.Leader)
                             {
                                 GiveInfo(true);
                             }
                             else
                             {
-                                WaitingPlayers.Add(payloadBeg.askingID);
+                                WaitingPlayers.Add(payloadBeg.AskingID);
                             }
                         }
                         break;
-                    case (int)MessageID.JoinTheGameAnswer:
+                    case GMMessageID.JoinTheGameAnswer:
                         JoinAnswerPayload payloadJoin = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.Payload);
-                        if (id != payloadJoin.agentID) id = payloadJoin.agentID;
-                        if (!payloadJoin.accepted) Stop();
+                        if (id != payloadJoin.PlayerID) id = payloadJoin.PlayerID;
+                        if (!payloadJoin.Accepted) Stop();
                         break;
-                    case (int)MessageID.MoveAnswer:
+                    case GMMessageID.MoveAnswer:
                         MoveAnswerPayload payloadMove = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
-                        if (payloadMove.madeMove)
+                        if (payloadMove.MadeMove)
                         {
-                            Position = new Tuple<int, int>(payloadMove.currentPosition.x, payloadMove.currentPosition.y);
-                            Board[Position.Item1, Position.Item2].DistToPiece = payloadMove.closestPiece;
+                            Position = new Tuple<int, int>(payloadMove.CurrentPosition.X, payloadMove.CurrentPosition.Y);
+                            Board[Position.Item1, Position.Item2].DistToPiece = payloadMove.ClosestPiece;
                         }
                         break;
-                    case (int)MessageID.PickAnswer:
+                    case GMMessageID.PickAnswer:
                         HavePiece = true;
                         break;
-                    case (int)MessageID.PutAnswer:
+                    case GMMessageID.PutAnswer:
                         HavePiece = false;
                         break;
                     default:
