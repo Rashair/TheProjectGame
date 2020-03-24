@@ -1,4 +1,4 @@
-﻿namespace Player.Models.Payloads
+﻿namespace Shared.Models.Payloads.PlayerPayload
 {
     public class MovePayload : Payload
     {
