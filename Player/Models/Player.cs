@@ -229,79 +229,79 @@ namespace Player.Models
                 switch (message.Id)
                 {
                     case (int)MessageID.CheckAnswer:
-                        CheckAnswerPayload payload1 = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
-                        if (payload1.Sham) HavePiece = false;
+                        CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
+                        if (payloadCheck.Sham) HavePiece = false;
                         break;
                     case (int)MessageID.DestructionAnswer:
                         HavePiece = false;
                         break;
                     case (int)MessageID.DiscoverAnswer:
-                        DiscoveryAnswerPayload payload2 = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
-                        Board[Position.Item1, Position.Item2].DistToPiece = payload2.DistanceFromCurrent;
-                        Board[Position.Item1 + 1, Position.Item2].DistToPiece = payload2.DistanceE;
-                        Board[Position.Item1 - 1, Position.Item2].DistToPiece = payload2.DistanceW;
-                        Board[Position.Item1, Position.Item2 + 1].DistToPiece = payload2.DistanceS;
-                        Board[Position.Item1, Position.Item2 - 1].DistToPiece = payload2.DistanceN;
-                        Board[Position.Item1 + 1, Position.Item2 + 1].DistToPiece = payload2.DistanceSE;
-                        Board[Position.Item1 - 1, Position.Item2 - 1].DistToPiece = payload2.DistanceNW;
-                        Board[Position.Item1 + 1, Position.Item2 - 1].DistToPiece = payload2.DistanceNE;
-                        Board[Position.Item1 - 1, Position.Item2 + 1].DistToPiece = payload2.DistanceSW;
+                        DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
+                        Board[Position.Item1, Position.Item2].DistToPiece = payloadDiscover.DistanceFromCurrent;
+                        Board[Position.Item1 + 1, Position.Item2].DistToPiece = payloadDiscover.DistanceE;
+                        Board[Position.Item1 - 1, Position.Item2].DistToPiece = payloadDiscover.DistanceW;
+                        Board[Position.Item1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceS;
+                        Board[Position.Item1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceN;
+                        Board[Position.Item1 + 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceSE;
+                        Board[Position.Item1 - 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceNW;
+                        Board[Position.Item1 + 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceNE;
+                        Board[Position.Item1 - 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceSW;
                         break;
                     case (int)MessageID.EndGame:
-                        EndGamePayload payload3 = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
-                        winner = payload3.Winner;
+                        EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
+                        winner = payloadEnd.Winner;
                         Stop();
                         break;
                     case (int)MessageID.StartGame:
-                        StartGamePayload payload4 = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
-                        id = payload4.AgentID;
-                        TeamMatesIds = payload4.AlliesIDs;
-                        if (id == payload4.LeaderID) IsLeader = true;
+                        StartGamePayload payloadStart = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
+                        id = payloadStart.AgentID;
+                        TeamMatesIds = payloadStart.AlliesIDs;
+                        if (id == payloadStart.LeaderID) IsLeader = true;
                         else IsLeader = false;
-                        team = (Team)Enum.Parse(typeof(Team), payload4.TeamId);
-                        Board = new Field[payload4.BoardSize.X, payload4.BoardSize.Y];
-                        for (int i = 0; i < payload4.BoardSize.X; i++)
+                        team = (Team)Enum.Parse(typeof(Team), payloadStart.TeamId);
+                        Board = new Field[payloadStart.BoardSize.X, payloadStart.BoardSize.Y];
+                        for (int i = 0; i < payloadStart.BoardSize.X; i++)
                         {
-                            for (int j = 0; j < payload4.BoardSize.Y; j++)
+                            for (int j = 0; j < payloadStart.BoardSize.Y; j++)
                             {
                                 Board[i, j] = new Field();
                             }
                         }
-                        penaltiesTimes = payload4.Penalties;
-                        Position = new Tuple<int, int>(payload4.Position.X, payload4.Position.Y);
-                        enemiesIDs = payload4.EnemiesIDs;
-                        goalAreaSize = payload4.GoalAreaSize;
-                        numberOfPlayers = payload4.NumberOfPlayers;
-                        numberOfPieces = payload4.NumberOfPieces;
-                        numberOfGoals = payload4.NumberOfGoals;
-                        shamPieceProbability = payload4.ShamPieceProbability;
+                        penaltiesTimes = payloadStart.Penalties;
+                        Position = new Tuple<int, int>(payloadStart.Position.X, payloadStart.Position.Y);
+                        enemiesIDs = payloadStart.EnemiesIDs;
+                        goalAreaSize = payloadStart.GoalAreaSize;
+                        numberOfPlayers = payloadStart.NumberOfPlayers;
+                        numberOfPieces = payloadStart.NumberOfPieces;
+                        numberOfGoals = payloadStart.NumberOfGoals;
+                        shamPieceProbability = payloadStart.ShamPieceProbability;
                         WaitingPlayers = new List<int>();
                         break;
                     case (int)MessageID.BegForInfoForwarded:
-                        BegForInfoForwardedPayload payload5 = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
-                        if (team == (Team)Enum.Parse(typeof(Team), payload5.TeamId))
+                        BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
+                        if (team == (Team)Enum.Parse(typeof(Team), payloadBeg.TeamId))
                         {
-                            if (payload5.Leader)
+                            if (payloadBeg.Leader)
                             {
                                 GiveInfo(true);
                             }
                             else
                             {
-                                WaitingPlayers.Add(payload5.AskingID);
+                                WaitingPlayers.Add(payloadBeg.AskingID);
                             }
                         }
                         break;
                     case (int)MessageID.JoinTheGameAnswer:
-                        JoinAnswerPayload payload6 = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.Payload);
-                        if (id != payload6.AgentID) id = payload6.AgentID;
-                        if (!payload6.Accepted) Stop();
+                        JoinAnswerPayload payloadJoin = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.Payload);
+                        if (id != payloadJoin.AgentID) id = payloadJoin.AgentID;
+                        if (!payloadJoin.Accepted) Stop();
                         break;
                     case (int)MessageID.MoveAnswer:
-                        MoveAnswerPayload payload7 = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
-                        if (payload7.MadeMove)
+                        MoveAnswerPayload payloadMove = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
+                        if (payloadMove.MadeMove)
                         {
-                            Position = new Tuple<int, int>(payload7.CurrentPosition.X, payload7.CurrentPosition.Y);
-                            Board[Position.Item1, Position.Item2].DistToPiece = payload7.ClosestPiece;
+                            Position = new Tuple<int, int>(payloadMove.CurrentPosition.X, payloadMove.CurrentPosition.Y);
+                            Board[Position.Item1, Position.Item2].DistToPiece = payloadMove.ClosestPiece;
                         }
                         break;
                     case (int)MessageID.PickAnswer:
