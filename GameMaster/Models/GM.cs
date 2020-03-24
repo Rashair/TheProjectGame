@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Managers;
@@ -68,7 +69,7 @@ namespace GameMaster.Models
             }
         }
 
-        public async void AcceptMessage()
+        public async Task AcceptMessage()
         {
             PlayerMessage message;
             if (queue.TryReceive(null, out message))
