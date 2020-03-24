@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -26,7 +27,7 @@ namespace GameMaster.Models
         internal int BlueTeamPoints { get; set; }
 
         private BufferBlock<PlayerMessage> queue;
-        private WebSocketManager<GMMessage> manager;
+        private SocketManager<WebSocket, GMMessage> manager;
 
         public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> manager)
         {
