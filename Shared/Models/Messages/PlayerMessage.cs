@@ -2,8 +2,10 @@
 {
     public class PlayerMessage
     {
-        public int messageID;
-        public int agentID;
-        public string payload;
+        public int MessageID { get; set; }
+
+        public int AgentID { get; set; }
+
+        public string Payload { get; set; }
     }
 }
