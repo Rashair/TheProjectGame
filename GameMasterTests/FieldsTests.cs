@@ -14,9 +14,9 @@ namespace GameMaster.Tests
         {
             public IEnumerator<object[]> GetEnumerator()
             {
-                yield return new object[] { new List<GMPlayer> { new GMPlayer(), new GMPlayer() }, false };
-                yield return new object[] { new List<GMPlayer> { new GMPlayer() }, true };
-                yield return new object[] { new List<GMPlayer> { null, new GMPlayer() }, true };
+                yield return new object[] { new List<GMPlayer> { new GMPlayer(1, Shared.Team.Red), new GMPlayer(2, Shared.Team.Red) }, false };
+                yield return new object[] { new List<GMPlayer> { new GMPlayer(1, Shared.Team.Red) }, true };
+                yield return new object[] { new List<GMPlayer> { null, new GMPlayer(1, Shared.Team.Red) }, true };
                 yield return new object[] { new List<GMPlayer> { null }, false };
             }
 
@@ -79,7 +79,7 @@ namespace GameMaster.Tests
         public void PickUpTaskTest(int numPut, int numPick, bool expected)
         {
             // Arrange
-            GMPlayer gmPlayer = new GMPlayer();
+            GMPlayer gmPlayer = new GMPlayer(1, Shared.Team.Red);
             TaskField taskField = new TaskField(2, 2);
             for (int i = 0; i < numPut; i++)
             {

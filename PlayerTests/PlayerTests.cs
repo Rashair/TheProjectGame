@@ -65,7 +65,7 @@ namespace Player.Tests
             player.AcceptMessage();
             player.AcceptMessage();
 
-            Assert.Equal(0, player.Board[0, 0].DistToPiece);
+            Assert.Equal(0, player.Position.Item1);
         }
 
         [Fact]
@@ -85,7 +85,7 @@ namespace Player.Tests
             };
             GMMessage messageDiscover = new GMMessage()
             {
-                Id = GMMessageID.MoveAnswer,
+                Id = GMMessageID.DiscoverAnswer,
                 Payload = JsonConvert.SerializeObject(payloadDiscover),
             };
 

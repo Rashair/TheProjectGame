@@ -265,6 +265,8 @@ namespace Player.Models
                             for (int j = 0; j < payloadStart.BoardSize.Y; j++)
                             {
                                 Board[i, j] = new Field();
+                                Board[i, j].DistToPiece = -1;
+                                Board[i, j].GoalInfo = GoalInfo.IDK;
                             }
                         }
                         penaltiesTimes = payloadStart.Penalties;
@@ -309,6 +311,24 @@ namespace Player.Models
                         break;
                     case GMMessageID.PutAnswer:
                         HavePiece = false;
+                        break;
+                    case GMMessageID.GiveInfoForwarded:
+                        GiveInfoForwardedPayload payloadGive = JsonConvert.DeserializeObject<GiveInfoForwardedPayload>(message.Payload);
+                        for (int i = 0; i < payloadGive.Distances.GetLength(0); i++)
+                        {
+                            for (int j = 0; j < payloadGive.Distances.GetLength(1); j++)
+                            {
+                                if (payloadGive.Distances[i, j] != -1) Board[i, j].DistToPiece = payloadGive.Distances[i, j];
+                                if (team == Team.Red)
+                                {
+                                    if (payloadGive.RedTeamGoalAreaInformations[i, j] != GoalInfo.IDK) Board[i, j].GoalInfo = payloadGive.RedTeamGoalAreaInformations[i, j];
+                                }
+                                else
+                                {
+                                    if (payloadGive.BlueTeamGoalAreaInformations[i, j] != GoalInfo.IDK) Board[i, j].GoalInfo = payloadGive.BlueTeamGoalAreaInformations[i, j];
+                                }
+                            }
+                        }
                         break;
                     default:
                         break;
