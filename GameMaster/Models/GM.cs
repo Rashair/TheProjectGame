@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -21,7 +22,7 @@ namespace GameMaster.Models
         private ILogger logger;
         private Configuration conf;
         private BufferBlock<PlayerMessage> queue;
-        private WebSocketManager<GMMessage> manager;
+        private SocketManager<WebSocket, GMMessage> manager;
 
         private readonly int[] legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;
@@ -33,7 +34,7 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; set; }
 
-        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> manager, ILogger logger)
+        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<WebSocket, GMMessage> manager, ILogger logger)
         {
             this.logger = logger;
             this.conf = conf;
