@@ -292,12 +292,12 @@ namespace GameMaster.Models
             GMMessage gmMessage = new GMMessage()
             {
                 MessageID = (int)GMMessageType.ForwardKnowledgeQuestion,
-                Id = begPayload.askedAgentID,
+                Id = begPayload.AskedAgentID,
                 Payload = playerMessage.Payload,
             };
 
-            legalKnowledgeReplies.Add((playerMessage.AgentID, begPayload.askedAgentID));
-            await socketManager.SendMessageAsync(players[begPayload.askedAgentID].SocketID, gmMessage);
+            legalKnowledgeReplies.Add((playerMessage.AgentID, begPayload.AskedAgentID));
+            await socketManager.SendMessageAsync(players[begPayload.AskedAgentID].SocketID, gmMessage);
         }
 
         private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
