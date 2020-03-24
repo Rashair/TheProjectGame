@@ -6,6 +6,7 @@ using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Shared.Messages;
 using Xunit;
@@ -25,7 +26,8 @@ namespace GameMaster.Tests
             // Arrange
             var conf = new MockConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
-            var gameMaster = new GM(conf, queue);
+            var logger = Mock.Of<ILogger>();
+            var gameMaster = new GM(conf, queue, logger);
             var startGame = GetMethod("StartGame");
             startGame.Invoke(gameMaster, null);
             var method = GetMethod("GeneratePiece");

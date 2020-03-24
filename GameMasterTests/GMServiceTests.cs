@@ -8,6 +8,8 @@ using GameMaster.Services;
 using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Shared.Messages;
 using Xunit;
 
@@ -25,6 +27,7 @@ namespace GameMaster.Tests
             var conf = new MockConfiguration();
             services.AddSingleton<Configuration>(conf);
             services.AddSingleton<BufferBlock<PlayerMessage>>();
+            AddLogging(services);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
 
@@ -60,6 +63,7 @@ namespace GameMaster.Tests
             var conf = new MockConfiguration();
             services.AddSingleton<Configuration>(conf);
             services.AddSingleton<BufferBlock<PlayerMessage>>();
+            AddLogging(services);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
 
@@ -99,6 +103,7 @@ namespace GameMaster.Tests
                 queue.Post(new PlayerMessage());
             }
             services.AddSingleton(queue);
+            AddLogging(services);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
 
@@ -135,6 +140,7 @@ namespace GameMaster.Tests
                 queue.Post(new PlayerMessage());
             }
             services.AddSingleton(queue);
+            AddLogging(services);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
 
@@ -159,6 +165,11 @@ namespace GameMaster.Tests
              conf.MaximumNumberOfPiecesOnBoard);
             int numberOfPieces = GetValue<int>("piecesOnBoard", gameMaster);
             Assert.InRange(numberOfPieces, minimumNumberOfPieces, conf.MaximumNumberOfPiecesOnBoard);
+        }
+
+        private void AddLogging(IServiceCollection services)
+        {
+            services.AddSingleton<ILogger, MockLogger>();
         }
     }
 }
