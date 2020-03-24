@@ -17,7 +17,7 @@ namespace GameMaster.Tests
 {
     public class GMServiceTests
     {
-        [Fact(Timeout = 1500)]
+        [Fact(Timeout = 3000)]
         public async Task TestExecuteAsyncShouldNotBlock()
         {
             // Arrange
@@ -29,33 +29,25 @@ namespace GameMaster.Tests
             services.AddHostedService<GMService>();
 
             var serviceProvider = services.BuildServiceProvider();
-            var hostedService = serviceProvider.GetService<IHostedService>();
+            var hostedService = (GMService)serviceProvider.GetService<IHostedService>();
             var gameMaster = serviceProvider.GetService<GM>();
             var startGame = GetMethod("StartGame");
 
             // Act
-            int count = 0;
-            int expected = 10;
-            int delay = 500;
+            int delay = 1000;
             await Task.Run(async () =>
             {
                 await hostedService.StartAsync(CancellationToken.None);
                 await Task.Delay(delay);
-                for (; count < expected; ++count)
-                {
-                    await Task.Delay(10);
-                    await Task.Yield();
-                }
 
                 startGame.Invoke(gameMaster, null);
 
-                int waitForGeneratePieceDelay = 4 * conf.GeneratePieceInterval;
+                int waitForGeneratePieceDelay = hostedService.WaitForStartDelay + conf.GeneratePieceInterval;
                 await Task.Delay(waitForGeneratePieceDelay);
                 await hostedService.StopAsync(CancellationToken.None);
             });
 
             // Assert
-            Assert.Equal(expected, count);
             int numberOfPieces = GetValue<int>("piecesOnBoard", gameMaster);
             Assert.True(numberOfPieces > 0, "GM Should generate at least one piece");
         }
@@ -142,7 +134,7 @@ namespace GameMaster.Tests
             {
                 queue.Post(new PlayerMessage());
             }
-            services.AddSingleton<BufferBlock<PlayerMessage>>(queue);
+            services.AddSingleton(queue);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
 
