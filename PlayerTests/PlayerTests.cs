@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 using Newtonsoft.Json;
@@ -15,7 +16,7 @@ namespace Player.Tests
     public class PlayerTests
     {
         [Fact]
-        public void TestAcceptMessageDiscoverAccept()
+        public async Task TestAcceptMessageDiscoverAccept()
         {
             DiscoveryAnswerPayload payloadDiscover = new DiscoveryAnswerPayload()
             {
@@ -64,14 +65,14 @@ namespace Player.Tests
             Team team = Team.Red;
             var player = new Player.Models.Player(team, new Strategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
 
-            player.AcceptMessage();
-            player.AcceptMessage();
+            await player.AcceptMessage();
+            await player.AcceptMessage();
 
             Assert.Equal(0, player.Board[0, 0].DistToPiece);
         }
 
         [Fact]
-        public void TestAcceptMessageBegForInfoAccept()
+        public async Task TestAcceptMessageBegForInfoAccept()
         {
             BegForInfoForwardedPayload payloadBeg = new BegForInfoForwardedPayload()
             {
@@ -114,8 +115,8 @@ namespace Player.Tests
             Team team = Team.Red;
             var player = new Player.Models.Player(team, new Strategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
 
-            player.AcceptMessage();
-            player.AcceptMessage();
+            await player.AcceptMessage();
+            await player.AcceptMessage();
 
             Assert.Single(player.WaitingPlayers);
         }

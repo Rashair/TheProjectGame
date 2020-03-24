@@ -191,12 +191,12 @@ namespace GameMaster.Models
             board[xCoord][yCoord].Put(piece);
         }
 
-        private async void ForwardKnowledgeQuestion(PlayerMessage playerMessage)
+        private async Task ForwardKnowledgeQuestion(PlayerMessage playerMessage)
         {
             throw new NotImplementedException();
         }
 
-        private async void ForwardKnowledgeReply(PlayerMessage playerMessage)
+        private async Task ForwardKnowledgeReply(PlayerMessage playerMessage)
         {
             throw new NotImplementedException();
         }
