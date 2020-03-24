@@ -14,7 +14,7 @@ namespace Player.Tests
     public class PlayerTests
     {
         [Fact]
-        public void TestAcceptMessageMoveAcceptAsync()
+        public void TestAcceptMessageMoveAccept()
         {
             MoveAnswerPayload payloadMove = new MoveAnswerPayload()
             {
@@ -68,7 +68,7 @@ namespace Player.Tests
         }
 
         [Fact]
-        public void TestAcceptMessageDiscoverAcceptAsync()
+        public void TestAcceptMessageDiscoverAccept()
         {
             DiscoveryAnswerPayload payloadDiscover = new DiscoveryAnswerPayload()
             {
@@ -124,7 +124,7 @@ namespace Player.Tests
         }
 
         [Fact]
-        public void TestAcceptMessageBegForInfoAcceptAsync()
+        public void TestAcceptMessageBegForInfoAccept()
         {
             BegForInfoForwardedPayload payloadBeg = new BegForInfoForwardedPayload()
             {
