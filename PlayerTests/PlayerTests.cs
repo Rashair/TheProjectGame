@@ -17,61 +17,6 @@ namespace Player.Tests
     public class PlayerTests
     {
         [Fact]
-        public void TestAcceptMessageMoveAccept()
-        {
-            MoveAnswerPayload payload = new MoveAnswerPayload()
-            {
-                madeMove = true,
-                currentPosition = new Position()
-                {
-                    x = 0,
-                    y = 0,
-                },
-                closestPiece = 0,
-            };
-            GMMessage message = new GMMessage()
-            {
-                Id = GMMessageID.MoveAnswer,
-                Payload = JsonConvert.SerializeObject(payloadMove),
-            };
-
-            StartGamePayload payloadStart = new StartGamePayload
-            {
-                PlayerID = 1,
-                AlliesIDs = new int[1] { 2 },
-                LeaderID = 1,
-                EnemiesIDs = new int[2] { 3, 4 },
-                TeamId = Team.Red,
-                BoardSize = new BoardSize { X = 3,  Y = 3 },
-                GoalAreaSize = 1,
-                NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
-                NumberOfPieces = 2,
-                NumberOfGoals = 2,
-                Penalties = new Penalties { Move = "0", CheckForSham = "0", Discovery = "0", DestroyPiece = "0", PutPiece = "0", InformationExchange = "0" },
-                ShamPieceProbability = 0.5f,
-                Position = new Position { X = 1, Y = 1 },
-            };
-            GMMessage messageStart = new GMMessage()
-            {
-                Id = GMMessageID.StartGame,
-                Payload = JsonConvert.SerializeObject(payloadStart),
-            };
-
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post<GMMessage>(message);
-
-            Team team = Team.Red;
-            var player = new Player.Models.Player(team, input, new WebSocketClient<GMMessage, AgentMessage>());
-
-            player.board = new Field[1, 1];
-            player.board[0, 0] = new Field();
-
-            player.AcceptMessage();
-
-            Assert.Equal(0, player.Position.Item1);
-        }
-
-        [Fact]
         public void TestAcceptMessageDiscoverAccept()
         {
             DiscoveryAnswerPayload payloadDiscover = new DiscoveryAnswerPayload()
