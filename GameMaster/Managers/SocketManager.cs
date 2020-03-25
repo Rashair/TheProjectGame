@@ -1,54 +1,54 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GameMaster.Managers
 {
-    public abstract class SocketManager<T, M>
+    public abstract class SocketManager<TSocket, TMessage> : ISocketManager<TSocket, TMessage>
     {
-        private readonly ConcurrentDictionary<string, T> sockets = new ConcurrentDictionary<string, T>();
+        private readonly ConcurrentDictionary<string, TSocket> sockets = new ConcurrentDictionary<string, TSocket>();
 
-        protected abstract bool IsSame(T a, T b);
+        protected abstract bool IsSame(TSocket a, TSocket b);
 
-        protected abstract Task CloseSocketAsync(T socket);
+        protected abstract Task CloseSocketAsync(TSocket socket, CancellationToken cancellationToken);
 
-        protected abstract Task SendMessageAsync(T socket, M message);
+        protected abstract Task SendMessageAsync(TSocket socket, TMessage message, CancellationToken cancellationToken);
 
-        public string GetId(T socket)
+        public string GetId(TSocket socket)
         {
             return sockets.FirstOrDefault(p => IsSame(p.Value, socket)).Key;
         }
 
-        public T GetSocketById(string id)
+        public TSocket GetSocketById(string id)
         {
             return sockets.FirstOrDefault(p => p.Key == id).Value;
         }
 
-        public bool AddSocket(T socket)
+        public bool AddSocket(TSocket socket)
         {
             return sockets.TryAdd(CreateSocketId(), socket);
         }
 
-        public async Task<bool> RemoveSocketAsync(string id)
+        public async Task<bool> RemoveSocketAsync(string id, CancellationToken cancellationToken)
         {
-            bool removed = sockets.TryRemove(id, out T socket);
+            if (cancellationToken.IsCancellationRequested)
+                return false;
+            bool removed = sockets.TryRemove(id, out TSocket socket);
             if (removed)
-            {
-                await CloseSocketAsync(socket);
-            }
-
+                await CloseSocketAsync(socket, cancellationToken);
             return removed;
         }
 
-        public async Task SendMessageAsync(string id, M message)
+        public async Task SendMessageAsync(string id, TMessage message, CancellationToken cancellationToken)
         {
-            await SendMessageAsync(GetSocketById(id), message);
+            await SendMessageAsync(GetSocketById(id), message, cancellationToken);
         }
 
-        public async Task SendMessageToAllAsync(M message)
+        public async Task SendMessageToAllAsync(TMessage message, CancellationToken cancellationToken)
         {
-            await Task.WhenAll(from p in sockets select SendMessageAsync(p.Value, message));
+            await Task.WhenAll(from p in sockets select SendMessageAsync(p.Value, message, cancellationToken));
         }
 
         private string CreateSocketId()
