@@ -4,26 +4,33 @@ namespace GameMaster.Models
 {
     public class Configuration
     {
-        public TimeSpan MovePenalty { get; protected set; }
+        public TimeSpan MovePenalty { get; set; }
 
-        public TimeSpan AskPenalty { get; protected set; }
+        public TimeSpan AskPenalty { get; set; }
 
-        public TimeSpan DiscoverPenalty { get; protected set; }
+        public TimeSpan DiscoverPenalty { get; set; }
 
-        public TimeSpan PutPenalty { get; protected set; }
+        public TimeSpan PutPenalty { get; set; }
 
-        public TimeSpan CheckPenalty { get; protected set; }
+        public TimeSpan CheckPenalty { get; set; }
 
-        public TimeSpan ResponsePenalty { get; protected set; }
+        public TimeSpan ResponsePenalty { get; set; }
 
-        public int Width { get; protected set; }
+        public int Width { get; set; }
 
-        public int Height { get; protected set; }
+        public int Height { get; set; }
 
-        public int NumberOfGoals { get; protected set; }
+        public int NumberOfGoals { get; set; }
 
-        public int GoalAreaHeight { get; protected set; }
+        public int GoalAreaHeight { get; set; }
 
-        public int ShamPieceProbability { get; protected set; } // percentage
+        /// <summary>
+        /// Percentage
+        /// </summary>
+        public int ShamPieceProbability { get; set; }
+
+        public int MaximumNumberOfPiecesOnBoard { get; set; }
+
+        public int NumberOfPlayersPerTeam { get; set; }
     }
 }

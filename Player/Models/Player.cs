@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 
 using Player.Models.Payloads;
 using Player.Models.Strategies;
-using Shared;
 using Shared.Enums;
-using Shared.Models.Messages;
+using Shared.Messages;
 using Shared.Senders;
 
 namespace Player.Models
@@ -43,7 +42,8 @@ namespace Player.Models
             this.Team = team;
         }
 
-        public void JoinTheGame()
+        // JoinTheGame before
+        internal void StartGame()
         {
             JoinGamePayload payload = new JoinGamePayload()
             {
@@ -57,7 +57,8 @@ namespace Player.Models
             Communicate(message);
         }
 
-        public async Task Start()
+        // Start before
+        internal async Task WorkAsync()
         {
             working = true;
             while (working)
@@ -68,7 +69,8 @@ namespace Player.Models
             }
         }
 
-        public void Stop()
+        // Stop before
+        internal void EndGame()
         {
             working = false;
         }

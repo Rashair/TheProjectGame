@@ -1,26 +1,64 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
+using System.Timers;
 
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
-using Shared;
+using Microsoft.Extensions.Logging;
+using Shared.Enums;
+using Shared.Messages;
 
 namespace GameMaster.Models
 {
     public class GM
     {
-        private static int[] legalKnowledgeReplies = new int[2]; // unique from documentation considered as static
-        private readonly Dictionary<int, GMPlayer> players;
-        private readonly AbstractField[][] board;
-        private Configuration conf;
+        private readonly ILogger<GM> logger;
+        private readonly Configuration conf;
+        private readonly BufferBlock<PlayerMessage> queue;
 
-        internal int RedTeamPoints { get; set; }
+        private readonly int[] legalKnowledgeReplies;
+        private Dictionary<int, GMPlayer> players;
+        private AbstractField[][] board;
+        private int piecesOnBoard;
 
-        internal int BlueTeamPoints { get; set; }
+        private int redTeamPoints;
+        private int blueTeamPoints;
 
-        public GM(Configuration conf)
+        public bool WasGameStarted { get; set; }
+
+        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, ILogger<GM> logger)
         {
+            this.logger = logger;
             this.conf = conf;
+            this.queue = queue;
+            legalKnowledgeReplies = new int[2];
+        }
+
+        public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
+        {
+            // TODO decrement `piecesOnBoard` on Put Message
+        }
+
+        internal Dictionary<Direction, int> Discover(AbstractField field)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void StartGame()
+        {
+            InitializeBoard();
+
+            // TODO : initialize rest
+            players = new Dictionary<int, GMPlayer>();
+
+            WasGameStarted = true;
+        }
+
+        private void InitializeBoard()
+        {
             board = new AbstractField[conf.Height][];
             for (int i = 0; i < board.Length; ++i)
             {
@@ -44,8 +82,6 @@ namespace GameMaster.Models
             {
                 FillBoardRow(rowIt, nonGoalFieldGenerator);
             }
-
-            // TODO : initialize rest
         }
 
         private void FillBoardRow(int row, Func<int, int, AbstractField> getField)
@@ -56,24 +92,26 @@ namespace GameMaster.Models
             }
         }
 
-        public void AcceptMessage()
+        internal async Task Work(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
-        }
-
-        public void GenerateGUI()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal Dictionary<Direction, int> Discover(AbstractField field)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void EndGame()
-        {
-            throw new NotImplementedException();
+            TimeSpan cancellationTimespan = TimeSpan.FromMilliseconds(100);
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    PlayerMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
+                    await AcceptMessage(message, cancellationToken);
+                    if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
+                    {
+                        EndGame();
+                        break;
+                    }
+                }
+                catch (OperationCanceledException e)
+                {
+                    logger.LogWarning($"Message retrieve was cancelled: {e.Message}");
+                }
+            }
         }
 
         private void GeneratePiece()
@@ -96,6 +134,7 @@ namespace GameMaster.Models
             int yCoord = rand.Next(0, conf.Width);
 
             board[xCoord][yCoord].Put(piece);
+            piecesOnBoard += 1;
         }
 
         private void ForwardKnowledgeQuestion()
@@ -104,6 +143,11 @@ namespace GameMaster.Models
         }
 
         private void ForwardKnowledgeReply()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void EndGame()
         {
             throw new NotImplementedException();
         }

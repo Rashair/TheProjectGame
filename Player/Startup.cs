@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Player.Clients;
 using Player.Services;
-using Shared.Models.Messages;
+using Shared.Messages;
 
 namespace Player
 {
