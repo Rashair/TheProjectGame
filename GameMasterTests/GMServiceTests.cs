@@ -25,6 +25,7 @@ namespace GameMaster.Tests
             // Arrange
             IServiceCollection services = new ServiceCollection();
             var conf = new MockConfiguration();
+            services.AddSingleton<Configuration>(conf);
             int messagesNum = 10;
             var queue = new BufferBlock<PlayerMessage>();
             for (int i = 0; i < messagesNum; ++i)
@@ -50,6 +51,7 @@ namespace GameMaster.Tests
 
                 startGame.Invoke(gameMaster, null);
 
+                await Task.Delay(hostedService.WaitForStartDelay + 500);
                 await hostedService.StopAsync(CancellationToken.None);
             });
 
