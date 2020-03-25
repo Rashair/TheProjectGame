@@ -52,15 +52,16 @@ namespace GameMaster.Models
                     break;
                 case PlayerMessageID.PieceDestruction:
                     players[message.PlayerID].DestroyHolding();
+                    GeneratePiece();
                     break;
                 case PlayerMessageID.Discover:
                     players[message.PlayerID].Discover(this);
                     break;
                 case PlayerMessageID.GiveInfo:
-                    await ForwardKnowledgeReply(message);
+                    await ForwardKnowledgeReply(message, cancellationToken);
                     break;
                 case PlayerMessageID.BegForInfo:
-                    await ForwardKnowledgeQuestion(message);
+                    await ForwardKnowledgeQuestion(message, cancellationToken);
                     break;
                 case PlayerMessageID.JoinTheGame:
                     JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
@@ -135,6 +136,7 @@ namespace GameMaster.Models
                         {
                             blueTeamPoints++;
                         }
+                        GeneratePiece();
                     }
                     break;
                 default:
@@ -237,12 +239,12 @@ namespace GameMaster.Models
             piecesOnBoard += 1;
         }
 
-        private async Task ForwardKnowledgeQuestion(PlayerMessage playerMessage)
+        private async Task ForwardKnowledgeQuestion(PlayerMessage playerMessage, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        private async Task ForwardKnowledgeReply(PlayerMessage playerMessage)
+        private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
