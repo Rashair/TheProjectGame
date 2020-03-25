@@ -12,7 +12,8 @@ const gameConfigData = {
     "goalAreaHeight": 5,
     "numberOfGoals": 5,
     "numberOfPieces": 10,
-    "numberOfTeamPlayers": 10,
+    "numberOfPlayersPerTeam": 10,
+    "maximumNumberOfPiecesOnBoard": 10,
     "shamPieceProbability": 0.50
 }
 export default gameConfigData

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GameMaster.Models
+﻿namespace GameMaster.Models
 {
     public class Configuration
     {
@@ -30,9 +28,8 @@ namespace GameMaster.Models
 
         public int MaximumNumberOfPiecesOnBoard { get; set; }
 
-        public int NumberOfTeamPlayers { get; set; }
+        public int NumberOfPlayersPerTeam { get; set; }
 
         public double ShamPieceProbability { get; set; } // percentage
-        public int NumberOfPlayersPerTeam { get; set; }
     }
 }

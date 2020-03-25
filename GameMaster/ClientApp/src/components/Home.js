@@ -18,8 +18,9 @@ export class Home extends Component {
             goalAreaHeight: gameConfigData.goalAreaHeight,
             numberOfGoals: gameConfigData.numberOfGoals,
             numberOfPieces: gameConfigData.numberOfPieces,
-            numberOfTeamPlayers: gameConfigData.numberOfTeamPlayers,
+            numberOfTeamPlayers: gameConfigData.numberOfPlayersPerTeam,
             shamPieceProbability: gameConfigData.shamPieceProbability,
+            maximumNumberOfPiecesOnBoard: gameConfigData.maximumNumberOfPiecesOnBoard,
         }
 
         this.sendData = this.sendData.bind(this);
@@ -62,6 +63,12 @@ export class Home extends Component {
             alert('Parametry nie mogą przyjmować wartości ujemnych.');
             readyToSend = false;
         }
+
+        if (this.state.shamPieceProbability < 0 || this.state.shamPieceProbability >= 1) {
+            alert('Prawdopodobieństwo musi być liczbą z przedziału między 0 a 1.');
+            readyToSend = false;
+        }
+
         if (readyToSend) {
             xhr.open('POST', 'Configuration', true);
 
@@ -79,7 +86,8 @@ export class Home extends Component {
             data.append('GoalAreaHeight', this.state.goalAreaHeight);
             data.append('NumberOfGoals', this.state.numberOfGoals);
             data.append('NumberOfPieces', this.state.numberOfPieces);
-            data.append('NumberOfTeamPlayers', this.state.numberOfTeamPlayers);
+            data.append('NumberOfPlayersPerTeam', this.state.numberOfTeamPlayers);
+            data.append('MaximumNumberOfPiecesOnBoard', this.state.maximumNumberOfPiecesOnBoard);
             data.append('ShamPieceProbability', this.state.shamPieceProbability);
             xhr.send(data);
         }
@@ -176,6 +184,13 @@ export class Home extends Component {
                     <label>Ilość agentów w drużynie: </label>
                     <input type="number" min="1" name="numberOfTeamPlayers" value={this.state.numberOfTeamPlayers}
                         onChange={e => this.setState({ numberOfTeamPlayers: e.target.value })} />
+
+                </fieldset>
+
+                <fieldset>
+                    <label>Maksymalna liczba kawałków na planszy: </label>
+                    <input type="number" min="1" name="maximumNumberOfPiecesOnBoard" value={this.state.maximumNumberOfPiecesOnBoard}
+                        onChange={e => this.setState({ maximumNumberOfPiecesOnBoard: e.target.value })} />
 
                 </fieldset>
 
