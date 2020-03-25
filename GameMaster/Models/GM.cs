@@ -19,7 +19,7 @@ namespace GameMaster.Models
 {
     public class GM
     {
-        private ILogger logger;
+        private ILogger<GM> logger;
         private Configuration conf;
         private BufferBlock<PlayerMessage> queue;
         private SocketManager<WebSocket, GMMessage> manager;
@@ -34,7 +34,7 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; set; }
 
-        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> manager, ILogger logger)
+        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> manager, ILogger<GM> logger)
         {
             this.logger = logger;
             this.conf = conf;
