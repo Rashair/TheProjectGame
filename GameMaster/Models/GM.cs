@@ -196,31 +196,22 @@ namespace GameMaster.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
-            TimeSpan cancellationTimespan = TimeSpan.FromMilliseconds(50);
+            TimeSpan cancellationTimespan = TimeSpan.FromMilliseconds(100);
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (queue.Count > 0)
+                try
                 {
-                    int maxMessagesToRead = queue.Count;
-                    for (int i = 0; i < maxMessagesToRead; ++i)
+                    PlayerMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
+                    await AcceptMessage(message, cancellationToken);
+                    if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
                     {
-                        PlayerMessage message = null;
-                        try
-                        {
-                             message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
-                        }
-                        catch (OperationCanceledException e)
-                        {
-                            logger.LogWarning($"Message retrieve was cancelled: {e.Message}");
-                        }
-
-                        await AcceptMessage(message, cancellationToken);
-                        if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
-                        {
-                            EndGame();
-                            break;
-                        }
+                        EndGame();
+                        break;
                     }
+                }
+                catch (OperationCanceledException e)
+                {
+                    logger.LogWarning($"Message retrieve was cancelled: {e.Message}");
                 }
             }
         }
