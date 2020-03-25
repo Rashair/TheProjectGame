@@ -201,7 +201,7 @@ namespace GameMaster.Models
             {
                 if (queue.Count > 0)
                 {
-                    int maxMessagesToRead = Math.Min(conf.GeneratePieceInterval, queue.Count);
+                    int maxMessagesToRead = queue.Count;
                     for (int i = 0; i < maxMessagesToRead; ++i)
                     {
                         PlayerMessage message = null;
@@ -221,11 +221,6 @@ namespace GameMaster.Models
                             break;
                         }
                     }
-                }
-
-                if (piecesOnBoard < conf.MaximumNumberOfPiecesOnBoard)
-                {
-                    GeneratePiece();
                 }
             }
         }

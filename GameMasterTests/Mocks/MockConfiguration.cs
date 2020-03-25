@@ -12,7 +12,6 @@ namespace GameMaster.Tests.Mocks
             this.GoalAreaHeight = 3;
             this.ShamPieceProbability = 40;
             this.MaximumNumberOfPiecesOnBoard = 10;
-            this.GeneratePieceInterval = 100;
             this.NumberOfPlayersPerTeam = 6;
         }
     }
