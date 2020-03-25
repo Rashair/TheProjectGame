@@ -2,13 +2,14 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks.Dataflow;
 
+using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Shared.Messages;
+using Shared.Models.Messages;
 using Xunit;
 
 using static GameMaster.Tests.Helpers.ReflectionHelpers;
@@ -26,8 +27,9 @@ namespace GameMaster.Tests
             // Arrange
             var conf = new MockConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
+            var manager = new WebSocketManager<GMMessage>();
             var logger = Mock.Of<ILogger<GM>>();
-            var gameMaster = new GM(conf, queue, logger);
+            var gameMaster = new GM(conf, queue, manager, logger);
             var startGame = GetMethod("StartGame");
             startGame.Invoke(gameMaster, null);
             var method = GetMethod("GeneratePiece");

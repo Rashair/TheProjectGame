@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Shared.Messages;
+using Shared.Models.Messages;
 using Xunit;
 
 using static GameMaster.Tests.Helpers.ReflectionHelpers;

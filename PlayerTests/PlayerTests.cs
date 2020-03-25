@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 using Newtonsoft.Json;
 using Player.Clients;
-using Player.Models;
 using Shared;
 using Shared.Enums;
-using Shared.Models;
 using Shared.Models.Messages;
 using Shared.Models.Payloads;
 using Xunit;
@@ -54,44 +50,35 @@ namespace Player.Tests
                 ShamPieceProbability = 0.5f,
                 Position = new Position { X = 1, Y = 1 },
             };
-            GMMessage message = new GMMessage()
+            GMMessage messageStart = new GMMessage()
             {
                 Id = GMMessageID.StartGame,
                 Payload = JsonConvert.SerializeObject(payloadStart),
             };
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post<GMMessage>(message);
+            input.Post<GMMessage>(messageStart);
+            input.Post<GMMessage>(messageDiscover);
 
             Team team = Team.Red;
-            var player = new Player.Models.Player(team, input, new WebSocketClient<GMMessage, AgentMessage>());
-
-            player.board = new Field[3, 3];
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    player.board[i, j] = new Field();
-                }
-            }
-            player.position = new Tuple<int, int>(1, 1);
+            var player = new Player.Models.Player(team, input, new WebSocketClient<GMMessage, PlayerMessage>());
 
             await player.AcceptMessage();
             await player.AcceptMessage();
 
-            Assert.Equal(0, player.board[0, 0].distToPiece);
+            Assert.Equal(0, player.Board[0, 0].DistToPiece);
         }
 
         [Fact]
         public async Task TestAcceptMessageBegForInfoAccept()
         {
-            BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
+            BegForInfoForwardedPayload payloadBeg = new BegForInfoForwardedPayload()
             {
                 AskingID = 2,
                 Leader = false,
                 TeamId = Team.Red,
             };
-            GMMessage message = new GMMessage()
+            GMMessage messageBeg = new GMMessage()
             {
                 Id = GMMessageID.BegForInfoForwarded,
                 Payload = JsonConvert.SerializeObject(payloadBeg),
@@ -120,17 +107,16 @@ namespace Player.Tests
             };
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post<GMMessage>(message);
+            input.Post<GMMessage>(messageStart);
+            input.Post<GMMessage>(messageBeg);
 
             Team team = Team.Red;
-            var player = new Player.Models.Player(team, input, new WebSocketClient<GMMessage, AgentMessage>());
-
-            player.waitingPlayers = new List<int>();
+            var player = new Player.Models.Player(team, input, new WebSocketClient<GMMessage, PlayerMessage>());
 
             await player.AcceptMessage();
             await player.AcceptMessage();
 
-            Assert.Single(player.waitingPlayers);
+            Assert.Single(player.WaitingPlayers);
         }
     }
 }
