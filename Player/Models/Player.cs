@@ -9,8 +9,8 @@ using Player.Clients;
 using Player.Models.Strategies;
 using Shared;
 using Shared.Enums;
+using Shared.Messages;
 using Shared.Models;
-using Shared.Models.Messages;
 using Shared.Models.Payloads;
 using Shared.Senders;
 
@@ -60,7 +60,7 @@ namespace Player.Models
             this.client = client;
         }
 
-        public async Task JoinTheGame()
+        internal async Task JoinTheGame()
         {
             JoinGamePayload payload = new JoinGamePayload()
             {
@@ -74,7 +74,8 @@ namespace Player.Models
             await Communicate(message);
         }
 
-        public async Task Start()
+        // Start before
+        internal async Task WorkAsync()
         {
             working = true;
             while (working)
@@ -85,7 +86,8 @@ namespace Player.Models
             }
         }
 
-        public void Stop()
+        // Stop before
+        internal void Stop()
         {
             working = false;
         }

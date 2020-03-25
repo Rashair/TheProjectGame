@@ -4,10 +4,9 @@ using System.Threading.Tasks.Dataflow;
 using Newtonsoft.Json;
 using Player.Clients;
 using Player.Models.Strategies;
-using Shared;
 using Shared.Enums;
+using Shared.Messages;
 using Shared.Models;
-using Shared.Models.Messages;
 using Shared.Models.Payloads;
 using Xunit;
 
