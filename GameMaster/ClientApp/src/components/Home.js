@@ -41,56 +41,53 @@ export class Home extends Component {
             }
         };
 
-        let readyToSend = true;
         if (this.state.goalAreaHeight * this.state.boardX < this.state.numberOfGoals) {
             alert('Liczba celów w przestrzeni bramkowej nie może być większa niż liczba pól w tym obszarze.');
-            readyToSend = false;
+            return;
         }
 
         if (2 * this.state.numberOfTeamPlayers > (this.state.boardX * this.state.boardY)) {
             alert('Liczba agentów w obu drużynach nie może przekraczać liczby pól na planszy.');
-            readyToSend = false;
+            return;
         }
 
         if (this.state.movePenalty < 0 || this.state.askPenalty < 0 || this.state.discoveryPenalty < 0 || this.state.putPenalty < 0 ||
             this.state.checkForShamPenalty < 0 || this.state.responsePenalty < 0) {
             alert('Kara musi być wartością nieujemną.');
-            readyToSend = false;
+            return;
         }
 
         if (this.state.boardX < 0 || this.state.boardY < 0 || this.state.goalAreaHeight < 0 || this.state.numberOfTeamPlayers < 0
             || this.state.numberOfGoals < 0 || this.state.numberOfPieces < 0 || this.state.shamPieceProbability < 0) {
             alert('Parametry nie mogą przyjmować wartości ujemnych.');
-            readyToSend = false;
+            return;
         }
 
         if (this.state.shamPieceProbability < 0 || this.state.shamPieceProbability >= 1) {
             alert('Prawdopodobieństwo musi być liczbą z przedziału między 0 a 1.');
-            readyToSend = false;
+            return;
         }
 
-        if (readyToSend) {
-            xhr.open('POST', 'Configuration', true);
+        xhr.open('POST', 'Configuration', true);
 
-            var data = new FormData();
-            data.append('CsIP', this.state.ip);
-            data.append('CsPort', this.state.port);
-            data.append('MovePenalty', this.state.movePenalty);
-            data.append('AskPenalty', this.state.askPenalty);
-            data.append('DiscoverPenalty', this.state.discoveryPenalty);
-            data.append('PutPenalty', this.state.putPenalty);
-            data.append('CheckPenalty', this.state.checkForShamPenalty);
-            data.append('ResponsePenalty', this.state.responsePenalty);
-            data.append('Width', this.state.boardX);
-            data.append('Height', this.state.boardY);
-            data.append('GoalAreaHeight', this.state.goalAreaHeight);
-            data.append('NumberOfGoals', this.state.numberOfGoals);
-            data.append('NumberOfPieces', this.state.numberOfPieces);
-            data.append('NumberOfPlayersPerTeam', this.state.numberOfTeamPlayers);
-            data.append('MaximumNumberOfPiecesOnBoard', this.state.maximumNumberOfPiecesOnBoard);
-            data.append('ShamPieceProbability', this.state.shamPieceProbability);
-            xhr.send(data);
-        }
+        var data = new FormData();
+        data.append('CsIP', this.state.ip);
+        data.append('CsPort', this.state.port);
+        data.append('MovePenalty', this.state.movePenalty);
+        data.append('AskPenalty', this.state.askPenalty);
+        data.append('DiscoverPenalty', this.state.discoveryPenalty);
+        data.append('PutPenalty', this.state.putPenalty);
+        data.append('CheckPenalty', this.state.checkForShamPenalty);
+        data.append('ResponsePenalty', this.state.responsePenalty);
+        data.append('Width', this.state.boardX);
+        data.append('Height', this.state.boardY);
+        data.append('GoalAreaHeight', this.state.goalAreaHeight);
+        data.append('NumberOfGoals', this.state.numberOfGoals);
+        data.append('NumberOfPieces', this.state.numberOfPieces);
+        data.append('NumberOfPlayersPerTeam', this.state.numberOfTeamPlayers);
+        data.append('MaximumNumberOfPiecesOnBoard', this.state.maximumNumberOfPiecesOnBoard);
+        data.append('ShamPieceProbability', this.state.shamPieceProbability);
+        xhr.send(data);
     }
 
     render() {
