@@ -21,7 +21,7 @@ namespace GameMaster.Models
         private readonly ILogger<GM> logger;
         private readonly Configuration conf;
         private readonly BufferBlock<PlayerMessage> queue;
-        private ISocketManager<WebSocket, GMMessage> manager;
+        private ISocketManager<WebSocket, GMMessage> socketManager;
 
         private readonly int[] legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;
@@ -34,12 +34,12 @@ namespace GameMaster.Models
         public bool WasGameStarted { get; set; }
 
         public GM(Configuration conf, BufferBlock<PlayerMessage> queue, ILogger<GM> logger,
-            WebSocketManager<GMMessage> manager)
+            WebSocketManager<GMMessage> socketManager)
         {
             this.logger = logger;
             this.conf = conf;
             this.queue = queue;
-            this.manager = manager;
+            this.socketManager = socketManager;
             legalKnowledgeReplies = new int[2];
         }
 
@@ -78,7 +78,7 @@ namespace GameMaster.Models
                         Id = GMMessageID.JoinTheGameAnswer,
                         Payload = JsonConvert.SerializeObject(answerJoinPayload),
                     };
-                    await manager.SendMessageAsync(players[key].SocketID, answerJoin, cancellationToken);
+                    await socketManager.SendMessageAsync(players[key].SocketID, answerJoin, cancellationToken);
                     break;
                 case PlayerMessageID.Move:
                     MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
@@ -122,7 +122,8 @@ namespace GameMaster.Models
                         Id = GMMessageID.PickAnswer,
                         Payload = JsonConvert.SerializeObject(answerPickPayload),
                     };
-                    await manager.SendMessageAsync(players[message.PlayerID].SocketID, answerPick, cancellationToken);
+                    await socketManager.SendMessageAsync(players[message.PlayerID].SocketID, answerPick,
+                        cancellationToken);
                     break;
                 case PlayerMessageID.Put:
                     bool point = players[message.PlayerID].Put();
