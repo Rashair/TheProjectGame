@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GameMaster.Tests.Mocks
 {
-    public class MockLogger : ILogger
+    public class MockLogger<T> : ILogger<T>
     {
         public IDisposable BeginScope<TState>(TState state)
         {

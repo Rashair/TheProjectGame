@@ -33,7 +33,7 @@ namespace GameMaster.Services
         {
             while (!(gameMaster.WasGameStarted || cancellationToken.IsCancellationRequested))
             {
-                await Task.Delay(1000, cancellationToken);
+                await Task.Delay(WaitForStartDelay, cancellationToken);
             }
         }
     }

@@ -15,7 +15,7 @@ namespace GameMaster.Models
 {
     public class GM
     {
-        private readonly ILogger logger;
+        private readonly ILogger<GM> logger;
         private readonly Configuration conf;
         private readonly BufferBlock<PlayerMessage> queue;
 
@@ -29,7 +29,7 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; set; }
 
-        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, ILogger logger)
+        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, ILogger<GM> logger)
         {
             this.logger = logger;
             this.conf = conf;

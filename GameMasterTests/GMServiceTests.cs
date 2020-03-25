@@ -169,7 +169,7 @@ namespace GameMaster.Tests
 
         private void AddLogging(IServiceCollection services)
         {
-            services.AddSingleton<ILogger, MockLogger>();
+            services.AddSingleton<ILogger<GM>, MockLogger<GM>>();
         }
     }
 }
