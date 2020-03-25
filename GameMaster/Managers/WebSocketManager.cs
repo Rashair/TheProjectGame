@@ -17,7 +17,7 @@ namespace GameMaster.Managers
 
         protected override async Task CloseSocketAsync(WebSocket socket, CancellationToken cancellationToken)
         {
-            if (socket.State == WebSocketState.Open)
+            if (!cancellationToken.IsCancellationRequested && (socket.State == WebSocketState.Open))
             {
                 await socket.CloseAsync(
                     closeStatus: WebSocketCloseStatus.NormalClosure,
