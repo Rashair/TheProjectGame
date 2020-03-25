@@ -29,7 +29,7 @@ namespace GameMaster.Controllers
 
         public virtual async Task OnDisconnectedAsync(WebSocket socket)
         {
-            await Manager.RemoveSocketAsync(Manager.GetId(socket));
+            await Manager.RemoveSocketAsync(Manager.GetId(socket), CancellationToken.None);
         }
 
         public virtual bool AcceptConnection()
@@ -53,7 +53,6 @@ namespace GameMaster.Controllers
                 await OnMessageAsync(socket, result, buffer);
                 result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             }
-
             await OnDisconnectedAsync(socket);
             return Ok();
         }
