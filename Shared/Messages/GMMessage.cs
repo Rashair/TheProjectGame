@@ -1,6 +1,6 @@
 using Shared.Enums;
 
-﻿namespace Shared.Messages
+namespace Shared.Messages
 {
     public class GMMessage
     {
