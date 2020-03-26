@@ -1,6 +1,7 @@
 ﻿using Shared.Enums;
+using Shared.Models;
 
-namespace Shared.Models.Payloads
+namespace Shared.Payloads
 {
     public class StartGamePayload : Payload
     {

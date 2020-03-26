@@ -1,4 +1,6 @@
-﻿namespace Shared.Models.Payloads
+﻿using Shared.Models;
+
+namespace Shared.Payloads
 {
     public class MoveAnswerPayload : Payload
     {

@@ -12,8 +12,8 @@ using GameMaster.Models.Pieces;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Shared.Enums;
-using Shared.Models.Messages;
-using Shared.Models.Payloads;
+using Shared.Messages;
+using Shared.Payloads;
 
 namespace GameMaster.Models
 {

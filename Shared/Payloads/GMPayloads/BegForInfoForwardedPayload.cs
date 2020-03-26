@@ -1,6 +1,6 @@
 ﻿using Shared.Enums;
 
-namespace Shared.Models.Payloads
+namespace Shared.Payloads
 {
     public class BegForInfoForwardedPayload : Payload
     {
