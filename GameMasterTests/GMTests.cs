@@ -30,6 +30,7 @@ namespace GameMaster.Tests
             var manager = new WebSocketManager<GMMessage>();
             var logger = Mock.Of<ILogger<GM>>();
             var gameMaster = new GM(conf, queue, manager, logger);
+
             var startGame = GetMethod("StartGame");
             startGame.Invoke(gameMaster, null);
             var method = GetMethod("GeneratePiece");

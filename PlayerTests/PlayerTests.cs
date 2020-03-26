@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -63,8 +64,8 @@ namespace Player.Tests
             Team team = Team.Red;
             var player = new Player.Models.Player(team, input, new WebSocketClient<GMMessage, PlayerMessage>());
 
-            await player.AcceptMessage();
-            await player.AcceptMessage();
+            await player.AcceptMessage(CancellationToken.None);
+            await player.AcceptMessage(CancellationToken.None);
 
             Assert.Equal(0, player.Board[0, 0].DistToPiece);
         }
@@ -113,8 +114,8 @@ namespace Player.Tests
             Team team = Team.Red;
             var player = new Player.Models.Player(team, input, new WebSocketClient<GMMessage, PlayerMessage>());
 
-            await player.AcceptMessage();
-            await player.AcceptMessage();
+            await player.AcceptMessage(CancellationToken.None);
+            await player.AcceptMessage(CancellationToken.None);
 
             Assert.Single(player.WaitingPlayers);
         }

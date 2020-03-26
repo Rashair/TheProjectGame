@@ -10,7 +10,6 @@ using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Shared;
 using Shared.Enums;
 using Shared.Models.Messages;
 using Shared.Models.Payloads;

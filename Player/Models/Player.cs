@@ -25,6 +25,8 @@ namespace Player.Models
         private int penaltyTime;
         private IStrategy strategy;
         private bool working;
+        private Team team;
+
         private Penalties penaltiesTimes;
         private Team winner;
         private int[] enemiesIDs;
@@ -33,7 +35,6 @@ namespace Player.Models
         private int numberOfPieces;
         private int numberOfGoals;
         private float shamPieceProbability;
-        private Team team;
 
         public bool IsLeader { get; private set; }
 
@@ -72,7 +73,6 @@ namespace Player.Models
             await Communicate(message, cancellationToken);
         }
 
-        // Start before
         internal async Task Start(CancellationToken cancellationToken)
         {
             working = true;
@@ -84,7 +84,6 @@ namespace Player.Models
             }
         }
 
-        // Stop before
         internal void Stop()
         {
             working = false;
@@ -225,6 +224,7 @@ namespace Player.Models
         {
             EmptyPayload payload = new EmptyPayload();
             PlayerMessage message = CreateMessage(PlayerMessageID.Discover, payload);
+
             await Communicate(message, cancellationToken);
         }
 

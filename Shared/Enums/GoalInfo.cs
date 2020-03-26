@@ -1,4 +1,4 @@
-﻿namespace Shared
+﻿namespace Shared.Enums
 {
     public enum GoalInfo
     {
