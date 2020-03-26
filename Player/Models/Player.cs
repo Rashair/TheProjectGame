@@ -330,14 +330,17 @@ namespace Player.Models
                         {
                             Position = new Tuple<int, int>(payloadMove.CurrentPosition.X, payloadMove.CurrentPosition.Y);
                             Board[Position.Item1, Position.Item2].DistToPiece = payloadMove.ClosestPiece;
-                            EmptyPayload messagePickPayload = new EmptyPayload();
-                            PlayerMessage messagePick = new PlayerMessage()
+                            if (Board[Position.Item1, Position.Item2].DistToPiece == 0)
                             {
-                                MessageID = PlayerMessageID.Pick,
-                                PlayerID = id,
-                                Payload = JsonConvert.SerializeObject(messagePickPayload),
-                            };
-                            await Communicate(messagePick, cancellationToken);
+                                EmptyPayload messagePickPayload = new EmptyPayload();
+                                PlayerMessage messagePick = new PlayerMessage()
+                                {
+                                    MessageID = PlayerMessageID.Pick,
+                                    PlayerID = id,
+                                    Payload = JsonConvert.SerializeObject(messagePickPayload),
+                                };
+                                await Communicate(messagePick, cancellationToken);
+                            }
                         }
                         break;
                     case GMMessageID.PickAnswer:
