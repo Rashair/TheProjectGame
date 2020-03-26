@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -148,7 +149,62 @@ namespace GameMaster.Models
 
         internal Dictionary<Direction, int> Discover(AbstractField field)
         {
-            throw new NotImplementedException();
+            int[] center = field.GetPosition();
+            int[,] neighbourCoordinates = new int[9, 2]
+            {
+                // up row
+                { center[0] - 1, center[1] - 1 },
+                { center[0] - 1, center[1] },
+                { center[0] - 1, center[1] + 1 },
+
+                // middle row
+                { center[0], center[1] - 1 },
+                { center[0], center[1] },
+                { center[0], center[1] + 1 },
+
+                // down row
+                { center[0] + 1, center[1] - 1 },
+                { center[0] + 1, center[1] },
+                { center[0] + 1, center[1] + 1 },
+            };
+
+            int[] distances = new int[9];
+            for (int i = 0; i < distances.Length; i++)
+            {
+                distances[i] = int.MaxValue;
+            }
+
+            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
+            for (int i = conf.GoalAreaHeight; i < secondGoalAreaStart; i++)
+            {
+                for (int j = 0; j < board[i].Length; j++)
+                {
+                    if (board[i][j].ContainsPieces())
+                    {
+                        for (int k = 0; k < distances.Length; k++)
+                        {
+                            int manhattanDistance = Math.Abs(neighbourCoordinates[k, 0] - i) + Math.Abs(neighbourCoordinates[k, 1] - j);
+                            if (manhattanDistance < distances[k])
+                                distances[k] = manhattanDistance;
+                        }
+                    }
+                }
+            }
+
+            Direction[] direction = (Direction[])Enum.GetValues(typeof(Direction));
+            Array.Sort(direction);
+            Dictionary<Direction, int> discoveryResult = new Dictionary<Direction, int>();
+            for (int i = 0; i < distances.Length; i++)
+            {
+                int x = neighbourCoordinates[i, 0];
+                int y = neighbourCoordinates[i, 1];
+
+                if (distances[i] >= 0 && x >= conf.GoalAreaHeight && x <= secondGoalAreaStart && y >= 0 && y < conf.Width)
+                {
+                    discoveryResult.Add(direction[i], distances[i]);
+                }
+            }
+            return discoveryResult;
         }
 
         internal void StartGame()
