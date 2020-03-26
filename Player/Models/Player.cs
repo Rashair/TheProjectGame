@@ -246,10 +246,10 @@ namespace Player.Models
             await Communicate(message, cancellationToken);
         }
 
-        public async Task<bool> AcceptMessage(CancellationToken cancellationToken) // returns if StartGameMessage was returned
+        public async Task<bool> AcceptMessage(CancellationToken cancellationToken) // returns true if StartGameMessage was accepted
         {
             GMMessage message;
-            while (queue.TryReceive(null, out message))
+            if (queue.TryReceive(null, out message))
             {
                 switch (message.Id)
                 {
