@@ -1,4 +1,4 @@
-﻿namespace Shared.Enums
+namespace Shared.Enums
 {
     public enum Directions
     {

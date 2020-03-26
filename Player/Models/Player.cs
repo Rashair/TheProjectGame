@@ -7,8 +7,8 @@ using System.Threading.Tasks.Dataflow;
 using Newtonsoft.Json;
 using Player.Clients;
 using Player.Models.Strategies;
-using Shared;
 using Shared.Enums;
+using Shared.Models;
 using Shared.Models.Messages;
 using Shared.Models.Payloads;
 using Shared.Senders;
@@ -52,9 +52,10 @@ namespace Player.Models
 
         public (int x, int y) BoardSize { get; private set; }
 
-        public Player(Team team, BufferBlock<GMMessage> queue, WebSocketClient<GMMessage, PlayerMessage> client)
+        public Player(Team team, IStrategy strategy, BufferBlock<GMMessage> queue, WebSocketClient<GMMessage, PlayerMessage> client)
         {
             this.team = team;
+            this.strategy = strategy;
             this.queue = queue;
             this.client = client;
         }

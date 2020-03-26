@@ -18,9 +18,9 @@ namespace GameMaster.Models
 {
     public class GM
     {
-        private ILogger<GM> logger;
-        private Configuration conf;
-        private BufferBlock<PlayerMessage> queue;
+        private readonly ILogger<GM> logger;
+        private readonly Configuration conf;
+        private readonly BufferBlock<PlayerMessage> queue;
         private SocketManager<WebSocket, GMMessage> manager;
 
         private readonly int[] legalKnowledgeReplies;
@@ -51,6 +51,7 @@ namespace GameMaster.Models
                     break;
                 case PlayerMessageID.PieceDestruction:
                     players[message.PlayerID].DestroyHolding();
+                    piecesOnBoard--;
                     GeneratePiece();
                     break;
                 case PlayerMessageID.Discover:
@@ -126,6 +127,7 @@ namespace GameMaster.Models
                     bool point = players[message.PlayerID].Put();
                     if (point)
                     {
+                        piecesOnBoard--;
                         if (players[message.PlayerID].Team == Team.Red)
                         {
                             redTeamPoints++;
