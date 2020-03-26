@@ -36,11 +36,6 @@ namespace GameMaster.Models
 
         public double ShamPieceProbability { get; set; } // percentage
 
-        public Configuration()
-        {
-            string line;
-        }
-
         public void Update(Configuration conf)
         {
             CsIP = conf.CsIP;
