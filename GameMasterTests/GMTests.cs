@@ -118,7 +118,7 @@ namespace GameMaster.Tests
         {
             public IEnumerator<object[]> GetEnumerator()
             {
-                yield return new object[] { new TaskField(4, 5), 8 };
+                yield return new object[] { new TaskField(1, 1), 8 };
                 yield return new object[] { new TaskField(7, 0), 3 };
                 yield return new object[] { new TaskField(7, 9), 4 };
                 yield return new object[] { new TaskField(10, 0), 5 };
@@ -137,12 +137,12 @@ namespace GameMaster.Tests
             var gameMaster = new GM(conf, queue, logger);
             var startGame = GetMethod("StartGame");
             startGame.Invoke(gameMaster, null);
-            var method = GetMethod("GeneratePiece");
+            var generatePiece = GetMethod("GeneratePiece");
 
             // Act
             for (int i = 0; i < pieceCount; ++i)
             {
-                method.Invoke(gameMaster, null);
+                generatePiece.Invoke(gameMaster, null);
             }
 
             // Act
