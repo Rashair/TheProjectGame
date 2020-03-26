@@ -19,8 +19,7 @@ namespace GameMaster.Controllers
         [Route("/Configuration")]
         public void PostConfiguration(Configuration model)
         {
-            configuration = model;
-
+            configuration.Update(model);
             string gameConfigString = JsonConvert.SerializeObject(model);
 
             using (StreamWriter outputFile = new StreamWriter("gameConfig.json"))

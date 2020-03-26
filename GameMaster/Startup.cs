@@ -38,7 +38,7 @@ namespace GameMaster
             services.AddSingleton<WebSocketManager<GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
-            services.AddSingleton<Configuration>();
+            services.AddSingleton(new Configuration());
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
         }

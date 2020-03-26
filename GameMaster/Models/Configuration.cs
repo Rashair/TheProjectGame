@@ -1,4 +1,8 @@
-﻿namespace GameMaster.Models
+﻿using System.IO;
+
+using Newtonsoft.Json;
+
+namespace GameMaster.Models
 {
     public class Configuration
     {
@@ -31,5 +35,29 @@
         public int NumberOfPlayersPerTeam { get; set; }
 
         public double ShamPieceProbability { get; set; } // percentage
+
+        public Configuration()
+        {
+            string line;
+        }
+
+        public void Update(Configuration conf)
+        {
+            CsIP = conf.CsIP;
+            CsPort = conf.CsPort;
+            MovePenalty = conf.MovePenalty;
+            AskPenalty = conf.AskPenalty;
+            DiscoverPenalty = conf.DiscoverPenalty;
+            PutPenalty = conf.PutPenalty;
+            CheckPenalty = conf.CheckPenalty;
+            ResponsePenalty = conf.ResponsePenalty;
+            Width = conf.Width;
+            Height = conf.Height;
+            GoalAreaHeight = conf.GoalAreaHeight;
+            NumberOfGoals = conf.NumberOfGoals;
+            MaximumNumberOfPiecesOnBoard = conf.MaximumNumberOfPiecesOnBoard;
+            NumberOfPlayersPerTeam = conf.NumberOfGoals;
+            ShamPieceProbability = conf.ShamPieceProbability;
+        }
     }
 }
