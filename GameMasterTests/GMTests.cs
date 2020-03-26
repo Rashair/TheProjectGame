@@ -152,7 +152,7 @@ namespace GameMaster.Tests
             // Assert
             var fieldInfo = GetField("board");
             AbstractField[][] board = (AbstractField[][])fieldInfo.GetValue(gameMaster);
-            List<(AbstractField, int, Direction)> neighbours = GetNeighbours(field, board, conf.GoalAreaHeight, conf.Height, conf.Width);
+            List<(AbstractField field, int dist, Direction dir)> neighbours = GetNeighbours(field, board, conf.Height, conf.Width);
 
             for (int k = 0; k < neighbours.Count; k++)
             {
@@ -161,13 +161,14 @@ namespace GameMaster.Tests
                     for (int j = 0; j < board[i].Length; j++)
                     {
                         int dist = ManhattanDistance(neighbours[k].Item1, board[i][j]);
-                        if (dist < neighbours[k].Item2)
-                            neighbours[k] = (neighbours[k].Item1, dist, neighbours[k].Item3);
+                        if (dist < neighbours[k].dist)
+                            neighbours[k] = (neighbours[k].Item1, dist, neighbours[k].dir);
                     }
                 }
-                if (discoveryActionResult[neighbours[k].Item3] != neighbours[k].Item2)
+                if (discoveryActionResult[neighbours[k].dir] != neighbours[k].dist)
                 {
-                    Assert.False(discoveryActionResult[neighbours[k].Item3] == neighbours[k].Item2, string.Format("Incorect Value for distance {0} != {1}", discoveryActionResult[neighbours[k].Item3], neighbours[k].Item2));
+                    Assert.False(discoveryActionResult[neighbours[k].dir] == neighbours[k].dist,
+                        $"Incorect value for distance: {discoveryActionResult[neighbours[k].dir]} != {neighbours[k].dist}");
                 }
             }
             Assert.Equal(neighbours.Count, discoveryActionResult.Count);
@@ -178,27 +179,18 @@ namespace GameMaster.Tests
             return Math.Abs(f1.GetPosition()[0] - f2.GetPosition()[0]) + Math.Abs(f1.GetPosition()[1] - f2.GetPosition()[1]);
         }
 
-        public List<(AbstractField, int, Direction)> GetNeighbours(AbstractField field, AbstractField[][] board, int goalAreaHeight, int height, int width)
+        public List<(AbstractField, int, Direction)> GetNeighbours(AbstractField field, AbstractField[][] board, int height, int width)
         {
             int[] center = field.GetPosition();
             List<(AbstractField, int, Direction)> neighbours = new List<(AbstractField, int, Direction)>();
-            Direction[] directions = (Direction[])Enum.GetValues(typeof(Direction));
-            Array.Sort(directions);
-
-            (int, int)[] neighbourCoordinates = new (int, int)[]
-             {
-                 (center[0] - 1, center[1] - 1),  (center[0] - 1, center[1]), (center[0] - 1, center[1] + 1),
-                 (center[0], center[1] - 1), (center[0], center[1]), (center[0], center[1] + 1),
-                 (center[0] + 1, center[1] - 1), (center[0] + 1, center[1]), (center[0] + 1, center[1] + 1),
-             };
+            var neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter(center);
 
             for (int i = 0; i < neighbourCoordinates.Length; i++)
             {
-                int x = neighbourCoordinates[i].Item1;
-                int y = neighbourCoordinates[i].Item2;
-                if (x >= 0 && x < height && y >= 0 && y < width)
+                var (dir, y, x) = neighbourCoordinates[i];
+                if (y >= 0 && y < height && x >= 0 && x < width)
                 {
-                    neighbours.Add((board[x][y], int.MaxValue, directions[i]));
+                    neighbours.Add((board[y][x], int.MaxValue, dir));
                 }
             }
             return neighbours;
