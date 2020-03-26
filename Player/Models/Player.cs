@@ -60,6 +60,27 @@ namespace Player.Models
             this.client = client;
         }
 
+        internal async Task Work(CancellationToken cancellationToken)
+        {
+            await JoinTheGame(cancellationToken);
+            bool startGame = false;
+            while (!cancellationToken.IsCancellationRequested && !startGame)
+            {
+                try
+                {
+                    startGame = await AcceptMessage(cancellationToken);
+                }
+                catch (OperationCanceledException e)
+                {
+                    Console.WriteLine($"Message retrieve was cancelled: {e.Message}");
+                }
+            }
+            if (startGame)
+            {
+                await Start(cancellationToken);
+            }
+        }
+
         internal async Task JoinTheGame(CancellationToken cancellationToken)
         {
             JoinGamePayload payload = new JoinGamePayload()
@@ -80,8 +101,8 @@ namespace Player.Models
             while (working)
             {
                 await Task.Run(() => AcceptMessage(cancellationToken));
-                await Task.Run(() => MakeDecisionFromStrategy());
-                await Task.Run(() => Penalty());
+                await Task.Run(() => MakeDecisionFromStrategy(), cancellationToken);
+                await Task.Run(() => Penalty(), cancellationToken);
             }
         }
 
@@ -225,10 +246,10 @@ namespace Player.Models
             await Communicate(message, cancellationToken);
         }
 
-        public async Task AcceptMessage(CancellationToken cancellationToken)
+        public async Task<bool> AcceptMessage(CancellationToken cancellationToken) // returns if StartGameMessage was returned
         {
             GMMessage message;
-            if (queue.TryReceive(null, out message))
+            while (queue.TryReceive(null, out message))
             {
                 switch (message.Id)
                 {
@@ -291,7 +312,7 @@ namespace Player.Models
                         numberOfGoals = payloadStart.NumberOfGoals;
                         shamPieceProbability = payloadStart.ShamPieceProbability;
                         WaitingPlayers = new List<int>();
-                        break;
+                        return true;
                     case GMMessageID.BegForInfoForwarded:
                         BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
                         if (team == payloadBeg.TeamId)
@@ -354,6 +375,7 @@ namespace Player.Models
                         break;
                 }
             }
+            return false;
         }
 
         public void MakeDecisionFromStrategy()
