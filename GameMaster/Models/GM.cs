@@ -1,15 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using System.Timers;
 
+using GameMaster.Managers;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Shared.Enums;
-using Shared.Messages;
+using Shared.Models.Messages;
+using Shared.Models.Payloads;
 
 namespace GameMaster.Models
 {
@@ -18,6 +21,7 @@ namespace GameMaster.Models
         private readonly ILogger<GM> logger;
         private readonly Configuration conf;
         private readonly BufferBlock<PlayerMessage> queue;
+        private SocketManager<WebSocket, GMMessage> manager;
 
         private readonly int[] legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;
@@ -29,17 +33,115 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; set; }
 
-        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, ILogger<GM> logger)
+        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> manager, ILogger<GM> logger)
         {
             this.logger = logger;
             this.conf = conf;
             this.queue = queue;
+            this.manager = manager;
             legalKnowledgeReplies = new int[2];
         }
 
         public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
         {
-            // TODO decrement `piecesOnBoard` on Put Message
+            switch (message.MessageID)
+            {
+                case PlayerMessageID.CheckPiece:
+                    players[message.PlayerID].CheckHolding();
+                    break;
+                case PlayerMessageID.PieceDestruction:
+                    players[message.PlayerID].DestroyHolding();
+                    piecesOnBoard--;
+                    GeneratePiece();
+                    break;
+                case PlayerMessageID.Discover:
+                    players[message.PlayerID].Discover(this);
+                    break;
+                case PlayerMessageID.GiveInfo:
+                    await ForwardKnowledgeReply(message, cancellationToken);
+                    break;
+                case PlayerMessageID.BegForInfo:
+                    await ForwardKnowledgeQuestion(message, cancellationToken);
+                    break;
+                case PlayerMessageID.JoinTheGame:
+                    JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
+                    int key = players.Count;
+                    bool accepted = players.TryAdd(key, new GMPlayer(key, payloadJoin.TeamID));
+                    JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
+                    {
+                        Accepted = accepted,
+                        PlayerID = key,
+                    };
+                    GMMessage answerJoin = new GMMessage()
+                    {
+                        Id = GMMessageID.JoinTheGameAnswer,
+                        Payload = JsonConvert.SerializeObject(answerJoinPayload),
+                    };
+                    await manager.SendMessageAsync(players[key].SocketID, answerJoin);
+                    break;
+                case PlayerMessageID.Move:
+                    MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
+                    AbstractField field = null;
+                    int[] position1 = players[message.PlayerID].GetPosition();
+                    switch (payloadMove.Direction)
+                    {
+                        case Directions.N:
+                            if (position1[1] + 1 < board.GetLength(1))
+                            {
+                                field = board[position1[0]][position1[1] + 1];
+                            }
+                            break;
+                        case Directions.S:
+                            if (position1[1] - 1 >= 0)
+                            {
+                                field = board[position1[0]][position1[1] - 1];
+                            }
+                            break;
+                        case Directions.E:
+                            if (position1[0] + 1 < board.GetLength(0))
+                            {
+                                field = board[position1[0] + 1][position1[1]];
+                            }
+                            break;
+                        case Directions.W:
+                            if (position1[0] - 1 >= 0)
+                            {
+                                field = board[position1[0] - 1][position1[1]];
+                            }
+                            break;
+                    }
+                    players[message.PlayerID].Move(field);
+                    break;
+                case PlayerMessageID.Pick:
+                    int[] position2 = players[message.PlayerID].GetPosition();
+                    board[position2[0]][position2[1]].PickUp(players[message.PlayerID]);
+                    EmptyPayload answerPickPayload = new EmptyPayload();
+                    GMMessage answerPick = new GMMessage()
+                    {
+                        Id = GMMessageID.PickAnswer,
+                        Payload = JsonConvert.SerializeObject(answerPickPayload),
+                    };
+                    await manager.SendMessageAsync(players[message.PlayerID].SocketID, answerPick);
+                    break;
+                case PlayerMessageID.Put:
+                    bool point = players[message.PlayerID].Put();
+                    if (point)
+                    {
+                        piecesOnBoard--;
+                        if (players[message.PlayerID].Team == Team.Red)
+                        {
+                            redTeamPoints++;
+                        }
+                        else
+                        {
+                            blueTeamPoints++;
+                        }
+                    }
+                    GeneratePiece();
+                    break;
+                default:
+                    break;
+            }
         }
 
         internal Dictionary<Direction, int> Discover(AbstractField field)
@@ -137,12 +239,12 @@ namespace GameMaster.Models
             piecesOnBoard += 1;
         }
 
-        private void ForwardKnowledgeQuestion()
+        private async Task ForwardKnowledgeQuestion(PlayerMessage playerMessage, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        private void ForwardKnowledgeReply()
+        private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

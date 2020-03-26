@@ -1,4 +1,6 @@
-﻿namespace Player.Models.Payloads
+using Shared.Enums;
+
+namespace Shared.Models.Payloads
 {
     public class GiveInfoPayload : Payload
     {

@@ -1,16 +1,15 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
+using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Services;
 using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Moq;
-using Shared.Messages;
+using Shared.Models.Messages;
 using Xunit;
 
 using static GameMaster.Tests.Helpers.ReflectionHelpers;
@@ -33,6 +32,7 @@ namespace GameMaster.Tests
                 queue.Post(new PlayerMessage());
             }
             services.AddSingleton(queue);
+            services.AddSingleton(new WebSocketManager<GMMessage>());
             AddLogging(services);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
@@ -73,6 +73,7 @@ namespace GameMaster.Tests
                 queue.Post(new PlayerMessage());
             }
             services.AddSingleton(queue);
+            services.AddSingleton(new WebSocketManager<GMMessage>());
             AddLogging(services);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();

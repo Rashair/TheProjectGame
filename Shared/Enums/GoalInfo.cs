@@ -1,4 +1,4 @@
-﻿namespace Player.Models
+﻿namespace Shared.Enums
 {
     public enum GoalInfo
     {

@@ -1,4 +1,6 @@
-﻿namespace Player.Models
+﻿using Shared.Enums;
+
+namespace Player.Models
 {
     public class Field
     {

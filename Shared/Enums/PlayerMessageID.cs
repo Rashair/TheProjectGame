@@ -1,6 +1,6 @@
 ﻿namespace Shared.Enums
 {
-    public enum MessageType
+    public enum PlayerMessageID
     {
         CheckPiece = 1,
         PieceDestruction,

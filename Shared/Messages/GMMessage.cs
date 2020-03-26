@@ -1,9 +1,0 @@
-﻿namespace Shared.Messages
-{
-    public class GMMessage
-    {
-        public int Id { get; set; }
-
-        public string Payload { get; set; }
-    }
-}
