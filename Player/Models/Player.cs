@@ -58,7 +58,7 @@ namespace Player.Models
             this.client = client;
         }
 
-        internal async Task JoinTheGame()
+        internal async Task JoinTheGame(CancellationToken cancellationToken)
         {
             JoinGamePayload payload = new JoinGamePayload()
             {
@@ -69,16 +69,16 @@ namespace Player.Models
                 MessageID = PlayerMessageID.JoinTheGame,
                 Payload = payload.Serialize(),
             };
-            await Communicate(message);
+            await Communicate(message, cancellationToken);
         }
 
         // Start before
-        internal async Task Start()
+        internal async Task Start(CancellationToken cancellationToken)
         {
             working = true;
             while (working)
             {
-                await Task.Run(() => AcceptMessage());
+                await Task.Run(() => AcceptMessage(cancellationToken));
                 await Task.Run(() => MakeDecisionFromStrategy());
                 await Task.Run(() => Penalty());
             }
@@ -90,7 +90,7 @@ namespace Player.Models
             working = false;
         }
 
-        public async Task Move(Directions direction)
+        public async Task Move(Directions direction, CancellationToken cancellationToken)
         {
             MovePayload payload = new MovePayload()
             {
@@ -102,10 +102,10 @@ namespace Player.Models
                 PlayerID = id,
                 Payload = payload.Serialize(),
             };
-            await Communicate(message);
+            await Communicate(message, cancellationToken);
         }
 
-        public async Task Put()
+        public async Task Put(CancellationToken cancellationToken)
         {
             EmptyPayload payload = new EmptyPayload();
             PlayerMessage message = new PlayerMessage()
@@ -114,10 +114,10 @@ namespace Player.Models
                 PlayerID = id,
                 Payload = payload.Serialize(),
             };
-            await Communicate(message);
+            await Communicate(message, cancellationToken);
         }
 
-        public async Task BegForInfo()
+        public async Task BegForInfo(CancellationToken cancellationToken)
         {
             PlayerMessage message = new PlayerMessage()
             {
@@ -139,10 +139,10 @@ namespace Player.Models
 
             message.Payload = payload.Serialize();
 
-            await Communicate(message);
+            await Communicate(message, cancellationToken);
         }
 
-        public async Task GiveInfo(bool toLeader = false)
+        public async Task GiveInfo(CancellationToken cancellationToken, bool toLeader = false)
         {
             if (WaitingPlayers.Count < 1 && !toLeader)
                 return;
@@ -189,14 +189,14 @@ namespace Player.Models
 
             message.Payload = response.Serialize();
 
-            await Communicate(message);
+            await Communicate(message, cancellationToken);
         }
 
-        public async Task RequestsResponse(int respondToID, bool isFromLeader = false)
+        public async Task RequestsResponse(CancellationToken cancellationToken, int respondToID, bool isFromLeader = false)
         {
             if (isFromLeader)
             {
-                await GiveInfo(isFromLeader);
+                await GiveInfo(cancellationToken, isFromLeader);
             }
             else
             {
@@ -214,21 +214,21 @@ namespace Player.Models
             };
         }
 
-        public async Task CheckPiece()
+        public async Task CheckPiece(CancellationToken cancellationToken)
         {
             EmptyPayload payload = new EmptyPayload();
             PlayerMessage message = CreateMessage(PlayerMessageID.CheckPiece, payload);
-            await Communicate(message);
+            await Communicate(message, cancellationToken);
         }
 
-        public async Task Discover()
+        public async Task Discover(CancellationToken cancellationToken)
         {
             EmptyPayload payload = new EmptyPayload();
             PlayerMessage message = CreateMessage(PlayerMessageID.Discover, payload);
-            await Communicate(message);
+            await Communicate(message, cancellationToken);
         }
 
-        public async Task AcceptMessage()
+        public async Task AcceptMessage(CancellationToken cancellationToken)
         {
             GMMessage message;
             if (queue.TryReceive(null, out message))
@@ -299,7 +299,7 @@ namespace Player.Models
                         BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
                         if (team == payloadBeg.TeamId)
                         {
-                            await RequestsResponse(payloadBeg.AskingID, payloadBeg.Leader);
+                            await RequestsResponse(cancellationToken, payloadBeg.AskingID, payloadBeg.Leader);
                         }
                         break;
                     case GMMessageID.JoinTheGameAnswer:
@@ -323,7 +323,7 @@ namespace Player.Models
                                 PlayerID = id,
                                 Payload = JsonConvert.SerializeObject(messagePickPayload),
                             };
-                            await Communicate(messagePick);
+                            await Communicate(messagePick, cancellationToken);
                         }
                         break;
                     case GMMessageID.PickAnswer:
@@ -364,10 +364,9 @@ namespace Player.Models
             strategy.MakeDecision(this);
         }
 
-        private async Task Communicate(PlayerMessage message)
+        private async Task Communicate(PlayerMessage message, CancellationToken cancellationToken)
         {
-            CancellationToken ct = CancellationToken.None;
-            await client.SendAsync(message, ct);
+            await client.SendAsync(message, cancellationToken);
         }
 
         private void Penalty()
