@@ -1,5 +1,5 @@
 ﻿import React, { Component } from 'react';
-import gameConfigData from './gameConfigData';
+import gameConfigData from '../data/gameConfigData';
 
 export class Home extends Component {
     constructor(props, context) {
@@ -92,7 +92,7 @@ export class Home extends Component {
 
     render() {
         return (
-            <form >
+            <form>
                 <h1>Zmień domyślną konfigurację gry</h1>
 
                 <fieldset>
