@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
+using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Services;
 using GameMaster.Tests.Mocks;
@@ -31,6 +32,7 @@ namespace GameMaster.Tests
                 queue.Post(new PlayerMessage());
             }
             services.AddSingleton(queue);
+            services.AddSingleton(new WebSocketManager<GMMessage>());
             AddLogging(services);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
@@ -71,6 +73,7 @@ namespace GameMaster.Tests
                 queue.Post(new PlayerMessage());
             }
             services.AddSingleton(queue);
+            services.AddSingleton(new WebSocketManager<GMMessage>());
             AddLogging(services);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
