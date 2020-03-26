@@ -1,8 +1,11 @@
-﻿namespace Shared.Models.Messages
+using Shared.Enums;
+
+namespace Shared.Models.Messages
 {
     public class GMMessage
     {
-        public int id;
-        public string payload;
+        public GMMessageID Id { get; set; }
+
+        public string Payload { get; set; }
     }
 }

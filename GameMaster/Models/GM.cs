@@ -1,29 +1,166 @@
-﻿using GameMaster.Managers;
-using GameMaster.Models.Fields;
-using GameMaster.Models.Pieces;
-using Newtonsoft.Json;
-using Shared;
-using Shared.Models.Messages;
-using Shared.Models.Payloads;
 using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
+
+using GameMaster.Managers;
+using GameMaster.Models.Fields;
+using GameMaster.Models.Pieces;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Shared.Enums;
+using Shared.Models.Messages;
+using Shared.Models.Payloads;
 
 namespace GameMaster.Models
 {
     public class GM
     {
-        private readonly Dictionary<int, GMPlayer> players;
-        private readonly AbstractField[][] board;
-        private static HashSet<(int, int)> legalKnowledgeReplies; // unique from documentation considered as static
-        private Configuration conf;
-        internal int redTeamPoints;
-        internal int blueTeamPoints;
+        private readonly ILogger<GM> logger;
+        private readonly Configuration conf;
+        private readonly BufferBlock<PlayerMessage> queue;
+        private readonly SocketManager<WebSocket, GMMessage> manager;
 
-        private WebSocketManager<GMMessage> manager;
+        private readonly HashSet<(int, int)> legalKnowledgeReplies;
+        private Dictionary<int, GMPlayer> players;
+        private AbstractField[][] board;
+        private int piecesOnBoard;
 
-        public GM(Configuration conf, WebSocketManager<GMMessage> _manager)
+        private int redTeamPoints;
+        private int blueTeamPoints;
+
+        public bool WasGameStarted { get; set; }
+
+        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> manager, ILogger<GM> logger)
         {
+            this.logger = logger;
             this.conf = conf;
+            this.queue = queue;
+            this.manager = manager;
+            legalKnowledgeReplies = new HashSet<(int, int)>();
+        }
+
+        public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
+        {
+            switch (message.MessageID)
+            {
+                case PlayerMessageID.CheckPiece:
+                    players[message.PlayerID].CheckHolding();
+                    break;
+                case PlayerMessageID.PieceDestruction:
+                    players[message.PlayerID].DestroyHolding();
+                    piecesOnBoard--;
+                    GeneratePiece();
+                    break;
+                case PlayerMessageID.Discover:
+                    players[message.PlayerID].Discover(this);
+                    break;
+                case PlayerMessageID.GiveInfo:
+                    await ForwardKnowledgeReply(message, cancellationToken);
+                    break;
+                case PlayerMessageID.BegForInfo:
+                    await ForwardKnowledgeQuestion(message, cancellationToken);
+                    break;
+                case PlayerMessageID.JoinTheGame:
+                    JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
+                    int key = players.Count;
+                    bool accepted = players.TryAdd(key, new GMPlayer(key, payloadJoin.TeamID));
+                    JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
+                    {
+                        Accepted = accepted,
+                        PlayerID = key,
+                    };
+                    GMMessage answerJoin = new GMMessage()
+                    {
+                        Id = GMMessageID.JoinTheGameAnswer,
+                        Payload = JsonConvert.SerializeObject(answerJoinPayload),
+                    };
+                    await manager.SendMessageAsync(players[key].SocketID, answerJoin);
+                    break;
+                case PlayerMessageID.Move:
+                    MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
+                    AbstractField field = null;
+                    int[] position1 = players[message.PlayerID].GetPosition();
+                    switch (payloadMove.Direction)
+                    {
+                        case Directions.N:
+                            if (position1[1] + 1 < board.GetLength(1))
+                            {
+                                field = board[position1[0]][position1[1] + 1];
+                            }
+                            break;
+                        case Directions.S:
+                            if (position1[1] - 1 >= 0)
+                            {
+                                field = board[position1[0]][position1[1] - 1];
+                            }
+                            break;
+                        case Directions.E:
+                            if (position1[0] + 1 < board.GetLength(0))
+                            {
+                                field = board[position1[0] + 1][position1[1]];
+                            }
+                            break;
+                        case Directions.W:
+                            if (position1[0] - 1 >= 0)
+                            {
+                                field = board[position1[0] - 1][position1[1]];
+                            }
+                            break;
+                    }
+                    players[message.PlayerID].Move(field);
+                    break;
+                case PlayerMessageID.Pick:
+                    int[] position2 = players[message.PlayerID].GetPosition();
+                    board[position2[0]][position2[1]].PickUp(players[message.PlayerID]);
+                    EmptyPayload answerPickPayload = new EmptyPayload();
+                    GMMessage answerPick = new GMMessage()
+                    {
+                        Id = GMMessageID.PickAnswer,
+                        Payload = JsonConvert.SerializeObject(answerPickPayload),
+                    };
+                    await manager.SendMessageAsync(players[message.PlayerID].SocketID, answerPick);
+                    break;
+                case PlayerMessageID.Put:
+                    bool point = players[message.PlayerID].Put();
+                    if (point)
+                    {
+                        piecesOnBoard--;
+                        if (players[message.PlayerID].Team == Team.Red)
+                        {
+                            redTeamPoints++;
+                        }
+                        else
+                        {
+                            blueTeamPoints++;
+                        }
+                    }
+                    GeneratePiece();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        internal Dictionary<Direction, int> Discover(AbstractField field)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void StartGame()
+        {
+            InitializeBoard();
+
+            // TODO : initialize rest
+            players = new Dictionary<int, GMPlayer>();
+
+            WasGameStarted = true;
+        }
+
+        private void InitializeBoard()
+        {
             board = new AbstractField[conf.Height][];
             for (int i = 0; i < board.Length; ++i)
             {
@@ -47,10 +184,6 @@ namespace GameMaster.Models
             {
                 FillBoardRow(rowIt, nonGoalFieldGenerator);
             }
-
-            manager = _manager;
-
-            // TODO : initialize rest
         }
 
         private void FillBoardRow(int row, Func<int, int, AbstractField> getField)
@@ -61,24 +194,26 @@ namespace GameMaster.Models
             }
         }
 
-        public void AcceptMessage()
+        internal async Task Work(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
-        }
-
-        public void GenerateGUI()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal Dictionary<Direction, int> Discover(AbstractField field)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void EndGame()
-        {
-            throw new NotImplementedException();
+            TimeSpan cancellationTimespan = TimeSpan.FromMilliseconds(100);
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    PlayerMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
+                    await AcceptMessage(message, cancellationToken);
+                    if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
+                    {
+                        EndGame();
+                        break;
+                    }
+                }
+                catch (OperationCanceledException e)
+                {
+                    logger.LogWarning($"Message retrieve was cancelled: {e.Message}");
+                }
+            }
         }
 
         private void GeneratePiece()
@@ -101,33 +236,39 @@ namespace GameMaster.Models
             int yCoord = rand.Next(0, conf.Width);
 
             board[xCoord][yCoord].Put(piece);
+            piecesOnBoard += 1;
         }
 
-        private void ForwardKnowledgeQuestion()
+        private async Task ForwardKnowledgeQuestion(PlayerMessage playerMessage, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        private async void ForwardKnowledgeReply(AgentMessage message)
+        private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
         {
-            GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(message.payload);
-            if (legalKnowledgeReplies.Contains((message.agentID, payload.respondToID)))
+            GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
+            if (legalKnowledgeReplies.Contains((playerMessage.PlayerID, payload.RespondToID)))
             {
-                legalKnowledgeReplies.Remove((message.agentID, payload.respondToID));
+                legalKnowledgeReplies.Remove((playerMessage.PlayerID, payload.RespondToID));
                 GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload()
                 {
-                    answeringID = message.agentID,
-                    distances = payload.distances,
-                    redTeamGoalAreaInformations = payload.redTeamGoalAreaInformations,
-                    blueTeamGoalAreaInformations = payload.blueTeamGoalAreaInformations
+                    AnsweringID = playerMessage.PlayerID,
+                    Distances = payload.Distances,
+                    RedTeamGoalAreaInformations = payload.RedTeamGoalAreaInformations,
+                    BlueTeamGoalAreaInformations = payload.BlueTeamGoalAreaInformations,
                 };
                 GMMessage answer = new GMMessage()
                 {
-                    id = 111,
-                    payload = JsonConvert.SerializeObject(answerPayload)
+                    Id = GMMessageID.GiveInfoForwarded,
+                    Payload = answerPayload.Serialize(),
                 };
-                await manager.SendMessageAsync(payload.respondToID.ToString(), answer);
+                await manager.SendMessageAsync(payload.RespondToID.ToString(), answer);
             }
+        }
+
+        internal void EndGame()
+        {
+            throw new NotImplementedException();
         }
     }
 }

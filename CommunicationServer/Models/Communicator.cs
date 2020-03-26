@@ -1,7 +1,8 @@
-﻿using Shared.Models.Messages;
-using Shared.Senders;
-using System;
+﻿using System;
 using System.Collections.Generic;
+
+using Shared.Models.Messages;
+using Shared.Senders;
 
 namespace CommunicationServer.Models
 {
@@ -16,7 +17,7 @@ namespace CommunicationServer.Models
             throw new NotImplementedException();
         }
 
-        public void SendMessageToGM(AgentMessage agentMessage)
+        public void SendMessageToGM(PlayerMessage agentMessage)
         {
             throw new NotImplementedException();
         }

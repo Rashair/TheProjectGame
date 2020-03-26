@@ -1,28 +1,25 @@
-﻿using GameMaster.Models;
+﻿using System.Collections;
+using System.Collections.Generic;
+
+using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
-using GameMaster.Tests.Mocks;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
 using Xunit;
-
 
 namespace GameMaster.Tests
 {
     public class FieldsTests
     {
-
         public class MoveHereTestData : IEnumerable<object[]>
         {
             public IEnumerator<object[]> GetEnumerator()
             {
-                yield return new object[] { new List<GMPlayer> { new GMPlayer(), new GMPlayer() }, false };
-                yield return new object[] { new List<GMPlayer> { new GMPlayer() }, true };
-                yield return new object[] { new List<GMPlayer> { null, new GMPlayer() }, true };
+                yield return new object[] { new List<GMPlayer> { new GMPlayer(1, Shared.Enums.Team.Red), new GMPlayer(2, Shared.Enums.Team.Red) }, false };
+                yield return new object[] { new List<GMPlayer> { new GMPlayer(1, Shared.Enums.Team.Red) }, true };
+                yield return new object[] { new List<GMPlayer> { null, new GMPlayer(1, Shared.Enums.Team.Red) }, true };
                 yield return new object[] { new List<GMPlayer> { null }, false };
             }
+
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
@@ -33,12 +30,14 @@ namespace GameMaster.Tests
             // Arrange
             TaskField taskField = new TaskField(2, 2);
             bool result = false;
+
             // Act
             foreach (GMPlayer p in players)
             {
                 result = taskField.MoveHere(p);
             }
-            // Assert 
+
+            // Assert
             Assert.Equal(expected, result);
         }
 
@@ -50,6 +49,7 @@ namespace GameMaster.Tests
                 yield return new object[] { new List<AbstractPiece> { new NormalPiece() }, true };
                 yield return new object[] { new List<AbstractPiece> { new ShamPiece() }, true };
             }
+
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
@@ -60,12 +60,14 @@ namespace GameMaster.Tests
             // Arrange
             GoalField goalField = new GoalField(5, 0);
             bool result = false;
+
             // Act
             foreach (AbstractPiece p in pieces)
             {
                 result = goalField.Put(p);
             }
-            // Assert 
+
+            // Assert
             Assert.Equal(expected, result);
         }
 
@@ -77,19 +79,21 @@ namespace GameMaster.Tests
         public void PickUpTaskTest(int numPut, int numPick, bool expected)
         {
             // Arrange
-            GMPlayer mPlayer = new GMPlayer();
+            GMPlayer gmPlayer = new GMPlayer(1, Shared.Enums.Team.Red);
             TaskField taskField = new TaskField(2, 2);
             for (int i = 0; i < numPut; i++)
             {
                 taskField.Put(new NormalPiece());
             }
             bool result = false;
+
             // Act
             for (int i = 0; i < numPick; i++)
             {
-                result = taskField.PickUp(mPlayer);
+                result = taskField.PickUp(gmPlayer);
             }
-            // Assert 
+
+            // Assert
             Assert.Equal(expected, result);
         }
     }

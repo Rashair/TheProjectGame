@@ -1,10 +1,15 @@
-﻿namespace Shared.Models.Payloads
+using Shared.Enums;
+
+namespace Shared.Models.Payloads
 {
-    public class GiveInfoForwardedPayload
+    public class GiveInfoForwardedPayload : Payload
     {
-        public int answeringID;
-        public int[,] distances;
-        public GoalInfo[,] redTeamGoalAreaInformations;
-        public GoalInfo[,] blueTeamGoalAreaInformations;
-    } //added for compatibility
+        public int AnsweringID { get; set; }
+
+        public int[,] Distances { get; set; }
+
+        public GoalInfo[,] RedTeamGoalAreaInformations { get; set; }
+
+        public GoalInfo[,] BlueTeamGoalAreaInformations { get; set; }
+    } // added for compatibility
 }

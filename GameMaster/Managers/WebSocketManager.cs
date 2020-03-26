@@ -1,9 +1,10 @@
-using Newtonsoft.Json;
 using System;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Newtonsoft.Json;
 
 namespace GameMaster.Managers
 {
@@ -21,8 +22,7 @@ namespace GameMaster.Managers
                 await socket.CloseAsync(
                     closeStatus: WebSocketCloseStatus.NormalClosure,
                     statusDescription: "Closed by the WebSocketManager",
-                    cancellationToken: CancellationToken.None
-                );
+                    cancellationToken: CancellationToken.None);
             }
         }
 
@@ -36,8 +36,7 @@ namespace GameMaster.Managers
                     buffer: new ArraySegment<byte>(buffer, 0, buffer.Length),
                     messageType: WebSocketMessageType.Text,
                     endOfMessage: true,
-                    cancellationToken: CancellationToken.None
-                );
+                    cancellationToken: CancellationToken.None);
             }
         }
     }
