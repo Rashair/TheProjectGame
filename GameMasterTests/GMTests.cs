@@ -135,7 +135,7 @@ namespace GameMaster.Tests
             var queue = new BufferBlock<PlayerMessage>();
             var logger = Mock.Of<ILogger<GM>>();
             var manager = new WebSocketManager<GMMessage>();
-            var gameMaster = new GM(conf, queue, manager, logger);
+            var gameMaster = new GM(conf, queue, logger, manager);
             var startGame = GetMethod("StartGame");
             startGame.Invoke(gameMaster, null);
             var generatePiece = GetMethod("GeneratePiece");
