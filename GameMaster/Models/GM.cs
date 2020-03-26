@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,8 +12,8 @@ using GameMaster.Models.Pieces;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Shared.Enums;
-using Shared.Models.Messages;
-using Shared.Models.Payloads;
+using Shared.Messages;
+using Shared.Payloads;
 
 namespace GameMaster.Models
 {
@@ -148,7 +149,42 @@ namespace GameMaster.Models
 
         internal Dictionary<Direction, int> Discover(AbstractField field)
         {
-            throw new NotImplementedException();
+            int[] center = field.GetPosition();
+            var neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter(center);
+
+            int[] distances = new int[neighbourCoordinates.Length];
+            for (int i = 0; i < distances.Length; i++)
+            {
+                distances[i] = int.MaxValue;
+            }
+
+            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
+            for (int i = conf.GoalAreaHeight; i < secondGoalAreaStart; i++)
+            {
+                for (int j = 0; j < board[i].Length; j++)
+                {
+                    if (board[i][j].ContainsPieces())
+                    {
+                        for (int k = 0; k < distances.Length; k++)
+                        {
+                            int manhattanDistance = Math.Abs(neighbourCoordinates[k].y - i) + Math.Abs(neighbourCoordinates[k].x - j);
+                            if (manhattanDistance < distances[k])
+                                distances[k] = manhattanDistance;
+                        }
+                    }
+                }
+            }
+
+            Dictionary<Direction, int> discoveryResult = new Dictionary<Direction, int>();
+            for (int i = 0; i < distances.Length; i++)
+            {
+                var (dir, y, x) = neighbourCoordinates[i];
+                if (y >= 0 && y < conf.Height && x >= 0 && x < conf.Width)
+                {
+                    discoveryResult.Add(dir, distances[i]);
+                }
+            }
+            return discoveryResult;
         }
 
         internal void StartGame()

@@ -1,6 +1,6 @@
 using Shared.Enums;
 
-namespace Shared.Models.Messages
+namespace Shared.Messages
 {
     public class PlayerMessage
     {
