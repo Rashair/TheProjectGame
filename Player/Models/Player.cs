@@ -184,11 +184,7 @@ namespace Player.Models
                     response.RedTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
                 }
             }
-
-            WaitingPlayers.RemoveAt(0);
-
             message.Payload = response.Serialize();
-
             await Communicate(message, cancellationToken);
         }
 
