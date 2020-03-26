@@ -1,7 +1,7 @@
 # TheProjectGame - Team15
 
-This repository contains a project implemented for the sake of Software Engineering classes. <br>
-Any mistakes, bugs and issues are probably the result of enforced documentation and were not authors' intention.
+This repository contains a project implemented for the sake of Software Engineering classes.  
+Any mistakes, bugs and issues are probably the result of enforced documentation and were not authors' intention.  
 
 ## Links
 
