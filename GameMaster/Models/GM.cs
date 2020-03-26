@@ -150,25 +150,9 @@ namespace GameMaster.Models
         internal Dictionary<Direction, int> Discover(AbstractField field)
         {
             int[] center = field.GetPosition();
-            int[,] neighbourCoordinates = new int[9, 2]
-            {
-                // up row
-                { center[0] - 1, center[1] - 1 },
-                { center[0] - 1, center[1] },
-                { center[0] - 1, center[1] + 1 },
+            var neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter(center);
 
-                // middle row
-                { center[0], center[1] - 1 },
-                { center[0], center[1] },
-                { center[0], center[1] + 1 },
-
-                // down row
-                { center[0] + 1, center[1] - 1 },
-                { center[0] + 1, center[1] },
-                { center[0] + 1, center[1] + 1 },
-            };
-
-            int[] distances = new int[9];
+            int[] distances = new int[neighbourCoordinates.Length];
             for (int i = 0; i < distances.Length; i++)
             {
                 distances[i] = int.MaxValue;
@@ -183,7 +167,7 @@ namespace GameMaster.Models
                     {
                         for (int k = 0; k < distances.Length; k++)
                         {
-                            int manhattanDistance = Math.Abs(neighbourCoordinates[k, 0] - i) + Math.Abs(neighbourCoordinates[k, 1] - j);
+                            int manhattanDistance = Math.Abs(neighbourCoordinates[k].y - i) + Math.Abs(neighbourCoordinates[k].x - j);
                             if (manhattanDistance < distances[k])
                                 distances[k] = manhattanDistance;
                         }
@@ -191,17 +175,13 @@ namespace GameMaster.Models
                 }
             }
 
-            Direction[] direction = (Direction[])Enum.GetValues(typeof(Direction));
-            Array.Sort(direction);
             Dictionary<Direction, int> discoveryResult = new Dictionary<Direction, int>();
             for (int i = 0; i < distances.Length; i++)
             {
-                int x = neighbourCoordinates[i, 0];
-                int y = neighbourCoordinates[i, 1];
-
-                if (distances[i] >= 0 && x < conf.Height && y >= 0 && y < conf.Width)
+                var (dir, y, x) = neighbourCoordinates[i];
+                if (y >= 0 && y < conf.Height && x >= 0 && x < conf.Width)
                 {
-                    discoveryResult.Add(direction[i], distances[i]);
+                    discoveryResult.Add(dir, distances[i]);
                 }
             }
             return discoveryResult;
