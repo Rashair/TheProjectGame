@@ -199,7 +199,7 @@ namespace GameMaster.Models
                 int x = neighbourCoordinates[i, 0];
                 int y = neighbourCoordinates[i, 1];
 
-                if (distances[i] >= 0 && x >= conf.GoalAreaHeight && x <= secondGoalAreaStart && y >= 0 && y < conf.Width)
+                if (distances[i] >= 0 && x <= conf.Height && y >= 0 && y < conf.Width)
                 {
                     discoveryResult.Add(direction[i], distances[i]);
                 }

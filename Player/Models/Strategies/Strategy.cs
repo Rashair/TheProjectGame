@@ -6,13 +6,7 @@ namespace Player.Models.Strategies
     {
         public void MakeDecision(Player player)
         {
-           // throw new NotImplementedException();
-           if (player.HavePiece)
-           {
-           }
-           else
-           {
-           }
+            throw new NotImplementedException();
         }
     }
 }

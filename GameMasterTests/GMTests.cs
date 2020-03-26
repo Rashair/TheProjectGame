@@ -196,7 +196,7 @@ namespace GameMaster.Tests
             {
                 int x = neighbourCoordinates[i].Item1;
                 int y = neighbourCoordinates[i].Item2;
-                if (x >= 0 && x >= goalAreaHeight && x <= height - goalAreaHeight && y >= 0 && y < width)
+                if (x >= 0 && x <= height && y >= 0 && y < width)
                 {
                     neighbours.Add((board[x][y], int.MaxValue, directions[i]));
                 }
