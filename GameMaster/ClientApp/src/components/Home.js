@@ -33,7 +33,7 @@ export class Home extends Component {
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 var status = xhr.status;
-                if (this.readyState == 4 && this.status == 200) {
+                if (this.status == 200) {
                     alert('Zmiany zostały zapisane.');
                 } else {
                     alert('Coś poszło nie tak, spróbuj ponownie.');
