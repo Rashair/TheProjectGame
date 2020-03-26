@@ -66,14 +66,7 @@ namespace Player.Models
             bool startGame = false;
             while (!cancellationToken.IsCancellationRequested && !startGame)
             {
-                try
-                {
-                    startGame = await AcceptMessage(cancellationToken);
-                }
-                catch (OperationCanceledException e)
-                {
-                    Console.WriteLine($"Message retrieve was cancelled: {e.Message}");
-                }
+                startGame = await AcceptMessage(cancellationToken);
             }
             if (startGame)
             {
@@ -100,9 +93,12 @@ namespace Player.Models
             working = true;
             while (working)
             {
-                await Task.Run(() => AcceptMessage(cancellationToken));
-                await Task.Run(() => MakeDecisionFromStrategy(), cancellationToken);
-                await Task.Run(() => Penalty(), cancellationToken);
+                await AcceptMessage(cancellationToken);
+                await Task.Run(() =>
+                {
+                    MakeDecisionFromStrategy();
+                    Penalty();
+                }, cancellationToken);
             }
         }
 
