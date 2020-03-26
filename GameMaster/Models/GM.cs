@@ -27,7 +27,9 @@ namespace GameMaster.Models
         private Dictionary<int, GMPlayer> players;
         private AbstractField[][] board;
         private int piecesOnBoard;
+
         private SocketManager<WebSocket, GMMessage> socketManager;
+
         private int redTeamPoints;
         private int blueTeamPoints;
 
