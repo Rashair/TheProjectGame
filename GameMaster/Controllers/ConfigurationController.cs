@@ -8,7 +8,7 @@ namespace GameMaster.Controllers
 {
     public class ConfigurationController : Controller
     {
-        private Configuration configuration;
+        private readonly Configuration configuration;
 
         public ConfigurationController(Configuration configuration)
         {

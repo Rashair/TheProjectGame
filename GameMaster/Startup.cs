@@ -1,3 +1,4 @@
+using System.IO;
 using System;
 using System.Threading.Tasks.Dataflow;
 
@@ -13,9 +14,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
+using Newtonsoft.Json;
 using Shared.Messages;
 
 namespace GameMaster
@@ -57,7 +58,9 @@ namespace GameMaster
             services.AddSingleton<WebSocketManager<GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
-            services.AddSingleton<Configuration>();
+            Configuration conf = new Configuration(null);
+            services.AddSingleton(conf);
+
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
         }

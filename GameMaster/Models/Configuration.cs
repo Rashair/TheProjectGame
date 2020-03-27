@@ -6,6 +6,8 @@ namespace GameMaster.Models
 {
     public class Configuration
     {
+        public static readonly string DefaultConfPath = "gameConfig.json";
+
         public string CsIP { get; set; }
 
         public int CsPort { get; set; }
@@ -35,6 +37,21 @@ namespace GameMaster.Models
         public int NumberOfPlayersPerTeam { get; set; }
 
         public int ShamPieceProbability { get; set; } // percentage
+
+        public Configuration()
+        {
+        }
+
+        public Configuration(string path)
+        {
+            path = path ?? DefaultConfPath;
+            using (StreamReader r = new StreamReader(path))
+            {
+                var json = r.ReadToEnd();
+                Configuration conf = JsonConvert.DeserializeObject<Configuration>(json);
+                this.Update(conf);
+            }
+        }
 
         public void Update(Configuration conf)
         {

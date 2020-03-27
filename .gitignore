@@ -234,4 +234,4 @@ _Pvt_Extensions
 .fake/
 
 # Custom
-gameConfig.json
+**/*gameConfig.json

@@ -14,6 +14,6 @@ const gameConfigData = {
     "numberOfPieces": 10,
     "numberOfPlayersPerTeam": 10,
     "maximumNumberOfPiecesOnBoard": 10,
-    "shamPieceProbability": 0.50
+    "shamPieceProbability": 50
 }
 export default gameConfigData
