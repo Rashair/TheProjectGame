@@ -26,14 +26,16 @@ namespace GameMaster.Controllers
         }
 
         [HttpPost]
-        public void PostConfiguration(GameConfiguration model)
+        public void PostConfiguration(GameConfiguration conf)
         {
-            gameConfiguration.Update(model);
-            string gameConfigString = JsonConvert.SerializeObject(model);
+            gameConfiguration.Update(conf);
+            string gameConfigString = JsonConvert.SerializeObject(conf);
+            string path = configuration.GetValue<string>("GameConfigPath");
 
-            using (StreamWriter outputFile = new StreamWriter(configuration.GetValue<string>("GameConfigPath")))
+            using (StreamWriter file = System.IO.File.CreateText(path))
             {
-                outputFile.Write(gameConfigString);
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(file, gameConfigString);
             }
         }
     }

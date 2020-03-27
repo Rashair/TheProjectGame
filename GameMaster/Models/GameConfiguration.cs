@@ -39,25 +39,6 @@ namespace GameMaster.Models
         /// </summary>
         public int ShamPieceProbability { get; set; }
 
-        public GameConfiguration()
-        {
-        }
-
-        public GameConfiguration(string path)
-        {
-            if (!File.Exists(path))
-            {
-                throw new FileNotFoundException($"Ścieżka '{path}' nie istnieje.");
-            }
-
-            using (StreamReader r = new StreamReader(path))
-            {
-                var json = r.ReadToEnd();
-                GameConfiguration conf = JsonConvert.DeserializeObject<GameConfiguration>(json);
-                this.Update(conf);
-            }
-        }
-
         public void Update(GameConfiguration conf)
         {
             CsIP = conf.CsIP;
