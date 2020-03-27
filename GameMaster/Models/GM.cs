@@ -255,7 +255,7 @@ namespace GameMaster.Models
         private void GeneratePiece()
         {
             var rand = new Random();
-            bool isSham = rand.Next(0, 100) <= conf.ShamPieceProbability;
+            bool isSham = rand.Next(0, 101) < conf.ShamPieceProbability;
             AbstractPiece piece;
             if (isSham)
             {

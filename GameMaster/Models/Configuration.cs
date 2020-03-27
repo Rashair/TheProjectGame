@@ -34,7 +34,7 @@ namespace GameMaster.Models
 
         public int NumberOfPlayersPerTeam { get; set; }
 
-        public double ShamPieceProbability { get; set; } // percentage
+        public int ShamPieceProbability { get; set; } // percentage
 
         public void Update(Configuration conf)
         {

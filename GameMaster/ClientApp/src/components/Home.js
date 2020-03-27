@@ -87,8 +87,8 @@ export class Home extends Component {
       return;
     }
 
-    if (this.state.shamPieceProbability < 0 || this.state.shamPieceProbability >= 1) {
-      alert("Prawdopodobieństwo musi być liczbą z przedziału między 0 a 1.");
+    if (this.state.shamPieceProbability < 0 || this.state.shamPieceProbability > 100) {
+      alert("Prawdopodobieństwo musi być liczbą z przedziału między 0 a 100.");
       return;
     }
 
@@ -253,12 +253,12 @@ export class Home extends Component {
         </fieldset>
 
         <fieldset class="form-group">
-          <label>Prawdopodobieństwo, że pojawiający się fragment jest fragmentem ﬁkcyjnym </label>
+          <label>Prawdopodobieństwo, że pojawiający się fragment jest fragmentem ﬁkcyjnym (%) </label>
           <input
             class="form-control"
             type="number"
             min="0"
-            max="1"
+            max="100"
             name="shamPieceProbability"
             value={this.state.shamPieceProbability}
             onChange={e => this.setState({ shamPieceProbability: e.target.value })}
