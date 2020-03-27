@@ -11,6 +11,11 @@ const CustomFieldset = ({ id, label, type = "number", min = 0, value, onChange }
   );
 };
 
+const error = e => {
+  alert("Coś poszło nie tak, spróbuj ponownie.");
+  console.log(`Error: ${e}`);
+};
+
 export class Home extends Component {
   constructor(props, context) {
     super(props, context);
@@ -36,39 +41,15 @@ export class Home extends Component {
   }
 
   componentDidMount() {
-    fetch("/Configuration")
-      .then(
-        res => {
-          if (res.ok) {
-            return res.json();
-          }
-          throw res.statusText;
-        },
-        e => console.log(`Error: ${e}`)
-      )
-      .then(
-        json => {
-          this.setState({
-            csIP: json.csIP,
-            csPort: json.csPort,
-            movePenalty: json.movePenalty,
-            askPenalty: json.askPenalty,
-            discoverPenalty: json.discoverPenalty,
-            putPenalty: json.putPenalty,
-            checkPenalty: json.checkPenalty,
-            responsePenalty: json.responsePenalty,
-            width: json.width,
-            height: json.height,
-            goalAreaHeight: json.goalAreaHeight,
-            numberOfGoals: json.numberOfGoals,
-            numberOfPieces: json.numberOfPieces,
-            numberOfPlayersPerTeam: json.numberOfPlayersPerTeam,
-            shamPieceProbability: json.shamPieceProbability,
-            maximumNumberOfPiecesOnBoard: json.maximumNumberOfPiecesOnBoard,
-          });
-        },
-        e => console.log(`Error: ${e}`)
-      );
+    fetch("/configuration")
+      .then(res => {
+        if (res.ok) {
+          return res.json();
+        } else {
+          error(res);
+        }
+      }, error)
+      .then(json => this.setState(json), error);
   }
 
   sendData(event) {
@@ -100,12 +81,15 @@ export class Home extends Component {
       return;
     }
 
-    const error = () => alert("Coś poszło nie tak, spróbuj ponownie.");
-    fetch("/Configuration", { method: "POST", body: JSON.stringify(this.state) }).then(res => {
+    fetch("/configuration", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(this.state),
+    }).then(res => {
       if (res.ok) {
         alert("Zmiany zostały zapisane.");
       } else {
-        error();
+        error(res);
       }
     }, error);
   }

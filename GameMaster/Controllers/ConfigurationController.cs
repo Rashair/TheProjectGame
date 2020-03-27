@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using System.Net.Mime;
+using System.Threading.Tasks;
 
 using GameMaster.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -7,8 +9,9 @@ using Newtonsoft.Json;
 
 namespace GameMaster.Controllers
 {
-    [Route("/Configuration")]
-    public class ConfigurationController : Controller
+    [ApiController]
+    [Route("[controller]")]
+    public class ConfigurationController : ControllerBase
     {
         private readonly GameConfiguration gameConfiguration;
         private readonly IConfiguration configuration;
@@ -20,22 +23,30 @@ namespace GameMaster.Controllers
         }
 
         [HttpGet]
-        public GameConfiguration GetDefaultConfiguration()
+        public ActionResult<GameConfiguration> GetDefaultConfiguration()
         {
-            return gameConfiguration;
+            return Ok(gameConfiguration);
         }
 
         [HttpPost]
-        public void PostConfiguration(GameConfiguration conf)
+        [Consumes(MediaTypeNames.Application.Json)]
+        public async Task<ActionResult<GameConfiguration>> PostConfiguration(GameConfiguration conf)
         {
+            if (conf == null || string.IsNullOrEmpty(conf.CsIP))
+            {
+                return BadRequest("Received empty configuration");
+            }
+
             gameConfiguration.Update(conf);
             string gameConfigString = JsonConvert.SerializeObject(conf);
             string path = configuration.GetValue<string>("GameConfigPath");
 
             using (StreamWriter file = new StreamWriter(path))
             {
-                file.Write(gameConfigString);
+                await file.WriteAsync(gameConfigString);
             }
+
+            return Created("/configuration", conf);
         }
     }
 }
