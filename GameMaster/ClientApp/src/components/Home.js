@@ -62,7 +62,7 @@ export class Home extends Component {
             goalAreaHeight: json.goalAreaHeight,
             numberOfGoals: json.numberOfGoals,
             numberOfPieces: json.numberOfPieces,
-            numberOfTeamPlayers: json.numberOfPlayersPerTeam,
+            numberOfPlayersPerTeam: json.numberOfPlayersPerTeam,
             shamPieceProbability: json.shamPieceProbability,
             maximumNumberOfPiecesOnBoard: json.maximumNumberOfPiecesOnBoard,
           },
@@ -96,32 +96,18 @@ export class Home extends Component {
       return;
     }
 
-    if (
-      this.state.movePenalty < 0 ||
-      this.state.askPenalty < 0 ||
-      this.state.discoverPenalty < 0 ||
-      this.state.putPenalty < 0 ||
-      this.state.checkPenalty < 0 ||
-      this.state.responsePenalty < 0
-    ) {
-      alert("Kara musi być wartością nieujemną.");
-      return;
+    const state = this.state;
+    for (const key in state) {
+      if (state.hasOwnProperty(key)) {
+        const val = state[key];
+        if (!isNaN(val) && val < 0) {
+          alert("Parametry nie mogą przyjmować wartości ujemnych.");
+          return;
+        }
+      }
     }
 
-    if (
-      this.state.boardX < 0 ||
-      this.state.boardY < 0 ||
-      this.state.goalAreaHeight < 0 ||
-      this.state.numberOfTeamPlayers < 0 ||
-      this.state.numberOfGoals < 0 ||
-      this.state.numberOfPieces < 0 ||
-      this.state.shamPieceProbability < 0
-    ) {
-      alert("Parametry nie mogą przyjmować wartości ujemnych.");
-      return;
-    }
-
-    if (this.state.shamPieceProbability < 0 || this.state.shamPieceProbability > 100) {
+    if (this.state.shamPieceProbability > 100) {
       alert("Prawdopodobieństwo musi być liczbą z przedziału między 0 a 100.");
       return;
     }
@@ -141,7 +127,7 @@ export class Home extends Component {
     data.append("Height", this.state.boardY);
     data.append("GoalAreaHeight", this.state.goalAreaHeight);
     data.append("NumberOfGoals", this.state.numberOfGoals);
-    data.append("NumberOfPlayersPerTeam", this.state.numberOfTeamPlayers);
+    data.append("NumberOfPlayersPerTeam", this.state.numberOfPlayersPerTeam);
     data.append("MaximumNumberOfPiecesOnBoard", this.state.maximumNumberOfPiecesOnBoard);
     data.append("ShamPieceProbability", this.state.shamPieceProbability);
     xhr.send(data);
@@ -250,14 +236,14 @@ export class Home extends Component {
         </fieldset>
 
         <fieldset className="form-group">
-          <label>Ilość agentów w drużynie </label>
+          <label>Liczba agentów w każdej drużynie </label>
           <input
             className="form-control"
             type="number"
             min="1"
-            name="numberOfTeamPlayers"
-            value={this.state.numberOfTeamPlayers}
-            onChange={e => this.setState({ numberOfTeamPlayers: e.target.value })}
+            name="numberOfPlayersPerTeam"
+            value={this.state.numberOfPlayersPerTeam}
+            onChange={e => this.setState({ numberOfPlayersPerTeam: e.target.value })}
           />
         </fieldset>
 

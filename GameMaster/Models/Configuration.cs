@@ -6,8 +6,6 @@ namespace GameMaster.Models
 {
     public class Configuration
     {
-        public static readonly string DefaultConfPath = "gameConfig.json";
-
         public string CsIP { get; set; }
 
         public int CsPort { get; set; }
@@ -36,7 +34,10 @@ namespace GameMaster.Models
 
         public int NumberOfPlayersPerTeam { get; set; }
 
-        public int ShamPieceProbability { get; set; } // percentage
+        /// <summary>
+        /// Percentage, between 0 and 100.
+        /// </summary>
+        public int ShamPieceProbability { get; set; }
 
         public Configuration()
         {
@@ -44,7 +45,11 @@ namespace GameMaster.Models
 
         public Configuration(string path)
         {
-            path = path ?? DefaultConfPath;
+            if (!File.Exists(path))
+            {
+                throw new FileNotFoundException($"Ścieżka '{path}' nie istnieje.");
+            }
+
             using (StreamReader r = new StreamReader(path))
             {
                 var json = r.ReadToEnd();
