@@ -220,8 +220,6 @@ namespace GameMaster.Models
             {
                 FillBoardRow(rowIt, nonGoalFieldGenerator);
             }
-
-            // TODO : initialize rest
         }
 
         private void FillBoardRow(int row, Func<int, int, AbstractField> getField)
