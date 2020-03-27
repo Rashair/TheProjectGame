@@ -252,7 +252,6 @@ namespace GameMaster.Models
             }
         }
 
-
         private void GeneratePiece()
         {
             var rand = new Random();
@@ -331,7 +330,7 @@ namespace GameMaster.Models
 
         internal void EndGame()
         {
-            throw new NotImplementedException();
+            logger.LogInformation("The winner is team {0}", redTeamPoints > blueTeamPoints ? Team.Red : Team.Blue);
         }
     }
 }
