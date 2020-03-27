@@ -10,23 +10,23 @@ namespace GameMaster.Controllers
     [Route("/Configuration")]
     public class ConfigurationController : Controller
     {
-        private readonly Configuration gameConfiguration;
+        private readonly GameConfiguration gameConfiguration;
         private readonly IConfiguration configuration;
 
-        public ConfigurationController(IConfiguration configuration, Configuration gameConfiguration)
+        public ConfigurationController(IConfiguration configuration, GameConfiguration gameConfiguration)
         {
             this.configuration = configuration;
             this.gameConfiguration = gameConfiguration;
         }
 
         [HttpGet]
-        public Configuration GetDefaultConfiguration()
+        public GameConfiguration GetDefaultConfiguration()
         {
             return gameConfiguration;
         }
 
         [HttpPost]
-        public void PostConfiguration(Configuration model)
+        public void PostConfiguration(GameConfiguration model)
         {
             gameConfiguration.Update(model);
             string gameConfigString = JsonConvert.SerializeObject(model);

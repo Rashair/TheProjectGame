@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace GameMaster.Models
 {
-    public class Configuration
+    public class GameConfiguration
     {
         public string CsIP { get; set; }
 
@@ -39,11 +39,11 @@ namespace GameMaster.Models
         /// </summary>
         public int ShamPieceProbability { get; set; }
 
-        public Configuration()
+        public GameConfiguration()
         {
         }
 
-        public Configuration(string path)
+        public GameConfiguration(string path)
         {
             if (!File.Exists(path))
             {
@@ -53,12 +53,12 @@ namespace GameMaster.Models
             using (StreamReader r = new StreamReader(path))
             {
                 var json = r.ReadToEnd();
-                Configuration conf = JsonConvert.DeserializeObject<Configuration>(json);
+                GameConfiguration conf = JsonConvert.DeserializeObject<GameConfiguration>(json);
                 this.Update(conf);
             }
         }
 
-        public void Update(Configuration conf)
+        public void Update(GameConfiguration conf)
         {
             CsIP = conf.CsIP;
             CsPort = conf.CsPort;

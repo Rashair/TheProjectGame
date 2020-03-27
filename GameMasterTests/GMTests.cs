@@ -28,7 +28,7 @@ namespace GameMaster.Tests
         public void TestGeneratePieceXTimes(int x)
         {
             // Arrange
-            var conf = new MockConfiguration();
+            var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var socketManager = new WebSocketManager<GMMessage>();
             var gameMaster = new GM(conf, queue, socketManager);
@@ -130,7 +130,7 @@ namespace GameMaster.Tests
         [ClassData(typeof(DiscoverTestData))]
         public void DiscoverTest(TaskField field, int pieceCount)
         {
-            var conf = new MockConfiguration();
+            var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var manager = new WebSocketManager<GMMessage>();
             var gameMaster = new GM(conf, queue, manager);

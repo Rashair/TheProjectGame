@@ -19,7 +19,7 @@ namespace GameMaster.Models
     public class GM
     {
         private readonly ILogger logger;
-        private readonly Configuration conf;
+        private readonly GameConfiguration conf;
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketManager<WebSocket, GMMessage> socketManager;
 

@@ -2,9 +2,9 @@
 
 namespace GameMaster.Tests.Mocks
 {
-    internal class MockConfiguration : Configuration
+    internal class MockGameConfiguration : GameConfiguration
     {
-        public MockConfiguration()
+        public MockGameConfiguration()
         {
             this.Height = 12;
             this.Width = 10;

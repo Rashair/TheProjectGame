@@ -23,8 +23,8 @@ namespace GameMaster.Tests
         {
             // Arrange
             IServiceCollection services = new ServiceCollection();
-            var conf = new MockConfiguration();
-            services.AddSingleton<Configuration>(conf);
+            var conf = new MockGameConfiguration();
+            services.AddSingleton<GameConfiguration>(conf);
             services.AddSingleton<WebSocketManager<GMMessage>>();
             int messagesNum = 10;
             var queue = new BufferBlock<PlayerMessage>();
@@ -65,8 +65,8 @@ namespace GameMaster.Tests
         {
             // Arrange
             IServiceCollection services = new ServiceCollection();
-            var conf = new MockConfiguration();
-            services.AddSingleton<Configuration>(conf);
+            var conf = new MockGameConfiguration();
+            services.AddSingleton<GameConfiguration>(conf);
             services.AddSingleton<WebSocketManager<GMMessage>>();
             int messagesNum = 10;
             var queue = new BufferBlock<PlayerMessage>();
