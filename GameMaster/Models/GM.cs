@@ -21,7 +21,7 @@ namespace GameMaster.Models
         private readonly ILogger<GM> logger;
         private readonly Configuration conf;
         private readonly BufferBlock<PlayerMessage> queue;
-        private ISocketManager<WebSocket, GMMessage> socketManager;
+        private readonly ISocketManager<WebSocket, GMMessage> socketManager;
 
         private readonly HashSet<(int, int)> legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;
@@ -296,7 +296,7 @@ namespace GameMaster.Models
                 GMMessage answer = new GMMessage()
                 {
                     Id = GMMessageID.GiveInfoForwarded,
-                    Payload = JsonConvert.SerializeObject(answerPayload),
+                    Payload = answerPayload.Serialize(),
                 };
                 await socketManager.SendMessageAsync(payload.RespondToID.ToString(), answer, cancellationToken);
             }
