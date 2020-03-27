@@ -2,6 +2,7 @@
 {
     public enum GMMessageID
     {
+        Unknown,
         CheckAnswer = 101,
         DestructionAnswer,
         DiscoverAnswer,

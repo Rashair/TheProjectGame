@@ -23,7 +23,7 @@ namespace GameMaster.Models
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketManager<WebSocket, GMMessage> socketManager;
 
-        private readonly HashSet<(int, int)> legalKnowledgeReplies;
+        private HashSet<(int, int)> legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;
         private AbstractField[][] board;
         private int piecesOnBoard;
@@ -277,11 +277,37 @@ namespace GameMaster.Models
 
         private async Task ForwardKnowledgeQuestion(PlayerMessage playerMessage, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(playerMessage.Payload);
+            BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
+            {
+                AskingID = playerMessage.PlayerID,
+                Leader = players[playerMessage.PlayerID].IsLeader,
+                TeamId = players[playerMessage.PlayerID].Team,
+            };
+            GMMessage gmMessage = new GMMessage()
+            {
+                Id = GMMessageID.BegForInfoForwarded,
+                Payload = payload.Serialize(),
+            };
+
+            legalKnowledgeReplies.Add((begPayload.AskedPlayerID, playerMessage.PlayerID));
+            await socketManager.SendMessageAsync(
+                players[begPayload.AskedPlayerID].SocketID,
+                gmMessage, cancellationToken);
         }
 
         private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
             if (legalKnowledgeReplies.Contains((playerMessage.PlayerID, payload.RespondToID)))
             {

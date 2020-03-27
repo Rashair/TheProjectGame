@@ -2,7 +2,8 @@
 {
     public enum PlayerMessageID
     {
-        CheckPiece = 1,
+        Unknown,
+        CheckPiece,
         PieceDestruction,
         Discover,
         GiveInfo,
