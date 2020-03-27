@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Shared.Enums
+﻿namespace Shared.Enums
 {
     public enum PlayerMessageID
     {
-        CheckPiece = 1,
+        Unknown,
+        CheckPiece,
         PieceDestruction,
         Discover,
         GiveInfo,
