@@ -15,19 +15,19 @@ export class Home extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
-      ip: "",
-      port: 0,
+      csIP: "",
+      csPort: 0,
       movePenalty: 0,
       askPenalty: 0,
       discoverPenalty: 0,
       putPenalty: 0,
       checkPenalty: 0,
       responsePenalty: 0,
-      boardX: 0,
-      boardY: 0,
+      width: 0,
+      height: 0,
       goalAreaHeight: 0,
       numberOfGoals: 0,
-      numberOfTeamPlayers: 0,
+      numberOfPlayersPerTeam: 0,
       shamPieceProbability: 0,
       maximumNumberOfPiecesOnBoard: 0,
     };
@@ -44,54 +44,42 @@ export class Home extends Component {
           }
           throw res.statusText;
         },
-        e => console.log(e)
+        e => console.log(`Error: ${e}`)
       )
-      .then(json => {
-        this.setState(
-          {
-            ip: json.csIP,
-            port: json.csPort,
+      .then(
+        json => {
+          this.setState({
+            csIP: json.csIP,
+            csPort: json.csPort,
             movePenalty: json.movePenalty,
             askPenalty: json.askPenalty,
             discoverPenalty: json.discoverPenalty,
             putPenalty: json.putPenalty,
             checkPenalty: json.checkPenalty,
             responsePenalty: json.responsePenalty,
-            boardX: json.width,
-            boardY: json.height,
+            width: json.width,
+            height: json.height,
             goalAreaHeight: json.goalAreaHeight,
             numberOfGoals: json.numberOfGoals,
             numberOfPieces: json.numberOfPieces,
             numberOfPlayersPerTeam: json.numberOfPlayersPerTeam,
             shamPieceProbability: json.shamPieceProbability,
             maximumNumberOfPiecesOnBoard: json.maximumNumberOfPiecesOnBoard,
-          },
-          e => console.log(e)
-        );
-      });
+          });
+        },
+        e => console.log(`Error: ${e}`)
+      );
   }
 
   sendData(event) {
     event.preventDefault();
-    var xhr = new XMLHttpRequest();
 
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState === XMLHttpRequest.DONE) {
-        const status = xhr.status;
-        if (status === 200) {
-          alert("Zmiany zostały zapisane.");
-        } else {
-          alert("Coś poszło nie tak, spróbuj ponownie.");
-        }
-      }
-    };
-
-    if (this.state.goalAreaHeight * this.state.boardX < this.state.numberOfGoals) {
+    if (this.state.goalAreaHeight * this.state.width < this.state.numberOfGoals) {
       alert("Liczba celów w przestrzeni bramkowej nie może być większa niż liczba pól w tym obszarze.");
       return;
     }
 
-    if (2 * this.state.numberOfTeamPlayers > this.state.boardX * this.state.boardY) {
+    if (2 * this.state.numberOfPlayersPerTeam > this.state.width * this.state.height) {
       alert("Liczba agentów w obu drużynach nie może przekraczać liczby pól na planszy.");
       return;
     }
@@ -112,25 +100,14 @@ export class Home extends Component {
       return;
     }
 
-    xhr.open("POST", "/Configuration", true);
-
-    var data = new FormData();
-    data.append("CsIP", this.state.ip);
-    data.append("CsPort", this.state.port);
-    data.append("MovePenalty", this.state.movePenalty);
-    data.append("AskPenalty", this.state.askPenalty);
-    data.append("DiscoverPenalty", this.state.discoverPenalty);
-    data.append("PutPenalty", this.state.putPenalty);
-    data.append("CheckPenalty", this.state.checkPenalty);
-    data.append("ResponsePenalty", this.state.responsePenalty);
-    data.append("Width", this.state.boardX);
-    data.append("Height", this.state.boardY);
-    data.append("GoalAreaHeight", this.state.goalAreaHeight);
-    data.append("NumberOfGoals", this.state.numberOfGoals);
-    data.append("NumberOfPlayersPerTeam", this.state.numberOfPlayersPerTeam);
-    data.append("MaximumNumberOfPiecesOnBoard", this.state.maximumNumberOfPiecesOnBoard);
-    data.append("ShamPieceProbability", this.state.shamPieceProbability);
-    xhr.send(data);
+    const error = () => alert("Coś poszło nie tak, spróbuj ponownie.");
+    fetch("/Configuration", { method: "POST", body: JSON.stringify(this.state) }).then(res => {
+      if (res.ok) {
+        alert("Zmiany zostały zapisane.");
+      } else {
+        error();
+      }
+    }, error);
   }
 
   render() {
@@ -143,13 +120,13 @@ export class Home extends Component {
           {CustomFieldset({
             id: "IP",
             type: "string",
-            value: this.state.ip,
-            onChange: e => this.setState({ ip: e.target.value }),
+            value: this.state.csIP,
+            onChange: e => this.setState({ csIP: e.target.value }),
           })}
           {CustomFieldset({
             id: "Port",
-            value: this.state.port,
-            onChange: e => this.setState({ port: e.target.value }),
+            value: this.state.csPort,
+            onChange: e => this.setState({ csPort: e.target.value }),
           })}
         </div>
 
@@ -197,18 +174,18 @@ export class Home extends Component {
         <div className="form-row">
           <legend>Rozmiar planszy</legend>
           {CustomFieldset({
-            id: "boardY",
+            id: "height",
             label: "Wysokość",
             min: 1,
-            value: this.state.boardY,
-            onChange: e => this.setState({ boardY: e.target.value }),
+            value: this.state.height,
+            onChange: e => this.setState({ height: e.target.value }),
           })}
           {CustomFieldset({
-            id: "boardX",
+            id: "width",
             label: "Szerokość",
             min: 1,
-            value: this.state.boardX,
-            onChange: e => this.setState({ boardX: e.target.value }),
+            value: this.state.width,
+            onChange: e => this.setState({ width: e.target.value }),
           })}
         </div>
 

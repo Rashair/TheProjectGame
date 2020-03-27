@@ -32,10 +32,9 @@ namespace GameMaster.Controllers
             string gameConfigString = JsonConvert.SerializeObject(conf);
             string path = configuration.GetValue<string>("GameConfigPath");
 
-            using (StreamWriter file = System.IO.File.CreateText(path))
+            using (StreamWriter file = new StreamWriter(path))
             {
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(file, gameConfigString);
+                file.Write(gameConfigString);
             }
         }
     }
