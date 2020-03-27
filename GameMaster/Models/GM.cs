@@ -221,8 +221,6 @@ namespace GameMaster.Models
                 FillBoardRow(rowIt, nonGoalFieldGenerator);
             }
 
-            legalKnowledgeReplies = new HashSet<(int, int)>();
-
             // TODO : initialize rest
         }
 
@@ -291,10 +289,10 @@ namespace GameMaster.Models
             GMMessage gmMessage = new GMMessage()
             {
                 Id = GMMessageID.BegForInfoForwarded,
-                Payload = playerMessage.Payload,
+                Payload = payload.Serialize(),
             };
 
-            legalKnowledgeReplies.Add((playerMessage.PlayerID, begPayload.AskedPlayerID));
+            legalKnowledgeReplies.Add((begPayload.AskedPlayerID, playerMessage.PlayerID));
             await socketManager.SendMessageAsync(players[begPayload.AskedPlayerID].SocketID, gmMessage, cancellationToken);
         }
 
