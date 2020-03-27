@@ -1,5 +1,4 @@
 ﻿import React, { Component } from "react";
-import gameConfigData from "../data/gameConfigData";
 
 const CustomFieldset = ({ id, label, type = "number", min = 0, value, onChange }) => {
   return (
@@ -16,25 +15,60 @@ export class Home extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
-      ip: gameConfigData.CsIP,
-      port: gameConfigData.CsPort,
-      movePenalty: gameConfigData.movePenalty,
-      askPenalty: gameConfigData.askPenalty,
-      discoveryPenalty: gameConfigData.discoveryPenalty,
-      putPenalty: gameConfigData.putPenalty,
-      checkForShamPenalty: gameConfigData.checkForShamPenalty,
-      responsePenalty: gameConfigData.responsePenalty,
-      boardX: gameConfigData.boardX,
-      boardY: gameConfigData.boardY,
-      goalAreaHeight: gameConfigData.goalAreaHeight,
-      numberOfGoals: gameConfigData.numberOfGoals,
-      numberOfPieces: gameConfigData.numberOfPieces,
-      numberOfTeamPlayers: gameConfigData.numberOfPlayersPerTeam,
-      shamPieceProbability: gameConfigData.shamPieceProbability,
-      maximumNumberOfPiecesOnBoard: gameConfigData.maximumNumberOfPiecesOnBoard,
+      ip: "",
+      port: 0,
+      movePenalty: 0,
+      askPenalty: 0,
+      discoverPenalty: 0,
+      putPenalty: 0,
+      checkPenalty: 0,
+      responsePenalty: 0,
+      boardX: 0,
+      boardY: 0,
+      goalAreaHeight: 0,
+      numberOfGoals: 0,
+      numberOfTeamPlayers: 0,
+      shamPieceProbability: 0,
+      maximumNumberOfPiecesOnBoard: 0,
     };
 
     this.sendData = this.sendData.bind(this);
+  }
+
+  componentDidMount() {
+    fetch("/Configuration")
+      .then(
+        res => {
+          if (res.ok) {
+            return res.json();
+          }
+          throw res.statusText;
+        },
+        e => console.log(e)
+      )
+      .then(json => {
+        this.setState(
+          {
+            ip: json.csIP,
+            port: json.csPort,
+            movePenalty: json.movePenalty,
+            askPenalty: json.askPenalty,
+            discoverPenalty: json.discoverPenalty,
+            putPenalty: json.putPenalty,
+            checkPenalty: json.checkPenalty,
+            responsePenalty: json.responsePenalty,
+            boardX: json.width,
+            boardY: json.height,
+            goalAreaHeight: json.goalAreaHeight,
+            numberOfGoals: json.numberOfGoals,
+            numberOfPieces: json.numberOfPieces,
+            numberOfTeamPlayers: json.numberOfPlayersPerTeam,
+            shamPieceProbability: json.shamPieceProbability,
+            maximumNumberOfPiecesOnBoard: json.maximumNumberOfPiecesOnBoard,
+          },
+          e => console.log(e)
+        );
+      });
   }
 
   sendData(event) {
@@ -65,9 +99,9 @@ export class Home extends Component {
     if (
       this.state.movePenalty < 0 ||
       this.state.askPenalty < 0 ||
-      this.state.discoveryPenalty < 0 ||
+      this.state.discoverPenalty < 0 ||
       this.state.putPenalty < 0 ||
-      this.state.checkForShamPenalty < 0 ||
+      this.state.checkPenalty < 0 ||
       this.state.responsePenalty < 0
     ) {
       alert("Kara musi być wartością nieujemną.");
@@ -92,22 +126,21 @@ export class Home extends Component {
       return;
     }
 
-    xhr.open("POST", "Configuration", true);
+    xhr.open("POST", "/Configuration", true);
 
     var data = new FormData();
     data.append("CsIP", this.state.ip);
     data.append("CsPort", this.state.port);
     data.append("MovePenalty", this.state.movePenalty);
     data.append("AskPenalty", this.state.askPenalty);
-    data.append("DiscoverPenalty", this.state.discoveryPenalty);
+    data.append("DiscoverPenalty", this.state.discoverPenalty);
     data.append("PutPenalty", this.state.putPenalty);
-    data.append("CheckPenalty", this.state.checkForShamPenalty);
+    data.append("CheckPenalty", this.state.checkPenalty);
     data.append("ResponsePenalty", this.state.responsePenalty);
     data.append("Width", this.state.boardX);
     data.append("Height", this.state.boardY);
     data.append("GoalAreaHeight", this.state.goalAreaHeight);
     data.append("NumberOfGoals", this.state.numberOfGoals);
-    data.append("NumberOfPieces", this.state.numberOfPieces);
     data.append("NumberOfPlayersPerTeam", this.state.numberOfTeamPlayers);
     data.append("MaximumNumberOfPiecesOnBoard", this.state.maximumNumberOfPiecesOnBoard);
     data.append("ShamPieceProbability", this.state.shamPieceProbability);
@@ -119,7 +152,7 @@ export class Home extends Component {
       <form>
         <h1 className="text-center">Zmień domyślną konfigurację gry</h1>
 
-        <div class="form-row">
+        <div className="form-row">
           <legend>Informacje o CS</legend>
           {CustomFieldset({
             id: "IP",
@@ -134,7 +167,7 @@ export class Home extends Component {
           })}
         </div>
 
-        <div class="form-row">
+        <div className="form-row">
           <legend>Opóźnienie w wykonywaniu ruchów przez agenta </legend>
           {CustomFieldset({
             id: "movePenalty",
@@ -149,10 +182,10 @@ export class Home extends Component {
             onChange: e => this.setState({ askPenalty: e.target.value }),
           })}
           {CustomFieldset({
-            id: "discoveryPenalty",
+            id: "discoverPenalty",
             label: "Kara za akcję Discovery",
-            value: this.state.discoveryPenalty,
-            onChange: e => this.setState({ discoveryPenalty: e.target.value }),
+            value: this.state.discoverPenalty,
+            onChange: e => this.setState({ discoverPenalty: e.target.value }),
           })}
           {CustomFieldset({
             id: "putPenalty",
@@ -163,8 +196,8 @@ export class Home extends Component {
           {CustomFieldset({
             id: "checkForShamePenalty",
             label: "Kara za sprawdzenie fragmentu",
-            value: this.state.checkForShamPenalty,
-            onChange: e => this.setState({ checkForShamPenalty: e.target.value }),
+            value: this.state.checkPenalty,
+            onChange: e => this.setState({ checkPenalty: e.target.value }),
           })}
 
           {CustomFieldset({
@@ -175,7 +208,7 @@ export class Home extends Component {
           })}
         </div>
 
-        <div class="form-row">
+        <div className="form-row">
           <legend>Rozmiar planszy</legend>
           {CustomFieldset({
             id: "boardY",
@@ -193,7 +226,7 @@ export class Home extends Component {
           })}
         </div>
 
-        <div class="form-row">
+        <div className="form-row">
           <legend>Rozmiar pola bramkowego</legend>
           {CustomFieldset({
             id: "goalAreaHeight",
@@ -204,22 +237,10 @@ export class Home extends Component {
           })}
         </div>
 
-        <fieldset class="form-group">
-          <label>Maksymalna liczba fragmentów na planszy </label>
-          <input
-            class="form-control"
-            type="number"
-            min="1"
-            name="numberOfPieces"
-            value={this.state.numberOfPieces}
-            onChange={e => this.setState({ numberOfPieces: e.target.value })}
-          />
-        </fieldset>
-
-        <fieldset class="form-group">
+        <fieldset className="form-group">
           <label>Ilość celów w polu bramkowym </label>
           <input
-            class="form-control"
+            className="form-control"
             type="number"
             min="1"
             name="numberOfGoals"
@@ -228,10 +249,10 @@ export class Home extends Component {
           />
         </fieldset>
 
-        <fieldset class="form-group">
+        <fieldset className="form-group">
           <label>Ilość agentów w drużynie </label>
           <input
-            class="form-control"
+            className="form-control"
             type="number"
             min="1"
             name="numberOfTeamPlayers"
@@ -240,10 +261,10 @@ export class Home extends Component {
           />
         </fieldset>
 
-        <fieldset class="form-group">
+        <fieldset className="form-group">
           <label>Maksymalna liczba kawałków na planszy </label>
           <input
-            class="form-control"
+            className="form-control"
             type="number"
             min="1"
             name="maximumNumberOfPiecesOnBoard"
@@ -252,10 +273,10 @@ export class Home extends Component {
           />
         </fieldset>
 
-        <fieldset class="form-group">
+        <fieldset className="form-group">
           <label>Prawdopodobieństwo, że pojawiający się fragment jest fragmentem ﬁkcyjnym (%) </label>
           <input
-            class="form-control"
+            className="form-control"
             type="number"
             min="0"
             max="100"
@@ -265,7 +286,7 @@ export class Home extends Component {
           />
         </fieldset>
 
-        <input class="btn btn-primary btn-block w-100" type="submit" value="Zapisz" onClick={this.sendData} />
+        <input className="btn btn-primary btn-block w-100" type="submit" value="Zapisz" onClick={this.sendData} />
       </form>
     );
   }

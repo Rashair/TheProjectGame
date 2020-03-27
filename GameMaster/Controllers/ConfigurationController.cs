@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 
 namespace GameMaster.Controllers
 {
+    [Route("/Configuration")]
     public class ConfigurationController : Controller
     {
         private readonly Configuration configuration;
@@ -15,14 +16,19 @@ namespace GameMaster.Controllers
             this.configuration = configuration;
         }
 
+        [HttpGet]
+        public Configuration GetDefaultConfiguration()
+        {
+            return configuration;
+        }
+
         [HttpPost]
-        [Route("/Configuration")]
         public void PostConfiguration(Configuration model)
         {
             configuration.Update(model);
             string gameConfigString = JsonConvert.SerializeObject(model);
 
-            using (StreamWriter outputFile = new StreamWriter("gameConfig.json"))
+            using (StreamWriter outputFile = new StreamWriter(Configuration.DefaultConfPath))
             {
                 outputFile.Write(gameConfigString);
             }
