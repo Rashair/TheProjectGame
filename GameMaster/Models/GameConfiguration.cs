@@ -39,6 +39,20 @@ namespace GameMaster.Models
         /// </summary>
         public int ShamPieceProbability { get; set; }
 
+        public GameConfiguration()
+        {
+        }
+
+        public GameConfiguration(string path)
+        {
+            using (var file = new StreamReader(path))
+            {
+                var json = file.ReadToEnd();
+                var conf = JsonConvert.DeserializeObject<GameConfiguration>(json);
+                this.Update(conf);
+            }
+        }
+
         public void Update(GameConfiguration conf)
         {
             CsIP = conf.CsIP;

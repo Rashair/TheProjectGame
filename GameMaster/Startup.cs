@@ -58,8 +58,17 @@ namespace GameMaster
             services.AddSingleton<WebSocketManager<GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
-            GameConfiguration conf = new GameConfiguration();
-            Configuration.Bind("DefaultGameConfig", conf);
+            GameConfiguration conf;
+            string path = Configuration.GetValue<string>("GameConfigPath");
+            if (File.Exists(path))
+            {
+                conf = new GameConfiguration(path);
+            }
+            else
+            {
+                conf = new GameConfiguration();
+                Configuration.Bind("DefaultGameConfig", conf);
+            }
             services.AddSingleton(conf);
 
             services.AddSingleton<GM>();
