@@ -136,7 +136,7 @@ export class Home extends Component {
   render() {
     return (
       <form>
-        <h1 className="text-center">Zmień domyślną konfigurację gry</h1>
+        <h1 className="text-center">Konfiguracja gry</h1>
 
         <div className="form-row">
           <legend>Informacje o CS</legend>
