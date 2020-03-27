@@ -11,11 +11,12 @@ namespace GameMaster.Models
     {
         private int id;
         private int messageCorrelationId;
-        private bool isLeader;
         private AbstractPiece holding;
         private AbstractField position;
         private DateTime lockedTill;
         private ISender messageService;
+
+        public bool IsLeader { get; private set; }
 
         public Team Team { get; private set; }
 
