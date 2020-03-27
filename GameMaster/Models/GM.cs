@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,9 +21,9 @@ namespace GameMaster.Models
         private readonly ILogger<GM> logger;
         private readonly Configuration conf;
         private readonly BufferBlock<PlayerMessage> queue;
-        private ISocketManager<WebSocket, GMMessage> socketManager;
+        private readonly ISocketManager<WebSocket, GMMessage> socketManager;
 
-        private readonly int[] legalKnowledgeReplies;
+        private readonly HashSet<(int, int)> legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;
         private AbstractField[][] board;
         private int piecesOnBoard;
@@ -34,14 +33,13 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; set; }
 
-        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, ILogger<GM> logger,
-            WebSocketManager<GMMessage> socketManager)
+        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, ILogger<GM> logger, WebSocketManager<GMMessage> socketManager)
         {
             this.logger = logger;
             this.conf = conf;
             this.queue = queue;
             this.socketManager = socketManager;
-            legalKnowledgeReplies = new int[2];
+            legalKnowledgeReplies = new HashSet<(int, int)>();
         }
 
         public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
@@ -284,7 +282,24 @@ namespace GameMaster.Models
 
         private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
+            if (legalKnowledgeReplies.Contains((playerMessage.PlayerID, payload.RespondToID)))
+            {
+                legalKnowledgeReplies.Remove((playerMessage.PlayerID, payload.RespondToID));
+                GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload()
+                {
+                    AnsweringID = playerMessage.PlayerID,
+                    Distances = payload.Distances,
+                    RedTeamGoalAreaInformations = payload.RedTeamGoalAreaInformations,
+                    BlueTeamGoalAreaInformations = payload.BlueTeamGoalAreaInformations,
+                };
+                GMMessage answer = new GMMessage()
+                {
+                    Id = GMMessageID.GiveInfoForwarded,
+                    Payload = answerPayload.Serialize(),
+                };
+                await socketManager.SendMessageAsync(payload.RespondToID.ToString(), answer, cancellationToken);
+            }
         }
 
         internal void EndGame()
