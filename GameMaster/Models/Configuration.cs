@@ -73,7 +73,7 @@ namespace GameMaster.Models
             GoalAreaHeight = conf.GoalAreaHeight;
             NumberOfGoals = conf.NumberOfGoals;
             MaximumNumberOfPiecesOnBoard = conf.MaximumNumberOfPiecesOnBoard;
-            NumberOfPlayersPerTeam = conf.NumberOfGoals;
+            NumberOfPlayersPerTeam = conf.NumberOfPlayersPerTeam;
             ShamPieceProbability = conf.ShamPieceProbability;
         }
     }
