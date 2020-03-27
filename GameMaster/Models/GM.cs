@@ -277,6 +277,11 @@ namespace GameMaster.Models
 
         private async Task ForwardKnowledgeQuestion(PlayerMessage playerMessage, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(playerMessage.Payload);
             BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
             {
@@ -291,11 +296,18 @@ namespace GameMaster.Models
             };
 
             legalKnowledgeReplies.Add((begPayload.AskedPlayerID, playerMessage.PlayerID));
-            await socketManager.SendMessageAsync(players[begPayload.AskedPlayerID].SocketID, gmMessage, cancellationToken);
+            await socketManager.SendMessageAsync(
+                players[begPayload.AskedPlayerID].SocketID,
+                gmMessage, cancellationToken);
         }
 
         private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
             if (legalKnowledgeReplies.Contains((playerMessage.PlayerID, payload.RespondToID)))
             {
