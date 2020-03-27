@@ -3,14 +3,14 @@
     // Add 'distance' in front of each enum to generate valid message
     public enum Direction
     {
-        FromCurrent,
+        NW,
         N,
         NE,
-        E,
-        SE,
-        S,
-        SW,
         W,
-        NW,
+        FromCurrent,
+        E,
+        SW,
+        S,
+        SE,
     }
 }

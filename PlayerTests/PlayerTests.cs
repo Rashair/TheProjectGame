@@ -6,9 +6,9 @@ using Newtonsoft.Json;
 using Player.Clients;
 using Player.Models.Strategies;
 using Shared.Enums;
+using Shared.Messages;
 using Shared.Models;
-using Shared.Models.Messages;
-using Shared.Models.Payloads;
+using Shared.Payloads;
 using Xunit;
 
 namespace Player.Tests

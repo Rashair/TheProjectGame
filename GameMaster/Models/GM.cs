@@ -11,8 +11,8 @@ using GameMaster.Models.Pieces;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Shared.Enums;
-using Shared.Models.Messages;
-using Shared.Models.Payloads;
+using Shared.Messages;
+using Shared.Payloads;
 
 namespace GameMaster.Models
 {
@@ -21,7 +21,7 @@ namespace GameMaster.Models
         private readonly ILogger<GM> logger;
         private readonly Configuration conf;
         private readonly BufferBlock<PlayerMessage> queue;
-        private readonly SocketManager<WebSocket, GMMessage> manager;
+        private readonly ISocketManager<WebSocket, GMMessage> socketManager;
 
         private readonly HashSet<(int, int)> legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;
@@ -33,12 +33,13 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; set; }
 
-        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> manager, ILogger<GM> logger)
+        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, ILogger<GM> logger,
+            WebSocketManager<GMMessage> socketManager)
         {
             this.logger = logger;
             this.conf = conf;
             this.queue = queue;
-            this.manager = manager;
+            this.socketManager = socketManager;
             legalKnowledgeReplies = new HashSet<(int, int)>();
         }
 
@@ -77,7 +78,7 @@ namespace GameMaster.Models
                         Id = GMMessageID.JoinTheGameAnswer,
                         Payload = JsonConvert.SerializeObject(answerJoinPayload),
                     };
-                    await manager.SendMessageAsync(players[key].SocketID, answerJoin);
+                    await socketManager.SendMessageAsync(players[key].SocketID, answerJoin, cancellationToken);
                     break;
                 case PlayerMessageID.Move:
                     MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
@@ -121,7 +122,8 @@ namespace GameMaster.Models
                         Id = GMMessageID.PickAnswer,
                         Payload = JsonConvert.SerializeObject(answerPickPayload),
                     };
-                    await manager.SendMessageAsync(players[message.PlayerID].SocketID, answerPick);
+                    await socketManager.SendMessageAsync(players[message.PlayerID].SocketID, answerPick,
+                        cancellationToken);
                     break;
                 case PlayerMessageID.Put:
                     bool point = players[message.PlayerID].Put();
@@ -146,7 +148,42 @@ namespace GameMaster.Models
 
         internal Dictionary<Direction, int> Discover(AbstractField field)
         {
-            throw new NotImplementedException();
+            int[] center = field.GetPosition();
+            var neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter(center);
+
+            int[] distances = new int[neighbourCoordinates.Length];
+            for (int i = 0; i < distances.Length; i++)
+            {
+                distances[i] = int.MaxValue;
+            }
+
+            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
+            for (int i = conf.GoalAreaHeight; i < secondGoalAreaStart; i++)
+            {
+                for (int j = 0; j < board[i].Length; j++)
+                {
+                    if (board[i][j].ContainsPieces())
+                    {
+                        for (int k = 0; k < distances.Length; k++)
+                        {
+                            int manhattanDistance = Math.Abs(neighbourCoordinates[k].y - i) + Math.Abs(neighbourCoordinates[k].x - j);
+                            if (manhattanDistance < distances[k])
+                                distances[k] = manhattanDistance;
+                        }
+                    }
+                }
+            }
+
+            Dictionary<Direction, int> discoveryResult = new Dictionary<Direction, int>();
+            for (int i = 0; i < distances.Length; i++)
+            {
+                var (dir, y, x) = neighbourCoordinates[i];
+                if (y >= 0 && y < conf.Height && x >= 0 && x < conf.Width)
+                {
+                    discoveryResult.Add(dir, distances[i]);
+                }
+            }
+            return discoveryResult;
         }
 
         internal void StartGame()
@@ -262,7 +299,7 @@ namespace GameMaster.Models
                     Id = GMMessageID.GiveInfoForwarded,
                     Payload = answerPayload.Serialize(),
                 };
-                await manager.SendMessageAsync(payload.RespondToID.ToString(), answer);
+                await socketManager.SendMessageAsync(payload.RespondToID.ToString(), answer, cancellationToken);
             }
         }
 

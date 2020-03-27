@@ -1,4 +1,4 @@
-﻿namespace Shared.Models.Payloads
+﻿namespace Shared.Payloads
 {
     public class JoinAnswerPayload : Payload
     {

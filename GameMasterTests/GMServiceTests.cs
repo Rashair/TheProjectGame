@@ -9,7 +9,7 @@ using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Shared.Models.Messages;
+using Shared.Messages;
 using Xunit;
 
 using static GameMaster.Tests.Helpers.ReflectionHelpers;
@@ -25,6 +25,7 @@ namespace GameMaster.Tests
             IServiceCollection services = new ServiceCollection();
             var conf = new MockConfiguration();
             services.AddSingleton<Configuration>(conf);
+            services.AddSingleton<WebSocketManager<GMMessage>>();
             int messagesNum = 10;
             var queue = new BufferBlock<PlayerMessage>();
             for (int i = 0; i < messagesNum; ++i)
@@ -66,6 +67,7 @@ namespace GameMaster.Tests
             IServiceCollection services = new ServiceCollection();
             var conf = new MockConfiguration();
             services.AddSingleton<Configuration>(conf);
+            services.AddSingleton<WebSocketManager<GMMessage>>();
             int messagesNum = 10;
             var queue = new BufferBlock<PlayerMessage>();
             for (int i = 0; i < messagesNum; ++i)
