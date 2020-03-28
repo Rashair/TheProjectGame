@@ -11,7 +11,7 @@ namespace GameMaster.Tests.Mocks
             this.NumberOfGoals = 4;
             this.GoalAreaHeight = 3;
             this.ShamPieceProbability = 40;
-            this.MaximumNumberOfPiecesOnBoard = 10;
+            this.NumberOfPiecesOnBoard = 10;
             this.NumberOfPlayersPerTeam = 6;
         }
     }

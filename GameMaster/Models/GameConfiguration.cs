@@ -30,7 +30,7 @@ namespace GameMaster.Models
 
         public int NumberOfGoals { get; set; }
 
-        public int MaximumNumberOfPiecesOnBoard { get; set; }
+        public int NumberOfPiecesOnBoard { get; set; }
 
         public int NumberOfPlayersPerTeam { get; set; }
 
@@ -67,7 +67,7 @@ namespace GameMaster.Models
             Height = conf.Height;
             GoalAreaHeight = conf.GoalAreaHeight;
             NumberOfGoals = conf.NumberOfGoals;
-            MaximumNumberOfPiecesOnBoard = conf.MaximumNumberOfPiecesOnBoard;
+            NumberOfPiecesOnBoard = conf.NumberOfPiecesOnBoard;
             NumberOfPlayersPerTeam = conf.NumberOfPlayersPerTeam;
             ShamPieceProbability = conf.ShamPieceProbability;
         }

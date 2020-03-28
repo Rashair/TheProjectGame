@@ -33,7 +33,7 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; set; }
 
-        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> socketManager)
+        public GM(GameConfiguration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> socketManager)
         {
             this.logger = Log.ForContext<GM>();
             this.conf = conf;
@@ -140,8 +140,6 @@ namespace GameMaster.Models
                         }
                     }
                     GeneratePiece();
-                    break;
-                default:
                     break;
             }
         }

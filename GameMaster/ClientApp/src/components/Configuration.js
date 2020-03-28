@@ -31,7 +31,7 @@ export class Configuration extends Component {
       numberOfGoals: 0,
       numberOfPlayersPerTeam: 0,
       shamPieceProbability: 0,
-      maximumNumberOfPiecesOnBoard: 0,
+      numberOfPiecesOnBoard: 0,
     };
 
     this.sendData = this.sendData.bind(this);
@@ -211,9 +211,9 @@ export class Configuration extends Component {
             className="form-control"
             type="number"
             min="1"
-            name="maximumNumberOfPiecesOnBoard"
-            value={this.state.maximumNumberOfPiecesOnBoard}
-            onChange={e => this.setState({ maximumNumberOfPiecesOnBoard: e.target.value })}
+            name="numberOfPiecesOnBoard"
+            value={this.state.numberOfPiecesOnBoard}
+            onChange={e => this.setState({ numberOfPiecesOnBoard: e.target.value })}
           />
         </fieldset>
 
