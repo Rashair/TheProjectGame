@@ -25,5 +25,17 @@ namespace GameMaster.Models.Fields
             Pieces.Add(piece);
             return true;
         }
+
+        public override (bool, bool) PutNormal(AbstractPiece piece)
+        {
+            Put(piece);
+            return (false, true);
+        }
+
+        public override (bool goal, bool removed) PutFake(AbstractPiece piece)
+        {
+            PutSham(piece);
+            return (false, true);
+        }
     }
 }

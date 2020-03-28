@@ -15,7 +15,7 @@ namespace GameMaster.Models.Fields
         {
             if (this.ContainsPieces())
             {
-                player.SetHolding(Pieces.ElementAt(0));
+                player.Holding = Pieces.ElementAt(0);
                 Pieces.Remove(Pieces.ElementAt(0));
                 return true;
             }
@@ -32,6 +32,18 @@ namespace GameMaster.Models.Fields
         {
             Pieces.Add(piece);
             return false;
+        }
+
+        public override (bool, bool) PutNormal(AbstractPiece piece)
+        {
+            Put(piece);
+            return (false, false);
+        }
+
+        public override (bool goal, bool removed) PutFake(AbstractPiece piece)
+        {
+            PutSham(piece);
+            return (false, false);
         }
     }
 }
