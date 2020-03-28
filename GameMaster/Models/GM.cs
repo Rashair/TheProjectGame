@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,10 +24,9 @@ namespace GameMaster.Models
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketManager<WebSocket, GMMessage> socketManager;
 
-        private HashSet<(int, int)> legalKnowledgeReplies;
+        private HashSet<(int id1, int id2)> legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;
         private AbstractField[][] board;
-        private int piecesOnBoard;
 
         private int redTeamPoints;
         private int blueTeamPoints;
@@ -52,7 +52,6 @@ namespace GameMaster.Models
                     break;
                 case PlayerMessageID.PieceDestruction:
                     players[message.PlayerID].DestroyHolding();
-                    piecesOnBoard--;
                     GeneratePiece();
                     break;
                 case PlayerMessageID.Discover:
@@ -65,9 +64,10 @@ namespace GameMaster.Models
                     await ForwardKnowledgeQuestion(message, cancellationToken);
                     break;
                 case PlayerMessageID.JoinTheGame:
+                {
                     JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
                     int key = players.Count;
-                    bool accepted = players.TryAdd(key, new GMPlayer(key, payloadJoin.TeamID));
+                    bool accepted = TryToAddPlayer(key, payloadJoin.TeamID);
                     JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
                     {
                         Accepted = accepted,
@@ -79,8 +79,12 @@ namespace GameMaster.Models
                         Payload = JsonConvert.SerializeObject(answerJoinPayload),
                     };
                     await socketManager.SendMessageAsync(players[key].SocketID, answerJoin, cancellationToken);
+
+                    // TODO: Add logic which will actually start the game - place players on board and send messages to them
                     break;
+                }
                 case PlayerMessageID.Move:
+                {
                     MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
                     AbstractField field = null;
                     int[] position1 = players[message.PlayerID].GetPosition();
@@ -113,7 +117,9 @@ namespace GameMaster.Models
                     }
                     players[message.PlayerID].Move(field);
                     break;
+                }
                 case PlayerMessageID.Pick:
+                {
                     int[] position2 = players[message.PlayerID].GetPosition();
                     board[position2[0]][position2[1]].PickUp(players[message.PlayerID]);
                     EmptyPayload answerPickPayload = new EmptyPayload();
@@ -125,11 +131,12 @@ namespace GameMaster.Models
                     await socketManager.SendMessageAsync(players[message.PlayerID].SocketID, answerPick,
                         cancellationToken);
                     break;
+                }
                 case PlayerMessageID.Put:
+                {
                     bool point = players[message.PlayerID].Put();
                     if (point)
                     {
-                        piecesOnBoard--;
                         if (players[message.PlayerID].Team == Team.Red)
                         {
                             redTeamPoints++;
@@ -141,7 +148,18 @@ namespace GameMaster.Models
                     }
                     GeneratePiece();
                     break;
+                }
             }
+        }
+
+        private bool TryToAddPlayer(int key, Team team)
+        {
+            if (players.Where(pair => pair.Value.Team == team).Count() == conf.NumberOfPlayersPerTeam)
+            {
+                return false;
+            }
+
+            return players.TryAdd(key, new GMPlayer(key, team));
         }
 
         internal Dictionary<Direction, int> Discover(AbstractField field)
@@ -187,6 +205,7 @@ namespace GameMaster.Models
         internal void StartGame()
         {
             InitializeBoard();
+            GenerateAllPieces();
             WasGameStarted = true;
         }
 
@@ -222,6 +241,14 @@ namespace GameMaster.Models
             for (int col = 0; col < board[row].Length; ++col)
             {
                 board[row][col] = getField(row, col);
+            }
+        }
+
+        private void GenerateAllPieces()
+        {
+            for (int i = 0; i < conf.NumberOfPiecesOnBoard; ++i)
+            {
+                GeneratePiece();
             }
         }
 
@@ -267,7 +294,6 @@ namespace GameMaster.Models
             int yCoord = rand.Next(0, conf.Width);
 
             board[xCoord][yCoord].Put(piece);
-            piecesOnBoard += 1;
         }
 
         private async Task ForwardKnowledgeQuestion(PlayerMessage playerMessage, CancellationToken cancellationToken)
