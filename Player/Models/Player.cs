@@ -60,9 +60,15 @@ namespace Player.Models
             this.strategy = conf.Strategy;
         }
 
+        internal async Task InitializePlayer(Team team, IStrategy strategy, CancellationToken cancellationToken)
+        {
+            this.team = team;
+            this.strategy = strategy;
+            await JoinTheGame(cancellationToken);
+        }
+
         internal async Task Work(CancellationToken cancellationToken)
         {
-            await JoinTheGame(cancellationToken);
             bool startGame = false;
             while (!cancellationToken.IsCancellationRequested && !startGame)
             {
