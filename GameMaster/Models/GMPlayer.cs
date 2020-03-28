@@ -30,7 +30,7 @@ namespace GameMaster.Models
 
         public Team Team { get; }
 
-        public GMPlayer(int id, GameConfiguration conf, WebSocketManager<GMMessage> socketManager, Team team,
+        public GMPlayer(int id, GameConfiguration conf, ISocketManager<WebSocket, GMMessage> socketManager, Team team,
             bool isLeader = false)
         {
             this.id = id;
@@ -124,7 +124,7 @@ namespace GameMaster.Models
         /// <returns>
         /// Task<(bool goal, bool removed)>
         /// </returns>
-        public async Task<(bool, bool)> Put(CancellationToken cancellationToken)
+        public async Task<(bool, bool)> PutAsync(CancellationToken cancellationToken)
         {
             // TODO from config
             bool isUnlocked = await TryLockAsync(0, cancellationToken);
@@ -146,7 +146,7 @@ namespace GameMaster.Models
             return (goal, removed);
         }
 
-        public async Task<bool> Pick(CancellationToken cancellationToken)
+        public async Task<bool> PickAsync(CancellationToken cancellationToken)
         {
             bool isUnlocked = await TryLockAsync(0, cancellationToken);
             bool picked = false;
