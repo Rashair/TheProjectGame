@@ -69,6 +69,7 @@ namespace Player.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
+            await InitializePlayer(Team.Red, null, cancellationToken);
             bool startGame = false;
             while (!cancellationToken.IsCancellationRequested && !startGame)
             {
