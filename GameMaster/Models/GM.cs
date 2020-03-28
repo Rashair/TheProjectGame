@@ -97,6 +97,7 @@ namespace GameMaster.Models
                         // TODO: Add logging here
                         StartGame();
                         WasGameStarted = true;
+                        logger.Information("Game was started.");
                     }
                     break;
                 }
@@ -201,14 +202,12 @@ namespace GameMaster.Models
             InitializeBoard();
             GenerateAllPieces();
             WasGameInitialized = true;
-
-            // TODO: Add logging here
+            logger.Information("Game was initialized.");
         }
 
         internal void StartGame()
         {
             // TODO: Send init message here
-            // TODO: Add logging here
         }
 
         private void InitializeBoard()

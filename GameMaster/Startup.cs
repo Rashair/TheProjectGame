@@ -1,8 +1,6 @@
-using System.IO;
 using System;
+using System.IO;
 using System.Threading.Tasks.Dataflow;
-
-using static System.Environment;
 
 using GameMaster.Managers;
 using GameMaster.Models;
@@ -16,8 +14,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
-using Newtonsoft.Json;
 using Shared.Messages;
+
+using static System.Environment;
 
 namespace GameMaster
 {

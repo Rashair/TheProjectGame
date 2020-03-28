@@ -6,6 +6,7 @@ using GameMaster.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Serilog;
 
 namespace GameMaster.Controllers
 {
@@ -13,12 +14,14 @@ namespace GameMaster.Controllers
     [Route("/api")]
     public class GameController : ControllerBase
     {
-        private readonly GameConfiguration gameConfiguration;
+        private ILogger logger;
         private readonly IConfiguration configuration;
+        private readonly GameConfiguration gameConfiguration;
         private readonly GM gameMaster;
 
         public GameController(IConfiguration configuration, GameConfiguration gameConfiguration, GM gameMaster)
         {
+            this.logger = Log.ForContext<GameController>();
             this.configuration = configuration;
             this.gameConfiguration = gameConfiguration;
             this.gameMaster = gameMaster;
@@ -38,7 +41,9 @@ namespace GameMaster.Controllers
         {
             if (conf == null || string.IsNullOrEmpty(conf.CsIP))
             {
-                return BadRequest("Received empty configuration");
+                var msg = "Received empty configuration";
+                logger.Warning(msg);
+                return BadRequest(msg);
             }
 
             gameConfiguration.Update(conf);
@@ -60,6 +65,7 @@ namespace GameMaster.Controllers
             if (gameMaster.WasGameInitialized)
             {
                 // Should be BadRequest, but it more handy in development - TODO: change later
+                logger.Warning("Game was already initialized");
                 return Ok();
             }
 
