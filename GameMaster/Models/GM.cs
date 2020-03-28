@@ -26,7 +26,7 @@ namespace GameMaster.Models
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketManager<WebSocket, GMMessage> socketManager;
 
-        private HashSet<(int id1, int id2)> legalKnowledgeReplies;
+        private HashSet<(int recipient, int sender)> legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;
         private AbstractField[][] board;
 
@@ -94,7 +94,6 @@ namespace GameMaster.Models
                     if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
                        GetPlayersCount(Team.Blue) == conf.NumberOfPlayersPerTeam)
                     {
-                        // TODO: Add logging here
                         StartGame();
                         WasGameStarted = true;
                         logger.Information("Game was started.");
