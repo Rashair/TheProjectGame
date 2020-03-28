@@ -18,7 +18,7 @@ namespace Player.Models
     public class Player
     {
         private BufferBlock<GMMessage> queue;
-        private WebSocketClient<GMMessage, PlayerMessage> client;
+        private ISocketClient<GMMessage, PlayerMessage> client;
 
         private int id;
         private ISender sender;
@@ -52,9 +52,7 @@ namespace Player.Models
 
         public (int x, int y) BoardSize { get; private set; }
 
-        public bool WasInitialized { get; private set; }
-
-        public Player(BufferBlock<GMMessage> queue, WebSocketClient<GMMessage, PlayerMessage> client)
+        public Player(BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
         {
             this.queue = queue;
             this.client = client;
@@ -64,12 +62,12 @@ namespace Player.Models
         {
             this.team = team;
             this.strategy = strategy;
-            WasInitialized = true;
             await JoinTheGame(cancellationToken);
         }
 
         internal async Task Work(CancellationToken cancellationToken)
         {
+            await InitializePlayer(Team.Red, null, cancellationToken);
             bool startGame = false;
             while (!cancellationToken.IsCancellationRequested && !startGame)
             {
