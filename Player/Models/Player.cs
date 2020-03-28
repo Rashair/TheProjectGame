@@ -36,6 +36,8 @@ namespace Player.Models
         private int numberOfGoals;
         private float shamPieceProbability;
 
+        private readonly PlayerConfiguration conf;
+
         public bool IsLeader { get; private set; }
 
         public bool HavePiece { get; private set; }
@@ -52,9 +54,13 @@ namespace Player.Models
 
         public (int x, int y) BoardSize { get; private set; }
 
-        public Player(Team team, IStrategy strategy, BufferBlock<GMMessage> queue, WebSocketClient<GMMessage, PlayerMessage> client)
+        public Player(PlayerConfiguration conf, IStrategy strategy, BufferBlock<GMMessage> queue, WebSocketClient<GMMessage, PlayerMessage> client)
         {
-            this.team = team;
+            this.conf = conf;
+            if (conf.TeamID == "red")
+                team = Team.Red;
+            else
+                team = Team.Blue;
             this.strategy = strategy;
             this.queue = queue;
             this.client = client;
