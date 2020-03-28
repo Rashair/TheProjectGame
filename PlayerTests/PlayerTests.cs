@@ -62,8 +62,7 @@ namespace Player.Tests
             input.Post<GMMessage>(messageStart);
             input.Post<GMMessage>(messageDiscover);
 
-            Team team = Team.Red;
-            var player = new Player.Models.Player(team, new Strategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
+            var player = new Player.Models.Player(input, new WebSocketClient<GMMessage, PlayerMessage>());
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);
@@ -112,8 +111,7 @@ namespace Player.Tests
             input.Post<GMMessage>(messageStart);
             input.Post<GMMessage>(messageBeg);
 
-            Team team = Team.Red;
-            var player = new Player.Models.Player(team, new Strategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
+            var player = new Player.Models.Player(input, new WebSocketClient<GMMessage, PlayerMessage>());
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);
