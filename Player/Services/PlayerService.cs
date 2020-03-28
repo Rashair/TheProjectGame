@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Hosting;
+using Player.Models;
 
 namespace Player.Services
 {
