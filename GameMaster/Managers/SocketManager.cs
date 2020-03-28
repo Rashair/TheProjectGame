@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
@@ -8,7 +7,8 @@ namespace GameMaster.Managers
 {
     public abstract class SocketManager<TSocket, TMessage> : ISocketManager<TSocket, TMessage>
     {
-        private readonly ConcurrentDictionary<string, TSocket> sockets = new ConcurrentDictionary<string, TSocket>();
+        private readonly ConcurrentDictionary<int, TSocket> sockets = new ConcurrentDictionary<int, TSocket>();
+        private int guid = 1;
 
         protected abstract bool IsSame(TSocket a, TSocket b);
 
@@ -16,12 +16,12 @@ namespace GameMaster.Managers
 
         protected abstract Task SendMessageAsync(TSocket socket, TMessage message, CancellationToken cancellationToken);
 
-        public string GetId(TSocket socket)
+        public int GetId(TSocket socket)
         {
             return sockets.FirstOrDefault(p => IsSame(p.Value, socket)).Key;
         }
 
-        public TSocket GetSocketById(string id)
+        public TSocket GetSocketById(int id)
         {
             return sockets.FirstOrDefault(p => p.Key == id).Value;
         }
@@ -31,7 +31,7 @@ namespace GameMaster.Managers
             return sockets.TryAdd(CreateSocketId(), socket);
         }
 
-        public async Task<bool> RemoveSocketAsync(string id, CancellationToken cancellationToken)
+        public async Task<bool> RemoveSocketAsync(int id, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
                 return false;
@@ -41,7 +41,7 @@ namespace GameMaster.Managers
             return removed;
         }
 
-        public async Task SendMessageAsync(string id, TMessage message, CancellationToken cancellationToken)
+        public async Task SendMessageAsync(int id, TMessage message, CancellationToken cancellationToken)
         {
             await SendMessageAsync(GetSocketById(id), message, cancellationToken);
         }
@@ -51,9 +51,9 @@ namespace GameMaster.Managers
             await Task.WhenAll(from p in sockets select SendMessageAsync(p.Value, message, cancellationToken));
         }
 
-        private string CreateSocketId()
+        private int CreateSocketId()
         {
-            return Guid.NewGuid().ToString();
+            return Interlocked.Increment(ref guid);
         }
     }
 }

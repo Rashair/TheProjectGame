@@ -509,7 +509,7 @@ namespace GameMaster.Models
                     Id = GMMessageID.GiveInfoForwarded,
                     Payload = answerPayload.Serialize(),
                 };
-                await socketManager.SendMessageAsync(payload.RespondToID.ToString(), answer, cancellationToken);
+                await socketManager.SendMessageAsync(payload.RespondToID, answer, cancellationToken);
             }
         }
 
