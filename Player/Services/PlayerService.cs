@@ -10,7 +10,7 @@ namespace Player.Services
     {
         private readonly Models.Player player;
 
-        public PlayerService(Models.Player player, Configuration conf)
+        public PlayerService(Models.Player player)
         {
             this.player = player;
         }
