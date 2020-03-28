@@ -52,17 +52,24 @@ namespace Player.Models
 
         public (int x, int y) BoardSize { get; private set; }
 
-        public Player(Team team, IStrategy strategy, BufferBlock<GMMessage> queue, WebSocketClient<GMMessage, PlayerMessage> client)
+        public bool WasInitialized { get; private set; }
+
+        public Player(BufferBlock<GMMessage> queue, WebSocketClient<GMMessage, PlayerMessage> client)
         {
-            this.team = team;
-            this.strategy = strategy;
             this.queue = queue;
             this.client = client;
         }
 
+        internal async Task InitializePlayer(Team team, IStrategy strategy, CancellationToken cancellationToken)
+        {
+            this.team = team;
+            this.strategy = strategy;
+            WasInitialized = true;
+            await JoinTheGame(cancellationToken);
+        }
+
         internal async Task Work(CancellationToken cancellationToken)
         {
-            await JoinTheGame(cancellationToken);
             bool startGame = false;
             while (!cancellationToken.IsCancellationRequested && !startGame)
             {
