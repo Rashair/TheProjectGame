@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace GameMaster.Models
 {
-    public class Configuration
+    public class GameConfiguration
     {
         public string CsIP { get; set; }
 
@@ -30,13 +30,30 @@ namespace GameMaster.Models
 
         public int NumberOfGoals { get; set; }
 
-        public int MaximumNumberOfPiecesOnBoard { get; set; }
+        public int NumberOfPiecesOnBoard { get; set; }
 
         public int NumberOfPlayersPerTeam { get; set; }
 
-        public double ShamPieceProbability { get; set; } // percentage
+        /// <summary>
+        /// Percentage, between 0 and 100.
+        /// </summary>
+        public int ShamPieceProbability { get; set; }
 
-        public void Update(Configuration conf)
+        public GameConfiguration()
+        {
+        }
+
+        public GameConfiguration(string path)
+        {
+            using (var file = new StreamReader(path))
+            {
+                var json = file.ReadToEnd();
+                var conf = JsonConvert.DeserializeObject<GameConfiguration>(json);
+                this.Update(conf);
+            }
+        }
+
+        public void Update(GameConfiguration conf)
         {
             CsIP = conf.CsIP;
             CsPort = conf.CsPort;
@@ -50,8 +67,8 @@ namespace GameMaster.Models
             Height = conf.Height;
             GoalAreaHeight = conf.GoalAreaHeight;
             NumberOfGoals = conf.NumberOfGoals;
-            MaximumNumberOfPiecesOnBoard = conf.MaximumNumberOfPiecesOnBoard;
-            NumberOfPlayersPerTeam = conf.NumberOfGoals;
+            NumberOfPiecesOnBoard = conf.NumberOfPiecesOnBoard;
+            NumberOfPlayersPerTeam = conf.NumberOfPlayersPerTeam;
             ShamPieceProbability = conf.ShamPieceProbability;
         }
     }

@@ -1,7 +1,6 @@
 using System;
+using System.IO;
 using System.Threading.Tasks.Dataflow;
-
-using static System.Environment;
 
 using GameMaster.Managers;
 using GameMaster.Models;
@@ -13,10 +12,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using Shared.Messages;
+
+using static System.Environment;
 
 namespace GameMaster
 {
@@ -57,7 +57,19 @@ namespace GameMaster
             services.AddSingleton<WebSocketManager<GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
-            services.AddSingleton<Configuration>();
+            GameConfiguration conf;
+            string path = Configuration.GetValue<string>("GameConfigPath");
+            if (File.Exists(path))
+            {
+                conf = new GameConfiguration(path);
+            }
+            else
+            {
+                conf = new GameConfiguration();
+                Configuration.Bind("DefaultGameConfig", conf);
+            }
+            services.AddSingleton(conf);
+
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
         }
