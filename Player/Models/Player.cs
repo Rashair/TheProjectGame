@@ -52,7 +52,7 @@ namespace Player.Models
 
         public (int x, int y) BoardSize { get; private set; }
 
-        public Player(BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client, Configuration conf)
+        public Player(BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client, PlayerConfiguration conf)
         {
             this.queue = queue;
             this.client = client;

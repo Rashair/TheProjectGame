@@ -19,7 +19,7 @@ namespace Player
         {
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, WebSocketClient<GMMessage, PlayerMessage>>();
             services.AddSingleton<BufferBlock<GMMessage>>();
-            services.AddSingleton<Configuration>();
+            services.AddSingleton<PlayerConfiguration>();
 
             services.AddHostedService<SocketService>();
             services.AddHostedService<PlayerService>();
