@@ -24,6 +24,7 @@ namespace GameMaster
     {
         public Startup(IConfiguration configuration)
         {
+            var template = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
             Log.Logger = new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
@@ -31,7 +32,8 @@ namespace GameMaster
                + "_" + DateTime.Today.Month.ToString()
                + "_" + DateTime.Today.Year.ToString() + ".txt",
                rollOnFileSizeLimit: true,
-               outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}")
+               outputTemplate: template)
+               .WriteTo.Console(template)
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
