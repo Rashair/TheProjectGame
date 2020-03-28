@@ -16,6 +16,11 @@ namespace GameMaster.Models
         private DateTime lockedTill;
         private ISender messageService;
 
+        public bool HasPiece
+        {
+            get => holding != null;
+        }
+
         public bool IsLeader { get; private set; }
 
         public Team Team { get; private set; }
@@ -53,6 +58,10 @@ namespace GameMaster.Models
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Sends message to player through ISender interface
+        /// </summary>
+        /// <returns></returns>
         public bool Put()
         {
             throw new NotImplementedException();
@@ -66,6 +75,6 @@ namespace GameMaster.Models
         internal int[] GetPosition()
         {
             throw new NotImplementedException();
-        }
+        }    
     }
 }

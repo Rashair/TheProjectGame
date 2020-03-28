@@ -45,17 +45,21 @@ namespace GameMaster.Models
 
         public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
         {
+            players.TryGetValue(message.PlayerID, out GMPlayer player);
             switch (message.MessageID)
             {
                 case PlayerMessageID.CheckPiece:
-                    players[message.PlayerID].CheckHolding();
+                    player.CheckHolding();
                     break;
                 case PlayerMessageID.PieceDestruction:
-                    players[message.PlayerID].DestroyHolding();
-                    GeneratePiece();
+                    if (player.HasPiece)
+                    {
+                        player.DestroyHolding();
+                        GeneratePiece();
+                    }
                     break;
                 case PlayerMessageID.Discover:
-                    players[message.PlayerID].Discover(this);
+                    player.Discover(this);
                     break;
                 case PlayerMessageID.GiveInfo:
                     await ForwardKnowledgeReply(message, cancellationToken);
@@ -115,29 +119,41 @@ namespace GameMaster.Models
                             }
                             break;
                     }
-                    field?.MoveHere(players[message.PlayerID]);
+                    field?.MoveHere(player);
                     break;
                 }
                 case PlayerMessageID.Pick:
                 {
-                    int[] position2 = players[message.PlayerID].GetPosition();
-                    board[position2[0]][position2[1]].PickUp(players[message.PlayerID]);
+                    if (player.HasPiece)
+                    {
+                        // TODO - error message
+                        return;
+                    }
+
+                    int[] position2 = player.GetPosition();
+                    board[position2[0]][position2[1]].PickUp(player);
                     EmptyPayload answerPickPayload = new EmptyPayload();
                     GMMessage answerPick = new GMMessage()
                     {
                         Id = GMMessageID.PickAnswer,
                         Payload = JsonConvert.SerializeObject(answerPickPayload),
                     };
-                    await socketManager.SendMessageAsync(players[message.PlayerID].SocketID, answerPick,
+                    await socketManager.SendMessageAsync(player.SocketID, answerPick,
                         cancellationToken);
                     break;
                 }
                 case PlayerMessageID.Put:
                 {
-                    bool point = players[message.PlayerID].Put();
+                    if (!player.HasPiece)
+                    {
+                        // TODO - error message
+                        return;
+                    }
+
+                    bool point = player.Put();
                     if (point)
                     {
-                        if (players[message.PlayerID].Team == Team.Red)
+                        if (player.Team == Team.Red)
                         {
                             redTeamPoints++;
                         }
