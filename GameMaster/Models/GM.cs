@@ -87,37 +87,35 @@ namespace GameMaster.Models
                 {
                     MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
                     AbstractField field = null;
-                    int[] position1 = players[message.PlayerID].GetPosition();
+                    int[] pos = players[message.PlayerID].GetPosition();
                     switch (payloadMove.Direction)
                     {
                         case Direction.N:
-                            if (position1[1] + 1 < board.GetLength(1))
+                            if (pos[1] + 1 < board.GetLength(1))
                             {
-                                field = board[position1[0]][position1[1] + 1];
+                                field = board[pos[0]][pos[1] + 1];
                             }
                             break;
                         case Direction.S:
-                            if (position1[1] - 1 >= 0)
+                            if (pos[1] - 1 >= 0)
                             {
-                                field = board[position1[0]][position1[1] - 1];
+                                field = board[pos[0]][pos[1] - 1];
                             }
                             break;
                         case Direction.E:
-                            if (position1[0] + 1 < board.GetLength(0))
+                            if (pos[0] + 1 < board.GetLength(0))
                             {
-                                field = board[position1[0] + 1][position1[1]];
+                                field = board[pos[0] + 1][pos[1]];
                             }
                             break;
                         case Direction.W:
-                            if (position1[0] - 1 >= 0)
+                            if (pos[0] - 1 >= 0)
                             {
-                                field = board[position1[0] - 1][position1[1]];
+                                field = board[pos[0] - 1][pos[1]];
                             }
                             break;
-                        default:
-                            break;
                     }
-                    players[message.PlayerID].Move(field);
+                    field?.MoveHere(players[message.PlayerID]);
                     break;
                 }
                 case PlayerMessageID.Pick:
