@@ -9,6 +9,7 @@ using System.Threading.Tasks.Dataflow;
 using GameMaster.Managers;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Serilog;
 using Shared.Enums;

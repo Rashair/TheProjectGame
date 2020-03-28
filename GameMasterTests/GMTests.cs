@@ -9,7 +9,7 @@ using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shared.Enums;
@@ -30,12 +30,13 @@ namespace GameMaster.Tests
         {
             // Arrange
             var conf = new MockGameConfiguration();
+            conf.NumberOfPiecesOnBoard = 0;
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
             var manager = new WebSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
 
-            var startGame = GetMethod("StartGame");
+            var startGame = GetMethod("InitGame");
             startGame.Invoke(gameMaster, null);
             var method = GetMethod("GeneratePiece");
 
@@ -138,7 +139,7 @@ namespace GameMaster.Tests
             var lifetime = Mock.Of<IApplicationLifetime>();
             var manager = new WebSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
-            var startGame = GetMethod("StartGame");
+            var startGame = GetMethod("InitGame");
             startGame.Invoke(gameMaster, null);
             var generatePiece = GetMethod("GeneratePiece");
 
