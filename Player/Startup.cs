@@ -20,6 +20,7 @@ namespace Player
             services.AddSingleton<BufferBlock<GMMessage>>();
 
             services.AddHostedService<SocketService>();
+            services.AddHostedService<PlayerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
