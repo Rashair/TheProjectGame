@@ -10,5 +10,7 @@ namespace GameMaster.Models.Pieces
         {
             return abstractField.Put(this);
         }
+
+        public abstract (bool goal, bool removed) PutOnField(AbstractField abstractField);
     }
 }
