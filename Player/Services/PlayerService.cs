@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Hosting;
+using Player.Models;
 
 namespace Player.Services
 {
@@ -9,7 +10,7 @@ namespace Player.Services
     {
         private readonly Models.Player player;
 
-        public PlayerService(Models.Player player)
+        public PlayerService(Models.Player player, Configuration conf)
         {
             this.player = player;
         }

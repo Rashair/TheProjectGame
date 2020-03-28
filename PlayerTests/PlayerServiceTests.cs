@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 using Player.Clients;
+using Player.Models;
 using Player.Services;
 using Shared.Enums;
 using Shared.Messages;
@@ -53,6 +49,7 @@ namespace Player.Tests
             };
             queue.Post(messageStart);
             services.AddSingleton(queue);
+            services.AddSingleton<Configuration>();
             services.AddSingleton<Models.Player>();
 
             services.AddHostedService<PlayerService>();
