@@ -75,6 +75,6 @@ namespace GameMaster.Models
         internal int[] GetPosition()
         {
             throw new NotImplementedException();
-        }    
+        }
     }
 }

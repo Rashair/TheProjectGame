@@ -34,7 +34,7 @@ namespace GameMaster.Services
 
         private async Task WaitForStart(CancellationToken cancellationToken)
         {
-            while (!(gameMaster.WasGameStarted || cancellationToken.IsCancellationRequested))
+            while (!(gameMaster.WasGameInitialized || cancellationToken.IsCancellationRequested))
             {
                 await Task.Delay(WaitForStartDelay, cancellationToken);
                 logger.Information($"GMService waited for {WaitForStartDelay} ms");

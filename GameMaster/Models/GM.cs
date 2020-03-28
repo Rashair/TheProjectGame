@@ -31,6 +31,8 @@ namespace GameMaster.Models
         private int redTeamPoints;
         private int blueTeamPoints;
 
+        public bool WasGameInitialized { get; set; }
+
         public bool WasGameStarted { get; set; }
 
         public GM(GameConfiguration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> socketManager)
@@ -84,7 +86,13 @@ namespace GameMaster.Models
                     };
                     await socketManager.SendMessageAsync(players[key].SocketID, answerJoin, cancellationToken);
 
-                    // TODO: Add logic which will actually start the game - place players on board and send messages to them
+                    if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
+                       GetPlayersCount(Team.Blue) == conf.NumberOfPlayersPerTeam)
+                    {
+                        // TODO: Add logging here
+                        StartGame();
+                        WasGameStarted = true;
+                    }
                     break;
                 }
                 case PlayerMessageID.Move:
@@ -170,7 +178,7 @@ namespace GameMaster.Models
 
         private bool TryToAddPlayer(int key, Team team)
         {
-            if (players.Where(pair => pair.Value.Team == team).Count() == conf.NumberOfPlayersPerTeam)
+            if (GetPlayersCount(team) == conf.NumberOfPlayersPerTeam)
             {
                 return false;
             }
@@ -178,51 +186,24 @@ namespace GameMaster.Models
             return players.TryAdd(key, new GMPlayer(key, team));
         }
 
-        internal Dictionary<Direction, int> Discover(AbstractField field)
+        private int GetPlayersCount(Team team)
         {
-            int[] center = field.GetPosition();
-            var neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter(center);
+            return players.Where(pair => pair.Value.Team == team).Count();
+        }
 
-            int[] distances = new int[neighbourCoordinates.Length];
-            for (int i = 0; i < distances.Length; i++)
-            {
-                distances[i] = int.MaxValue;
-            }
+        internal void InitGame()
+        {
+            InitializeBoard();
+            GenerateAllPieces();
+            WasGameInitialized = true;
 
-            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
-            for (int i = conf.GoalAreaHeight; i < secondGoalAreaStart; i++)
-            {
-                for (int j = 0; j < board[i].Length; j++)
-                {
-                    if (board[i][j].ContainsPieces())
-                    {
-                        for (int k = 0; k < distances.Length; k++)
-                        {
-                            int manhattanDistance = Math.Abs(neighbourCoordinates[k].y - i) + Math.Abs(neighbourCoordinates[k].x - j);
-                            if (manhattanDistance < distances[k])
-                                distances[k] = manhattanDistance;
-                        }
-                    }
-                }
-            }
-
-            Dictionary<Direction, int> discoveryResult = new Dictionary<Direction, int>();
-            for (int i = 0; i < distances.Length; i++)
-            {
-                var (dir, y, x) = neighbourCoordinates[i];
-                if (y >= 0 && y < conf.Height && x >= 0 && x < conf.Width)
-                {
-                    discoveryResult.Add(dir, distances[i]);
-                }
-            }
-            return discoveryResult;
+            // TODO: Add logging here
         }
 
         internal void StartGame()
         {
-            InitializeBoard();
-            GenerateAllPieces();
-            WasGameStarted = true;
+            // TODO: Send init message here
+            // TODO: Add logging here
         }
 
         private void InitializeBoard()
@@ -288,6 +269,46 @@ namespace GameMaster.Models
                     logger.Warning($"Message retrieve was cancelled: {e.Message}");
                 }
             }
+        }
+
+        internal Dictionary<Direction, int> Discover(AbstractField field)
+        {
+            int[] center = field.GetPosition();
+            var neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter(center);
+
+            int[] distances = new int[neighbourCoordinates.Length];
+            for (int i = 0; i < distances.Length; i++)
+            {
+                distances[i] = int.MaxValue;
+            }
+
+            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
+            for (int i = conf.GoalAreaHeight; i < secondGoalAreaStart; i++)
+            {
+                for (int j = 0; j < board[i].Length; j++)
+                {
+                    if (board[i][j].ContainsPieces())
+                    {
+                        for (int k = 0; k < distances.Length; k++)
+                        {
+                            int manhattanDistance = Math.Abs(neighbourCoordinates[k].y - i) + Math.Abs(neighbourCoordinates[k].x - j);
+                            if (manhattanDistance < distances[k])
+                                distances[k] = manhattanDistance;
+                        }
+                    }
+                }
+            }
+
+            Dictionary<Direction, int> discoveryResult = new Dictionary<Direction, int>();
+            for (int i = 0; i < distances.Length; i++)
+            {
+                var (dir, y, x) = neighbourCoordinates[i];
+                if (y >= 0 && y < conf.Height && x >= 0 && x < conf.Width)
+                {
+                    discoveryResult.Add(dir, distances[i]);
+                }
+            }
+            return discoveryResult;
         }
 
         private void GeneratePiece()

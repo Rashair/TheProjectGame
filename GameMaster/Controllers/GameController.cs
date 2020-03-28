@@ -55,10 +55,23 @@ namespace GameMaster.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> StartGame()
+        public IActionResult InitGame()
         {
-            gameMaster.StartGame();
+            if (gameMaster.WasGameInitialized)
+            {
+                // Should be BadRequest, but it more handy in development - TODO: change later
+                return Ok();
+            }
+
+            gameMaster.InitGame();
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public ActionResult<bool> WasGameStarted()
+        {
+            return Ok(gameMaster.WasGameStarted);
         }
     }
 }
