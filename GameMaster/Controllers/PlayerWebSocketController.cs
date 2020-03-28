@@ -25,6 +25,9 @@ namespace GameMaster.Controllers
         {
             string json = Encoding.UTF8.GetString(buffer, 0, result.Count);
             PlayerMessage message = JsonConvert.DeserializeObject<PlayerMessage>(json);
+
+            // TODO: To be changed later.
+            message.PlayerID = Manager.GetId(socket);
             await queue.SendAsync(message);
         }
     }
