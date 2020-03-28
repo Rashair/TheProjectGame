@@ -3,17 +3,20 @@ using System.Threading.Tasks;
 
 using GameMaster.Models;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace GameMaster.Services
 {
     public class GMService : BackgroundService
     {
         private readonly GM gameMaster;
+        private readonly ILogger logger;
 
         public int WaitForStartDelay { get; private set; }
 
         public GMService(GM gameMaster)
         {
+            this.logger = Log.ForContext<GMService>();
             this.gameMaster = gameMaster;
             WaitForStartDelay = 1000;
         }
@@ -34,6 +37,7 @@ namespace GameMaster.Services
             while (!(gameMaster.WasGameStarted || cancellationToken.IsCancellationRequested))
             {
                 await Task.Delay(WaitForStartDelay, cancellationToken);
+                logger.Information($"GMService waited for {WaitForStartDelay} ms");
             }
         }
     }

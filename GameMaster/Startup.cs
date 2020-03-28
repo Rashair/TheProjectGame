@@ -1,4 +1,7 @@
+using System;
 using System.Threading.Tasks.Dataflow;
+
+using static System.Environment;
 
 using GameMaster.Managers;
 using GameMaster.Models;
@@ -10,6 +13,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
 using Shared.Messages;
 
 namespace GameMaster
@@ -18,6 +24,19 @@ namespace GameMaster
     {
         public Startup(IConfiguration configuration)
         {
+            var template = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
+            Log.Logger = new LoggerConfiguration()
+               .Enrich.FromLogContext()
+               .WriteTo.File(
+               path: GetFolderPath(SpecialFolder.MyDocuments)
+               + "\\TheProjectGameLogs\\Main_" + DateTime.Today.ToString("dd_MM_yyyy") + ".txt",
+               rollOnFileSizeLimit: true,
+               outputTemplate: template)
+               .WriteTo.Console(outputTemplate: template)
+                .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .MinimumLevel.Override("System", LogEventLevel.Warning)
+               .CreateLogger();
             Configuration = configuration;
         }
 
