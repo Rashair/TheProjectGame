@@ -1,4 +1,7 @@
+using System;
 using System.Threading.Tasks.Dataflow;
+
+using static System.Environment;
 
 using GameMaster.Managers;
 using GameMaster.Models;
@@ -12,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Events;
 using Shared.Messages;
 
 namespace GameMaster
@@ -21,11 +25,17 @@ namespace GameMaster
         public Startup(IConfiguration configuration)
         {
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.File(path: "C:\\Log\\log-{Date}.txt",
-                restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Debug,
-                rollOnFileSizeLimit: true,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] {Message}{NewLine}{Exception}")
-                .CreateLogger();
+               .Enrich.FromLogContext()
+               .WriteTo.File(
+               path: GetFolderPath(SpecialFolder.MyDocuments) + "\\Log\\theProjectGame_" + DateTime.Today.Day.ToString()
+               + "_" + DateTime.Today.Month.ToString()
+               + "_" + DateTime.Today.Year.ToString() + ".txt",
+               rollOnFileSizeLimit: true,
+               outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}")
+                .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .MinimumLevel.Override("System", LogEventLevel.Warning)
+               .CreateLogger();
             Configuration = configuration;
         }
 
@@ -54,8 +64,6 @@ namespace GameMaster
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddSerilog();
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

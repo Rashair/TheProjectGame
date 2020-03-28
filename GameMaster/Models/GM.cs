@@ -8,8 +8,8 @@ using System.Threading.Tasks.Dataflow;
 using GameMaster.Managers;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Serilog;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Payloads;
@@ -18,7 +18,7 @@ namespace GameMaster.Models
 {
     public class GM
     {
-        private readonly ILogger<GM> logger;
+        private readonly ILogger logger;
         private readonly Configuration conf;
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketManager<WebSocket, GMMessage> socketManager;
@@ -33,9 +33,9 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; set; }
 
-        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, ILogger<GM> logger, WebSocketManager<GMMessage> socketManager)
+        public GM(Configuration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> socketManager)
         {
-            this.logger = logger;
+            this.logger = Log.ForContext<GM>();
             this.conf = conf;
             this.queue = queue;
             this.socketManager = socketManager;
@@ -247,7 +247,7 @@ namespace GameMaster.Models
                 }
                 catch (OperationCanceledException e)
                 {
-                    logger.LogWarning($"Message retrieve was cancelled: {e.Message}");
+                    logger.Warning($"Message retrieve was cancelled: {e.Message}");
                 }
             }
         }
@@ -330,7 +330,7 @@ namespace GameMaster.Models
 
         internal void EndGame()
         {
-            logger.LogInformation("The winner is team {0}", redTeamPoints > blueTeamPoints ? Team.Red : Team.Blue);
+            logger.Information("The winner is team {0}", redTeamPoints > blueTeamPoints ? Team.Red : Team.Blue);
         }
     }
 }
