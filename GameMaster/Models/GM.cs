@@ -20,6 +20,7 @@ namespace GameMaster.Models
     public class GM
     {
         private readonly ILogger logger;
+        private readonly IApplicationLifetime lifetime;
         private readonly GameConfiguration conf;
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketManager<WebSocket, GMMessage> socketManager;
@@ -35,12 +36,15 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; set; }
 
-        public GM(GameConfiguration conf, BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> socketManager)
+        public GM(IApplicationLifetime lifetime, GameConfiguration conf,
+            BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> socketManager)
         {
             this.logger = Log.ForContext<GM>();
+            this.lifetime = lifetime;
             this.conf = conf;
             this.queue = queue;
             this.socketManager = socketManager;
+
             players = new Dictionary<int, GMPlayer>();
             legalKnowledgeReplies = new HashSet<(int, int)>();
         }
@@ -389,6 +393,7 @@ namespace GameMaster.Models
         internal void EndGame()
         {
             logger.Information("The winner is team {0}", redTeamPoints > blueTeamPoints ? Team.Red : Team.Blue);
+            lifetime.StopApplication();
         }
     }
 }
