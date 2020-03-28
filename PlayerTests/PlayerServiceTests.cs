@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Player.Clients;
 using Player.Services;
 using Shared.Enums;
@@ -24,7 +28,7 @@ namespace Player.Tests
             // Arrange
             IServiceCollection services = new ServiceCollection();
 
-            services.AddSingleton<WebSocketClient<GMMessage, PlayerMessage>>();
+            services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, ClientMock<GMMessage, PlayerMessage>>();
             var queue = new BufferBlock<GMMessage>();
             StartGamePayload payloadStart = new StartGamePayload
             {
@@ -49,17 +53,11 @@ namespace Player.Tests
             };
             queue.Post(messageStart);
             services.AddSingleton(queue);
-            services.AddSingleton<WebSocketClient<GMMessage, PlayerMessage>>();
             services.AddSingleton<Models.Player>();
-            services.AddHostedService<SocketService>();
-            services.AddHostedService<PlayerService>();
 
+            services.AddHostedService<PlayerService>();
             var serviceProvider = services.BuildServiceProvider();
             var hostedService = (PlayerService)serviceProvider.GetService<IHostedService>();
-            var player = serviceProvider.GetService<Models.Player>();
-            var initializePlayer = GetMethod("InitializePlayer", typeof(Models.Player));
-            var parametrs = new object[] { Team.Red, null, CancellationToken.None };
-            initializePlayer.Invoke(player, parametrs);
 
             // Act
             int delay = 500;
@@ -74,15 +72,28 @@ namespace Player.Tests
             Assert.Equal(0, queue.Count);
         }
 
-        public MethodInfo GetMethod(string methodName, Type type)
+        private class ClientMock<R, S> : ISocketClient<R, S>
         {
-            Assert.False(string.IsNullOrWhiteSpace(methodName), $"{nameof(methodName)} cannot be null or whitespace");
+            public bool IsOpen => throw new NotImplementedException();
 
-            MethodInfo method = type.GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
+            public Task CloseAsync(CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
 
-            Assert.False(method == null, $"Method {methodName} not found");
+            public Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
 
-            return method;
+            public Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public async Task SendAsync(S message, CancellationToken cancellationToken)
+            {
+            }
         }
     }
 }
