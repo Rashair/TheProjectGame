@@ -30,9 +30,8 @@ namespace GameMaster.Tests
             // Arrange
             var conf = new MockConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
-            var logger = Mock.Of<ILogger<GM>>();
             var socketManager = new WebSocketManager<GMMessage>();
-            var gameMaster = new GM(conf, queue, logger, socketManager);
+            var gameMaster = new GM(conf, queue, socketManager);
 
             var startGame = GetMethod("StartGame");
             startGame.Invoke(gameMaster, null);
@@ -133,9 +132,8 @@ namespace GameMaster.Tests
         {
             var conf = new MockConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
-            var logger = Mock.Of<ILogger<GM>>();
             var manager = new WebSocketManager<GMMessage>();
-            var gameMaster = new GM(conf, queue, logger, manager);
+            var gameMaster = new GM(conf, queue, manager);
             var startGame = GetMethod("StartGame");
             startGame.Invoke(gameMaster, null);
             var generatePiece = GetMethod("GeneratePiece");
