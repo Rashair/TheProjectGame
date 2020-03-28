@@ -9,8 +9,10 @@ export class Start extends Component {
       gameInitialized: false,
       gameStarted: false,
       gameFinished: false,
+      timer: {},
     };
     this.initGame = this.initGame.bind(this);
+    this.checkIfGameStarted = this.checkIfGameStarted.bind(this);
   }
 
   initGame(e) {
@@ -20,8 +22,7 @@ export class Start extends Component {
     fetch(`${API_URL}/InitGame`, { method: "POST" }).then(res => {
       if (res.ok) {
         alert("Gra zainicjalizowana");
-        this.setState({ gameInitialized: true });
-        this.timer = setInterval(this.checkIfGameStarted, 3000);
+        this.setState({ gameInitialized: true, timer: setInterval(this.checkIfGameStarted, 3000) });
       } else {
         error(res);
       }
@@ -29,18 +30,19 @@ export class Start extends Component {
   }
 
   checkIfGameStarted() {
+    const timer = this.state.timer;
     fetch(`${API_URL}/WasGameStarted`, { method: "GET" })
       .then(
         res => {
           if (res.ok) {
             return res.json();
           } else {
-            clearInterval(this.timer);
+            clearInterval(timer);
             error(res);
           }
         },
         e => {
-          clearInterval(this.timer);
+          clearInterval(timer);
           error(e);
         }
       )
@@ -49,7 +51,7 @@ export class Start extends Component {
         if (started === true) {
           alert("Gra wystartowała");
           this.setState({ gameStarted: true });
-          clearInterval(this.timer);
+          clearInterval(timer);
         }
       });
   }
