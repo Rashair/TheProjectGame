@@ -61,7 +61,7 @@ namespace Player.Tests
             input.Post<GMMessage>(messageStart);
             input.Post<GMMessage>(messageDiscover);
 
-            var player = new Player.Models.Player(input, new WebSocketClient<GMMessage, PlayerMessage>(), new Models.Configuration());
+            var player = new Player.Models.Player(input, new WebSocketClient<GMMessage, PlayerMessage>(), new Models.PlayerConfiguration());
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);
@@ -110,7 +110,7 @@ namespace Player.Tests
             input.Post<GMMessage>(messageStart);
             input.Post<GMMessage>(messageBeg);
 
-            var player = new Player.Models.Player(input, new WebSocketClient<GMMessage, PlayerMessage>(), new Models.Configuration());
+            var player = new Player.Models.Player(input, new WebSocketClient<GMMessage, PlayerMessage>(), new Models.PlayerConfiguration());
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);

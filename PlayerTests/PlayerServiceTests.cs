@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Player.Clients;
 using Player.Models;
+using Player.Models.Strategies;
 using Player.Services;
 using Shared.Enums;
 using Shared.Messages;
@@ -49,11 +50,14 @@ namespace Player.Tests
             };
             queue.Post(messageStart);
             services.AddSingleton(queue);
-            services.AddSingleton<Configuration>();
+            services.AddSingleton<PlayerConfiguration>();
             services.AddSingleton<Models.Player>();
 
             services.AddHostedService<PlayerService>();
             var serviceProvider = services.BuildServiceProvider();
+            var conf = serviceProvider.GetService<PlayerConfiguration>();
+            conf.Team = Team.Red;
+            conf.Strategy = new StrategyMock();
             var hostedService = (PlayerService)serviceProvider.GetService<IHostedService>();
 
             // Act
@@ -89,6 +93,13 @@ namespace Player.Tests
             }
 
             public async Task SendAsync(S message, CancellationToken cancellationToken)
+            {
+            }
+        }
+
+        private class StrategyMock : IStrategy
+        {
+            public void MakeDecision(Models.Player player)
             {
             }
         }
