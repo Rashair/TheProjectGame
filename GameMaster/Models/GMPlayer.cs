@@ -54,8 +54,7 @@ namespace GameMaster.Models
 
         public async Task<bool> MoveAsync(AbstractField field, GM gm, CancellationToken cancellationToken)
         {
-            // TODO from config
-            bool isUnlocked = await TryLockAsync(0, cancellationToken);
+            bool isUnlocked = await TryLockAsync(conf.MovePenalty, cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 bool moved = field.MoveHere(this);
@@ -68,7 +67,7 @@ namespace GameMaster.Models
 
         public async Task<bool> DestroyHoldingAsync(CancellationToken cancellationToken)
         {
-            // TODO from config
+            // TODO from config, issue 137
             bool isUnlocked = await TryLockAsync(0, cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
@@ -92,8 +91,7 @@ namespace GameMaster.Models
 
         public async Task CheckHoldingAsync(CancellationToken cancellationToken)
         {
-            // TODO from config
-            bool isUnlocked = await TryLockAsync(0, cancellationToken);
+            bool isUnlocked = await TryLockAsync(conf.CheckPenalty, cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 GMMessage message;
@@ -112,8 +110,7 @@ namespace GameMaster.Models
 
         public async Task DiscoverAsync(GM gm, CancellationToken cancellationToken)
         {
-            // TODO from config
-            bool isUnlocked = await TryLockAsync(0, cancellationToken);
+            bool isUnlocked = await TryLockAsync(conf.DiscoverPenalty, cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 GMMessage message = DiscoverAnswerMessage(gm);
@@ -126,8 +123,7 @@ namespace GameMaster.Models
         /// </returns>
         public async Task<(bool, bool)> PutAsync(CancellationToken cancellationToken)
         {
-            // TODO from config
-            bool isUnlocked = await TryLockAsync(0, cancellationToken);
+            bool isUnlocked = await TryLockAsync(conf.PutPenalty, cancellationToken);
             (bool goal, bool removed) = (false, false);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
@@ -148,6 +144,7 @@ namespace GameMaster.Models
 
         public async Task<bool> PickAsync(CancellationToken cancellationToken)
         {
+            // TODO from config, issue 137
             bool isUnlocked = await TryLockAsync(0, cancellationToken);
             bool picked = false;
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
