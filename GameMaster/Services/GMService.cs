@@ -38,7 +38,6 @@ namespace GameMaster.Services
             {
                 await Task.Delay(WaitForStartDelay, cancellationToken);
                 logger.Information($"GMService waited for {WaitForStartDelay} ms");
-                System.Console.WriteLine($"GMService waited for {WaitForStartDelay} ms");
             }
         }
     }
