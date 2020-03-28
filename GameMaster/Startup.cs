@@ -28,12 +28,11 @@ namespace GameMaster
             Log.Logger = new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
-               path: GetFolderPath(SpecialFolder.MyDocuments) + "\\Log\\theProjectGame_" + DateTime.Today.Day.ToString()
-               + "_" + DateTime.Today.Month.ToString()
-               + "_" + DateTime.Today.Year.ToString() + ".txt",
+               path: GetFolderPath(SpecialFolder.MyDocuments)
+               + "\\TheProjectGameLogs\\Main_" + DateTime.Today.ToString("dd_MM_yyyy") + ".txt",
                rollOnFileSizeLimit: true,
                outputTemplate: template)
-               .WriteTo.Console(template)
+               .WriteTo.Console(outputTemplate: template)
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)

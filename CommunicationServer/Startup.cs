@@ -18,9 +18,8 @@ namespace CommunicationServer
             Log.Logger = new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
-               path: GetFolderPath(SpecialFolder.MyDocuments) + "\\Log\\theProjectGame_CommunicationServer_" + DateTime.Today.Day.ToString()
-               + "_" + DateTime.Today.Month.ToString()
-               + "_" + DateTime.Today.Year.ToString() + ".txt",
+               path: GetFolderPath(SpecialFolder.MyDocuments)
+               + "\\TheProjectGameLogs\\CS_" + DateTime.Today.ToString("dd_MM_yyyy") + ".txt",
                rollOnFileSizeLimit: true,
                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}")
                 .MinimumLevel.Information()
