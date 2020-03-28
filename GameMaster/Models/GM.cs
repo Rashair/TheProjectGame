@@ -39,6 +39,7 @@ namespace GameMaster.Models
             this.conf = conf;
             this.queue = queue;
             this.socketManager = socketManager;
+            players = new Dictionary<int, GMPlayer>();
             legalKnowledgeReplies = new HashSet<(int, int)>();
         }
 
@@ -188,10 +189,6 @@ namespace GameMaster.Models
         internal void StartGame()
         {
             InitializeBoard();
-
-            // TODO : initialize rest
-            players = new Dictionary<int, GMPlayer>();
-
             WasGameStarted = true;
         }
 

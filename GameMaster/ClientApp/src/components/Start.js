@@ -1,9 +1,6 @@
 ﻿import React, { Component } from "react";
-
-const error = e => {
-  alert("Coś poszło nie tak, spróbuj ponownie.");
-  console.log(`Error: ${e}`);
-};
+import { error } from "../helpers/errors";
+import { API_URL } from "../helpers/constants";
 
 export class Start extends Component {
   constructor(props, context) {
@@ -15,6 +12,14 @@ export class Start extends Component {
   startGame(e) {
     const button = e.target;
     button.disabled = true;
+
+    fetch(`${API_URL}/startGame`, { method: "POST" }).then(res => {
+      if (res.ok) {
+        alert("Gra rozpoczeta");
+      } else {
+        error(res);
+      }
+    }, error);
   }
   componentDidMount() {}
 

@@ -10,27 +10,31 @@ using Newtonsoft.Json;
 namespace GameMaster.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    public class ConfigurationController : ControllerBase
+    [Route("/api")]
+    public class GameController : ControllerBase
     {
         private readonly GameConfiguration gameConfiguration;
         private readonly IConfiguration configuration;
+        private readonly GM gameMaster;
 
-        public ConfigurationController(IConfiguration configuration, GameConfiguration gameConfiguration)
+        public GameController(IConfiguration configuration, GameConfiguration gameConfiguration, GM gameMaster)
         {
             this.configuration = configuration;
             this.gameConfiguration = gameConfiguration;
+            this.gameMaster = gameMaster;
         }
 
         [HttpGet]
-        public ActionResult<GameConfiguration> GetDefaultConfiguration()
+        [Route("[action]")]
+        public ActionResult<GameConfiguration> Configuration()
         {
             return Ok(gameConfiguration);
         }
 
         [HttpPost]
+        [Route("[action]")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<ActionResult<GameConfiguration>> PostConfiguration(GameConfiguration conf)
+        public async Task<ActionResult<GameConfiguration>> Configuration(GameConfiguration conf)
         {
             if (conf == null || string.IsNullOrEmpty(conf.CsIP))
             {
@@ -47,6 +51,14 @@ namespace GameMaster.Controllers
             }
 
             return Created("/configuration", conf);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> StartGame()
+        {
+            gameMaster.StartGame();
+            return Ok();
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿import React, { Component } from "react";
+import { error } from "../helpers/errors";
+import { API_URL } from "../helpers/constants";
 
 const CustomFieldset = ({ id, label, type = "number", min = 0, value, onChange }) => {
   return (
@@ -11,12 +13,7 @@ const CustomFieldset = ({ id, label, type = "number", min = 0, value, onChange }
   );
 };
 
-const error = e => {
-  alert("Coś poszło nie tak, spróbuj ponownie.");
-  console.log(`Error: ${e}`);
-};
-
-export class Home extends Component {
+export class Configuration extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
@@ -41,7 +38,7 @@ export class Home extends Component {
   }
 
   componentDidMount() {
-    fetch("/configuration")
+    fetch(`${API_URL}/configuration`)
       .then(res => {
         if (res.ok) {
           return res.json();
@@ -81,7 +78,7 @@ export class Home extends Component {
       return;
     }
 
-    fetch("/configuration", {
+    fetch(`${API_URL}/configuration`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(this.state),
