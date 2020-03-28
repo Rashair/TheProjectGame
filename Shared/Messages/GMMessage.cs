@@ -1,4 +1,6 @@
+using Newtonsoft.Json;
 using Shared.Enums;
+using Shared.Payloads;
 
 namespace Shared.Messages
 {
@@ -7,5 +9,15 @@ namespace Shared.Messages
         public GMMessageID Id { get; set; }
 
         public string Payload { get; set; }
+
+        public GMMessage()
+        {
+        }
+
+        public GMMessage(GMMessageID id, Payload payload)
+        {
+            Id = id;
+            Payload = JsonConvert.SerializeObject(payload);
+        }
     }
 }
