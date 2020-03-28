@@ -107,7 +107,7 @@ namespace Player.Models
             working = false;
         }
 
-        public async Task Move(Directions direction, CancellationToken cancellationToken)
+        public async Task Move(Direction direction, CancellationToken cancellationToken)
         {
             MovePayload payload = new MovePayload()
             {

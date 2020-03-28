@@ -90,29 +90,31 @@ namespace GameMaster.Models
                     int[] position1 = players[message.PlayerID].GetPosition();
                     switch (payloadMove.Direction)
                     {
-                        case Directions.N:
+                        case Direction.N:
                             if (position1[1] + 1 < board.GetLength(1))
                             {
                                 field = board[position1[0]][position1[1] + 1];
                             }
                             break;
-                        case Directions.S:
+                        case Direction.S:
                             if (position1[1] - 1 >= 0)
                             {
                                 field = board[position1[0]][position1[1] - 1];
                             }
                             break;
-                        case Directions.E:
+                        case Direction.E:
                             if (position1[0] + 1 < board.GetLength(0))
                             {
                                 field = board[position1[0] + 1][position1[1]];
                             }
                             break;
-                        case Directions.W:
+                        case Direction.W:
                             if (position1[0] - 1 >= 0)
                             {
                                 field = board[position1[0] - 1][position1[1]];
                             }
+                            break;
+                        default:
                             break;
                     }
                     players[message.PlayerID].Move(field);
