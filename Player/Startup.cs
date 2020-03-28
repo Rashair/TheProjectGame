@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Player.Clients;
+using Player.Models;
 using Player.Services;
 using Shared.Messages;
 
@@ -18,6 +19,7 @@ namespace Player
         {
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, WebSocketClient<GMMessage, PlayerMessage>>();
             services.AddSingleton<BufferBlock<GMMessage>>();
+            services.AddSingleton<Configuration>();
 
             services.AddHostedService<SocketService>();
             services.AddHostedService<PlayerService>();
