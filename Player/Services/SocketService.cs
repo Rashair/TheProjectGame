@@ -5,8 +5,8 @@ using System.Threading.Tasks.Dataflow;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Player.Clients;
+using Serilog;
 using Shared.Messages;
 
 namespace Player.Services
@@ -24,11 +24,11 @@ namespace Player.Services
         public Uri ConnectUri => new Uri("ws://localhost:8111/palyer");
 
         public SocketService(ISocketClient<GMMessage, PlayerMessage> client, IConfiguration conf,
-            ILogger<SocketService> logger, BufferBlock<GMMessage> queue)
+            BufferBlock<GMMessage> queue)
         {
             this.client = client;
             this.conf = conf;
-            this.logger = logger;
+            this.logger = Log.ForContext<SocketService>();
             this.queue = queue;
         }
 
@@ -44,7 +44,7 @@ namespace Player.Services
                 {
                     bool sended = await queue.SendAsync(message, stoppingToken);
                     if (!sended)
-                        logger.LogWarning($"SocketService| GMMessage id: {message.Id} has been lost");
+                        logger.Warning($"SocketService| GMMessage id: {message.Id} has been lost");
                     (result, message) = await client.ReceiveAsync(stoppingToken);
                 }
             }
