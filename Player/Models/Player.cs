@@ -112,7 +112,7 @@ namespace Player.Models
             {
                 await AcceptMessage(cancellationToken);
                 await MakeDecisionFromStrategy(cancellationToken);
-                await Penalty();
+                await Penalty(cancellationToken);
             }
         }
 
@@ -423,9 +423,9 @@ namespace Player.Models
             await client.SendAsync(message, cancellationToken);
         }
 
-        private async Task Penalty()
+        private async Task Penalty(CancellationToken cancellationToken)
         {
-            await Task.Delay(penaltyTime);
+            await Task.Delay(penaltyTime, cancellationToken);
             penaltyTime = 0;
         }
     }
