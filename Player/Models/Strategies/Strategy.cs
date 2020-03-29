@@ -25,58 +25,35 @@ namespace Player.Models.Strategies
                 switch (player.Team)
                 {
                     case Team.Red:
-                    {
-                        if (player.Position.Item2 <= player.BoardSize.y - player.GoalAreaSize)
                         {
-                            await player.Move(Direction.N, cancellationToken);
-                            if (!cancellationToken.IsCancellationRequested)
+                            if (player.Position.Item2 <= player.BoardSize.y - player.GoalAreaSize)
                             {
-                                await player.AcceptMessage(cancellationToken);
+                                await player.Move(Direction.N, cancellationToken);
                             }
+                            else
+                            {
+                                PlayerMoveToGoalAsync(player, player.Team, player.GoalAreaSize, cancellationToken);
+                            }
+                            break;
                         }
-                        else
-                        {
-                            RedPlayerMoveToGoalAsync(player, cancellationToken);
-                        }
-                        break;
-                    }
                     case Team.Blue:
-                    {
-                        if (player.Position.Item2 >= player.GoalAreaSize)
                         {
-                            await player.Move(Direction.S, cancellationToken);
-                            if (!cancellationToken.IsCancellationRequested)
+                            if (player.Position.Item2 >= player.GoalAreaSize)
                             {
-                                await player.AcceptMessage(cancellationToken);
+                                await player.Move(Direction.S, cancellationToken);
                             }
+                            else
+                            {
+                                PlayerMoveToGoalAsync(player, player.Team, player.GoalAreaSize, cancellationToken);
+                                PlayerMoveToGoalAsync(player, player.Team, player.GoalAreaSize, cancellationToken);
+                            }
+                            break;
                         }
-                        else
-                        {
-                            BluePlayerMoveToGoalAsync(player, cancellationToken);
-                        }
-                        break;
-                    }
                 }
             }
         }
 
-        public async System.Threading.Tasks.Task RedPlayerMoveToGoalAsync(Player player, CancellationToken cancellationToken)
-        {
-            while (player.Position.Item2 < player.BoardSize.y)
-            {
-                GoalInfo info = player.Board[player.Position.Item1, player.Position.Item2].GoalInfo;
-                if (info == GoalInfo.IDK)
-                {
-                    await player.Put(cancellationToken);
-                }
-                else
-                {
-                    await player.Move(Direction.S, cancellationToken);
-                }
-            }
-        }
-
-        public async System.Threading.Tasks.Task BluePlayerMoveToGoalAsync(Player player, CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task PlayerMoveToGoalAsync(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken)
         {
             GoalInfo info = player.Board[player.Position.Item1, player.Position.Item2].GoalInfo;
             if (info == GoalInfo.IDK)
@@ -85,7 +62,24 @@ namespace Player.Models.Strategies
             }
             else
             {
-                await player.Move(Direction.S, cancellationToken);
+                Random rnd = new Random();
+                int dir = rnd.Next(0, 4);
+                if (dir == 1)
+                {
+                    await player.Move(Direction.S, cancellationToken);
+                }
+                if (dir == 1)
+                {
+                    await player.Move(Direction.N, cancellationToken);
+                }
+                if (dir == 1)
+                {
+                    await player.Move(Direction.E, cancellationToken);
+                }
+                if (dir == 1)
+                {
+                    await player.Move(Direction.W, cancellationToken);
+                }
             }
         }
     }
