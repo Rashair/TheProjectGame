@@ -249,25 +249,23 @@ namespace GameMaster.Tests
             var manager = new WebSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
             var players = gameMaster.GetValue<Dictionary<int, GMPlayer>>("players");
-            var sockets = manager.GetValue<ConcurrentDictionary<string, WebSocket>, SocketManager<WebSocket, GMMessage>>("sockets");
-            for (int i = 0; i < conf.NumberOfPlayersPerTeam; ++i)
+            var sockets = manager.GetValue<ConcurrentDictionary<int, WebSocket>, SocketManager<WebSocket, GMMessage>>("sockets");
+            for (int idRed = 0; idRed < conf.NumberOfPlayersPerTeam; ++idRed)
             {
-                string socketId = Guid.NewGuid().ToString();
-                var player = new GMPlayer(i, conf, manager, Team.Red)
+                var player = new GMPlayer(idRed, conf, manager, Team.Red)
                 {
-                    SocketID = socketId,
+                    SocketID = idRed,
                 };
-                players.Add(i, player);
-                sockets.TryAdd(socketId, Mock.Of<WebSocket>());
+                players.Add(idRed, player);
+                sockets.TryAdd(idRed, Mock.Of<WebSocket>());
 
-                int j = i + conf.NumberOfPlayersPerTeam;
-                socketId = Guid.NewGuid().ToString();
-                player = new GMPlayer(j, conf, manager, Team.Blue)
+                int idBlue = idRed + conf.NumberOfPlayersPerTeam;
+                player = new GMPlayer(idBlue, conf, manager, Team.Blue)
                 {
-                    SocketID = socketId,
+                    SocketID = idBlue,
                 };
-                players.Add(j, player);
-                sockets.TryAdd(socketId, Mock.Of<WebSocket>());
+                players.Add(idBlue, player);
+                sockets.TryAdd(idBlue, Mock.Of<WebSocket>());
             }
             gameMaster.Invoke("InitGame");
 

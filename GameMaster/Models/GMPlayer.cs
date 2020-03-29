@@ -36,7 +36,7 @@ namespace GameMaster.Models
 
         public AbstractPiece Holding { get; set; }
 
-        public string SocketID { get; set; }
+        public int SocketID { get; set; }
 
         public bool IsLeader { get; set; }
 

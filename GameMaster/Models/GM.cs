@@ -190,7 +190,7 @@ namespace GameMaster.Models
 
             var player = new GMPlayer(key, conf, socketManager, team)
             {
-                SocketID = key.ToString(),
+                SocketID = key,
             };
             return players.TryAdd(key, player);
         }
