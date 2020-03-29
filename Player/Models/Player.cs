@@ -85,6 +85,7 @@ namespace Player.Models
 
         internal async Task JoinTheGame(CancellationToken cancellationToken)
         {
+            logger.Information($"Client status: {client.IsOpen}");
             JoinGamePayload payload = new JoinGamePayload()
             {
                 TeamID = team,

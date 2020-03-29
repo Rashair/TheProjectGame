@@ -6,6 +6,7 @@ using System.Threading.Tasks.Dataflow;
 using GameMaster.Managers;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Serilog;
 using Shared.Messages;
 
 namespace GameMaster.Controllers
@@ -13,12 +14,14 @@ namespace GameMaster.Controllers
     [Route("/player")]
     public class PlayerWebSocketController : WebSocketController<GMMessage>
     {
+        private readonly ILogger logger;
         private readonly BufferBlock<PlayerMessage> queue;
 
         public PlayerWebSocketController(BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> manager)
             : base(manager)
         {
             this.queue = queue;
+            logger = Log.ForContext<PlayerWebSocketController>();
         }
 
         protected override async Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
@@ -28,6 +31,7 @@ namespace GameMaster.Controllers
 
             // TODO: To be changed later.
             message.PlayerID = Manager.GetId(socket);
+            logger.Information(json);
             await queue.SendAsync(message);
         }
     }
