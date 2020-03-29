@@ -1,9 +1,8 @@
-﻿using System;
-namespace Player.Models.Strategies
+﻿namespace Player.Models.Strategies
 {
-    public class DummyStrategy
+    public class DummyStrategy : IStrategy
     {
-        public DummyStrategy()
+        public void MakeDecision(Player player)
         {
         }
     }
