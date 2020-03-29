@@ -14,10 +14,10 @@ namespace Shared.Tests
         public void TestGMMessageDeserialization()
         {
             // Arrange
-            Dictionary<string, GMMessageID> expectations = GetGMMessageMapping();
+            Dictionary<string, GMMessageID> gmMessages = GetGMMessageMapping();
 
             // Act
-            foreach (var msg in expectations)
+            foreach (var msg in gmMessages)
             {
                 var jsonString = "{\"id\":\"" + msg.Key + "\",\"Payload\":\"{}\"}";
                 var deserializedObject = JsonConvert.DeserializeObject<GMMessage>(jsonString);
