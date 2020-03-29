@@ -127,34 +127,37 @@ namespace GameMaster.Models
                     switch (payloadMove.Direction)
                     {
                         case Direction.N:
-                            if (pos[1] + 1 < board.GetLength(1))
+                            if (pos[0] + 1 < conf.Height)
                             {
-                                field = board[pos[0]][pos[1] + 1];
+                                field = board[pos[0] + 1][pos[1]];
                             }
                             break;
                         case Direction.S:
                             if (pos[1] - 1 >= 0)
                             {
-                                field = board[pos[0]][pos[1] - 1];
+                                field = board[pos[0] - 1][pos[1]];
                             }
                             break;
                         case Direction.E:
-                            if (pos[0] + 1 < board.GetLength(0))
+                            if (pos[0] + 1 < conf.Width)
                             {
-                                field = board[pos[0] + 1][pos[1]];
+                                field = board[pos[0]][pos[1] + 1];
                             }
                             break;
                         case Direction.W:
                             if (pos[0] - 1 >= 0)
                             {
-                                field = board[pos[0] - 1][pos[1]];
+                                field = board[pos[0]][pos[1] - 1];
                             }
                             break;
                     }
-                    if (!(field is null))
+                    if (field != null)
                     {
                         await players[message.PlayerID].MoveAsync(field, this, cancellationToken);
                     }
+
+                    // TODO : else
+                    logger.Information("Invalid move");
                     break;
                 }
                 case PlayerMessageID.Pick:
@@ -336,13 +339,13 @@ namespace GameMaster.Models
                 board[i] = new AbstractField[conf.Width];
             }
 
-            Func<int, int, AbstractField> nonGoalFieldGenerator = (int x, int y) => new NonGoalField(x, y);
+            Func<int, int, AbstractField> nonGoalFieldGenerator = (int y, int x) => new NonGoalField(y, x);
             for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
             {
                 FillBoardRow(rowIt, nonGoalFieldGenerator);
             }
 
-            Func<int, int, AbstractField> taskFieldGenerator = (int x, int y) => new TaskField(x, y);
+            Func<int, int, AbstractField> taskFieldGenerator = (int y, int x) => new TaskField(y, x);
             int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
             for (int rowIt = conf.GoalAreaHeight; rowIt < secondGoalAreaStart; ++rowIt)
             {

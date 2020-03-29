@@ -7,16 +7,16 @@ namespace GameMaster.Models.Fields
 {
     public abstract class AbstractField
     {
-        private readonly int x;
         private readonly int y;
+        private readonly int x;
         private GMPlayer whosHere;
 
         protected HashSet<AbstractPiece> Pieces { get; set; }
 
-        public AbstractField(int x, int y)
+        public AbstractField(int y, int x)
         {
-            this.x = x;
             this.y = y;
+            this.x = x;
             Pieces = new HashSet<AbstractPiece>();
         }
 
@@ -57,7 +57,7 @@ namespace GameMaster.Models.Fields
 
         public int[] GetPosition()
         {
-            return new int[2] { x, y };
+            return new int[2] { y, x };
         }
 
         public Position GetPositionObject()
