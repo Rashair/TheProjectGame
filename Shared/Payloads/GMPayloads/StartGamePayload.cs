@@ -1,4 +1,6 @@
-﻿using Shared.Enums;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Shared.Enums;
 using Shared.Models;
 
 namespace Shared.Payloads
@@ -13,6 +15,8 @@ namespace Shared.Payloads
 
         public int[] EnemiesIDs { get; set; }
 
+        [JsonProperty("teamId")]
+        [JsonConverter(typeof(StringEnumConverter))]
         public Team TeamId { get; set; }
 
         public BoardSize BoardSize { get; set; }

@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Shared.Enums;
 
 namespace Shared.Payloads
@@ -8,8 +10,12 @@ namespace Shared.Payloads
 
         public int RespondToID { get; set; }
 
+        [JsonProperty("redTeamGoalAreaInformations")]
+        [JsonConverter(typeof(StringEnumConverter))]
         public GoalInfo[,] RedTeamGoalAreaInformations { get; set; }
 
+        [JsonProperty("blueTeamGoalAreaInformations")]
+        [JsonConverter(typeof(StringEnumConverter))]
         public GoalInfo[,] BlueTeamGoalAreaInformations { get; set; }
     }
 }
