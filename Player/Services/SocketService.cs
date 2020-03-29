@@ -18,7 +18,7 @@ namespace Player.Services
         private readonly ISocketClient<GMMessage, PlayerMessage> client;
         private readonly BufferBlock<GMMessage> queue;
 
-        public Uri ConnectUri => new Uri($"ws://{conf.CsIP}:{conf.CsPort}/ws/player");
+        public Uri ConnectUri => new Uri($"wss://{conf.CsIP}:{conf.CsPort}/ws/player");
 
         public SocketService(ISocketClient<GMMessage, PlayerMessage> client, PlayerConfiguration conf,
             BufferBlock<GMMessage> queue)
