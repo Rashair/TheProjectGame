@@ -100,11 +100,8 @@ namespace Player.Models
             while (working)
             {
                 await AcceptMessage(cancellationToken);
-                await Task.Run(() =>
-                {
-                    MakeDecisionFromStrategy(cancellationToken);
-                    Penalty();
-                }, cancellationToken);
+                await MakeDecisionFromStrategy(cancellationToken);
+                await Penalty();
             }
         }
 
@@ -209,6 +206,7 @@ namespace Player.Models
             }
             message.Payload = response.Serialize();
             await Communicate(message, cancellationToken);
+            penaltyTime = int.Parse(penaltiesTimes.InformationExchange);
         }
 
         public async Task RequestsResponse(CancellationToken cancellationToken, int respondToID, bool isFromLeader = false)
@@ -261,9 +259,11 @@ namespace Player.Models
                         {
                             HavePiece = false;
                         }
+                        penaltyTime = int.Parse(penaltiesTimes.CheckForSham);
                         break;
                     case GMMessageID.DestructionAnswer:
                         HavePiece = false;
+                        penaltyTime = int.Parse(penaltiesTimes.DestroyPiece);
                         break;
                     case GMMessageID.DiscoverAnswer:
                         DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
@@ -276,6 +276,7 @@ namespace Player.Models
                         Board[Position.Item1 - 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceNW;
                         Board[Position.Item1 + 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceNE;
                         Board[Position.Item1 - 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceSW;
+                        penaltyTime = int.Parse(penaltiesTimes.Discovery);
                         break;
                     case GMMessageID.EndGame:
                         EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
@@ -350,12 +351,17 @@ namespace Player.Models
                                 await Communicate(messagePick, cancellationToken);
                             }
                         }
+                        penaltyTime = int.Parse(penaltiesTimes.Move);
                         break;
                     case GMMessageID.PickAnswer:
                         HavePiece = true;
+
+                        // TODO: Add if this value will be in configuration
+                        penaltyTime = 0;
                         break;
                     case GMMessageID.PutAnswer:
                         HavePiece = false;
+                        penaltyTime = int.Parse(penaltiesTimes.PutPiece);
                         break;
                     case GMMessageID.GiveInfoForwarded:
                         GiveInfoForwardedPayload payloadGive = JsonConvert.DeserializeObject<GiveInfoForwardedPayload>(message.Payload);
@@ -387,7 +393,7 @@ namespace Player.Models
 
         public async Task MakeDecisionFromStrategy(CancellationToken cancellationToken)
         {
-            strategy.MakeDecision(this, team, goalAreaSize, cancellationToken);
+            await strategy.MakeDecision(this, team, goalAreaSize, cancellationToken);
         }
 
         private async Task Communicate(PlayerMessage message, CancellationToken cancellationToken)
@@ -395,9 +401,9 @@ namespace Player.Models
             await client.SendAsync(message, cancellationToken);
         }
 
-        private void Penalty()
+        private async Task Penalty()
         {
-            Thread.Sleep(penaltyTime);
+            await Task.Delay(penaltyTime);
             penaltyTime = 0;
         }
     }

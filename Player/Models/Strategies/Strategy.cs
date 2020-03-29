@@ -16,65 +16,59 @@ namespace Player.Models.Strategies
                 await player.Discover(cancellationToken);
                 if (!cancellationToken.IsCancellationRequested)
                 {
-                    await player.AcceptMessage(cancellationToken);
-
                     (int x, int y) = player.Position;
-                    (Direction, int, int)[] neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter((x, y));
+                    (Direction dir, int y, int x)[] neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter((x, y));
                     int[] dist = new int[neighbourCoordinates.Length];
 
                     for (int i = 0; i < neighbourCoordinates.Length; i++)
                     {
-                        dist[i] = player.Board[neighbourCoordinates[i].Item2, neighbourCoordinates[i].Item3].DistToPiece;
+                        dist[i] = player.Board[neighbourCoordinates[i].y, neighbourCoordinates[i].x].DistToPiece;
                     }
                     Array.Sort(dist, neighbourCoordinates);
 
-                    await player.Move(neighbourCoordinates[0].Item1, cancellationToken);
+                    await player.Move(neighbourCoordinates[0].dir, cancellationToken);
                     for (int i = 1; i < dist.Length && cancellationToken.IsCancellationRequested; i++)
                     {
-                        await player.Move(neighbourCoordinates[i].Item1, cancellationToken);
-                    }
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        player.AcceptMessage(cancellationToken).Wait();
+                        await player.Move(neighbourCoordinates[i].dir, cancellationToken);
                     }
                 }
             }
-            if (player.HavePiece)
+            else
             {
                 switch (team)
                 {
                     case Team.Red:
+                    {
+                        if (player.Position.Item2 <= player.BoardSize.y - goalAreaSize)
                         {
-                            if (player.Position.Item2 <= player.BoardSize.y - goalAreaSize)
+                            await player.Move(Direction.N, cancellationToken);
+                            if (!cancellationToken.IsCancellationRequested)
                             {
-                                await player.Move(Direction.N, cancellationToken);
-                                if (!cancellationToken.IsCancellationRequested)
-                                {
-                                    await player.AcceptMessage(cancellationToken);
-                                }
+                                await player.AcceptMessage(cancellationToken);
                             }
-                            else
-                            {
-                                RedPlayerMoveToGoalAsync(player, team, goalAreaSize, cancellationToken);
-                            }
-                            break;
                         }
+                        else
+                        {
+                            RedPlayerMoveToGoalAsync(player, team, goalAreaSize, cancellationToken);
+                        }
+                        break;
+                    }
                     case Team.Blue:
+                    {
+                        if (player.Position.Item2 >= goalAreaSize)
                         {
-                            if (player.Position.Item2 >= goalAreaSize)
+                            await player.Move(Direction.S, cancellationToken);
+                            if (!cancellationToken.IsCancellationRequested)
                             {
-                                await player.Move(Direction.S, cancellationToken);
-                                if (!cancellationToken.IsCancellationRequested)
-                                {
-                                    await player.AcceptMessage(cancellationToken);
-                                }
+                                await player.AcceptMessage(cancellationToken);
                             }
-                            else
-                            {
-                                BluePlayerMoveToGoalAsync(player, team, goalAreaSize, cancellationToken);
-                            }
-                            break;
                         }
+                        else
+                        {
+                            BluePlayerMoveToGoalAsync(player, team, goalAreaSize, cancellationToken);
+                        }
+                        break;
+                    }
                 }
             }
         }
