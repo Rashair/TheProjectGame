@@ -23,8 +23,8 @@ namespace GameMaster.Models
         private readonly ILogger logger;
         private readonly IApplicationLifetime lifetime;
         private readonly GameConfiguration conf;
-        private BufferBlock<PlayerMessage> queue;
-        private ISocketManager<WebSocket, GMMessage> socketManager;
+        private readonly BufferBlock<PlayerMessage> queue;
+        private readonly ISocketManager<WebSocket, GMMessage> socketManager;
 
         private HashSet<(int recipient, int sender)> legalKnowledgeReplies;
         private Dictionary<int, GMPlayer> players;

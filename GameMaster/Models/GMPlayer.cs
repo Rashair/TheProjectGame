@@ -16,7 +16,7 @@ namespace GameMaster.Models
     {
         private readonly int id;
         private readonly GameConfiguration conf;
-        private ISocketManager<WebSocket, GMMessage> socketManager;
+        private readonly ISocketManager<WebSocket, GMMessage> socketManager;
         private int messageCorrelationId;
         private DateTime lockedTill;
         private AbstractField position;
