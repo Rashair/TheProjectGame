@@ -9,7 +9,7 @@ namespace Player.Models.Strategies
 {
     public class Strategy : IStrategy
     {
-        public async Task MakeDecision(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken)
+        public async Task MakeDecision(Player player, CancellationToken cancellationToken)
         {
             if (!player.HavePiece)
             {
@@ -30,29 +30,30 @@ namespace Player.Models.Strategies
             }
             if (player.HavePiece)
             {
-                switch (team)
+                switch (player.Team)
                 {
                     case Team.Red:
                         {
-                            if (player.Position.Item2 <= player.BoardSize.y - goalAreaSize)
+                            if (player.Position.Item2 <= player.BoardSize.y - player.GoalAreaSize)
                             {
                                 await player.Move(Direction.N, cancellationToken);
                             }
                             else
                             {
-                                PlayerMoveToGoalAsync(player, team, goalAreaSize, cancellationToken);
+                                PlayerMoveToGoalAsync(player, player.Team, player.GoalAreaSize, cancellationToken);
                             }
                             break;
                         }
                     case Team.Blue:
                         {
-                            if (player.Position.Item2 >= goalAreaSize)
+                            if (player.Position.Item2 >= player.GoalAreaSize)
                             {
                                 await player.Move(Direction.S, cancellationToken);
                             }
                             else
                             {
-                                PlayerMoveToGoalAsync(player, team, goalAreaSize, cancellationToken);
+                                PlayerMoveToGoalAsync(player, player.Team, player.GoalAreaSize, cancellationToken);
+                                PlayerMoveToGoalAsync(player, player.Team, player.GoalAreaSize, cancellationToken);
                             }
                             break;
                         }
