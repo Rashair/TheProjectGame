@@ -7,6 +7,7 @@ using System.Threading.Tasks.Dataflow;
 using Newtonsoft.Json;
 using Player.Clients;
 using Player.Models.Strategies;
+using Serilog;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
@@ -80,7 +81,6 @@ namespace Player.Models
         {
             await JoinTheGame(cancellationToken);
             bool startGame = false;
-
             while (!cancellationToken.IsCancellationRequested && !startGame)
             {
                 startGame = await AcceptMessage(cancellationToken);
@@ -108,7 +108,7 @@ namespace Player.Models
         internal async Task Start(CancellationToken cancellationToken)
         {
             working = true;
-            while (working)
+            while (working && !cancellationToken.IsCancellationRequested)
             {
                 await AcceptMessage(cancellationToken);
                 await MakeDecisionFromStrategy(cancellationToken);

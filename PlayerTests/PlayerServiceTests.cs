@@ -30,7 +30,7 @@ namespace Player.Tests
             StartGamePayload payloadStart = new StartGamePayload
             {
                 PlayerID = 1,
-                AlliesIDs = new int[1] { 2 },
+                AlliesIDs = new int[2] { 1, 2 },
                 LeaderID = 1,
                 EnemiesIDs = new int[2] { 3, 4 },
                 TeamId = Team.Red,
