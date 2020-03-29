@@ -9,6 +9,8 @@ using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
+using Microsoft.Extensions.Hosting;
+using Moq;
 using Newtonsoft.Json;
 using Shared.Enums;
 using Shared.Messages;
@@ -62,9 +64,9 @@ namespace GameMaster.Tests
             return new MockSocketManager((m) => { lastSended = m; });
         }
 
-        private Configuration GenerateConfiguration()
+        private GameConfiguration GenerateConfiguration()
         {
-            return new Configuration
+            return new GameConfiguration
             {
                 AskPenalty = 100,
                 CheckPenalty = 100,
@@ -80,7 +82,7 @@ namespace GameMaster.Tests
             return new BufferBlock<PlayerMessage>();
         }
 
-        private GMPlayer GenerateGMPlayer(Configuration conf, ISocketManager<WebSocket, GMMessage> socketManager,
+        private GMPlayer GenerateGMPlayer(GameConfiguration conf, ISocketManager<WebSocket, GMMessage> socketManager,
             int id = DefaultId, Team team = DefaultTeam, bool isLeader = DefaultIsLeader)
         {
             return new GMPlayer(id, conf, socketManager, team, isLeader);
@@ -93,11 +95,12 @@ namespace GameMaster.Tests
 
         private GM GenerateGM()
         {
-            var conf = new MockConfiguration();
+            var conf = new MockGameConfiguration();
             var queue = GenerateBuffer();
             var manager = new WebSocketManager<GMMessage>();
-            var gameMaster = new GM(conf, queue, manager);
-            var startGame = GetMethod("StartGame");
+            var lifetime = Mock.Of<IApplicationLifetime>();
+            var gameMaster = new GM(lifetime, conf, queue, manager);
+            var startGame = GetMethod("InitGame");
             startGame.Invoke(gameMaster, null);
             var generatePiece = GetMethod("GeneratePiece");
             generatePiece.Invoke(gameMaster, null);
