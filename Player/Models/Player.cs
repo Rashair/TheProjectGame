@@ -303,7 +303,7 @@ namespace Player.Models
                                 Board[i, j] = new Field
                                 {
                                     DistToPiece = int.MaxValue,
-                                    GoalInfo = GoalInfo.IDK
+                                    GoalInfo = GoalInfo.IDK,
                                 };
                             }
                         }
