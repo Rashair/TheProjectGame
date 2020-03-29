@@ -14,28 +14,10 @@ namespace Player.Models.Strategies
             if (!player.HavePiece)
             {
                 (int y, int x) = player.Position;
-                if (false)
+                if (player.Board[y, x].DistToPiece == 0)
                 {
-                    await player.Discover(cancellationToken);
+                    await player.Pick(cancellationToken);
                     return;
-                }
-
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    (Direction dir, int y, int x)[] neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter((y, x));
-                    int[] dist = new int[neighbourCoordinates.Length];
-
-                    for (int i = 0; i < neighbourCoordinates.Length; i++)
-                    {
-                        dist[i] = player.Board[neighbourCoordinates[i].y, neighbourCoordinates[i].x].DistToPiece;
-                    }
-                    Array.Sort(dist, neighbourCoordinates);
-
-                    await player.Move(neighbourCoordinates[0].dir, cancellationToken);
-                    for (int i = 1; i < dist.Length && cancellationToken.IsCancellationRequested; i++)
-                    {
-                        await player.Move(neighbourCoordinates[i].dir, cancellationToken);
-                    }
                 }
             }
             else

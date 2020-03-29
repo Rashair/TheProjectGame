@@ -28,6 +28,8 @@ namespace Player.Models
         private readonly PlayerConfiguration conf;
         private Team winner;
 
+        public int PreviousDistToPiece { get; private set; }
+
         public Penalties PenaltiesTimes { get; private set; }
 
         public int[] EnemiesIDs { get; private set; }
@@ -343,19 +345,8 @@ namespace Player.Models
                         MoveAnswerPayload payloadMove = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
                         if (payloadMove.MadeMove)
                         {
-                            Position = new Tuple<int, int>(payloadMove.CurrentPosition.X, payloadMove.CurrentPosition.Y);
-                            Board[Position.Item1, Position.Item2].DistToPiece = payloadMove.ClosestPiece;
-                            if (Board[Position.Item1, Position.Item2].DistToPiece == 0)
-                            {
-                                EmptyPayload messagePickPayload = new EmptyPayload();
-                                PlayerMessage messagePick = new PlayerMessage()
-                                {
-                                    MessageID = PlayerMessageID.Pick,
-                                    PlayerID = id,
-                                    Payload = JsonConvert.SerializeObject(messagePickPayload),
-                                };
-                                await Communicate(messagePick, cancellationToken);
-                            }
+                            Position = (payloadMove.CurrentPosition.X, payloadMove.CurrentPosition.Y);
+                            Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece;
                         }
                         penaltyTime = int.Parse(PenaltiesTimes.Move);
                         break;
@@ -395,6 +386,18 @@ namespace Player.Models
                 }
             }
             return false;
+        }
+
+        public async Task Pick(CancellationToken cancellationToken)
+        {
+            EmptyPayload messagePickPayload = new EmptyPayload();
+            PlayerMessage messagePick = new PlayerMessage()
+            {
+                MessageID = PlayerMessageID.Pick,
+                PlayerID = id,
+                Payload = JsonConvert.SerializeObject(messagePickPayload),
+            };
+            await Communicate(messagePick, cancellationToken);
         }
 
         public async Task MakeDecisionFromStrategy(CancellationToken cancellationToken)
