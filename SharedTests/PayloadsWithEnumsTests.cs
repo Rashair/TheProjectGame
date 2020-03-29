@@ -200,5 +200,67 @@ namespace Shared.Tests
             // Assert
             Assert.Equal(expectedJsonString, serializedPayload);
         }
+
+        [Fact]
+        public void TestPickErrorPayloadDeserialization()
+        {
+            // Arrange
+            var jsonString = "{\"errorSubtype\":\"NothingThere\"}";
+
+            // Act
+            PickError expectedPickError = PickError.NothingThere;
+            var deserializedObject = JsonConvert.DeserializeObject<PickErrorPayload>(jsonString);
+
+            // Assert
+            Assert.Equal(expectedPickError, deserializedObject.ErrorSubtype);
+        }
+
+        [Fact]
+        public void TestPickErrorPayloadSerialization()
+        {
+            // Arrange
+            var payload = new PickErrorPayload()
+            {
+                ErrorSubtype = PickError.NothingThere,
+            };
+
+            // Act
+            var expectedJsonString = "{\"errorSubtype\":\"NothingThere\"}";
+            var serializedPayload = payload.Serialize();
+
+            // Assert
+            Assert.Equal(expectedJsonString, serializedPayload);
+        }
+
+        [Fact]
+        public void TestPutErrorPayloadDeserialization()
+        {
+            // Arrange
+            var jsonString = "{\"errorSubtype\":\"AgentNotHolding\"}";
+
+            // Act
+            PutError expectedPutError = PutError.AgentNotHolding;
+            var deserializedObject = JsonConvert.DeserializeObject<PutErrorPayload>(jsonString);
+
+            // Assert
+            Assert.Equal(expectedPutError, deserializedObject.ErrorSubtype);
+        }
+
+        [Fact]
+        public void TestPutErrorPayloadSerialization()
+        {
+            // Arrange
+            var payload = new PutErrorPayload()
+            {
+                ErrorSubtype = PutError.CannotPutThere,
+            };
+
+            // Act
+            var expectedJsonString = "{\"errorSubtype\":\"CannotPutThere\"}";
+            var serializedPayload = payload.Serialize();
+
+            // Assert
+            Assert.Equal(expectedJsonString, serializedPayload);
+        }
     }
 }

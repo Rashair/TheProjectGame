@@ -66,6 +66,11 @@ namespace Shared.Tests
                 { 109, GMMessageID.PickAnswer },
                 { 110, GMMessageID.PutAnswer },
                 { 111, GMMessageID.GiveInfoForwarded },
+                { 901, GMMessageID.InvalidMoveError },
+                { 902, GMMessageID.PickError },
+                { 903, GMMessageID.PutError },
+                { 904, GMMessageID.NotWaitedError },
+                { 905, GMMessageID.UnknownError },
             };
         }
     }
