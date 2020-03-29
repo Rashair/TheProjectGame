@@ -77,7 +77,7 @@ namespace GameMaster.Controllers
         [Route("[action]")]
         public ActionResult<bool> WasGameStarted()
         {
-            logger.Information($"Game started: {gameMaster.WasGameStarted}");
+            // logger.Information($"Game started: {gameMaster.WasGameStarted}");
             return Ok(gameMaster.WasGameStarted);
         }
     }

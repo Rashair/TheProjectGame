@@ -69,7 +69,7 @@ namespace GameMaster.Models
                 return;
             }
 
-            logger.Information($"Received message: {message.MessageID.ToString()}");
+            // logger.Information($"Received message: {message.MessageID}");
             players.TryGetValue(message.PlayerID, out GMPlayer player);
             switch (message.MessageID)
             {
@@ -97,7 +97,7 @@ namespace GameMaster.Models
                 case PlayerMessageID.JoinTheGame:
                 {
                     JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
-                    int key = players.Count;
+                    int key = message.PlayerID;
                     bool accepted = TryToAddPlayer(key, payloadJoin.TeamID);
                     JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
                     {
@@ -380,16 +380,18 @@ namespace GameMaster.Models
                 try
                 {
                     PlayerMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
+                    logger.Information($"Received message: {message.MessageID}");
                     await AcceptMessage(message, cancellationToken);
+                    logger.Information($"Accepted message: {message.MessageID}");
                     if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
                     {
                         EndGame();
                         break;
                     }
                 }
-                catch (OperationCanceledException e)
+                catch (TimeoutException e)
                 {
-                    logger.Warning($"Message retrieve was cancelled: {e.Message}");
+                    // logger.Warning($"Message retrieve was cancelled: {e.Message}");
                 }
             }
         }

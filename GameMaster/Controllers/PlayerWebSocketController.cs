@@ -30,8 +30,8 @@ namespace GameMaster.Controllers
             PlayerMessage message = JsonConvert.DeserializeObject<PlayerMessage>(json);
 
             // TODO: To be changed later.
-            message.PlayerID = Manager.GetId(socket);
             logger.Information(json);
+            message.PlayerID = Manager.GetId(socket);
             await queue.SendAsync(message);
         }
     }
