@@ -192,7 +192,7 @@ namespace GameMaster.Tests
         }
 
         [Fact]
-        public void TestStartGame()
+        public void TestInitializePlayersPositions()
         {
             // Arrange
             var conf = new MockGameConfiguration();
@@ -210,13 +210,29 @@ namespace GameMaster.Tests
             gameMaster.Invoke("InitGame");
 
             // Act
-            gameMaster.Invoke("StartGame", CancellationToken.None);
+            gameMaster.Invoke("InitializePlayersPoisitions");
 
             // Assert
-            Assert.All(players.Values, (GMPlayer p) =>
+            Assert.All(players.Values, p =>
             {
-                Assert.NotNull(p.GetPosition());
+                Assert.False(p.GetPosition() == null, "All players have positions");
             });
+
+            Func<int[], int[], bool> arePositionsTheSame =
+                (int[] posA, int[] posB) => posA[0] == posB[0] && posA[1] == posB[1];
+            for (int i = 0; i < players.Count; ++i)
+            {
+                var playerA = players[i];
+                var posA = playerA.GetPosition();
+                (int y1, int y2) = gameMaster.Invoke<(int, int)>("GetBoundaries", playerA.Team);
+                Assert.False(posA[0] < y1 || posA[0] >= y2, "No players are placed on GoalArea of enemy");
+                for (int j = i + 1; j < players.Count; ++j)
+                {
+                    var playerB = players[j];
+                    var posB = playerB.GetPosition();
+                    Assert.False(arePositionsTheSame(posA, posB), "No 2 players share the same position");
+                }
+            }
         }
     }
 }
