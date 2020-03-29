@@ -35,7 +35,6 @@ namespace GameMaster.Tests
                 queue.Post(new PlayerMessage());
             }
             services.AddSingleton(queue);
-            services.AddSingleton(new WebSocketManager<GMMessage>());
             AddLogging(services);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
@@ -78,7 +77,6 @@ namespace GameMaster.Tests
                 queue.Post(new PlayerMessage());
             }
             services.AddSingleton(queue);
-            services.AddSingleton(new WebSocketManager<GMMessage>());
             AddLogging(services);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();

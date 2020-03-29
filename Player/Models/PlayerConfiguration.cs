@@ -1,10 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Shared.Enums;
-
 namespace Player.Models
 {
     public class PlayerConfiguration

@@ -63,7 +63,6 @@ namespace Player.Tests
             input.Post<GMMessage>(messageStart);
             input.Post<GMMessage>(messageDiscover);
 
-            Team team = Team.Red;
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
             var player = new Player.Models.Player(configuration, new Strategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
 
@@ -114,7 +113,6 @@ namespace Player.Tests
             input.Post<GMMessage>(messageStart);
             input.Post<GMMessage>(messageBeg);
 
-            Team team = Team.Red;
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
             var player = new Player.Models.Player(configuration, new Strategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
 

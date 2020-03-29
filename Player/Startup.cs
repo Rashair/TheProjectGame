@@ -50,8 +50,10 @@ namespace Player
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, WebSocketClient<GMMessage, PlayerMessage>>();
             services.AddSingleton<BufferBlock<GMMessage>>();
+            services.AddSingleton<PlayerConfiguration>();
 
             services.AddHostedService<SocketService>();
+            services.AddHostedService<PlayerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

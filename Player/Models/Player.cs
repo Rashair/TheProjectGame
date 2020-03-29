@@ -18,7 +18,7 @@ namespace Player.Models
     public class Player
     {
         private BufferBlock<GMMessage> queue;
-        private WebSocketClient<GMMessage, PlayerMessage> client;
+        private ISocketClient<GMMessage, PlayerMessage> client;
 
         private int id;
         private ISender sender;
@@ -54,7 +54,7 @@ namespace Player.Models
 
         public (int x, int y) BoardSize { get; private set; }
 
-        public Player(PlayerConfiguration conf, IStrategy strategy, BufferBlock<GMMessage> queue, WebSocketClient<GMMessage, PlayerMessage> client)
+        public Player(PlayerConfiguration conf, IStrategy strategy, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
         {
             this.conf = conf;
             if (conf.TeamID == "red")
