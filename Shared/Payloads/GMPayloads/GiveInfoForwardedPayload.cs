@@ -10,12 +10,10 @@ namespace Shared.Payloads
 
         public int[,] Distances { get; set; }
 
-        [JsonProperty("redTeamGoalAreaInformations")]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonProperty("redTeamGoalAreaInformations", ItemConverterType = typeof(StringEnumConverter))]
         public GoalInfo[,] RedTeamGoalAreaInformations { get; set; }
 
-        [JsonProperty("blueTeamGoalAreaInformations")]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonProperty("blueTeamGoalAreaInformations", ItemConverterType = typeof(StringEnumConverter))]
         public GoalInfo[,] BlueTeamGoalAreaInformations { get; set; }
     } // added for compatibility
 }
