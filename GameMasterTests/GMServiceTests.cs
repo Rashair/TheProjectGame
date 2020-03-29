@@ -42,7 +42,6 @@ namespace GameMaster.Tests
             var serviceProvider = services.BuildServiceProvider();
             var hostedService = (GMService)serviceProvider.GetService<IHostedService>();
             var gameMaster = serviceProvider.GetService<GM>();
-            var startGame = GetMethod("InitGame");
 
             // Act
             int delay = 1000;
@@ -51,7 +50,7 @@ namespace GameMaster.Tests
                 await hostedService.StartAsync(CancellationToken.None);
                 await Task.Delay(delay);
 
-                startGame.Invoke(gameMaster, null);
+                gameMaster.Invoke("InitGame");
 
                 await Task.Delay(hostedService.WaitForStartDelay + 500);
                 await hostedService.StopAsync(CancellationToken.None);
@@ -84,8 +83,7 @@ namespace GameMaster.Tests
             var serviceProvider = services.BuildServiceProvider();
             var hostedService = serviceProvider.GetService<IHostedService>();
             var gameMaster = serviceProvider.GetService<GM>();
-            var startGame = GetMethod("InitGame");
-            startGame.Invoke(gameMaster, null);
+            gameMaster.Invoke("InitGame");
 
             // Act
             int delay = 500;

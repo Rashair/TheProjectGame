@@ -8,7 +8,29 @@ namespace GameMaster.Tests.Helpers
 {
     internal static class ReflectionHelpers
     {
-        public static MethodInfo GetMethod(string methodName, Type type)
+        public static void Invoke(this object obj, string methodName, Type type, params object[] parameters)
+        {
+            var method = GetMethod(methodName, type);
+            method.Invoke(obj, parameters);
+        }
+
+        public static void Invoke(this object obj, string methodName, params object[] parameters)
+        {
+            obj.Invoke(methodName, typeof(GM), parameters);
+        }
+
+        public static T Invoke<T>(this object obj, string methodName, Type type, params object[] parameters)
+        {
+            var method = GetMethod(methodName);
+            return (T)method.Invoke(obj, parameters);
+        }
+
+        public static T Invoke<T>(this object obj, string methodName, params object[] parameters)
+        {
+            return obj.Invoke<T>(methodName, typeof(GM), parameters);
+        }
+
+        private static MethodInfo GetMethod(string methodName, Type type)
         {
             Assert.False(string.IsNullOrWhiteSpace(methodName), $"{nameof(methodName)} cannot be null or whitespace");
 
@@ -19,12 +41,12 @@ namespace GameMaster.Tests.Helpers
             return method;
         }
 
-        public static MethodInfo GetMethod(string methodName)
+        private static MethodInfo GetMethod(string methodName)
         {
             return GetMethod(methodName, typeof(GM));
         }
 
-        public static FieldInfo GetField(string fieldName, Type type)
+        private static FieldInfo GetField(string fieldName, Type type)
         {
             Assert.False(string.IsNullOrWhiteSpace(fieldName), $"{nameof(fieldName)} cannot be null or whitespace");
 
@@ -35,19 +57,20 @@ namespace GameMaster.Tests.Helpers
             return field;
         }
 
-        public static FieldInfo GetField(string fieldName)
+        private static FieldInfo GetField(string fieldName)
         {
             return GetField(fieldName, typeof(GM));
         }
 
-        public static T GetValue<T>(string fieldName, object obj, Type type)
+        public static T GetValue<T, X>(this X obj, string fieldName)
+            where X : class
         {
-            return (T)GetField(fieldName, type).GetValue(obj);
+            return (T)GetField(fieldName, typeof(X)).GetValue(obj);
         }
 
-        public static T GetValue<T>(string fieldName, object obj)
+        public static T GetValue<T>(this GM gm, string fieldName)
         {
-            return GetValue<T>(fieldName, obj, typeof(GM));
+            return gm.GetValue<T, GM>(fieldName);
         }
     }
 }

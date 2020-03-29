@@ -100,10 +100,8 @@ namespace GameMaster.Tests
             var manager = new WebSocketManager<GMMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
-            var startGame = GetMethod("InitGame");
-            startGame.Invoke(gameMaster, null);
-            var generatePiece = GetMethod("GeneratePiece");
-            generatePiece.Invoke(gameMaster, null);
+            gameMaster.Invoke("InitGame");
+            gameMaster.Invoke("GeneratePiece");
             return gameMaster;
         }
 

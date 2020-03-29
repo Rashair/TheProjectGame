@@ -22,6 +22,8 @@ namespace GameMaster.Models
 
         public int ResponsePenalty { get; set; }
 
+        public int DestroyPenalty { get; set; }
+
         public int Width { get; set; }
 
         public int Height { get; set; }
