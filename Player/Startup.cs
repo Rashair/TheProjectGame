@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Player.Clients;
 using Player.Models;
+using Player.Models.Strategies;
 using Player.Services;
 using Serilog;
 using Serilog.Events;
@@ -46,13 +47,14 @@ namespace Player
 
             services.AddSingleton(conf);
 
-            services.AddSingleton<Player.Models.Player>();
-
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, WebSocketClient<GMMessage, PlayerMessage>>();
             services.AddSingleton<BufferBlock<GMMessage>>();
             services.AddSingleton<PlayerConfiguration>();
+            services.AddSingleton<IStrategy, DummyStrategy>();
 
             services.AddHostedService<SocketService>();
+
+            services.AddSingleton<Player.Models.Player>();
             services.AddHostedService<PlayerService>();
         }
 

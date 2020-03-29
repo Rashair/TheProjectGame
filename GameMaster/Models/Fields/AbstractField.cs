@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 
 using GameMaster.Models.Pieces;
+using Shared.Models;
 
 namespace GameMaster.Models.Fields
 {
@@ -24,6 +25,12 @@ namespace GameMaster.Models.Fields
             whosHere = null;
         }
 
+        // TODO Temporary fix Put()
+        public abstract (bool goal, bool removed) PutNormal(AbstractPiece piece);
+
+        // TODO Temporary fix Put()
+        public abstract (bool goal, bool removed) PutFake(AbstractPiece piece);
+
         // originally returned void
         public abstract bool PickUp(GMPlayer player);
 
@@ -35,7 +42,7 @@ namespace GameMaster.Models.Fields
         {
             if (whosHere == null && player != null)
             {
-                player.Move(this);
+                player.Position = this;
                 whosHere = player;
                 return true;
             }
@@ -51,6 +58,15 @@ namespace GameMaster.Models.Fields
         public int[] GetPosition()
         {
             return new int[2] { x, y };
+        }
+
+        public Position GetPositionObject()
+        {
+            return new Position()
+            {
+                X = x,
+                Y = y,
+            };
         }
     }
 }

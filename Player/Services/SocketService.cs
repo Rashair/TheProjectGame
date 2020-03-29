@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Player.Clients;
 using Player.Models;
@@ -14,15 +13,14 @@ namespace Player.Services
 {
     public class SocketService : BackgroundService
     {
-        private readonly ISocketClient<GMMessage, PlayerMessage> client;
-        private readonly IConfiguration conf;
+        private readonly PlayerConfiguration conf;
         private readonly ILogger logger;
+        private readonly ISocketClient<GMMessage, PlayerMessage> client;
         private readonly BufferBlock<GMMessage> queue;
 
-        // TODO from player config, when ready
-        public Uri ConnectUri => new Uri("ws://localhost:8111/palyer");
+        public Uri ConnectUri => new Uri($"wss://{conf.CsIP}:{conf.CsPort}/ws/player");
 
-        public SocketService(ISocketClient<GMMessage, PlayerMessage> client, IConfiguration conf,
+        public SocketService(ISocketClient<GMMessage, PlayerMessage> client, PlayerConfiguration conf,
             BufferBlock<GMMessage> queue)
         {
             this.client = client;
@@ -36,14 +34,16 @@ namespace Player.Services
             // TODO add reconnect policy in the future
             if (!stoppingToken.IsCancellationRequested)
             {
-                await client.ConnectAsync(ConnectUri, stoppingToken);
                 await Task.Yield();
+                await client.ConnectAsync(ConnectUri, stoppingToken);
                 (bool result, GMMessage message) = await client.ReceiveAsync(stoppingToken);
                 while (!stoppingToken.IsCancellationRequested && result)
                 {
                     bool sended = await queue.SendAsync(message, stoppingToken);
                     if (!sended)
+                    {
                         logger.Warning($"SocketService| GMMessage id: {message.Id} has been lost");
+                    }
                     (result, message) = await client.ReceiveAsync(stoppingToken);
                 }
             }

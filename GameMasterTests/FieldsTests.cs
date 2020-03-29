@@ -1,9 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
+using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
+using Moq;
+using Shared.Messages;
 using Xunit;
 
 namespace GameMaster.Tests
@@ -14,9 +17,27 @@ namespace GameMaster.Tests
         {
             public IEnumerator<object[]> GetEnumerator()
             {
-                yield return new object[] { new List<GMPlayer> { new GMPlayer(1, Shared.Enums.Team.Red), new GMPlayer(2, Shared.Enums.Team.Red) }, false };
-                yield return new object[] { new List<GMPlayer> { new GMPlayer(1, Shared.Enums.Team.Red) }, true };
-                yield return new object[] { new List<GMPlayer> { null, new GMPlayer(1, Shared.Enums.Team.Red) }, true };
+                var conf = Mock.Of<GameConfiguration>();
+                var socketManager = Mock.Of<WebSocketManager<GMMessage>>();
+                yield return new object[]
+                {
+                    new List<GMPlayer>
+                    {
+                        new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red),
+                        new GMPlayer(2, conf, socketManager, Shared.Enums.Team.Red),
+                    },
+                    false,
+                };
+                yield return new object[]
+                {
+                    new List<GMPlayer> { new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red) },
+                    true,
+                };
+                yield return new object[]
+                {
+                    new List<GMPlayer> { null, new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red) },
+                    true,
+                };
                 yield return new object[] { new List<GMPlayer> { null }, false };
             }
 
@@ -79,7 +100,9 @@ namespace GameMaster.Tests
         public void PickUpTaskTest(int numPut, int numPick, bool expected)
         {
             // Arrange
-            GMPlayer gmPlayer = new GMPlayer(1, Shared.Enums.Team.Red);
+            var conf = Mock.Of<GameConfiguration>();
+            var socketManager = Mock.Of<WebSocketManager<GMMessage>>();
+            GMPlayer gmPlayer = new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red);
             TaskField taskField = new TaskField(2, 2);
             for (int i = 0; i < numPut; i++)
             {
