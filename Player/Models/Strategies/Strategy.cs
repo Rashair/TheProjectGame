@@ -81,54 +81,24 @@ namespace Player.Models.Strategies
                 if (info == GoalInfo.IDK)
                 {
                     await player.Put(cancellationToken);
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        await player.AcceptMessage(cancellationToken);
-                    }
-                    break;
                 }
                 else
                 {
-                    Direction[] directions = { Direction.N, Direction.W, Direction.E, Direction.S };
                     await player.Move(Direction.S, cancellationToken);
-                    for (int i = 1; i < directions.Length && cancellationToken.IsCancellationRequested; i++)
-                    {
-                        await player.Move(directions[i], cancellationToken);
-                    }
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        await player.AcceptMessage(cancellationToken);
-                    }
                 }
             }
         }
 
         public async System.Threading.Tasks.Task BluePlayerMoveToGoalAsync(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken)
         {
-            while (player.Position.Item2 >= 0)
-            {
                 GoalInfo info = player.Board[player.Position.Item1, player.Position.Item2].GoalInfo;
                 if (info == GoalInfo.IDK)
                 {
                     await player.Put(cancellationToken);
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        await player.AcceptMessage(cancellationToken);
-                    }
-                    break;
                 }
                 else
                 {
-                    Direction[] directions = { Direction.S, Direction.W, Direction.E, Direction.N };
-                    player.Move(Direction.S, cancellationToken).Wait();
-                    for (int i = 1; i < directions.Length && cancellationToken.IsCancellationRequested; i++)
-                    {
-                        await player.Move(directions[i], cancellationToken);
-                    }
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        await player.AcceptMessage(cancellationToken);
-                    }
+                    await player.Move(Direction.S, cancellationToken);
                 }
             }
         }
