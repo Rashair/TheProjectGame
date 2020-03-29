@@ -46,7 +46,9 @@ namespace Player.Models
 
         public bool IsLeader { get; private set; }
 
-        public bool HavePiece { get; private set; }
+        public bool HasPiece { get; private set; }
+
+        public bool? IsHeldPieceSham { get; private set; }
 
         public Field[,] Board { get; private set; }
 
@@ -263,14 +265,12 @@ namespace Player.Models
                 {
                     case GMMessageID.CheckAnswer:
                         CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
-                        if (payloadCheck.Sham)
-                        {
-                            HavePiece = false;
-                        }
+                        IsHeldPieceSham = payloadCheck.Sham;
                         penaltyTime = int.Parse(PenaltiesTimes.CheckForSham);
                         break;
                     case GMMessageID.DestructionAnswer:
-                        HavePiece = false;
+                        HasPiece = false;
+                        IsHeldPieceSham = null;
                         penaltyTime = int.Parse(PenaltiesTimes.DestroyPiece);
                         break;
                     case GMMessageID.DiscoverAnswer:
@@ -351,13 +351,13 @@ namespace Player.Models
                         penaltyTime = int.Parse(PenaltiesTimes.Move);
                         break;
                     case GMMessageID.PickAnswer:
-                        HavePiece = true;
+                        HasPiece = true;
 
                         // TODO: Add if this value will be in configuration
                         penaltyTime = 0;
                         break;
                     case GMMessageID.PutAnswer:
-                        HavePiece = false;
+                        HasPiece = false;
                         penaltyTime = int.Parse(PenaltiesTimes.PutPiece);
                         break;
                     case GMMessageID.GiveInfoForwarded:
@@ -386,6 +386,18 @@ namespace Player.Models
                 }
             }
             return false;
+        }
+
+        public async Task DestroyPiece(CancellationToken cancellationToken)
+        {
+            EmptyPayload messagePickPayload = new EmptyPayload();
+            PlayerMessage messagePick = new PlayerMessage()
+            {
+                MessageID = PlayerMessageID.PieceDestruction,
+                PlayerID = id,
+                Payload = JsonConvert.SerializeObject(messagePickPayload),
+            };
+            await Communicate(messagePick, cancellationToken);
         }
 
         public async Task Pick(CancellationToken cancellationToken)

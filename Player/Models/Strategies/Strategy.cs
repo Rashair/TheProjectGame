@@ -13,9 +13,9 @@ namespace Player.Models.Strategies
 
         public async Task MakeDecision(Player player, CancellationToken cancellationToken)
         {
-            if (!player.HavePiece)
+            (int y, int x) = player.Position;
+            if (!player.HasPiece)
             {
-                (int y, int x) = player.Position;
                 if (player.Board[y, x].DistToPiece == 0)
                 {
                     await player.Pick(cancellationToken);
@@ -23,7 +23,6 @@ namespace Player.Models.Strategies
                 }
 
                 List<Direction> directions = new List<Direction>() { Direction.N, Direction.S, Direction.E, Direction.W };
-
                 if (y <= player.GoalAreaSize)
                 {
                     directions.Remove(Direction.S);
@@ -47,63 +46,106 @@ namespace Player.Models.Strategies
             }
             else
             {
+                if (player.IsHeldPieceSham == null)
+                {
+                    await player.CheckPiece(cancellationToken);
+                    return;
+                }
+                else if (player.IsHeldPieceSham == false)
+                {
+                    await player.DestroyPiece(cancellationToken);
+                    return;
+                }
+
                 switch (player.Team)
                 {
                     case Team.Red:
                     {
-                        if (player.Position.Item2 <= player.BoardSize.y - player.GoalAreaSize)
+                        if (y < player.GoalAreaSize)
                         {
-                            await player.Move(Direction.N, cancellationToken);
+                            if (player.Board[y, x].GoalInfo == GoalInfo.IDK)
+                            {
+                                await player.Put(cancellationToken);
+                            }
+                            else
+                            {
+                                List<Direction> directions = new List<Direction>() { Direction.N, Direction.S, Direction.E, Direction.W };
+                                if (y == player.GoalAreaSize - 1)
+                                    directions.Remove(Direction.N);
+                                if (y == 0)
+                                    directions.Remove(Direction.S);
+                                if (x == 0)
+                                    directions.Remove(Direction.W);
+                                if (x == player.BoardSize.x - 1)
+                                    directions.Remove(Direction.E);
+
+                                int ind = random.Next(directions.Count);
+                                await player.Move(directions[ind], cancellationToken);
+                            }
+                            return;
                         }
-                        else
-                        {
-                            PlayerMoveToGoalAsync(player, player.Team, player.GoalAreaSize, cancellationToken);
-                        }
-                        break;
-                    }
-                    case Team.Blue:
-                    {
-                        if (player.Position.Item2 >= player.GoalAreaSize)
+
+                        if (random.Next(1, 6) < 5)
                         {
                             await player.Move(Direction.S, cancellationToken);
                         }
                         else
                         {
-                            PlayerMoveToGoalAsync(player, player.Team, player.GoalAreaSize, cancellationToken);
-                            PlayerMoveToGoalAsync(player, player.Team, player.GoalAreaSize, cancellationToken);
+                            List<Direction> directions = new List<Direction>() { Direction.S, Direction.E };
+                            if (x == 0)
+                                directions.Remove(Direction.W);
+                            if (x == player.BoardSize.x - 1)
+                                directions.Remove(Direction.E);
+
+                            int ind = random.Next(directions.Count);
+                            await player.Move(directions[ind], cancellationToken);
                         }
                         break;
                     }
-                }
-            }
-        }
+                    case Team.Blue:
+                    {
+                        int beginning = player.BoardSize.y - player.GoalAreaSize;
+                        if (y >= beginning)
+                        {
+                            if (player.Board[y, x].GoalInfo == GoalInfo.IDK)
+                            {
+                                await player.Put(cancellationToken);
+                            }
+                            else
+                            {
+                                List<Direction> directions = new List<Direction>() { Direction.N, Direction.S, Direction.E, Direction.W };
+                                if (y == beginning)
+                                    directions.Remove(Direction.S);
+                                if (y == player.BoardSize.y - 1)
+                                    directions.Remove(Direction.N);
+                                if (x == 0)
+                                    directions.Remove(Direction.W);
+                                if (x == player.BoardSize.x - 1)
+                                    directions.Remove(Direction.E);
 
-        public async System.Threading.Tasks.Task PlayerMoveToGoalAsync(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken)
-        {
-            GoalInfo info = player.Board[player.Position.Item1, player.Position.Item2].GoalInfo;
-            if (info == GoalInfo.IDK)
-            {
-                await player.Put(cancellationToken);
-            }
-            else
-            {
-                Random rnd = new Random();
-                int dir = rnd.Next(0, 4);
-                if (dir == 1)
-                {
-                    await player.Move(Direction.S, cancellationToken);
-                }
-                if (dir == 1)
-                {
-                    await player.Move(Direction.N, cancellationToken);
-                }
-                if (dir == 1)
-                {
-                    await player.Move(Direction.E, cancellationToken);
-                }
-                if (dir == 1)
-                {
-                    await player.Move(Direction.W, cancellationToken);
+                                int ind = random.Next(directions.Count);
+                                await player.Move(directions[ind], cancellationToken);
+                            }
+                            return;
+                        }
+
+                        if (random.Next(1, 6) < 5)
+                        {
+                            await player.Move(Direction.N, cancellationToken);
+                        }
+                        else
+                        {
+                            List<Direction> directions = new List<Direction>() { Direction.S, Direction.E };
+                            if (x == 0)
+                                directions.Remove(Direction.W);
+                            if (x == player.BoardSize.x - 1)
+                                directions.Remove(Direction.E);
+
+                            int ind = random.Next(directions.Count);
+                            await player.Move(directions[ind], cancellationToken);
+                        }
+                        break;
+                    }
                 }
             }
         }
