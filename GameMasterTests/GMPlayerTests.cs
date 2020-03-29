@@ -42,14 +42,14 @@ namespace GameMaster.Tests
 
             public bool AddSocket(WebSocket socket) => throw new NotImplementedException();
 
-            public string GetId(WebSocket socket) => throw new NotImplementedException();
+            public int GetId(WebSocket socket) => throw new NotImplementedException();
 
-            public WebSocket GetSocketById(string id) => throw new NotImplementedException();
+            public WebSocket GetSocketById(int id) => throw new NotImplementedException();
 
-            public Task<bool> RemoveSocketAsync(string id, CancellationToken cancellationToken)
+            public Task<bool> RemoveSocketAsync(int id, CancellationToken cancellationToken)
                 => throw new NotImplementedException();
 
-            public async Task SendMessageAsync(string id, GMMessage message, CancellationToken cancellationToken)
+            public async Task SendMessageAsync(int id, GMMessage message, CancellationToken cancellationToken)
             {
                 send(message);
                 await Task.CompletedTask;
@@ -100,8 +100,10 @@ namespace GameMaster.Tests
             var manager = new WebSocketManager<GMMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
-            gameMaster.Invoke("InitGame");
-            gameMaster.Invoke("GeneratePiece");
+            var startGame = GetMethod("InitGame");
+            startGame.Invoke(gameMaster, null);
+            var generatePiece = GetMethod("GeneratePiece");
+            generatePiece.Invoke(gameMaster, null);
             return gameMaster;
         }
 

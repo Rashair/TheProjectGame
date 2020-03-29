@@ -14,7 +14,7 @@ namespace Player.Models.Strategies
                 case StrategyEnum.SimpleStrategy:
                     return new SimpleStrategy();
                 default:
-                    return null;
+                    return new DummyStrategy();
             }
         }
     }

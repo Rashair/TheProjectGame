@@ -38,6 +38,18 @@ namespace Player.Models
 
         private readonly PlayerConfiguration conf;
 
+        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
+        {
+            this.conf = conf;
+            if (conf.TeamID == "red")
+                team = Team.Red;
+            else
+                team = Team.Blue;
+            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
+            this.queue = queue;
+            this.client = client;
+        }
+
         public bool IsLeader { get; private set; }
 
         public bool HavePiece { get; private set; }
@@ -53,18 +65,6 @@ namespace Player.Models
         public int LeaderId { get; private set; }
 
         public (int x, int y) BoardSize { get; private set; }
-
-        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
-        {
-            this.conf = conf;
-            if (conf.TeamID == "red")
-                team = Team.Red;
-            else
-                team = Team.Blue;
-            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
-            this.queue = queue;
-            this.client = client;
-        }
 
         internal async Task Work(CancellationToken cancellationToken)
         {

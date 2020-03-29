@@ -50,12 +50,9 @@ namespace Player
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, WebSocketClient<GMMessage, PlayerMessage>>();
             services.AddSingleton<BufferBlock<GMMessage>>();
-            services.AddSingleton<PlayerConfiguration>();
-            services.AddSingleton<IStrategy, DummyStrategy>();
+            services.AddSingleton<Player.Models.Player>();
 
             services.AddHostedService<SocketService>();
-
-            services.AddSingleton<Player.Models.Player>();
             services.AddHostedService<PlayerService>();
         }
 
