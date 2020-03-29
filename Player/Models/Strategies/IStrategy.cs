@@ -1,7 +1,12 @@
-﻿namespace Player.Models.Strategies
+﻿using System.Threading;
+using System.Threading.Tasks;
+
+using Shared.Enums;
+
+namespace Player.Models.Strategies
 {
     public interface IStrategy
     {
-        void MakeDecision(Player player);
+        Task MakeDecision(Player player, CancellationToken cancellationToken);
     }
 }

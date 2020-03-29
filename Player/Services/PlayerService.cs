@@ -1,14 +1,18 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Hosting;
-using Serilog;
+
 using Shared.Messages;
+using Player.Models;
+using Serilog;
 
 namespace Player.Services
 {
     public class PlayerService : BackgroundService
     {
+        private ILogger logger;
         private readonly Models.Player player;
         private readonly ILogger logger;
 
@@ -22,8 +26,17 @@ namespace Player.Services
         {
             if (!cancellationToken.IsCancellationRequested)
             {
-                logger.Information("Started execution");
-                await Task.Run(() => player.Work(cancellationToken));
+                await Task.Run(async () =>
+                {
+                    try
+                    {
+                        await player.Work(cancellationToken);
+                    }
+                    catch (Exception e)
+                    {
+                        logger.Information(e.Message);
+                    }
+                });
             }
         }
     }

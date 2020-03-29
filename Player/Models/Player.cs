@@ -28,18 +28,24 @@ namespace Player.Models
         private int penaltyTime;
         private IStrategy strategy;
         private bool working;
-        private Team team;
-
-        private Penalties penaltiesTimes;
-        private Team winner;
-        private int[] enemiesIDs;
-        private int goalAreaSize;
-        private NumberOfPlayers numberOfPlayers;
-        private int numberOfPieces;
-        private int numberOfGoals;
-        private float shamPieceProbability;
-
         private readonly PlayerConfiguration conf;
+        private Team winner;
+
+        public int PreviousDistToPiece { get; private set; }
+
+        public Penalties PenaltiesTimes { get; private set; }
+
+        public int[] EnemiesIDs { get; private set; }
+
+        public NumberOfPlayers NumberOfPlayers { get; private set; }
+
+        public int NumberOfPieces { get; private set; }
+
+        public int NumberOfGoals { get; private set; }
+
+        public float ShamPieceProbability { get; private set; }
+
+        public Team Team { get; private set; }
 
         public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
         {
@@ -56,11 +62,13 @@ namespace Player.Models
 
         public bool IsLeader { get; private set; }
 
-        public bool HavePiece { get; private set; }
+        public bool HasPiece { get; private set; }
+
+        public bool? IsHeldPieceSham { get; private set; }
 
         public Field[,] Board { get; private set; }
 
-        public Tuple<int, int> Position { get; private set; }
+        public (int y, int x) Position { get; private set; }
 
         public List<int> WaitingPlayers { get; private set; }
 
@@ -68,8 +76,21 @@ namespace Player.Models
 
         public int LeaderId { get; private set; }
 
-        public (int x, int y) BoardSize { get; private set; }
+        public (int y, int x) BoardSize { get; private set; }
 
+        public int GoalAreaSize { get; private set; }
+
+        public Player(PlayerConfiguration conf, IStrategy strategy, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
+        {
+            this.conf = conf;
+            if (conf.TeamID == "red")
+                Team = Team.Red;
+            else
+                Team = Team.Blue;
+            this.strategy = strategy;
+            this.queue = queue;
+            this.client = client;
+        }
         internal async Task Work(CancellationToken cancellationToken)
         {
             while (!client.IsOpen)
@@ -93,7 +114,7 @@ namespace Player.Models
             logger.Information($"Client status: {client.IsOpen}");
             JoinGamePayload payload = new JoinGamePayload()
             {
-                TeamID = team,
+                TeamID = Team,
             };
             PlayerMessage message = new PlayerMessage()
             {
@@ -107,14 +128,11 @@ namespace Player.Models
         internal async Task Start(CancellationToken cancellationToken)
         {
             working = true;
-            while (working)
+            while (working && !cancellationToken.IsCancellationRequested)
             {
                 await AcceptMessage(cancellationToken);
-                await Task.Run(() =>
-                {
-                    MakeDecisionFromStrategy();
-                    Penalty();
-                }, cancellationToken);
+                await MakeDecisionFromStrategy(cancellationToken);
+                await Penalty(cancellationToken);
             }
         }
 
@@ -206,7 +224,7 @@ namespace Player.Models
                 int row = i / BoardSize.y;
                 int col = i % BoardSize.y;
                 response.Distances[row, col] = Board[row, col].DistToPiece;
-                if (team == Team.Red)
+                if (Team == Team.Red)
                 {
                     response.RedTeamGoalAreaInformations[row, col] = Board[row, col].GoalInfo;
                     response.BlueTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
@@ -219,6 +237,7 @@ namespace Player.Models
             }
             message.Payload = response.Serialize();
             await Communicate(message, cancellationToken);
+            penaltyTime = int.Parse(PenaltiesTimes.InformationExchange);
         }
 
         public async Task RequestsResponse(CancellationToken cancellationToken, int respondToID, bool isFromLeader = false)
@@ -267,25 +286,26 @@ namespace Player.Models
                 {
                     case GMMessageID.CheckAnswer:
                         CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
-                        if (payloadCheck.Sham)
-                        {
-                            HavePiece = false;
-                        }
+                        IsHeldPieceSham = payloadCheck.Sham;
+                        penaltyTime = int.Parse(PenaltiesTimes.CheckForSham);
                         break;
                     case GMMessageID.DestructionAnswer:
-                        HavePiece = false;
+                        HasPiece = false;
+                        IsHeldPieceSham = null;
+                        penaltyTime = int.Parse(PenaltiesTimes.DestroyPiece);
                         break;
                     case GMMessageID.DiscoverAnswer:
                         DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
-                        Board[Position.Item1, Position.Item2].DistToPiece = payloadDiscover.DistanceFromCurrent;
-                        Board[Position.Item1 + 1, Position.Item2].DistToPiece = payloadDiscover.DistanceE;
-                        Board[Position.Item1 - 1, Position.Item2].DistToPiece = payloadDiscover.DistanceW;
-                        Board[Position.Item1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceN;
-                        Board[Position.Item1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceS;
-                        Board[Position.Item1 + 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceSE;
-                        Board[Position.Item1 - 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceNW;
-                        Board[Position.Item1 + 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceNE;
-                        Board[Position.Item1 - 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceSW;
+                        Board[Position.y, Position.x].DistToPiece = payloadDiscover.DistanceFromCurrent;
+                        Board[Position.y + 1, Position.x].DistToPiece = payloadDiscover.DistanceE;
+                        Board[Position.y - 1, Position.x].DistToPiece = payloadDiscover.DistanceW;
+                        Board[Position.y, Position.x + 1].DistToPiece = payloadDiscover.DistanceN;
+                        Board[Position.y, Position.x - 1].DistToPiece = payloadDiscover.DistanceS;
+                        Board[Position.y + 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSE;
+                        Board[Position.y - 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNW;
+                        Board[Position.y + 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNE;
+                        Board[Position.y - 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSW;
+                        penaltyTime = int.Parse(PenaltiesTimes.Discovery);
                         break;
                     case GMMessageID.EndGame:
                         EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
@@ -304,30 +324,32 @@ namespace Player.Models
                         {
                             IsLeader = false;
                         }
-                        team = payloadStart.TeamId;
-                        Board = new Field[payloadStart.BoardSize.X, payloadStart.BoardSize.Y];
-                        for (int i = 0; i < payloadStart.BoardSize.X; i++)
+                        Team = payloadStart.TeamId;
+                        Board = new Field[payloadStart.BoardSize.Y, payloadStart.BoardSize.X];
+                        for (int i = 0; i < payloadStart.BoardSize.Y; i++)
                         {
-                            for (int j = 0; j < payloadStart.BoardSize.Y; j++)
+                            for (int j = 0; j < payloadStart.BoardSize.X; j++)
                             {
-                                Board[i, j] = new Field();
-                                Board[i, j].DistToPiece = -1;
-                                Board[i, j].GoalInfo = GoalInfo.IDK;
+                                Board[i, j] = new Field
+                                {
+                                    DistToPiece = int.MaxValue,
+                                    GoalInfo = GoalInfo.IDK,
+                                };
                             }
                         }
-                        penaltiesTimes = payloadStart.Penalties;
-                        Position = new Tuple<int, int>(payloadStart.Position.X, payloadStart.Position.Y);
-                        enemiesIDs = payloadStart.EnemiesIDs;
-                        goalAreaSize = payloadStart.GoalAreaSize;
-                        numberOfPlayers = payloadStart.NumberOfPlayers;
-                        numberOfPieces = payloadStart.NumberOfPieces;
-                        numberOfGoals = payloadStart.NumberOfGoals;
-                        shamPieceProbability = payloadStart.ShamPieceProbability;
+                        PenaltiesTimes = payloadStart.Penalties;
+                        Position = (payloadStart.Position.Y, payloadStart.Position.X);
+                        EnemiesIDs = payloadStart.EnemiesIDs;
+                        GoalAreaSize = payloadStart.GoalAreaSize;
+                        NumberOfPlayers = payloadStart.NumberOfPlayers;
+                        NumberOfPieces = payloadStart.NumberOfPieces;
+                        NumberOfGoals = payloadStart.NumberOfGoals;
+                        ShamPieceProbability = payloadStart.ShamPieceProbability;
                         WaitingPlayers = new List<int>();
                         return true;
                     case GMMessageID.BegForInfoForwarded:
                         BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
-                        if (team == payloadBeg.TeamId)
+                        if (Team == payloadBeg.TeamId)
                         {
                             await RequestsResponse(cancellationToken, payloadBeg.AskingID, payloadBeg.Leader);
                         }
@@ -344,26 +366,20 @@ namespace Player.Models
                         MoveAnswerPayload payloadMove = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
                         if (payloadMove.MadeMove)
                         {
-                            Position = new Tuple<int, int>(payloadMove.CurrentPosition.X, payloadMove.CurrentPosition.Y);
-                            Board[Position.Item1, Position.Item2].DistToPiece = payloadMove.ClosestPiece;
-                            if (Board[Position.Item1, Position.Item2].DistToPiece == 0)
-                            {
-                                EmptyPayload messagePickPayload = new EmptyPayload();
-                                PlayerMessage messagePick = new PlayerMessage()
-                                {
-                                    MessageID = PlayerMessageID.Pick,
-                                    PlayerID = id,
-                                    Payload = JsonConvert.SerializeObject(messagePickPayload),
-                                };
-                                await Communicate(messagePick, cancellationToken);
-                            }
+                            Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
+                            Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece;
                         }
+                        penaltyTime = int.Parse(PenaltiesTimes.Move);
                         break;
                     case GMMessageID.PickAnswer:
-                        HavePiece = true;
+                        HasPiece = true;
+
+                        // TODO: Add if this value will be in configuration
+                        penaltyTime = 0;
                         break;
                     case GMMessageID.PutAnswer:
-                        HavePiece = false;
+                        HasPiece = false;
+                        penaltyTime = int.Parse(PenaltiesTimes.PutPiece);
                         break;
                     case GMMessageID.GiveInfoForwarded:
                         GiveInfoForwardedPayload payloadGive = JsonConvert.DeserializeObject<GiveInfoForwardedPayload>(message.Payload);
@@ -371,7 +387,7 @@ namespace Player.Models
                         {
                             for (int j = 0; j < payloadGive.Distances.GetLength(1); j++)
                             {
-                                if (payloadGive.Distances[i, j] != -1)
+                                if (payloadGive.Distances[i, j] != int.MaxValue)
                                 {
                                     Board[i, j].DistToPiece = payloadGive.Distances[i, j];
                                 }
@@ -393,9 +409,33 @@ namespace Player.Models
             return false;
         }
 
-        public void MakeDecisionFromStrategy()
+        public async Task DestroyPiece(CancellationToken cancellationToken)
         {
-            strategy.MakeDecision(this);
+            EmptyPayload messagePickPayload = new EmptyPayload();
+            PlayerMessage messagePick = new PlayerMessage()
+            {
+                MessageID = PlayerMessageID.PieceDestruction,
+                PlayerID = id,
+                Payload = JsonConvert.SerializeObject(messagePickPayload),
+            };
+            await Communicate(messagePick, cancellationToken);
+        }
+
+        public async Task Pick(CancellationToken cancellationToken)
+        {
+            EmptyPayload messagePickPayload = new EmptyPayload();
+            PlayerMessage messagePick = new PlayerMessage()
+            {
+                MessageID = PlayerMessageID.Pick,
+                PlayerID = id,
+                Payload = JsonConvert.SerializeObject(messagePickPayload),
+            };
+            await Communicate(messagePick, cancellationToken);
+        }
+
+        public async Task MakeDecisionFromStrategy(CancellationToken cancellationToken)
+        {
+            await strategy.MakeDecision(this, cancellationToken);
         }
 
         private async Task Communicate(PlayerMessage message, CancellationToken cancellationToken)
@@ -403,9 +443,9 @@ namespace Player.Models
             await client.SendAsync(message, cancellationToken);
         }
 
-        private void Penalty()
+        private async Task Penalty(CancellationToken cancellationToken)
         {
-            Thread.Sleep(penaltyTime);
+            await Task.Delay(penaltyTime, cancellationToken);
             penaltyTime = 0;
         }
     }
