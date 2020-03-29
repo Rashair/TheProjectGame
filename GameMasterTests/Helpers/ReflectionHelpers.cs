@@ -62,14 +62,15 @@ namespace GameMaster.Tests.Helpers
             return GetField(fieldName, typeof(GM));
         }
 
-        public static T GetValue<T>(this object obj, string fieldName, Type type)
+        public static T GetValue<T, X>(this X obj, string fieldName)
+            where X : class
         {
-            return (T)GetField(fieldName, type).GetValue(obj);
+            return (T)GetField(fieldName, typeof(X)).GetValue(obj);
         }
 
-        public static T GetValue<T>(this object obj, string fieldName)
+        public static T GetValue<T>(this GM gm, string fieldName)
         {
-            return obj.GetValue<T>(fieldName, typeof(GM));
+            return gm.GetValue<T, GM>(fieldName);
         }
     }
 }

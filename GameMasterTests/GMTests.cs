@@ -1,8 +1,11 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Managers;
@@ -224,7 +227,8 @@ namespace GameMaster.Tests
             {
                 var playerA = players[i];
                 var posA = playerA.GetPosition();
-                (int y1, int y2) = gameMaster.Invoke<(int, int)>("GetBoundaries", playerA.Team);
+                (int y1, int y2) = playerA.Team == Team.Red ? (0, conf.Height - conf.GoalAreaHeight) :
+                    (conf.GoalAreaHeight, conf.Height);
                 Assert.False(posA[0] < y1 || posA[0] >= y2, "No players are placed on GoalArea of enemy");
                 for (int j = i + 1; j < players.Count; ++j)
                 {
@@ -233,6 +237,48 @@ namespace GameMaster.Tests
                     Assert.False(arePositionsTheSame(posA, posB), "No 2 players share the same position");
                 }
             }
+        }
+
+        [Fact]
+        public void TestStartGame()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration();
+            var queue = new BufferBlock<PlayerMessage>();
+            var lifetime = Mock.Of<IApplicationLifetime>();
+            var manager = new WebSocketManager<GMMessage>();
+            var gameMaster = new GM(lifetime, conf, queue, manager);
+            var players = gameMaster.GetValue<Dictionary<int, GMPlayer>>("players");
+            var sockets = manager.GetValue<ConcurrentDictionary<string, WebSocket>, SocketManager<WebSocket, GMMessage>>("sockets");
+            for (int i = 0; i < conf.NumberOfPlayersPerTeam; ++i)
+            {
+                string socketId = Guid.NewGuid().ToString();
+                var player = new GMPlayer(i, Team.Red)
+                {
+                    SocketID = socketId,
+                };
+                players.Add(i, player);
+                sockets.TryAdd(socketId, Mock.Of<WebSocket>());
+
+                int j = i + conf.NumberOfPlayersPerTeam;
+                socketId = Guid.NewGuid().ToString();
+                player = new GMPlayer(j, Team.Blue)
+                {
+                    SocketID = socketId,
+                };
+                players.Add(j, player);
+                sockets.TryAdd(socketId, Mock.Of<WebSocket>());
+            }
+            gameMaster.Invoke("InitGame");
+
+            // Act
+            var task = gameMaster.Invoke<Task>("StartGame", CancellationToken.None);
+            task.Wait();
+
+            // Assert
+            Assert.True(gameMaster.WasGameStarted);
+
+            // TODO create mock of websocket and check if GM sends messages
         }
     }
 }
