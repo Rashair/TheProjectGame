@@ -19,7 +19,7 @@ namespace Player.Tests
 {
     public class PlayerServiceTests
     {
-        [Fact(Timeout = 1500)]
+        [Fact(Timeout = 2500)]
         public async Task TestExecuteAsyncShouldReadMessages()
         {
             // Arrange
@@ -30,7 +30,7 @@ namespace Player.Tests
             StartGamePayload payloadStart = new StartGamePayload
             {
                 PlayerID = 1,
-                AlliesIDs = new int[1] { 2 },
+                AlliesIDs = new int[2] { 1, 2 },
                 LeaderID = 1,
                 EnemiesIDs = new int[2] { 3, 4 },
                 TeamId = Team.Red,
@@ -56,8 +56,6 @@ namespace Player.Tests
 
             services.AddHostedService<PlayerService>();
             var serviceProvider = services.BuildServiceProvider();
-            var conf = serviceProvider.GetService<PlayerConfiguration>();
-            conf = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
             var hostedService = (PlayerService)serviceProvider.GetService<IHostedService>();
 
             // Act
@@ -75,21 +73,21 @@ namespace Player.Tests
 
         private class ClientMock<R, S> : ISocketClient<R, S>
         {
-            public bool IsOpen => throw new NotImplementedException();
+            public bool IsOpen => true;
 
             public Task CloseAsync(CancellationToken cancellationToken)
             {
-                throw new NotImplementedException();
+                return Task.CompletedTask;
             }
 
             public Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
             {
-                throw new NotImplementedException();
+                return Task.CompletedTask;
             }
 
             public Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
             {
-                throw new NotImplementedException();
+                return Task.FromResult((true, default(R)));
             }
 
             public async Task SendAsync(S message, CancellationToken cancellationToken)
@@ -99,8 +97,9 @@ namespace Player.Tests
 
         private class StrategyMock : IStrategy
         {
-            public void MakeDecision(Models.Player player)
+            public Task MakeDecision(Models.Player player, CancellationToken cancellationToken)
             {
+                return Task.CompletedTask;
             }
         }
     }
