@@ -19,7 +19,7 @@ namespace Shared.Tests
             // Act
             foreach (var msg in playerMessages)
             {
-                var jsonString = "{\"messageID\":\"" + msg.Key + "\",\"PlayerID\":0,\"Payload\":\"{}\"}";
+                var jsonString = "{\"messageID\":" + msg.Key + ",\"PlayerID\":0,\"Payload\":\"{}\"}";
                 var deserializedObject = JsonConvert.DeserializeObject<PlayerMessage>(jsonString);
 
                 // Assert

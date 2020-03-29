@@ -19,7 +19,7 @@ namespace Shared.Tests
             // Act
             foreach (var msg in gmMessages)
             {
-                var jsonString = "{\"id\":\"" + msg.Key + "\",\"Payload\":\"{}\"}";
+                var jsonString = "{\"id\":" + msg.Key + ",\"Payload\":\"{}\"}";
                 var deserializedObject = JsonConvert.DeserializeObject<GMMessage>(jsonString);
 
                 // Assert
