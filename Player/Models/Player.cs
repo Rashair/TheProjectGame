@@ -36,6 +36,8 @@ namespace Player.Models
         private int numberOfGoals;
         private float shamPieceProbability;
 
+        private readonly PlayerConfiguration conf;
+
         public bool IsLeader { get; private set; }
 
         public bool HavePiece { get; private set; }
@@ -52,12 +54,16 @@ namespace Player.Models
 
         public (int x, int y) BoardSize { get; private set; }
 
-        public Player(BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client, PlayerConfiguration conf)
+        public Player(PlayerConfiguration conf, IStrategy strategy, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
         {
+            this.conf = conf;
+            if (conf.TeamID == "red")
+                team = Team.Red;
+            else
+                team = Team.Blue;
+            this.strategy = strategy;
             this.queue = queue;
             this.client = client;
-            this.team = conf.Team;
-            this.strategy = conf.Strategy;
         }
 
         internal async Task Work(CancellationToken cancellationToken)
@@ -107,7 +113,7 @@ namespace Player.Models
             working = false;
         }
 
-        public async Task Move(Directions direction, CancellationToken cancellationToken)
+        public async Task Move(Direction direction, CancellationToken cancellationToken)
         {
             MovePayload payload = new MovePayload()
             {

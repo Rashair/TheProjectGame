@@ -9,6 +9,7 @@ using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shared.Enums;
@@ -28,12 +29,14 @@ namespace GameMaster.Tests
         public void TestGeneratePieceXTimes(int x)
         {
             // Arrange
-            var conf = new MockConfiguration();
+            var conf = new MockGameConfiguration();
+            conf.NumberOfPiecesOnBoard = 0;
             var queue = new BufferBlock<PlayerMessage>();
-            var socketManager = new WebSocketManager<GMMessage>();
-            var gameMaster = new GM(conf, queue, socketManager);
+            var lifetime = Mock.Of<IApplicationLifetime>();
+            var manager = new WebSocketManager<GMMessage>();
+            var gameMaster = new GM(lifetime, conf, queue, manager);
 
-            var startGame = GetMethod("StartGame");
+            var startGame = GetMethod("InitGame");
             startGame.Invoke(gameMaster, null);
             var method = GetMethod("GeneratePiece");
 
@@ -130,11 +133,13 @@ namespace GameMaster.Tests
         [ClassData(typeof(DiscoverTestData))]
         public void DiscoverTest(TaskField field, int pieceCount)
         {
-            var conf = new MockConfiguration();
+            var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
+            var logger = Mock.Of<ILogger<GM>>();
+            var lifetime = Mock.Of<IApplicationLifetime>();
             var manager = new WebSocketManager<GMMessage>();
-            var gameMaster = new GM(conf, queue, manager);
-            var startGame = GetMethod("StartGame");
+            var gameMaster = new GM(lifetime, conf, queue, manager);
+            var startGame = GetMethod("InitGame");
             startGame.Invoke(gameMaster, null);
             var generatePiece = GetMethod("GeneratePiece");
 

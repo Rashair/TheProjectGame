@@ -51,13 +51,13 @@ namespace Player.Tests
             queue.Post(messageStart);
             services.AddSingleton(queue);
             services.AddSingleton<PlayerConfiguration>();
+            services.AddSingleton<IStrategy, StrategyMock>();
             services.AddSingleton<Models.Player>();
 
             services.AddHostedService<PlayerService>();
             var serviceProvider = services.BuildServiceProvider();
             var conf = serviceProvider.GetService<PlayerConfiguration>();
-            conf.Team = Team.Red;
-            conf.Strategy = new StrategyMock();
+            conf = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
             var hostedService = (PlayerService)serviceProvider.GetService<IHostedService>();
 
             // Act

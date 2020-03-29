@@ -6,6 +6,7 @@ using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Player.Clients;
+using Player.Models;
 using Serilog;
 using Shared.Messages;
 

@@ -4,6 +4,8 @@ using System.Threading.Tasks.Dataflow;
 
 using Newtonsoft.Json;
 using Player.Clients;
+using Player.Models;
+using Player.Models.Strategies;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
@@ -61,7 +63,8 @@ namespace Player.Tests
             input.Post<GMMessage>(messageStart);
             input.Post<GMMessage>(messageDiscover);
 
-            var player = new Player.Models.Player(input, new WebSocketClient<GMMessage, PlayerMessage>(), new Models.PlayerConfiguration());
+            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
+            var player = new Player.Models.Player(configuration, new Strategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);
@@ -110,7 +113,8 @@ namespace Player.Tests
             input.Post<GMMessage>(messageStart);
             input.Post<GMMessage>(messageBeg);
 
-            var player = new Player.Models.Player(input, new WebSocketClient<GMMessage, PlayerMessage>(), new Models.PlayerConfiguration());
+            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
+            var player = new Player.Models.Player(configuration, new Strategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);

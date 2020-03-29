@@ -9,6 +9,7 @@ using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Moq;
 using Shared.Messages;
 using Xunit;
 
@@ -23,8 +24,9 @@ namespace GameMaster.Tests
         {
             // Arrange
             IServiceCollection services = new ServiceCollection();
-            var conf = new MockConfiguration();
-            services.AddSingleton<Configuration>(conf);
+            var conf = new MockGameConfiguration();
+            services.AddSingleton<GameConfiguration>(conf);
+            services.AddSingleton(Mock.Of<IApplicationLifetime>());
             services.AddSingleton<WebSocketManager<GMMessage>>();
             int messagesNum = 10;
             var queue = new BufferBlock<PlayerMessage>();
@@ -40,7 +42,7 @@ namespace GameMaster.Tests
             var serviceProvider = services.BuildServiceProvider();
             var hostedService = (GMService)serviceProvider.GetService<IHostedService>();
             var gameMaster = serviceProvider.GetService<GM>();
-            var startGame = GetMethod("StartGame");
+            var startGame = GetMethod("InitGame");
 
             // Act
             int delay = 1000;
@@ -64,8 +66,9 @@ namespace GameMaster.Tests
         {
             // Arrange
             IServiceCollection services = new ServiceCollection();
-            var conf = new MockConfiguration();
-            services.AddSingleton<Configuration>(conf);
+            var conf = new MockGameConfiguration();
+            services.AddSingleton(Mock.Of<IApplicationLifetime>());
+            services.AddSingleton<GameConfiguration>(conf);
             services.AddSingleton<WebSocketManager<GMMessage>>();
             int messagesNum = 10;
             var queue = new BufferBlock<PlayerMessage>();
@@ -81,7 +84,7 @@ namespace GameMaster.Tests
             var serviceProvider = services.BuildServiceProvider();
             var hostedService = serviceProvider.GetService<IHostedService>();
             var gameMaster = serviceProvider.GetService<GM>();
-            var startGame = GetMethod("StartGame");
+            var startGame = GetMethod("InitGame");
             startGame.Invoke(gameMaster, null);
 
             // Act
