@@ -3,18 +3,14 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Hosting;
-
-using Shared.Messages;
-using Player.Models;
 using Serilog;
 
 namespace Player.Services
 {
     public class PlayerService : BackgroundService
     {
-        private ILogger logger;
-        private readonly Models.Player player;
         private readonly ILogger logger;
+        private readonly Models.Player player;
 
         public PlayerService(Models.Player player)
         {

@@ -51,9 +51,9 @@ namespace Player.Models
         {
             this.conf = conf;
             if (conf.TeamID == "red")
-                team = Team.Red;
+                Team = Team.Red;
             else
-                team = Team.Blue;
+                Team = Team.Blue;
             this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
             this.queue = queue;
             this.client = client;
@@ -80,17 +80,6 @@ namespace Player.Models
 
         public int GoalAreaSize { get; private set; }
 
-        public Player(PlayerConfiguration conf, IStrategy strategy, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
-        {
-            this.conf = conf;
-            if (conf.TeamID == "red")
-                Team = Team.Red;
-            else
-                Team = Team.Blue;
-            this.strategy = strategy;
-            this.queue = queue;
-            this.client = client;
-        }
         internal async Task Work(CancellationToken cancellationToken)
         {
             while (!client.IsOpen)
