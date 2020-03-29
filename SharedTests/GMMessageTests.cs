@@ -14,7 +14,7 @@ namespace Shared.Tests
         public void TestGMMessageDeserialization()
         {
             // Arrange
-            Dictionary<string, GMMessageID> gmMessages = GetGMMessageMapping();
+            Dictionary<int, GMMessageID> gmMessages = GetGMMessageMapping();
 
             // Act
             foreach (var msg in gmMessages)
@@ -31,7 +31,7 @@ namespace Shared.Tests
         public void TestGMMessageSerialization()
         {
             // Arrange
-            Dictionary<string, GMMessageID> gmMessages = GetGMMessageMapping();
+            Dictionary<int, GMMessageID> gmMessages = GetGMMessageMapping();
 
             // Act
             foreach (var msg in gmMessages)
@@ -42,7 +42,7 @@ namespace Shared.Tests
                     Payload = new EmptyAnswerPayload().Serialize(),
                 };
 
-                var expectedJsonString = "{\"id\":\"" + msg.Key + "\",\"Payload\":\"{}\"}";
+                var expectedJsonString = "{\"Id\":" + msg.Key + ",\"Payload\":\"{}\"}";
                 var serializedObject = JsonConvert.SerializeObject(obj);
 
                 // Assert
@@ -50,22 +50,22 @@ namespace Shared.Tests
             }
         }
 
-        private Dictionary<string, GMMessageID> GetGMMessageMapping()
+        private Dictionary<int, GMMessageID> GetGMMessageMapping()
         {
-            return new Dictionary<string, GMMessageID>()
+            return new Dictionary<int, GMMessageID>()
             {
-                { "Unknown", GMMessageID.Unknown },
-                { "CheckAnswer", GMMessageID.CheckAnswer },
-                { "DestructionAnswer", GMMessageID.DestructionAnswer },
-                { "DiscoverAnswer", GMMessageID.DiscoverAnswer },
-                { "EndGame", GMMessageID.EndGame },
-                { "StartGame", GMMessageID.StartGame },
-                { "BegForInfoForwarded", GMMessageID.BegForInfoForwarded },
-                { "JoinTheGameAnswer", GMMessageID.JoinTheGameAnswer },
-                { "MoveAnswer", GMMessageID.MoveAnswer },
-                { "PickAnswer", GMMessageID.PickAnswer },
-                { "PutAnswer", GMMessageID.PutAnswer },
-                { "GiveInfoForwarded", GMMessageID.GiveInfoForwarded },
+                { 0, GMMessageID.Unknown },
+                { 101, GMMessageID.CheckAnswer },
+                { 102, GMMessageID.DestructionAnswer },
+                { 103, GMMessageID.DiscoverAnswer },
+                { 104, GMMessageID.EndGame },
+                { 105, GMMessageID.StartGame },
+                { 106, GMMessageID.BegForInfoForwarded },
+                { 107, GMMessageID.JoinTheGameAnswer },
+                { 108, GMMessageID.MoveAnswer },
+                { 109, GMMessageID.PickAnswer },
+                { 110, GMMessageID.PutAnswer },
+                { 111, GMMessageID.GiveInfoForwarded },
             };
         }
     }
