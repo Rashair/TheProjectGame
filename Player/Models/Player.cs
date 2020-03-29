@@ -102,7 +102,7 @@ namespace Player.Models
                 await AcceptMessage(cancellationToken);
                 await Task.Run(() =>
                 {
-                    MakeDecisionFromStrategy();
+                    MakeDecisionFromStrategy(cancellationToken);
                     Penalty();
                 }, cancellationToken);
             }
@@ -383,9 +383,9 @@ namespace Player.Models
             return false;
         }
 
-        public void MakeDecisionFromStrategy()
+        public void MakeDecisionFromStrategy(CancellationToken cancellationToken)
         {
-            strategy.MakeDecision(this, team, goalAreaSize);
+            strategy.MakeDecision(this, team, goalAreaSize, cancellationToken);
         }
 
         private async Task Communicate(PlayerMessage message, CancellationToken cancellationToken)
