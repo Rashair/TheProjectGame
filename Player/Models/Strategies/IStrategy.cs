@@ -1,7 +1,9 @@
-﻿namespace Player.Models.Strategies
+﻿using Shared.Enums;
+
+namespace Player.Models.Strategies
 {
     public interface IStrategy
     {
-        void MakeDecision(Player player);
+        void MakeDecision(Player player, Team team, int goalAreaSize);
     }
 }

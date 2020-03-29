@@ -385,7 +385,7 @@ namespace Player.Models
 
         public void MakeDecisionFromStrategy()
         {
-            strategy.MakeDecision(this);
+            strategy.MakeDecision(this, team, goalAreaSize);
         }
 
         private async Task Communicate(PlayerMessage message, CancellationToken cancellationToken)
