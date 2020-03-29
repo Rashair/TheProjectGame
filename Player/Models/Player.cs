@@ -80,6 +80,7 @@ namespace Player.Models
         {
             await JoinTheGame(cancellationToken);
             bool startGame = false;
+
             while (!cancellationToken.IsCancellationRequested && !startGame)
             {
                 startGame = await AcceptMessage(cancellationToken);
@@ -304,10 +305,10 @@ namespace Player.Models
                             IsLeader = false;
                         }
                         Team = payloadStart.TeamId;
-                        Board = new Field[payloadStart.BoardSize.X, payloadStart.BoardSize.Y];
-                        for (int i = 0; i < payloadStart.BoardSize.X; i++)
+                        Board = new Field[payloadStart.BoardSize.Y, payloadStart.BoardSize.X];
+                        for (int i = 0; i < payloadStart.BoardSize.Y; i++)
                         {
-                            for (int j = 0; j < payloadStart.BoardSize.Y; j++)
+                            for (int j = 0; j < payloadStart.BoardSize.X; j++)
                             {
                                 Board[i, j] = new Field
                                 {
@@ -317,7 +318,7 @@ namespace Player.Models
                             }
                         }
                         PenaltiesTimes = payloadStart.Penalties;
-                        Position = (payloadStart.Position.X, payloadStart.Position.Y);
+                        Position = (payloadStart.Position.Y, payloadStart.Position.X);
                         EnemiesIDs = payloadStart.EnemiesIDs;
                         GoalAreaSize = payloadStart.GoalAreaSize;
                         NumberOfPlayers = payloadStart.NumberOfPlayers;
@@ -345,7 +346,7 @@ namespace Player.Models
                         MoveAnswerPayload payloadMove = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
                         if (payloadMove.MadeMove)
                         {
-                            Position = (payloadMove.CurrentPosition.X, payloadMove.CurrentPosition.Y);
+                            Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
                             Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece;
                         }
                         penaltyTime = int.Parse(PenaltiesTimes.Move);
