@@ -25,18 +25,22 @@ namespace Player.Models
         private int penaltyTime;
         private IStrategy strategy;
         private bool working;
-        private Team team;
-
-        private Penalties penaltiesTimes;
-        private Team winner;
-        private int[] enemiesIDs;
-        private int goalAreaSize;
-        private NumberOfPlayers numberOfPlayers;
-        private int numberOfPieces;
-        private int numberOfGoals;
-        private float shamPieceProbability;
-
         private readonly PlayerConfiguration conf;
+        private Team winner;
+
+        public Penalties PenaltiesTimes { get; private set; }
+
+        public int[] EnemiesIDs { get; private set; }
+
+        public NumberOfPlayers NumberOfPlayers { get; private set; }
+
+        public int NumberOfPieces { get; private set; }
+
+        public int NumberOfGoals { get; private set; }
+
+        public float ShamPieceProbability { get; private set; }
+
+        public Team Team { get; private set; }
 
         public bool IsLeader { get; private set; }
 
@@ -52,15 +56,17 @@ namespace Player.Models
 
         public int LeaderId { get; private set; }
 
-        public (int x, int y) BoardSize { get; private set; }
+        public (int y, int x) BoardSize { get; private set; }
+
+        public int GoalAreaSize { get; private set; }
 
         public Player(PlayerConfiguration conf, IStrategy strategy, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
         {
             this.conf = conf;
             if (conf.TeamID == "red")
-                team = Team.Red;
+                Team = Team.Red;
             else
-                team = Team.Blue;
+                Team = Team.Blue;
             this.strategy = strategy;
             this.queue = queue;
             this.client = client;
@@ -84,7 +90,7 @@ namespace Player.Models
         {
             JoinGamePayload payload = new JoinGamePayload()
             {
-                TeamID = team,
+                TeamID = Team,
             };
             PlayerMessage message = new PlayerMessage()
             {
@@ -193,7 +199,7 @@ namespace Player.Models
                 int row = i / BoardSize.y;
                 int col = i % BoardSize.y;
                 response.Distances[row, col] = Board[row, col].DistToPiece;
-                if (team == Team.Red)
+                if (Team == Team.Red)
                 {
                     response.RedTeamGoalAreaInformations[row, col] = Board[row, col].GoalInfo;
                     response.BlueTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
@@ -206,7 +212,7 @@ namespace Player.Models
             }
             message.Payload = response.Serialize();
             await Communicate(message, cancellationToken);
-            penaltyTime = int.Parse(penaltiesTimes.InformationExchange);
+            penaltyTime = int.Parse(PenaltiesTimes.InformationExchange);
         }
 
         public async Task RequestsResponse(CancellationToken cancellationToken, int respondToID, bool isFromLeader = false)
@@ -259,11 +265,11 @@ namespace Player.Models
                         {
                             HavePiece = false;
                         }
-                        penaltyTime = int.Parse(penaltiesTimes.CheckForSham);
+                        penaltyTime = int.Parse(PenaltiesTimes.CheckForSham);
                         break;
                     case GMMessageID.DestructionAnswer:
                         HavePiece = false;
-                        penaltyTime = int.Parse(penaltiesTimes.DestroyPiece);
+                        penaltyTime = int.Parse(PenaltiesTimes.DestroyPiece);
                         break;
                     case GMMessageID.DiscoverAnswer:
                         DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
@@ -276,7 +282,7 @@ namespace Player.Models
                         Board[Position.Item1 - 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceNW;
                         Board[Position.Item1 + 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceNE;
                         Board[Position.Item1 - 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceSW;
-                        penaltyTime = int.Parse(penaltiesTimes.Discovery);
+                        penaltyTime = int.Parse(PenaltiesTimes.Discovery);
                         break;
                     case GMMessageID.EndGame:
                         EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
@@ -295,7 +301,7 @@ namespace Player.Models
                         {
                             IsLeader = false;
                         }
-                        team = payloadStart.TeamId;
+                        Team = payloadStart.TeamId;
                         Board = new Field[payloadStart.BoardSize.X, payloadStart.BoardSize.Y];
                         for (int i = 0; i < payloadStart.BoardSize.X; i++)
                         {
@@ -308,19 +314,19 @@ namespace Player.Models
                                 };
                             }
                         }
-                        penaltiesTimes = payloadStart.Penalties;
+                        PenaltiesTimes = payloadStart.Penalties;
                         Position = new Tuple<int, int>(payloadStart.Position.X, payloadStart.Position.Y);
-                        enemiesIDs = payloadStart.EnemiesIDs;
-                        goalAreaSize = payloadStart.GoalAreaSize;
-                        numberOfPlayers = payloadStart.NumberOfPlayers;
-                        numberOfPieces = payloadStart.NumberOfPieces;
-                        numberOfGoals = payloadStart.NumberOfGoals;
-                        shamPieceProbability = payloadStart.ShamPieceProbability;
+                        EnemiesIDs = payloadStart.EnemiesIDs;
+                        GoalAreaSize = payloadStart.GoalAreaSize;
+                        NumberOfPlayers = payloadStart.NumberOfPlayers;
+                        NumberOfPieces = payloadStart.NumberOfPieces;
+                        NumberOfGoals = payloadStart.NumberOfGoals;
+                        ShamPieceProbability = payloadStart.ShamPieceProbability;
                         WaitingPlayers = new List<int>();
                         return true;
                     case GMMessageID.BegForInfoForwarded:
                         BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
-                        if (team == payloadBeg.TeamId)
+                        if (Team == payloadBeg.TeamId)
                         {
                             await RequestsResponse(cancellationToken, payloadBeg.AskingID, payloadBeg.Leader);
                         }
@@ -351,7 +357,7 @@ namespace Player.Models
                                 await Communicate(messagePick, cancellationToken);
                             }
                         }
-                        penaltyTime = int.Parse(penaltiesTimes.Move);
+                        penaltyTime = int.Parse(PenaltiesTimes.Move);
                         break;
                     case GMMessageID.PickAnswer:
                         HavePiece = true;
@@ -361,7 +367,7 @@ namespace Player.Models
                         break;
                     case GMMessageID.PutAnswer:
                         HavePiece = false;
-                        penaltyTime = int.Parse(penaltiesTimes.PutPiece);
+                        penaltyTime = int.Parse(PenaltiesTimes.PutPiece);
                         break;
                     case GMMessageID.GiveInfoForwarded:
                         GiveInfoForwardedPayload payloadGive = JsonConvert.DeserializeObject<GiveInfoForwardedPayload>(message.Payload);
@@ -393,7 +399,7 @@ namespace Player.Models
 
         public async Task MakeDecisionFromStrategy(CancellationToken cancellationToken)
         {
-            await strategy.MakeDecision(this, team, goalAreaSize, cancellationToken);
+            await strategy.MakeDecision(this, cancellationToken);
         }
 
         private async Task Communicate(PlayerMessage message, CancellationToken cancellationToken)

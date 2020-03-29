@@ -7,6 +7,6 @@ namespace Player.Models.Strategies
 {
     public interface IStrategy
     {
-        Task MakeDecision(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken);
+        Task MakeDecision(Player player, CancellationToken cancellationToken);
     }
 }

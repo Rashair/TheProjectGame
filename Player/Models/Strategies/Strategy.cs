@@ -9,7 +9,7 @@ namespace Player.Models.Strategies
 {
     public class Strategy : IStrategy
     {
-        public async Task MakeDecision(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken)
+        public async Task MakeDecision(Player player, CancellationToken cancellationToken)
         {
             if (!player.HavePiece)
             {
@@ -35,11 +35,11 @@ namespace Player.Models.Strategies
             }
             else
             {
-                switch (team)
+                switch (player.Team)
                 {
                     case Team.Red:
                     {
-                        if (player.Position.Item2 <= player.BoardSize.y - goalAreaSize)
+                        if (player.Position.Item2 <= player.BoardSize.y - player.GoalAreaSize)
                         {
                             await player.Move(Direction.N, cancellationToken);
                             if (!cancellationToken.IsCancellationRequested)
@@ -49,13 +49,13 @@ namespace Player.Models.Strategies
                         }
                         else
                         {
-                            RedPlayerMoveToGoalAsync(player, team, goalAreaSize, cancellationToken);
+                            RedPlayerMoveToGoalAsync(player, cancellationToken);
                         }
                         break;
                     }
                     case Team.Blue:
                     {
-                        if (player.Position.Item2 >= goalAreaSize)
+                        if (player.Position.Item2 >= player.GoalAreaSize)
                         {
                             await player.Move(Direction.S, cancellationToken);
                             if (!cancellationToken.IsCancellationRequested)
@@ -65,7 +65,7 @@ namespace Player.Models.Strategies
                         }
                         else
                         {
-                            BluePlayerMoveToGoalAsync(player, team, goalAreaSize, cancellationToken);
+                            BluePlayerMoveToGoalAsync(player, cancellationToken);
                         }
                         break;
                     }
@@ -73,7 +73,7 @@ namespace Player.Models.Strategies
             }
         }
 
-        public async System.Threading.Tasks.Task RedPlayerMoveToGoalAsync(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task RedPlayerMoveToGoalAsync(Player player, CancellationToken cancellationToken)
         {
             while (player.Position.Item2 < player.BoardSize.y)
             {
@@ -89,17 +89,16 @@ namespace Player.Models.Strategies
             }
         }
 
-        public async System.Threading.Tasks.Task BluePlayerMoveToGoalAsync(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task BluePlayerMoveToGoalAsync(Player player, CancellationToken cancellationToken)
         {
-                GoalInfo info = player.Board[player.Position.Item1, player.Position.Item2].GoalInfo;
-                if (info == GoalInfo.IDK)
-                {
-                    await player.Put(cancellationToken);
-                }
-                else
-                {
-                    await player.Move(Direction.S, cancellationToken);
-                }
+            GoalInfo info = player.Board[player.Position.Item1, player.Position.Item2].GoalInfo;
+            if (info == GoalInfo.IDK)
+            {
+                await player.Put(cancellationToken);
+            }
+            else
+            {
+                await player.Move(Direction.S, cancellationToken);
             }
         }
     }
