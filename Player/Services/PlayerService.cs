@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Hosting;
-using Player.Models;
 using Serilog;
+using Shared.Messages;
 
 namespace Player.Services
 {

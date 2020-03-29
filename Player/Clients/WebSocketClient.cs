@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json;
+using Serilog;
 
 namespace Player.Clients
 {
@@ -12,17 +13,20 @@ namespace Player.Clients
     {
         private const int BufferSize = 1024 * 4;
         private readonly ClientWebSocket client;
+        private readonly ILogger logger;
 
         public bool IsOpen => client.State == WebSocketState.Open;
 
         public WebSocketClient()
         {
             client = new ClientWebSocket();
+            logger = Log.ForContext<WebSocketClient<R, S>>();
         }
 
         public async Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
             await client.ConnectAsync(uri, cancellationToken);
+            logger.Information($"Connected to {uri}");
         }
 
         public async Task CloseAsync(CancellationToken cancellationToken)

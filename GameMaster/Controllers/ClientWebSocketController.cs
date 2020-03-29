@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GameMaster.Controllers
 {
-    [Route("ws/client")]
+    [Route("/client")]
     public class ClientWebSocketController : WebSocketController<BackendMessage>
     {
         public ClientWebSocketController(WebSocketManager<BackendMessage> manager)
@@ -15,7 +15,7 @@ namespace GameMaster.Controllers
         {
         }
 
-        public override Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
+        protected override Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
             // Ignoring client messages
             return Task.CompletedTask;

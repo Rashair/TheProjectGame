@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Player.Clients;
 using Player.Models.Strategies;
 using Player.Models.Strategies.Utils;
+using Serilog;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
@@ -18,8 +19,9 @@ namespace Player.Models
 {
     public class Player
     {
-        private BufferBlock<GMMessage> queue;
-        private ISocketClient<GMMessage, PlayerMessage> client;
+        private readonly BufferBlock<GMMessage> queue;
+        private readonly ISocketClient<GMMessage, PlayerMessage> client;
+        private readonly ILogger logger;
 
         private int id;
         private ISender sender;
@@ -49,6 +51,7 @@ namespace Player.Models
             this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
             this.queue = queue;
             this.client = client;
+            this.logger = Log.ForContext<Player>();
         }
 
         public bool IsLeader { get; private set; }
@@ -71,14 +74,13 @@ namespace Player.Models
         {
             await JoinTheGame(cancellationToken);
             bool startGame = false;
+
             while (!cancellationToken.IsCancellationRequested && !startGame)
             {
                 startGame = await AcceptMessage(cancellationToken);
             }
-            if (startGame)
-            {
-                await Start(cancellationToken);
-            }
+
+            await Start(cancellationToken);
         }
 
         internal async Task JoinTheGame(CancellationToken cancellationToken)
@@ -93,6 +95,7 @@ namespace Player.Models
                 Payload = payload.Serialize(),
             };
             await Communicate(message, cancellationToken);
+            logger.Information("Sent JoinTheGame message");
         }
 
         internal async Task Start(CancellationToken cancellationToken)

@@ -69,21 +69,22 @@ namespace GameMaster.Models
                 return;
             }
 
+            logger.Information($"Received message: {message.MessageID.ToString()}");
             players.TryGetValue(message.PlayerID, out GMPlayer player);
             switch (message.MessageID)
             {
                 case PlayerMessageID.CheckPiece:
-                    await players[message.PlayerID].CheckHoldingAsync(cancellationToken);
+                    await player.CheckHoldingAsync(cancellationToken);
                     break;
                 case PlayerMessageID.PieceDestruction:
-                    bool destroyed = await players[message.PlayerID].DestroyHoldingAsync(cancellationToken);
+                    bool destroyed = await player.DestroyHoldingAsync(cancellationToken);
                     if (destroyed)
                     {
                         GeneratePiece();
                     }
                     break;
                 case PlayerMessageID.Discover:
-                    await players[message.PlayerID].DiscoverAsync(this, cancellationToken);
+                    await player.DiscoverAsync(this, cancellationToken);
 
                     // TODO: send response here
                     break;
@@ -123,7 +124,7 @@ namespace GameMaster.Models
                 {
                     MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
                     AbstractField field = null;
-                    int[] pos = players[message.PlayerID].GetPosition();
+                    int[] pos = player.GetPosition();
                     switch (payloadMove.Direction)
                     {
                         case Direction.N:
@@ -153,18 +154,18 @@ namespace GameMaster.Models
                     }
                     if (!(field is null))
                     {
-                        await players[message.PlayerID].MoveAsync(field, this, cancellationToken);
+                        await player.MoveAsync(field, this, cancellationToken);
                     }
                     break;
                 }
                 case PlayerMessageID.Pick:
-                    await players[message.PlayerID].PickAsync(cancellationToken);
+                    await player.PickAsync(cancellationToken);
                     break;
                 case PlayerMessageID.Put:
-                    (bool point, bool removed) = await players[message.PlayerID].PutAsync(cancellationToken);
+                    (bool point, bool removed) = await player.PutAsync(cancellationToken);
                     if (point)
                     {
-                        if (players[message.PlayerID].Team == Team.Red)
+                        if (player.Team == Team.Red)
                         {
                             redTeamPoints++;
                         }

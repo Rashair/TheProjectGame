@@ -10,7 +10,7 @@ using Shared.Messages;
 
 namespace GameMaster.Controllers
 {
-    [Route("ws/player")]
+    [Route("/player")]
     public class PlayerWebSocketController : WebSocketController<GMMessage>
     {
         private readonly BufferBlock<PlayerMessage> queue;
@@ -21,7 +21,7 @@ namespace GameMaster.Controllers
             this.queue = queue;
         }
 
-        public override async Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
+        protected override async Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
             string json = Encoding.UTF8.GetString(buffer, 0, result.Count);
             PlayerMessage message = JsonConvert.DeserializeObject<PlayerMessage>(json);
