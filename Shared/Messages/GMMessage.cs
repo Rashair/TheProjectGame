@@ -17,7 +17,7 @@ namespace Shared.Messages
         public GMMessage(GMMessageID id, Payload payload)
         {
             Id = id;
-            Payload = JsonConvert.SerializeObject(payload);
+            Payload = payload.Serialize();
         }
     }
 }
