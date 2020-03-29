@@ -64,7 +64,7 @@ namespace Player.Tests
             input.Post<GMMessage>(messageDiscover);
 
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
-            var player = new Player.Models.Player(configuration, new Strategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
+            var player = new Player.Models.Player(configuration, new SimpleStrategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);
@@ -114,7 +114,7 @@ namespace Player.Tests
             input.Post<GMMessage>(messageBeg);
 
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
-            var player = new Player.Models.Player(configuration, new Strategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
+            var player = new Player.Models.Player(configuration, new SimpleStrategy(), input, new WebSocketClient<GMMessage, PlayerMessage>());
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);

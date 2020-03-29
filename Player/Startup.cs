@@ -46,7 +46,6 @@ namespace Player
         {
             PlayerConfiguration conf = new PlayerConfiguration();
             Configuration.Bind("DefaultPlayerConfig", conf);
-
             services.AddSingleton(conf);
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, WebSocketClient<GMMessage, PlayerMessage>>();

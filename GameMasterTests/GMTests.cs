@@ -158,9 +158,9 @@ namespace GameMaster.Tests
                 {
                     for (int j = 0; j < board[i].Length; j++)
                     {
-                        int dist = ManhattanDistance(neighbours[k].Item1, board[i][j]);
+                        int dist = ManhattanDistance(neighbours[k].field, board[i][j]);
                         if (dist < neighbours[k].dist)
-                            neighbours[k] = (neighbours[k].Item1, dist, neighbours[k].dir);
+                            neighbours[k] = (neighbours[k].field, dist, neighbours[k].dir);
                     }
                 }
                 if (discoveryActionResult[neighbours[k].dir] != neighbours[k].dist)

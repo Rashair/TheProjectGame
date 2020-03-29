@@ -54,14 +54,14 @@ namespace Player.Models
 
         public (int x, int y) BoardSize { get; private set; }
 
-        public Player(PlayerConfiguration conf, IStrategy strategy, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
+        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
         {
             this.conf = conf;
             if (conf.TeamID == "red")
                 team = Team.Red;
             else
                 team = Team.Blue;
-            this.strategy = strategy;
+            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
             this.queue = queue;
             this.client = client;
         }

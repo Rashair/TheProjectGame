@@ -2,7 +2,7 @@
 
 namespace Player.Models.Strategies
 {
-    public class Strategy : IStrategy
+    public class SimpleStrategy : IStrategy
     {
         public void MakeDecision(Player player)
         {
