@@ -1,4 +1,6 @@
-﻿using Shared.Enums;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Shared.Enums;
 
 namespace Shared.Payloads
 {
@@ -8,6 +10,8 @@ namespace Shared.Payloads
 
         public bool Leader { get; set; }
 
+        [JsonProperty("teamId")]
+        [JsonConverter(typeof(StringEnumConverter))]
         public Team TeamId { get; set; }
     }
 }
