@@ -19,14 +19,26 @@ namespace GameMaster.Models
         private ISocketManager<WebSocket, GMMessage> socketManager;
         private int messageCorrelationId;
         private DateTime lockedTill;
+        private AbstractField position;
 
-        public AbstractField Position { get; internal set; }
+        public AbstractField Position
+        {
+            get => position;
+            set
+            {
+                if (!(position is null))
+                {
+                    position.Leave(this);
+                }
+                position = value;
+            }
+        }
 
-        public AbstractPiece Holding { get; internal set; }
+        public AbstractPiece Holding { get; set; }
 
-        public string SocketID { get; internal set; }
+        public string SocketID { get; set; }
 
-        public bool IsLeader { get; internal set; }
+        public bool IsLeader { get; set; }
 
         public Team Team { get; }
 
@@ -136,6 +148,7 @@ namespace GameMaster.Models
                 {
                     (goal, removed) = Holding.PutOnField(Position);
                     message = PutAnswerMessage(goal);
+                    Holding = null;
                 }
                 await socketManager.SendMessageAsync(SocketID, message, cancellationToken);
             }

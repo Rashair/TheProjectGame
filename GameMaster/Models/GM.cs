@@ -62,7 +62,6 @@ namespace GameMaster.Models
                     bool destroyed = await players[message.PlayerID].DestroyHoldingAsync(cancellationToken);
                     if (destroyed)
                     {
-                        piecesOnBoard--;
                         GeneratePiece();
                     }
                     break;
@@ -157,7 +156,6 @@ namespace GameMaster.Models
                     }
                     if (removed)
                     {
-                        piecesOnBoard--;
                         GeneratePiece();
                     }
                     break;
@@ -171,7 +169,7 @@ namespace GameMaster.Models
                 return false;
             }
 
-            return players.TryAdd(key, new GMPlayer(key, team));
+            return players.TryAdd(key, new GMPlayer(key, conf, socketManager, team));
         }
 
         private int GetPlayersCount(Team team)

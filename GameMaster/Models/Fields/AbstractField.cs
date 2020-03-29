@@ -25,8 +25,10 @@ namespace GameMaster.Models.Fields
             whosHere = null;
         }
 
+        // TODO Temporary fix Put()
         public abstract (bool goal, bool removed) PutNormal(AbstractPiece piece);
 
+        // TODO Temporary fix Put()
         public abstract (bool goal, bool removed) PutFake(AbstractPiece piece);
 
         // originally returned void
