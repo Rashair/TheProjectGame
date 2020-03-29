@@ -75,21 +75,21 @@ namespace Player.Tests
 
         private class ClientMock<R, S> : ISocketClient<R, S>
         {
-            public bool IsOpen => throw new NotImplementedException();
+            public bool IsOpen => true;
 
             public Task CloseAsync(CancellationToken cancellationToken)
             {
-                throw new NotImplementedException();
+                return Task.CompletedTask;
             }
 
             public Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
             {
-                throw new NotImplementedException();
+                return Task.CompletedTask;
             }
 
             public Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
             {
-                throw new NotImplementedException();
+                return Task.FromResult((true, default(R)));
             }
 
             public async Task SendAsync(S message, CancellationToken cancellationToken)

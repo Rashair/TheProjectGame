@@ -23,7 +23,6 @@ namespace Player.Services
             if (!cancellationToken.IsCancellationRequested)
             {
                 logger.Information("Started execution");
-                await Task.Delay(3000);
                 await Task.Run(() => player.Work(cancellationToken));
             }
         }

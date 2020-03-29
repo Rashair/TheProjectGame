@@ -72,6 +72,11 @@ namespace Player.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
+            while (!client.IsOpen)
+            {
+                await Task.Delay(500);
+            }
+
             await JoinTheGame(cancellationToken);
             bool startGame = false;
 
