@@ -28,15 +28,15 @@ namespace GameMaster.Models
         private readonly ISocketManager<WebSocket, GMMessage> socketManager;
 
         private HashSet<(int recipient, int sender)> legalKnowledgeReplies;
-        private Dictionary<int, GMPlayer> players;
+        private readonly Dictionary<int, GMPlayer> players;
         private AbstractField[][] board;
 
         private int redTeamPoints;
         private int blueTeamPoints;
 
-        public bool WasGameInitialized { get; set; }
+        public bool WasGameInitialized { get; private set; }
 
-        public bool WasGameStarted { get; set; }
+        public bool WasGameStarted { get; private set; }
 
         public int TaskAreaEnd { get => conf.Height - conf.GoalAreaHeight; }
 
@@ -55,6 +55,20 @@ namespace GameMaster.Models
 
         public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
         {
+            if (!WasGameInitialized)
+            {
+                // TODO: send error message
+                logger.Warning("Game was not initialized yet: GM can't accept messages");
+                return;
+            }
+
+            if (!WasGameStarted && message.MessageID != PlayerMessageID.JoinTheGame)
+            {
+                // TODO: send error message
+                logger.Warning("Game was not started yet: GM can't accept messages other than JoinTheGame");
+                return;
+            }
+
             players.TryGetValue(message.PlayerID, out GMPlayer player);
             switch (message.MessageID)
             {
@@ -208,7 +222,6 @@ namespace GameMaster.Models
                 {
                     payload = new StartGamePayload
                     {
-                        PlayerID = p.Key,
                         AlliesIDs = teamBlueIds,
                         LeaderID = teamBlueIds.First(),
                         EnemiesIDs = teamRedIds,
@@ -224,7 +237,6 @@ namespace GameMaster.Models
                 {
                     payload = new StartGamePayload
                     {
-                        PlayerID = p.Key,
                         AlliesIDs = teamRedIds,
                         LeaderID = teamRedIds.First(),
                         EnemiesIDs = teamBlueIds,
@@ -236,7 +248,7 @@ namespace GameMaster.Models
                         },
                     };
                 }
-
+                payload.PlayerID = p.Key;
                 payload.BoardSize = new BoardSize
                 {
                     Y = conf.Height,
@@ -271,6 +283,7 @@ namespace GameMaster.Models
             }
 
             await Task.WhenAll(sendMessagesTasks);
+            WasGameStarted = true;
         }
 
         private void InitializePlayersPoisitions()

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Managers;
@@ -198,6 +199,34 @@ namespace GameMaster.Tests
                 }
             }
             return neighbours;
+        }
+
+        [Fact]
+        public void TestStartGame()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration();
+            var queue = new BufferBlock<PlayerMessage>();
+            var lifetime = Mock.Of<IApplicationLifetime>();
+            var manager = new WebSocketManager<GMMessage>();
+            var gameMaster = new GM(lifetime, conf, queue, manager);
+            var players = GetValue<Dictionary<int, GMPlayer>>("players", gameMaster);
+            for (int i = 0; i < conf.NumberOfPlayersPerTeam; ++i)
+            {
+                players.Add(i, new GMPlayer(i, Team.Blue));
+                int j = i + conf.NumberOfPlayersPerTeam;
+                players.Add(j, new GMPlayer(j, Team.Red));
+            }
+            gameMaster.Invoke("InitGame");
+
+            // Act
+            gameMaster.Invoke("StartGame", CancellationToken.None);
+
+            // Assert
+            Assert.All(players.Values, (GMPlayer p) =>
+            {
+                Assert.NotNull(p.GetPosition());
+            });
         }
     }
 }

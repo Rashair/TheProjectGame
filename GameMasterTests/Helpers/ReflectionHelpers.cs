@@ -8,6 +8,28 @@ namespace GameMaster.Tests.Helpers
 {
     internal static class ReflectionHelpers
     {
+        public static void Invoke(this object obj, string methodName, Type type, params object[] parameters)
+        {
+            var method = GetMethod(methodName, type);
+            method.Invoke(obj, parameters);
+        }
+
+        public static void Invoke(this object obj, string methodName, params object[] parameters)
+        {
+            obj.Invoke(methodName, typeof(GM), parameters);
+        }
+
+        public static T Invoke<T>(this object obj, string methodName, Type type, params object[] parameters)
+        {
+            var method = GetMethod(methodName);
+            return (T)method.Invoke(obj, parameters);
+        }
+
+        public static T Invoke<T>(this object obj, string methodName, params object[] parameters)
+        {
+            return obj.Invoke<T>(methodName, typeof(GM), parameters);
+        }
+
         public static MethodInfo GetMethod(string methodName, Type type)
         {
             Assert.False(string.IsNullOrWhiteSpace(methodName), $"{nameof(methodName)} cannot be null or whitespace");
@@ -48,6 +70,11 @@ namespace GameMaster.Tests.Helpers
         public static T GetValue<T>(string fieldName, object obj)
         {
             return GetValue<T>(fieldName, obj, typeof(GM));
+        }
+
+        public static object[] GetParamsForMethod(params object[] parameters)
+        {
+            return parameters;
         }
     }
 }
