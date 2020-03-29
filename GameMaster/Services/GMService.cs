@@ -23,7 +23,7 @@ namespace GameMaster.Services
 
         protected async override Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            await WaitForStart(cancellationToken);
+            await WaitForInit(cancellationToken);
 
             logger.Information("Stopped waiting");
             if (!cancellationToken.IsCancellationRequested)
@@ -33,7 +33,7 @@ namespace GameMaster.Services
             }
         }
 
-        private async Task WaitForStart(CancellationToken cancellationToken)
+        private async Task WaitForInit(CancellationToken cancellationToken)
         {
             while (!(gameMaster.WasGameInitialized || cancellationToken.IsCancellationRequested))
             {

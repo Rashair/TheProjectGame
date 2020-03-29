@@ -36,21 +36,17 @@ namespace GameMaster.Tests
             var lifetime = Mock.Of<IApplicationLifetime>();
             var manager = new WebSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
-
-            var startGame = GetMethod("InitGame");
-            startGame.Invoke(gameMaster, null);
-            var method = GetMethod("GeneratePiece");
+            gameMaster.Invoke("InitGame");
 
             // Act
             for (int i = 0; i < x; ++i)
             {
-                method.Invoke(gameMaster, null);
+                gameMaster.Invoke("GeneratePiece");
             }
 
             // Assert
             int pieceCount = 0;
-            var fieldInfo = GetField("board");
-            AbstractField[][] board = (AbstractField[][])fieldInfo.GetValue(gameMaster);
+            var board = gameMaster.GetValue<AbstractField[][]>("board");
             for (int i = 0; i < board.Length; ++i)
             {
                 for (int j = 0; j < board[i].Length; ++j)
@@ -140,23 +136,17 @@ namespace GameMaster.Tests
             var lifetime = Mock.Of<IApplicationLifetime>();
             var manager = new WebSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
-            var startGame = GetMethod("InitGame");
-            startGame.Invoke(gameMaster, null);
-            var generatePiece = GetMethod("GeneratePiece");
-
-            // Act
+            gameMaster.Invoke("InitGame");
             for (int i = 0; i < pieceCount; ++i)
             {
-                generatePiece.Invoke(gameMaster, null);
+                gameMaster.Invoke("GeneratePiece");
             }
 
             // Act
-            var discover = GetMethod("Discover");
-            Dictionary<Direction, int> discoveryActionResult = (Dictionary<Direction, int>)discover.Invoke(gameMaster, new object[] { field });
+            var discoveryActionResult = gameMaster.Invoke<Dictionary<Direction, int>>("Discover", field);
 
             // Assert
-            var fieldInfo = GetField("board");
-            AbstractField[][] board = (AbstractField[][])fieldInfo.GetValue(gameMaster);
+            var board = gameMaster.GetValue<AbstractField[][]>("board");
             List<(AbstractField field, int dist, Direction dir)> neighbours = GetNeighbours(field, board, conf.Height, conf.Width);
 
             for (int k = 0; k < neighbours.Count; k++)
@@ -210,7 +200,7 @@ namespace GameMaster.Tests
             var lifetime = Mock.Of<IApplicationLifetime>();
             var manager = new WebSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
-            var players = GetValue<Dictionary<int, GMPlayer>>("players", gameMaster);
+            var players = gameMaster.GetValue<Dictionary<int, GMPlayer>>("players");
             for (int i = 0; i < conf.NumberOfPlayersPerTeam; ++i)
             {
                 players.Add(i, new GMPlayer(i, Team.Blue));

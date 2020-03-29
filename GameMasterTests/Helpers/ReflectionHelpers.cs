@@ -30,7 +30,7 @@ namespace GameMaster.Tests.Helpers
             return obj.Invoke<T>(methodName, typeof(GM), parameters);
         }
 
-        public static MethodInfo GetMethod(string methodName, Type type)
+        private static MethodInfo GetMethod(string methodName, Type type)
         {
             Assert.False(string.IsNullOrWhiteSpace(methodName), $"{nameof(methodName)} cannot be null or whitespace");
 
@@ -41,12 +41,12 @@ namespace GameMaster.Tests.Helpers
             return method;
         }
 
-        public static MethodInfo GetMethod(string methodName)
+        private static MethodInfo GetMethod(string methodName)
         {
             return GetMethod(methodName, typeof(GM));
         }
 
-        public static FieldInfo GetField(string fieldName, Type type)
+        private static FieldInfo GetField(string fieldName, Type type)
         {
             Assert.False(string.IsNullOrWhiteSpace(fieldName), $"{nameof(fieldName)} cannot be null or whitespace");
 
@@ -57,24 +57,19 @@ namespace GameMaster.Tests.Helpers
             return field;
         }
 
-        public static FieldInfo GetField(string fieldName)
+        private static FieldInfo GetField(string fieldName)
         {
             return GetField(fieldName, typeof(GM));
         }
 
-        public static T GetValue<T>(string fieldName, object obj, Type type)
+        public static T GetValue<T>(this object obj, string fieldName, Type type)
         {
             return (T)GetField(fieldName, type).GetValue(obj);
         }
 
-        public static T GetValue<T>(string fieldName, object obj)
+        public static T GetValue<T>(this object obj, string fieldName)
         {
-            return GetValue<T>(fieldName, obj, typeof(GM));
-        }
-
-        public static object[] GetParamsForMethod(params object[] parameters)
-        {
-            return parameters;
+            return obj.GetValue<T>(fieldName, typeof(GM));
         }
     }
 }
