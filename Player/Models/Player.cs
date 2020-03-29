@@ -300,9 +300,11 @@ namespace Player.Models
                         {
                             for (int j = 0; j < payloadStart.BoardSize.Y; j++)
                             {
-                                Board[i, j] = new Field();
-                                Board[i, j].DistToPiece = -1;
-                                Board[i, j].GoalInfo = GoalInfo.IDK;
+                                Board[i, j] = new Field
+                                {
+                                    DistToPiece = int.MaxValue,
+                                    GoalInfo = GoalInfo.IDK
+                                };
                             }
                         }
                         penaltiesTimes = payloadStart.Penalties;
@@ -361,7 +363,7 @@ namespace Player.Models
                         {
                             for (int j = 0; j < payloadGive.Distances.GetLength(1); j++)
                             {
-                                if (payloadGive.Distances[i, j] != -1)
+                                if (payloadGive.Distances[i, j] != int.MaxValue)
                                 {
                                     Board[i, j].DistToPiece = payloadGive.Distances[i, j];
                                 }
