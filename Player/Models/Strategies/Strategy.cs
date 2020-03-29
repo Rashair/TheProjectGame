@@ -14,10 +14,10 @@ namespace Player.Models.Strategies
             if (!player.HavePiece)
             {
                 CancellationToken token = cancelTokenSource.Token;
-                player.Discover(token);
+                player.Discover(token).Wait();
                 if (!token.IsCancellationRequested)
                 {
-                    player.AcceptMessage(token);
+                    player.AcceptMessage(token).Wait();
 
                     (int x, int y) = player.Position;
                     (Direction, int, int)[] neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter((x, y));
