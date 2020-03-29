@@ -13,11 +13,16 @@ namespace Player.Models.Strategies
         {
             if (!player.HavePiece)
             {
-                await player.Discover(cancellationToken);
+                (int y, int x) = player.Position;
+                if (false)
+                {
+                    await player.Discover(cancellationToken);
+                    return;
+                }
+
                 if (!cancellationToken.IsCancellationRequested)
                 {
-                    (int x, int y) = player.Position;
-                    (Direction dir, int y, int x)[] neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter((x, y));
+                    (Direction dir, int y, int x)[] neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter((y, x));
                     int[] dist = new int[neighbourCoordinates.Length];
 
                     for (int i = 0; i < neighbourCoordinates.Length; i++)

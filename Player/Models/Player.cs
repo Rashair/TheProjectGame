@@ -48,7 +48,7 @@ namespace Player.Models
 
         public Field[,] Board { get; private set; }
 
-        public Tuple<int, int> Position { get; private set; }
+        public (int y, int x) Position { get; private set; }
 
         public List<int> WaitingPlayers { get; private set; }
 
@@ -273,15 +273,15 @@ namespace Player.Models
                         break;
                     case GMMessageID.DiscoverAnswer:
                         DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
-                        Board[Position.Item1, Position.Item2].DistToPiece = payloadDiscover.DistanceFromCurrent;
-                        Board[Position.Item1 + 1, Position.Item2].DistToPiece = payloadDiscover.DistanceE;
-                        Board[Position.Item1 - 1, Position.Item2].DistToPiece = payloadDiscover.DistanceW;
-                        Board[Position.Item1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceN;
-                        Board[Position.Item1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceS;
-                        Board[Position.Item1 + 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceSE;
-                        Board[Position.Item1 - 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceNW;
-                        Board[Position.Item1 + 1, Position.Item2 + 1].DistToPiece = payloadDiscover.DistanceNE;
-                        Board[Position.Item1 - 1, Position.Item2 - 1].DistToPiece = payloadDiscover.DistanceSW;
+                        Board[Position.y, Position.x].DistToPiece = payloadDiscover.DistanceFromCurrent;
+                        Board[Position.y + 1, Position.x].DistToPiece = payloadDiscover.DistanceE;
+                        Board[Position.y - 1, Position.x].DistToPiece = payloadDiscover.DistanceW;
+                        Board[Position.y, Position.x + 1].DistToPiece = payloadDiscover.DistanceN;
+                        Board[Position.y, Position.x - 1].DistToPiece = payloadDiscover.DistanceS;
+                        Board[Position.y + 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSE;
+                        Board[Position.y - 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNW;
+                        Board[Position.y + 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNE;
+                        Board[Position.y - 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSW;
                         penaltyTime = int.Parse(PenaltiesTimes.Discovery);
                         break;
                     case GMMessageID.EndGame:
@@ -315,7 +315,7 @@ namespace Player.Models
                             }
                         }
                         PenaltiesTimes = payloadStart.Penalties;
-                        Position = new Tuple<int, int>(payloadStart.Position.X, payloadStart.Position.Y);
+                        Position = (payloadStart.Position.X, payloadStart.Position.Y);
                         EnemiesIDs = payloadStart.EnemiesIDs;
                         GoalAreaSize = payloadStart.GoalAreaSize;
                         NumberOfPlayers = payloadStart.NumberOfPlayers;
