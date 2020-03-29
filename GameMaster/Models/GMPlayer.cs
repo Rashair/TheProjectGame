@@ -298,5 +298,10 @@ namespace GameMaster.Models
             EmptyAnswerPayload payload = new EmptyAnswerPayload();
             return new GMMessage(GMMessageID.PickAnswer, payload);
         }
+
+        public int this[int i]
+        {
+            get { return position.GetPosition()[i]; }
+        }
     }
 }
