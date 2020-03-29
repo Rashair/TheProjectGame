@@ -84,6 +84,7 @@ namespace GameMaster.Models
                     break;
                 case PlayerMessageID.Discover:
                     await players[message.PlayerID].DiscoverAsync(this, cancellationToken);
+
                     // TODO: send response here
                     break;
                 case PlayerMessageID.GiveInfo:
@@ -93,69 +94,69 @@ namespace GameMaster.Models
                     await ForwardKnowledgeQuestion(message, cancellationToken);
                     break;
                 case PlayerMessageID.JoinTheGame:
+                {
+                    JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
+                    int key = players.Count;
+                    bool accepted = TryToAddPlayer(key, payloadJoin.TeamID);
+                    JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
                     {
-                        JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
-                        int key = players.Count;
-                        bool accepted = TryToAddPlayer(key, payloadJoin.TeamID);
-                        JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
-                        {
-                            Accepted = accepted,
-                            PlayerID = key,
-                        };
-                        GMMessage answerJoin = new GMMessage()
-                        {
-                            Id = GMMessageID.JoinTheGameAnswer,
-                            Payload = JsonConvert.SerializeObject(answerJoinPayload),
-                        };
-                        await socketManager.SendMessageAsync(players[key].SocketID, answerJoin, cancellationToken);
+                        Accepted = accepted,
+                        PlayerID = key,
+                    };
+                    GMMessage answerJoin = new GMMessage()
+                    {
+                        Id = GMMessageID.JoinTheGameAnswer,
+                        Payload = JsonConvert.SerializeObject(answerJoinPayload),
+                    };
+                    await socketManager.SendMessageAsync(players[key].SocketID, answerJoin, cancellationToken);
 
-                        if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
-                           GetPlayersCount(Team.Blue) == conf.NumberOfPlayersPerTeam)
-                        {
-                            StartGame();
-                            WasGameStarted = true;
-                            logger.Information("Game was started.");
-                        }
-                        break;
-                    }
-                case PlayerMessageID.Move:
+                    if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
+                       GetPlayersCount(Team.Blue) == conf.NumberOfPlayersPerTeam)
                     {
-                        MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
-                        AbstractField field = null;
-                        int[] pos = players[message.PlayerID].GetPosition();
-                        switch (payloadMove.Direction)
-                        {
-                            case Direction.N:
-                                if (pos[1] + 1 < board.GetLength(1))
-                                {
-                                    field = board[pos[0]][pos[1] + 1];
-                                }
-                                break;
-                            case Direction.S:
-                                if (pos[1] - 1 >= 0)
-                                {
-                                    field = board[pos[0]][pos[1] - 1];
-                                }
-                                break;
-                            case Direction.E:
-                                if (pos[0] + 1 < board.GetLength(0))
-                                {
-                                    field = board[pos[0] + 1][pos[1]];
-                                }
-                                break;
-                            case Direction.W:
-                                if (pos[0] - 1 >= 0)
-                                {
-                                    field = board[pos[0] - 1][pos[1]];
-                                }
-                                break;
-                        }
-                        if (!(field is null))
-                        {
-                            await players[message.PlayerID].MoveAsync(field, this, cancellationToken);
-                        }
-                        break;
+                        await StartGame(cancellationToken);
+                        WasGameStarted = true;
+                        logger.Information("Game was started.");
                     }
+                    break;
+                }
+                case PlayerMessageID.Move:
+                {
+                    MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
+                    AbstractField field = null;
+                    int[] pos = players[message.PlayerID].GetPosition();
+                    switch (payloadMove.Direction)
+                    {
+                        case Direction.N:
+                            if (pos[1] + 1 < board.GetLength(1))
+                            {
+                                field = board[pos[0]][pos[1] + 1];
+                            }
+                            break;
+                        case Direction.S:
+                            if (pos[1] - 1 >= 0)
+                            {
+                                field = board[pos[0]][pos[1] - 1];
+                            }
+                            break;
+                        case Direction.E:
+                            if (pos[0] + 1 < board.GetLength(0))
+                            {
+                                field = board[pos[0] + 1][pos[1]];
+                            }
+                            break;
+                        case Direction.W:
+                            if (pos[0] - 1 >= 0)
+                            {
+                                field = board[pos[0] - 1][pos[1]];
+                            }
+                            break;
+                    }
+                    if (!(field is null))
+                    {
+                        await players[message.PlayerID].MoveAsync(field, this, cancellationToken);
+                    }
+                    break;
+                }
                 case PlayerMessageID.Pick:
                     await players[message.PlayerID].PickAsync(cancellationToken);
                     break;
@@ -187,9 +188,11 @@ namespace GameMaster.Models
                 return false;
             }
 
-            var player = new GMPlayer(key, team);
-            player.SocketID = key.ToString();
-            return players.TryAdd(key, new GMPlayer(key, conf, socketManager, team));
+            var player = new GMPlayer(key, conf, socketManager, team)
+            {
+                SocketID = key.ToString(),
+            };
+            return players.TryAdd(key, player);
         }
 
         private int GetPlayersCount(Team team)

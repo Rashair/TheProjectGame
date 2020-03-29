@@ -206,9 +206,9 @@ namespace GameMaster.Tests
             var players = gameMaster.GetValue<Dictionary<int, GMPlayer>>("players");
             for (int i = 0; i < conf.NumberOfPlayersPerTeam; ++i)
             {
-                players.Add(i, new GMPlayer(i, Team.Blue));
+                players.Add(i, new GMPlayer(i, conf, manager, Team.Red));
                 int j = i + conf.NumberOfPlayersPerTeam;
-                players.Add(j, new GMPlayer(j, Team.Red));
+                players.Add(j, new GMPlayer(j, conf, manager, Team.Blue));
             }
             gameMaster.Invoke("InitGame");
 
@@ -253,7 +253,7 @@ namespace GameMaster.Tests
             for (int i = 0; i < conf.NumberOfPlayersPerTeam; ++i)
             {
                 string socketId = Guid.NewGuid().ToString();
-                var player = new GMPlayer(i, Team.Red)
+                var player = new GMPlayer(i, conf, manager, Team.Red)
                 {
                     SocketID = socketId,
                 };
@@ -262,7 +262,7 @@ namespace GameMaster.Tests
 
                 int j = i + conf.NumberOfPlayersPerTeam;
                 socketId = Guid.NewGuid().ToString();
-                player = new GMPlayer(j, Team.Blue)
+                player = new GMPlayer(j, conf, manager, Team.Blue)
                 {
                     SocketID = socketId,
                 };

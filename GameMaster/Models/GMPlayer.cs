@@ -184,9 +184,14 @@ namespace GameMaster.Models
             return picked;
         }
 
-        internal int[] GetPosition()
+        public int[] GetPosition()
         {
             return Position.GetPosition();
+        }
+
+        public int this[int i]
+        {
+            get { return position.GetPosition()[i]; }
         }
 
         private async Task<bool> TryLockAsync(int time, CancellationToken cancellationToken)
@@ -297,11 +302,6 @@ namespace GameMaster.Models
         {
             EmptyAnswerPayload payload = new EmptyAnswerPayload();
             return new GMMessage(GMMessageID.PickAnswer, payload);
-        }
-
-        public int this[int i]
-        {
-            get { return position.GetPosition()[i]; }
         }
     }
 }
