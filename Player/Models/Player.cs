@@ -385,7 +385,7 @@ namespace Player.Models
             return false;
         }
 
-        public void MakeDecisionFromStrategy(CancellationToken cancellationToken)
+        public async Task MakeDecisionFromStrategy(CancellationToken cancellationToken)
         {
             strategy.MakeDecision(this, team, goalAreaSize, cancellationToken);
         }

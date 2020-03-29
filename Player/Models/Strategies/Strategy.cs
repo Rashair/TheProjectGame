@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 using Shared.Enums;
 
@@ -8,14 +9,14 @@ namespace Player.Models.Strategies
 {
     public class Strategy : IStrategy
     {
-        public void MakeDecision(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken)
+        public async Task MakeDecision(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken)
         {
             if (!player.HavePiece)
             {
-                player.Discover(cancellationToken).Wait();
+                await player.Discover(cancellationToken);
                 if (!cancellationToken.IsCancellationRequested)
                 {
-                    player.AcceptMessage(cancellationToken).Wait();
+                    await player.AcceptMessage(cancellationToken);
 
                     (int x, int y) = player.Position;
                     (Direction, int, int)[] neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter((x, y));
@@ -27,10 +28,10 @@ namespace Player.Models.Strategies
                     }
                     Array.Sort(dist, neighbourCoordinates);
 
-                    player.Move(neighbourCoordinates[0].Item1, cancellationToken).Wait();
+                    await player.Move(neighbourCoordinates[0].Item1, cancellationToken);
                     for (int i = 1; i < dist.Length && cancellationToken.IsCancellationRequested; i++)
                     {
-                        player.Move(neighbourCoordinates[i].Item1, cancellationToken).Wait();
+                        await player.Move(neighbourCoordinates[i].Item1, cancellationToken);
                     }
                     if (!cancellationToken.IsCancellationRequested)
                     {
@@ -46,15 +47,15 @@ namespace Player.Models.Strategies
                         {
                             if (player.Position.Item2 <= player.BoardSize.y - goalAreaSize)
                             {
-                                player.Move(Direction.N, cancellationToken).Wait();
+                                await player.Move(Direction.N, cancellationToken);
                                 if (!cancellationToken.IsCancellationRequested)
                                 {
-                                    player.AcceptMessage(cancellationToken).Wait();
+                                    await player.AcceptMessage(cancellationToken);
                                 }
                             }
                             else
                             {
-                                RedPlayerMoveToGoal(player, team, goalAreaSize, cancellationToken);
+                                RedPlayerMoveToGoalAsync(player, team, goalAreaSize, cancellationToken);
                             }
                             break;
                         }
@@ -62,15 +63,15 @@ namespace Player.Models.Strategies
                         {
                             if (player.Position.Item2 >= goalAreaSize)
                             {
-                                player.Move(Direction.S, cancellationToken).Wait();
+                                await player.Move(Direction.S, cancellationToken);
                                 if (!cancellationToken.IsCancellationRequested)
                                 {
-                                    player.AcceptMessage(cancellationToken).Wait();
+                                    await player.AcceptMessage(cancellationToken);
                                 }
                             }
                             else
                             {
-                                BluePlayerMoveToGoal(player, team, goalAreaSize, cancellationToken);
+                                BluePlayerMoveToGoalAsync(player, team, goalAreaSize, cancellationToken);
                             }
                             break;
                         }
@@ -78,47 +79,47 @@ namespace Player.Models.Strategies
             }
         }
 
-        public void RedPlayerMoveToGoal(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task RedPlayerMoveToGoalAsync(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken)
         {
             while (player.Position.Item2 < player.BoardSize.y)
             {
                 GoalInfo info = player.Board[player.Position.Item1, player.Position.Item2].GoalInfo;
                 if (info == GoalInfo.IDK)
                 {
-                    player.Put(cancellationToken).Wait();
+                    await player.Put(cancellationToken);
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        player.AcceptMessage(cancellationToken).Wait();
+                        await player.AcceptMessage(cancellationToken);
                     }
                     break;
                 }
                 else
                 {
                     Direction[] directions = { Direction.N, Direction.W, Direction.E, Direction.S };
-                    player.Move(Direction.S, cancellationToken).Wait();
+                    await player.Move(Direction.S, cancellationToken);
                     for (int i = 1; i < directions.Length && cancellationToken.IsCancellationRequested; i++)
                     {
-                        player.Move(directions[i], cancellationToken).Wait();
+                        await player.Move(directions[i], cancellationToken);
                     }
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        player.AcceptMessage(cancellationToken).Wait();
+                        await player.AcceptMessage(cancellationToken);
                     }
                 }
             }
         }
 
-        public void BluePlayerMoveToGoal(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task BluePlayerMoveToGoalAsync(Player player, Team team, int goalAreaSize, CancellationToken cancellationToken)
         {
             while (player.Position.Item2 >= 0)
             {
                 GoalInfo info = player.Board[player.Position.Item1, player.Position.Item2].GoalInfo;
                 if (info == GoalInfo.IDK)
                 {
-                    player.Put(cancellationToken).Wait();
+                    await player.Put(cancellationToken);
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        player.AcceptMessage(cancellationToken).Wait();
+                        await player.AcceptMessage(cancellationToken);
                     }
                     break;
                 }
@@ -128,11 +129,11 @@ namespace Player.Models.Strategies
                     player.Move(Direction.S, cancellationToken).Wait();
                     for (int i = 1; i < directions.Length && cancellationToken.IsCancellationRequested; i++)
                     {
-                        player.Move(directions[i], cancellationToken).Wait();
+                        await player.Move(directions[i], cancellationToken);
                     }
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        player.AcceptMessage(cancellationToken).Wait();
+                        await player.AcceptMessage(cancellationToken);
                     }
                 }
             }

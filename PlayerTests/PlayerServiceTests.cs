@@ -99,7 +99,7 @@ namespace Player.Tests
 
         private class StrategyMock : IStrategy
         {
-            public void MakeDecision(Models.Player player, Team team, int goalAreaize, CancellationToken cancellationToken)
+            public async Task MakeDecision(Models.Player player, Team team, int goalAreaize, CancellationToken cancellationToken)
             {
             }
         }

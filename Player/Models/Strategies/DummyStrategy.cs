@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using System.Threading.Tasks;
 
 using Shared.Enums;
 
@@ -6,7 +7,7 @@ namespace Player.Models.Strategies
 {
     public class DummyStrategy : IStrategy
     {
-        public void MakeDecision(Player player, Team team, int g, CancellationToken cancellationToken)
+        public async Task MakeDecision(Player player, Team team, int g, CancellationToken cancellationToken)
         {
         }
     }
