@@ -5,6 +5,7 @@ using System.Threading.Tasks.Dataflow;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Moq;
 using Player.Clients;
 using Player.Models;
 using Player.Models.Strategies;
@@ -20,6 +21,7 @@ namespace Player.Tests
     public class PlayerServiceTests
     {
         [Fact(Timeout = 2500)]
+        [Obsolete]
         public async Task TestExecuteAsyncShouldReadMessages()
         {
             // Arrange
@@ -53,6 +55,7 @@ namespace Player.Tests
             services.AddSingleton<PlayerConfiguration>();
             services.AddSingleton<IStrategy, StrategyMock>();
             services.AddSingleton<Models.Player>();
+            services.AddSingleton(Mock.Of<IApplicationLifetime>());
 
             services.AddHostedService<PlayerService>();
             var serviceProvider = services.BuildServiceProvider();

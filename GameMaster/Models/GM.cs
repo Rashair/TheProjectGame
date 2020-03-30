@@ -70,6 +70,7 @@ namespace GameMaster.Models
             }
 
             players.TryGetValue(message.PlayerID, out GMPlayer player);
+            logger.Information($"Received: {message.MessageID}, {message.Payload} from {player?.Team}");
             switch (message.MessageID)
             {
                 case PlayerMessageID.CheckPiece:
@@ -163,7 +164,8 @@ namespace GameMaster.Models
                     (bool point, bool removed) = await player.PutAsync(cancellationToken);
                     if (point)
                     {
-                        if (player.Team == Team.Red)
+                        int y = player.GetPosition()[0];
+                        if (y < conf.GoalAreaHeight)
                         {
                             logger.Information("RED TEAM POINT !!!");
                             redTeamPoints++;
@@ -173,6 +175,7 @@ namespace GameMaster.Models
                             logger.Information("BLUE TEAM POINT !!!");
                             blueTeamPoints++;
                         }
+                        logger.Information($"by {player.Team}");
                     }
                     if (removed)
                     {

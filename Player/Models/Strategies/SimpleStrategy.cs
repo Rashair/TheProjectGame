@@ -51,12 +51,16 @@ namespace Player.Models.Strategies
                     await player.CheckPiece(cancellationToken);
                     return;
                 }
-                else if (player.IsHeldPieceSham != false)
+                else if (player.IsHeldPieceSham == true)
                 {
                     await player.DestroyPiece(cancellationToken);
                     return;
                 }
 
+                // R 0 fffff
+                // T 1 ttttt
+                // T 2 ttttt
+                // B 3 fffff
                 switch (player.Team)
                 {
                     case Team.Red:
@@ -91,7 +95,7 @@ namespace Player.Models.Strategies
                         }
                         else
                         {
-                            List<Direction> directions = new List<Direction>() { Direction.S, Direction.E };
+                            List<Direction> directions = new List<Direction>() { Direction.W, Direction.E };
                             if (x == 0)
                                 directions.Remove(Direction.W);
                             if (x == player.BoardSize.x - 1)
@@ -135,7 +139,7 @@ namespace Player.Models.Strategies
                         }
                         else
                         {
-                            List<Direction> directions = new List<Direction>() { Direction.S, Direction.E };
+                            List<Direction> directions = new List<Direction>() { Direction.W, Direction.E };
                             if (x == 0)
                                 directions.Remove(Direction.W);
                             if (x == player.BoardSize.x - 1)

@@ -122,8 +122,8 @@ namespace Player.Models
             while (working && !cancellationToken.IsCancellationRequested)
             {
                 await AcceptMessage(cancellationToken);
-                await MakeDecisionFromStrategy(cancellationToken);
                 await Penalty(cancellationToken);
+                await MakeDecisionFromStrategy(cancellationToken);
             }
         }
 
@@ -271,145 +271,153 @@ namespace Player.Models
 
         public async Task<bool> AcceptMessage(CancellationToken cancellationToken) // returns true if StartGameMessage was accepted
         {
-            GMMessage message;
-            if (queue.TryReceive(null, out message))
+            GMMessage message = await queue.ReceiveAsync(cancellationToken);
+            logger.Information($"Received: {message.Id}, {message.Payload}");
+            switch (message.Id)
             {
-                switch (message.Id)
-                {
-                    case GMMessageID.CheckAnswer:
-                        CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
-                        IsHeldPieceSham = payloadCheck.Sham;
-                        logger.Information($"IsSham: {IsHeldPieceSham}");
-                        penaltyTime = int.Parse(PenaltiesTimes.CheckForSham);
-                        break;
-                    case GMMessageID.DestructionAnswer:
-                        HasPiece = false;
-                        IsHeldPieceSham = null;
-                        penaltyTime = int.Parse(PenaltiesTimes.DestroyPiece);
-                        break;
-                    case GMMessageID.DiscoverAnswer:
-                        DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
-                        Board[Position.y, Position.x].DistToPiece = payloadDiscover.DistanceFromCurrent;
-                        Board[Position.y + 1, Position.x].DistToPiece = payloadDiscover.DistanceE;
-                        Board[Position.y - 1, Position.x].DistToPiece = payloadDiscover.DistanceW;
-                        Board[Position.y, Position.x + 1].DistToPiece = payloadDiscover.DistanceN;
-                        Board[Position.y, Position.x - 1].DistToPiece = payloadDiscover.DistanceS;
-                        Board[Position.y + 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSE;
-                        Board[Position.y - 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNW;
-                        Board[Position.y + 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNE;
-                        Board[Position.y - 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSW;
-                        penaltyTime = int.Parse(PenaltiesTimes.Discovery);
-                        break;
-                    case GMMessageID.EndGame:
-                        EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
-                        winner = payloadEnd.Winner;
+                case GMMessageID.CheckAnswer:
+                    CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
+                    IsHeldPieceSham = payloadCheck.Sham;
+                    logger.Information($"IsSham: {IsHeldPieceSham}");
+                    penaltyTime = int.Parse(PenaltiesTimes.CheckForSham);
+                    break;
+                case GMMessageID.DestructionAnswer:
+                    HasPiece = false;
+                    IsHeldPieceSham = null;
+                    penaltyTime = int.Parse(PenaltiesTimes.DestroyPiece);
+                    break;
+                case GMMessageID.DiscoverAnswer:
+                    DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
+                    Board[Position.y, Position.x].DistToPiece = payloadDiscover.DistanceFromCurrent;
+                    Board[Position.y + 1, Position.x].DistToPiece = payloadDiscover.DistanceE;
+                    Board[Position.y - 1, Position.x].DistToPiece = payloadDiscover.DistanceW;
+                    Board[Position.y, Position.x + 1].DistToPiece = payloadDiscover.DistanceN;
+                    Board[Position.y, Position.x - 1].DistToPiece = payloadDiscover.DistanceS;
+                    Board[Position.y + 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSE;
+                    Board[Position.y - 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNW;
+                    Board[Position.y + 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNE;
+                    Board[Position.y - 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSW;
+                    penaltyTime = int.Parse(PenaltiesTimes.Discovery);
+                    break;
+                case GMMessageID.EndGame:
+                    EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
+                    winner = payloadEnd.Winner;
+                    Stop();
+                    break;
+                case GMMessageID.StartGame:
+                    StartGamePayload payloadStart = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
+                    id = payloadStart.PlayerID;
+                    TeamMatesIds = payloadStart.AlliesIDs;
+                    if (id == payloadStart.LeaderID)
+                    {
+                        IsLeader = true;
+                    }
+                    else
+                    {
+                        IsLeader = false;
+                    }
+                    Team = payloadStart.TeamId;
+                    BoardSize = (payloadStart.BoardSize.Y, payloadStart.BoardSize.X);
+                    Board = new Field[payloadStart.BoardSize.Y, payloadStart.BoardSize.X];
+                    for (int i = 0; i < payloadStart.BoardSize.Y; i++)
+                    {
+                        for (int j = 0; j < payloadStart.BoardSize.X; j++)
+                        {
+                            Board[i, j] = new Field
+                            {
+                                DistToPiece = int.MaxValue,
+                                GoalInfo = GoalInfo.IDK,
+                            };
+                        }
+                    }
+                    PenaltiesTimes = payloadStart.Penalties;
+                    Position = (payloadStart.Position.Y, payloadStart.Position.X);
+                    EnemiesIDs = payloadStart.EnemiesIDs;
+                    GoalAreaSize = payloadStart.GoalAreaSize;
+                    NumberOfPlayers = payloadStart.NumberOfPlayers;
+                    NumberOfPieces = payloadStart.NumberOfPieces;
+                    NumberOfGoals = payloadStart.NumberOfGoals;
+                    ShamPieceProbability = payloadStart.ShamPieceProbability;
+                    WaitingPlayers = new List<int>();
+                    logger.Information($"Received startGame, info (id: {id}, pos: {Position}, team: {Team})");
+                    return true;
+                case GMMessageID.BegForInfoForwarded:
+                    BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
+                    if (Team == payloadBeg.TeamId)
+                    {
+                        await RequestsResponse(cancellationToken, payloadBeg.AskingID, payloadBeg.Leader);
+                    }
+                    break;
+                case GMMessageID.JoinTheGameAnswer:
+                    JoinAnswerPayload payloadJoin = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.Payload);
+                    id = payloadJoin.PlayerID;
+                    if (!payloadJoin.Accepted)
+                    {
                         Stop();
-                        break;
-                    case GMMessageID.StartGame:
-                        StartGamePayload payloadStart = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
-                        id = payloadStart.PlayerID;
-                        TeamMatesIds = payloadStart.AlliesIDs;
-                        if (id == payloadStart.LeaderID)
+                    }
+                    break;
+                case GMMessageID.MoveAnswer:
+                    MoveAnswerPayload payloadMove = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
+                    if (payloadMove.MadeMove)
+                    {
+                        ++moveCounter;
+                        logger.Information($"Made move from ({Position.y}, {Position.x}) to {message.Payload}");
+
+                        Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
+                        Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece;
+                    }
+                    penaltyTime = int.Parse(PenaltiesTimes.Move);
+                    break;
+                case GMMessageID.PickAnswer:
+                    HasPiece = true;
+                    logger.Information("Picked piece.");
+
+                    // TODO: Add if this value will be in configuration
+                    penaltyTime = 0;
+                    break;
+                case GMMessageID.PutAnswer:
+                    HasPiece = false;
+
+                    // TODO: info about discovered goal !!!
+                    var payload = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
+                    logger.Information("Put piece");
+                    Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredNotGoal;
+                    penaltyTime = int.Parse(PenaltiesTimes.PutPiece);
+                    break;
+                case GMMessageID.GiveInfoForwarded:
+                    GiveInfoForwardedPayload payloadGive = JsonConvert.DeserializeObject<GiveInfoForwardedPayload>(message.Payload);
+                    for (int i = 0; i < payloadGive.Distances.GetLength(0); i++)
+                    {
+                        for (int j = 0; j < payloadGive.Distances.GetLength(1); j++)
                         {
-                            IsLeader = true;
-                        }
-                        else
-                        {
-                            IsLeader = false;
-                        }
-                        Team = payloadStart.TeamId;
-                        BoardSize = (payloadStart.BoardSize.Y, payloadStart.BoardSize.X);
-                        Board = new Field[payloadStart.BoardSize.Y, payloadStart.BoardSize.X];
-                        for (int i = 0; i < payloadStart.BoardSize.Y; i++)
-                        {
-                            for (int j = 0; j < payloadStart.BoardSize.X; j++)
+                            if (payloadGive.Distances[i, j] != int.MaxValue)
                             {
-                                Board[i, j] = new Field
-                                {
-                                    DistToPiece = int.MaxValue,
-                                    GoalInfo = GoalInfo.IDK,
-                                };
+                                Board[i, j].DistToPiece = payloadGive.Distances[i, j];
+                            }
+                            if (payloadGive.RedTeamGoalAreaInformations[i, j] != GoalInfo.IDK)
+                            {
+                                Board[i, j].GoalInfo = payloadGive.RedTeamGoalAreaInformations[i, j];
+                            }
+                            else if (payloadGive.BlueTeamGoalAreaInformations[i, j] != GoalInfo.IDK)
+                            {
+                                Board[i, j].GoalInfo = payloadGive.BlueTeamGoalAreaInformations[i, j];
                             }
                         }
-                        PenaltiesTimes = payloadStart.Penalties;
-                        Position = (payloadStart.Position.Y, payloadStart.Position.X);
-                        EnemiesIDs = payloadStart.EnemiesIDs;
-                        GoalAreaSize = payloadStart.GoalAreaSize;
-                        NumberOfPlayers = payloadStart.NumberOfPlayers;
-                        NumberOfPieces = payloadStart.NumberOfPieces;
-                        NumberOfGoals = payloadStart.NumberOfGoals;
-                        ShamPieceProbability = payloadStart.ShamPieceProbability;
-                        WaitingPlayers = new List<int>();
-                        logger.Information($"Received startGame, info (id: {id}, pos: {Position}, team: {Team})");
-                        return true;
-                    case GMMessageID.BegForInfoForwarded:
-                        BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
-                        if (Team == payloadBeg.TeamId)
-                        {
-                            await RequestsResponse(cancellationToken, payloadBeg.AskingID, payloadBeg.Leader);
-                        }
-                        break;
-                    case GMMessageID.JoinTheGameAnswer:
-                        JoinAnswerPayload payloadJoin = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.Payload);
-                        id = payloadJoin.PlayerID;
-                        if (!payloadJoin.Accepted)
-                        {
-                            Stop();
-                        }
-                        break;
-                    case GMMessageID.MoveAnswer:
-                        MoveAnswerPayload payloadMove = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
-                        if (payloadMove.MadeMove)
-                        {
-                            ++moveCounter;
-                            logger.Information($"Made move from ({Position.y}, {Position.x}) to {message.Payload}");
-
-                            Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
-                            Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece;
-                        }
-                        penaltyTime = int.Parse(PenaltiesTimes.Move);
-                        break;
-                    case GMMessageID.PickAnswer:
-                        HasPiece = true;
-                        logger.Information("Picked piece.");
-
-                        // TODO: Add if this value will be in configuration
-                        penaltyTime = 0;
-                        break;
-                    case GMMessageID.PutAnswer:
-                        HasPiece = false;
-
-                        // TODO: info about discovered goal !!!
-                        var payload = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
-                        logger.Information("Put piece");
-                        Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredNotGoal;
-                        penaltyTime = int.Parse(PenaltiesTimes.PutPiece);
-                        break;
-                    case GMMessageID.GiveInfoForwarded:
-                        GiveInfoForwardedPayload payloadGive = JsonConvert.DeserializeObject<GiveInfoForwardedPayload>(message.Payload);
-                        for (int i = 0; i < payloadGive.Distances.GetLength(0); i++)
-                        {
-                            for (int j = 0; j < payloadGive.Distances.GetLength(1); j++)
-                            {
-                                if (payloadGive.Distances[i, j] != int.MaxValue)
-                                {
-                                    Board[i, j].DistToPiece = payloadGive.Distances[i, j];
-                                }
-                                if (payloadGive.RedTeamGoalAreaInformations[i, j] != GoalInfo.IDK)
-                                {
-                                    Board[i, j].GoalInfo = payloadGive.RedTeamGoalAreaInformations[i, j];
-                                }
-                                else if (payloadGive.BlueTeamGoalAreaInformations[i, j] != GoalInfo.IDK)
-                                {
-                                    Board[i, j].GoalInfo = payloadGive.BlueTeamGoalAreaInformations[i, j];
-                                }
-                            }
-                        }
-                        break;
-                    default:
-                        break;
-                }
+                    }
+                    break;
+                case GMMessageID.NotWaitedError:
+                    NotWaitedErrorPayload errorPayload = JsonConvert.DeserializeObject<NotWaitedErrorPayload>(message.Payload);
+                    int toWait = (int)(DateTime.Now - errorPayload.WaitUntil).TotalMilliseconds;
+                    if (toWait >= 0)
+                    {
+                        penaltyTime = toWait;
+                    }
+                    logger.Information("Not waited!");
+                    break;
+                default:
+                    break;
             }
+
             return false;
         }
 
