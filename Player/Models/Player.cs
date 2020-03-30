@@ -97,12 +97,10 @@ namespace Player.Models
             }
 
             await Start(cancellationToken);
-            logger.Warning("Exiting work");
         }
 
         internal async Task JoinTheGame(CancellationToken cancellationToken)
         {
-            logger.Information($"Client status: {client.IsOpen}");
             JoinGamePayload payload = new JoinGamePayload()
             {
                 TeamID = Team,
@@ -273,14 +271,14 @@ namespace Player.Models
 
         public async Task<bool> AcceptMessage(CancellationToken cancellationToken) // returns true if StartGameMessage was accepted
         {
-            GMMessage message = await queue.ReceiveAsync(cancellationToken);
-            logger.Information($"Received: {message.Id}, {message.Payload}");
+            var cancellationTimespan = TimeSpan.FromMinutes(1);
+            GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
+            logger.Information($"|{message.Id} | {message.Payload}");
             switch (message.Id)
             {
                 case GMMessageID.CheckAnswer:
                     CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
                     IsHeldPieceSham = payloadCheck.Sham;
-                    logger.Information($"IsSham: {IsHeldPieceSham}");
                     penaltyTime = int.Parse(PenaltiesTimes.CheckForSham);
                     break;
                 case GMMessageID.DestructionAnswer:
@@ -341,7 +339,6 @@ namespace Player.Models
                     NumberOfGoals = payloadStart.NumberOfGoals;
                     ShamPieceProbability = payloadStart.ShamPieceProbability;
                     WaitingPlayers = new List<int>();
-                    logger.Information($"Received startGame, info (id: {id}, pos: {Position}, team: {Team})");
                     return true;
                 case GMMessageID.BegForInfoForwarded:
                     BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
@@ -362,9 +359,6 @@ namespace Player.Models
                     MoveAnswerPayload payloadMove = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
                     if (payloadMove.MadeMove)
                     {
-                        ++moveCounter;
-                        logger.Information($"Made move from ({Position.y}, {Position.x}) to {message.Payload}");
-
                         Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
                         Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece;
                     }
@@ -372,7 +366,6 @@ namespace Player.Models
                     break;
                 case GMMessageID.PickAnswer:
                     HasPiece = true;
-                    logger.Information("Picked piece.");
 
                     // TODO: Add if this value will be in configuration
                     penaltyTime = 0;
@@ -382,7 +375,6 @@ namespace Player.Models
 
                     // TODO: info about discovered goal !!!
                     var payload = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
-                    logger.Information("Put piece");
                     Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredNotGoal;
                     penaltyTime = int.Parse(PenaltiesTimes.PutPiece);
                     break;
@@ -414,7 +406,6 @@ namespace Player.Models
                     {
                         penaltyTime = toWait;
                     }
-                    logger.Information("Not waited!");
                     break;
                 default:
                     break;

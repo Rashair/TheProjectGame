@@ -70,7 +70,7 @@ namespace GameMaster.Models
             }
 
             players.TryGetValue(message.PlayerID, out GMPlayer player);
-            logger.Information($"Received: {message.MessageID}, {message.Payload} from {player?.Team}");
+            logger.Information($"|{message.MessageID} | {message.Payload} | {player?.SocketID} | {player?.Team}");
             switch (message.MessageID)
             {
                 case PlayerMessageID.CheckPiece:
@@ -96,7 +96,6 @@ namespace GameMaster.Models
                     break;
                 case PlayerMessageID.JoinTheGame:
                 {
-                    logger.Information($"Recieved {message.MessageID}");
                     JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
                     int key = message.PlayerID;
                     bool accepted = TryToAddPlayer(key, payloadJoin.TeamID);
@@ -387,7 +386,7 @@ namespace GameMaster.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
-            TimeSpan cancellationTimespan = TimeSpan.FromMilliseconds(100);
+            TimeSpan cancellationTimespan = TimeSpan.FromMinutes(1);
             while (!cancellationToken.IsCancellationRequested)
             {
                 try

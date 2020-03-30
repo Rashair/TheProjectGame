@@ -35,7 +35,6 @@ namespace Player.Services
             if (!stoppingToken.IsCancellationRequested)
             {
                 await Task.Yield();
-                logger.Information("Started execution");
                 await client.ConnectAsync(ConnectUri, stoppingToken);
                 (bool result, GMMessage message) = await client.ReceiveAsync(stoppingToken);
                 while (!stoppingToken.IsCancellationRequested && result)

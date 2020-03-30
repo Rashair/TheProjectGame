@@ -28,7 +28,6 @@ namespace GameMaster.Controllers
         protected virtual void OnConnected(WebSocket socket)
         {
             bool result = Manager.AddSocket(socket);
-            logger.Information($"Socked added: {result}");
         }
 
         protected virtual async Task OnDisconnectedAsync(WebSocket socket, CancellationToken cancellationToken)
@@ -44,7 +43,6 @@ namespace GameMaster.Controllers
         [HttpGet]
         public async Task Get(CancellationToken cancellationToken)
         {
-            logger.Information("Get request!");
             HttpContext context = ControllerContext.HttpContext;
             if (!context.WebSockets.IsWebSocketRequest || !AcceptConnection())
                 return;

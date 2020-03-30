@@ -24,13 +24,11 @@ namespace GameMaster.Services
 
         protected async override Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            logger.Information("Started execution");
             await WaitForInit(cancellationToken);
 
             if (!cancellationToken.IsCancellationRequested)
             {
                 // Task.Run is important - if gameMaster have nothing to do blocks thread
-                logger.Information("Stopped waiting");
                 await Task.Run(async () =>
                 {
                     try

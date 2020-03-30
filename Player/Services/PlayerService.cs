@@ -28,7 +28,6 @@ namespace Player.Services
                 {
                     try
                     {
-                        await Task.Delay(2000);
                         await player.Work(cancellationToken);
                     }
                     catch (Exception e)

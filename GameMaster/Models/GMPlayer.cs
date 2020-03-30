@@ -114,12 +114,10 @@ namespace GameMaster.Models
                 {
                     // TODO Issue 129
                     message = UnknownErrorMessage();
-                    logger.Information($"Did not have piece!");
                 }
                 else
                 {
                     message = CheckAnswerMessage();
-                    logger.Information($"Had piece and: {message.Payload}");
                 }
                 await socketManager.SendMessageAsync(SocketID, message, cancellationToken);
             }

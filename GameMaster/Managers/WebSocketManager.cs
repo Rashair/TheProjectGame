@@ -27,12 +27,10 @@ namespace GameMaster.Managers
         {
             if (!cancellationToken.IsCancellationRequested && (socket.State == WebSocketState.Open))
             {
-                logger.Warning("Started closing socket");
-                await socket.CloseOutputAsync(
+                await socket.CloseAsync(
                     closeStatus: WebSocketCloseStatus.NormalClosure,
                     statusDescription: "Closed by the WebSocketManager",
                     cancellationToken: cancellationToken);
-                logger.Warning("Finished closing socket");
             }
         }
 
