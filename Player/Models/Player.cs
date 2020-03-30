@@ -121,10 +121,12 @@ namespace Player.Models
             working = true;
             while (working && !cancellationToken.IsCancellationRequested)
             {
+                await MakeDecisionFromStrategy(cancellationToken);
                 await AcceptMessage(cancellationToken);
                 await Penalty(cancellationToken);
-                await MakeDecisionFromStrategy(cancellationToken);
             }
+
+            await client.CloseAsync(cancellationToken);
         }
 
         internal void Stop()

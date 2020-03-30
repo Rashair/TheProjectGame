@@ -539,14 +539,7 @@ namespace GameMaster.Models
             await socketManager.SendMessageToAllAsync(answer, cancellationToken);
             logger.Information("Sent endGame to all.");
 
-            List<Task> tasks = new List<Task>(players.Count);
-            foreach (var p in players)
-            {
-                tasks.Add(socketManager.RemoveSocketAsync(p.Key, cancellationToken));
-            }
-
-            await Task.Delay(3000);
-            await Task.WhenAll(tasks);
+            await Task.Delay(4000);
             lifetime.StopApplication();
         }
     }

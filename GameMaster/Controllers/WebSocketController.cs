@@ -31,9 +31,9 @@ namespace GameMaster.Controllers
             logger.Information($"Socked added: {result}");
         }
 
-        protected virtual async Task OnDisconnectedAsync(WebSocket socket)
+        protected virtual async Task OnDisconnectedAsync(WebSocket socket, CancellationToken cancellationToken)
         {
-            await Manager.RemoveSocketAsync(Manager.GetId(socket), CancellationToken.None);
+            await Manager.RemoveSocketAsync(Manager.GetId(socket), cancellationToken);
         }
 
         protected virtual bool AcceptConnection()
@@ -42,24 +42,24 @@ namespace GameMaster.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task Get(CancellationToken cancellationToken)
         {
             logger.Information("Get request!");
             HttpContext context = ControllerContext.HttpContext;
             if (!context.WebSockets.IsWebSocketRequest || !AcceptConnection())
-                return BadRequest();
+                return;
+
             WebSocket socket = await context.WebSockets.AcceptWebSocketAsync();
             OnConnected(socket);
             byte[] buffer = new byte[BufferSize];
             WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer),
-                CancellationToken.None);
-            while (!result.CloseStatus.HasValue)
+                cancellationToken);
+            while (!result.CloseStatus.HasValue && !cancellationToken.IsCancellationRequested)
             {
                 await OnMessageAsync(socket, result, buffer);
-                result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
             }
-            await OnDisconnectedAsync(socket);
-            return Ok();
+            await OnDisconnectedAsync(socket, cancellationToken);
         }
     }
 }
