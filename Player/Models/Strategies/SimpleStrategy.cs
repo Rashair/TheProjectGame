@@ -51,7 +51,7 @@ namespace Player.Models.Strategies
                     await player.CheckPiece(cancellationToken);
                     return;
                 }
-                else if (player.IsHeldPieceSham == false)
+                else if (player.IsHeldPieceSham != false)
                 {
                     await player.DestroyPiece(cancellationToken);
                     return;

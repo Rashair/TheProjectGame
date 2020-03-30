@@ -6,8 +6,8 @@ namespace GameMaster.Models.Fields
 {
     public class TaskField : AbstractField
     {
-        public TaskField(int x, int y)
-            : base(x, y)
+        public TaskField(int y, int x)
+            : base(y, x)
         {
         }
 

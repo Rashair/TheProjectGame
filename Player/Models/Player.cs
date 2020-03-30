@@ -22,6 +22,7 @@ namespace Player.Models
         private readonly BufferBlock<GMMessage> queue;
         private readonly ISocketClient<GMMessage, PlayerMessage> client;
         private readonly ILogger logger;
+        private long moveCounter = 0;
 
         private int id;
         private ISender sender;
@@ -96,6 +97,7 @@ namespace Player.Models
             }
 
             await Start(cancellationToken);
+            logger.Warning("Exiting work");
         }
 
         internal async Task JoinTheGame(CancellationToken cancellationToken)
@@ -128,6 +130,7 @@ namespace Player.Models
         internal void Stop()
         {
             working = false;
+            logger.Warning($"Stopped player: {Team}");
         }
 
         public async Task Move(Direction direction, CancellationToken cancellationToken)
@@ -276,6 +279,7 @@ namespace Player.Models
                     case GMMessageID.CheckAnswer:
                         CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
                         IsHeldPieceSham = payloadCheck.Sham;
+                        logger.Information($"IsSham: {IsHeldPieceSham}");
                         penaltyTime = int.Parse(PenaltiesTimes.CheckForSham);
                         break;
                     case GMMessageID.DestructionAnswer:
@@ -314,6 +318,7 @@ namespace Player.Models
                             IsLeader = false;
                         }
                         Team = payloadStart.TeamId;
+                        BoardSize = (payloadStart.BoardSize.Y, payloadStart.BoardSize.X);
                         Board = new Field[payloadStart.BoardSize.Y, payloadStart.BoardSize.X];
                         for (int i = 0; i < payloadStart.BoardSize.Y; i++)
                         {
@@ -335,6 +340,7 @@ namespace Player.Models
                         NumberOfGoals = payloadStart.NumberOfGoals;
                         ShamPieceProbability = payloadStart.ShamPieceProbability;
                         WaitingPlayers = new List<int>();
+                        logger.Information($"Received startGame, info (id: {id}, pos: {Position}, team: {Team})");
                         return true;
                     case GMMessageID.BegForInfoForwarded:
                         BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
@@ -355,6 +361,9 @@ namespace Player.Models
                         MoveAnswerPayload payloadMove = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
                         if (payloadMove.MadeMove)
                         {
+                            ++moveCounter;
+                            logger.Information($"Made move from ({Position.y}, {Position.x}) to {message.Payload}");
+
                             Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
                             Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece;
                         }
@@ -362,12 +371,18 @@ namespace Player.Models
                         break;
                     case GMMessageID.PickAnswer:
                         HasPiece = true;
+                        logger.Information("Picked piece.");
 
                         // TODO: Add if this value will be in configuration
                         penaltyTime = 0;
                         break;
                     case GMMessageID.PutAnswer:
                         HasPiece = false;
+
+                        // TODO: info about discovered goal !!!
+                        var payload = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
+                        logger.Information("Put piece");
+                        Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredNotGoal;
                         penaltyTime = int.Parse(PenaltiesTimes.PutPiece);
                         break;
                     case GMMessageID.GiveInfoForwarded:

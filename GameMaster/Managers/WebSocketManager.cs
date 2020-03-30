@@ -19,7 +19,7 @@ namespace GameMaster.Managers
         {
             if (!cancellationToken.IsCancellationRequested && (socket.State == WebSocketState.Open))
             {
-                await socket.CloseAsync(
+                await socket.CloseOutputAsync(
                     closeStatus: WebSocketCloseStatus.NormalClosure,
                     statusDescription: "Closed by the WebSocketManager",
                     cancellationToken: cancellationToken);

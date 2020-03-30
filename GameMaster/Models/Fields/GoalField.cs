@@ -4,8 +4,8 @@ namespace GameMaster.Models.Fields
 {
     public class GoalField : AbstractField
     {
-        public GoalField(int x, int y)
-            : base(x, y)
+        public GoalField(int y, int x)
+            : base(y, x)
         {
         }
 

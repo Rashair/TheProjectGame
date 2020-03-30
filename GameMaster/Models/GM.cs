@@ -69,7 +69,6 @@ namespace GameMaster.Models
                 return;
             }
 
-            // logger.Information($"Received message: {message.MessageID}");
             players.TryGetValue(message.PlayerID, out GMPlayer player);
             switch (message.MessageID)
             {
@@ -96,6 +95,7 @@ namespace GameMaster.Models
                     break;
                 case PlayerMessageID.JoinTheGame:
                 {
+                    logger.Information($"Recieved {message.MessageID}");
                     JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
                     int key = message.PlayerID;
                     bool accepted = TryToAddPlayer(key, payloadJoin.TeamID);
@@ -134,31 +134,26 @@ namespace GameMaster.Models
                             }
                             break;
                         case Direction.S:
-                            if (pos[1] - 1 >= 0)
+                            if (pos[0] - 1 >= 0)
                             {
                                 field = board[pos[0] - 1][pos[1]];
                             }
                             break;
                         case Direction.E:
-                            if (pos[0] + 1 < conf.Width)
+                            if (pos[1] + 1 < conf.Width)
                             {
                                 field = board[pos[0]][pos[1] + 1];
                             }
                             break;
                         case Direction.W:
-                            if (pos[0] - 1 >= 0)
+                            if (pos[1] - 1 >= 0)
                             {
                                 field = board[pos[0]][pos[1] - 1];
                             }
                             break;
                     }
-                    if (field != null)
-                    {
-                        await player.MoveAsync(field, this, cancellationToken);
-                    }
+                    await player.MoveAsync(field, this, cancellationToken);
 
-                    // TODO : else
-                    logger.Information("Invalid move");
                     break;
                 }
                 case PlayerMessageID.Pick:
@@ -170,10 +165,12 @@ namespace GameMaster.Models
                     {
                         if (player.Team == Team.Red)
                         {
+                            logger.Information("RED TEAM POINT !!!");
                             redTeamPoints++;
                         }
                         else
                         {
+                            logger.Information("BLUE TEAM POINT !!!");
                             blueTeamPoints++;
                         }
                     }
@@ -340,10 +337,19 @@ namespace GameMaster.Models
                 board[i] = new AbstractField[conf.Width];
             }
 
-            Func<int, int, AbstractField> nonGoalFieldGenerator = (int y, int x) => new NonGoalField(y, x);
+            int goalFields = 0;
+            AbstractField NonGoalOrGoalFieldGenerator(int y, int x)
+            {
+                if (goalFields < conf.NumberOfGoals)
+                {
+                    ++goalFields;
+                    return new GoalField(y, x);
+                }
+                return new NonGoalField(y, x);
+            }
             for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
             {
-                FillBoardRow(rowIt, nonGoalFieldGenerator);
+                FillBoardRow(rowIt, NonGoalOrGoalFieldGenerator);
             }
 
             Func<int, int, AbstractField> taskFieldGenerator = (int y, int x) => new TaskField(y, x);
@@ -353,9 +359,10 @@ namespace GameMaster.Models
                 FillBoardRow(rowIt, taskFieldGenerator);
             }
 
+            goalFields = 0;
             for (int rowIt = secondGoalAreaStart; rowIt < conf.Height; ++rowIt)
             {
-                FillBoardRow(rowIt, nonGoalFieldGenerator);
+                FillBoardRow(rowIt, NonGoalOrGoalFieldGenerator);
             }
         }
 
@@ -383,12 +390,10 @@ namespace GameMaster.Models
                 try
                 {
                     PlayerMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
-                    logger.Information($"Received message: {message.MessageID}");
                     await AcceptMessage(message, cancellationToken);
-                    logger.Information($"Accepted message: {message.MessageID}");
                     if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
                     {
-                        EndGame();
+                        await EndGame(cancellationToken);
                         break;
                     }
                 }
@@ -519,9 +524,26 @@ namespace GameMaster.Models
             }
         }
 
-        internal void EndGame()
+        internal async Task EndGame(CancellationToken cancellationToken)
         {
-            logger.Information("The winner is team {0}", redTeamPoints > blueTeamPoints ? Team.Red : Team.Blue);
+            var winner = redTeamPoints > blueTeamPoints ? Team.Red : Team.Blue;
+            logger.Information($"The winner is team {winner}");
+            var payload = new EndGamePayload()
+            {
+                Winner = winner,
+            };
+            GMMessage answer = new GMMessage(GMMessageID.EndGame, payload);
+            await socketManager.SendMessageToAllAsync(answer, cancellationToken);
+            logger.Information("Sent endGame to all.");
+
+            List<Task> tasks = new List<Task>(players.Count);
+            foreach (var p in players)
+            {
+                tasks.Add(socketManager.RemoveSocketAsync(p.Key, cancellationToken));
+            }
+
+            await Task.Delay(3000);
+            await Task.WhenAll(tasks);
             lifetime.StopApplication();
         }
     }

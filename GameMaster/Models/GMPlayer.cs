@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using GameMaster.Managers;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
+using Serilog;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Payloads;
@@ -14,6 +15,7 @@ namespace GameMaster.Models
 {
     public class GMPlayer
     {
+        private ILogger logger;
         private readonly int id;
         private readonly GameConfiguration conf;
         private readonly ISocketManager<WebSocket, GMMessage> socketManager;
@@ -45,6 +47,7 @@ namespace GameMaster.Models
         public GMPlayer(int id, GameConfiguration conf, ISocketManager<WebSocket, GMMessage> socketManager, Team team,
             bool isLeader = false)
         {
+            logger = Log.ForContext<GMPlayer>();
             this.id = id;
             this.conf = conf;
             this.socketManager = socketManager;
@@ -69,7 +72,7 @@ namespace GameMaster.Models
             bool isUnlocked = await TryLockAsync(conf.MovePenalty, cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
-                bool moved = field.MoveHere(this);
+                bool moved = field?.MoveHere(this) == true;
                 GMMessage message = MoveAnswerMessage(moved, gm);
                 await socketManager.SendMessageAsync(SocketID, message, cancellationToken);
                 return moved;
@@ -111,10 +114,12 @@ namespace GameMaster.Models
                 {
                     // TODO Issue 129
                     message = UnknownErrorMessage();
+                    logger.Information($"Did not have piece!");
                 }
                 else
                 {
                     message = CheckAnswerMessage();
+                    logger.Information($"Had piece and: {message.Payload}");
                 }
                 await socketManager.SendMessageAsync(SocketID, message, cancellationToken);
             }

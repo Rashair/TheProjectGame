@@ -10,12 +10,14 @@ namespace Player.Services
     public class PlayerService : BackgroundService
     {
         private readonly ILogger logger;
+        private readonly IApplicationLifetime lifetime;
         private readonly Models.Player player;
 
-        public PlayerService(Models.Player player)
+        public PlayerService(Models.Player player, IApplicationLifetime lifetime)
         {
             this.player = player;
             this.logger = Log.ForContext<PlayerService>();
+            this.lifetime = lifetime;
         }
 
         protected async override Task ExecuteAsync(CancellationToken cancellationToken)
@@ -26,6 +28,7 @@ namespace Player.Services
                 {
                     try
                     {
+                        await Task.Delay(2000);
                         await player.Work(cancellationToken);
                     }
                     catch (Exception e)
@@ -33,6 +36,8 @@ namespace Player.Services
                         logger.Information(e.Message);
                     }
                 });
+
+                lifetime.StopApplication();
             }
         }
     }
