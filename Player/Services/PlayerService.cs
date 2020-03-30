@@ -3,20 +3,21 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Hosting;
-using Player.Models;
 using Serilog;
 
 namespace Player.Services
 {
     public class PlayerService : BackgroundService
     {
-        private ILogger logger;
+        private readonly ILogger logger;
+        private readonly IApplicationLifetime lifetime;
         private readonly Models.Player player;
 
-        public PlayerService(Models.Player player)
+        public PlayerService(Models.Player player, IApplicationLifetime lifetime)
         {
             this.player = player;
-            logger = Log.ForContext<PlayerService>();
+            this.logger = Log.ForContext<PlayerService>();
+            this.lifetime = lifetime;
         }
 
         protected async override Task ExecuteAsync(CancellationToken cancellationToken)
@@ -34,6 +35,8 @@ namespace Player.Services
                         logger.Information(e.Message);
                     }
                 });
+
+                lifetime.StopApplication();
             }
         }
     }

@@ -22,7 +22,7 @@ export class Start extends Component {
     fetch(`${API_URL}/InitGame`, { method: "POST" }).then(res => {
       if (res.ok) {
         alert("Gra zainicjalizowana");
-        this.setState({ gameInitialized: true, timer: setInterval(this.checkIfGameStarted, 3000) });
+        this.setState({ gameInitialized: true, timer: setInterval(this.checkIfGameStarted, 10000) });
       } else {
         error(res);
       }

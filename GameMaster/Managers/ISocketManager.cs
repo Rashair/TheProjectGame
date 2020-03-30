@@ -5,15 +5,15 @@ namespace GameMaster.Managers
 {
     public interface ISocketManager<TSocket, TMessage>
     {
-        string GetId(TSocket socket);
+        int GetId(TSocket socket);
 
-        TSocket GetSocketById(string id);
+        TSocket GetSocketById(int id);
 
         bool AddSocket(TSocket socket);
 
-        Task<bool> RemoveSocketAsync(string id, CancellationToken cancellationToken);
+        Task<bool> RemoveSocketAsync(int id, CancellationToken cancellationToken);
 
-        Task SendMessageAsync(string id, TMessage message, CancellationToken cancellationToken);
+        Task SendMessageAsync(int id, TMessage message, CancellationToken cancellationToken);
 
         Task SendMessageToAllAsync(TMessage message, CancellationToken cancellationToken);
     }

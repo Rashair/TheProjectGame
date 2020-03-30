@@ -70,20 +70,22 @@ namespace GameMaster.Models
             }
 
             players.TryGetValue(message.PlayerID, out GMPlayer player);
+
+            // logger.Information($"|{message.MessageID} | {message.Payload} | {player?.SocketID} | {player?.Team}");
             switch (message.MessageID)
             {
                 case PlayerMessageID.CheckPiece:
-                    await players[message.PlayerID].CheckHoldingAsync(cancellationToken);
+                    await player.CheckHoldingAsync(cancellationToken);
                     break;
                 case PlayerMessageID.PieceDestruction:
-                    bool destroyed = await players[message.PlayerID].DestroyHoldingAsync(cancellationToken);
+                    bool destroyed = await player.DestroyHoldingAsync(cancellationToken);
                     if (destroyed)
                     {
                         GeneratePiece();
                     }
                     break;
                 case PlayerMessageID.Discover:
-                    await players[message.PlayerID].DiscoverAsync(this, cancellationToken);
+                    await player.DiscoverAsync(this, cancellationToken);
 
                     // TODO: send response here
                     break;
@@ -96,7 +98,7 @@ namespace GameMaster.Models
                 case PlayerMessageID.JoinTheGame:
                 {
                     JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
-                    int key = players.Count;
+                    int key = message.PlayerID;
                     bool accepted = TryToAddPlayer(key, payloadJoin.TeamID);
                     JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
                     {
@@ -123,7 +125,7 @@ namespace GameMaster.Models
                 {
                     MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
                     AbstractField field = null;
-                    int[] pos = players[message.PlayerID].GetPosition();
+                    int[] pos = player.GetPosition();
                     switch (payloadMove.Direction)
                     {
                         case Direction.N:
@@ -133,48 +135,48 @@ namespace GameMaster.Models
                             }
                             break;
                         case Direction.S:
-                            if (pos[1] - 1 >= 0)
+                            if (pos[0] - 1 >= 0)
                             {
                                 field = board[pos[0] - 1][pos[1]];
                             }
                             break;
                         case Direction.E:
-                            if (pos[0] + 1 < conf.Width)
+                            if (pos[1] + 1 < conf.Width)
                             {
                                 field = board[pos[0]][pos[1] + 1];
                             }
                             break;
                         case Direction.W:
-                            if (pos[0] - 1 >= 0)
+                            if (pos[1] - 1 >= 0)
                             {
                                 field = board[pos[0]][pos[1] - 1];
                             }
                             break;
                     }
-                    if (field != null)
-                    {
-                        await players[message.PlayerID].MoveAsync(field, this, cancellationToken);
-                    }
+                    await player.MoveAsync(field, this, cancellationToken);
 
-                    // TODO : else
-                    logger.Information("Invalid move");
                     break;
                 }
                 case PlayerMessageID.Pick:
-                    await players[message.PlayerID].PickAsync(cancellationToken);
+                    await player.PickAsync(cancellationToken);
                     break;
                 case PlayerMessageID.Put:
-                    (bool point, bool removed) = await players[message.PlayerID].PutAsync(cancellationToken);
+                    (bool point, bool removed) = await player.PutAsync(cancellationToken);
                     if (point)
                     {
-                        if (players[message.PlayerID].Team == Team.Red)
+                        int y = player.GetPosition()[0];
+                        if (y < conf.GoalAreaHeight)
                         {
+                            logger.Information("RED TEAM POINT !!!");
                             redTeamPoints++;
                         }
                         else
                         {
+                            logger.Information("BLUE TEAM POINT !!!");
                             blueTeamPoints++;
                         }
+                        logger.Information($"by {player.Team}");
+                        logger.Information($"RED: {redTeamPoints} | BLUE: {blueTeamPoints}");
                     }
                     if (removed)
                     {
@@ -193,7 +195,7 @@ namespace GameMaster.Models
 
             var player = new GMPlayer(key, conf, socketManager, team)
             {
-                SocketID = key.ToString(),
+                SocketID = key,
             };
             return players.TryAdd(key, player);
         }
@@ -269,7 +271,7 @@ namespace GameMaster.Models
                     InformationExchange = conf.AskPenalty.ToString(),
                     Discovery = conf.DiscoverPenalty.ToString(),
                     PutPiece = conf.PutPenalty.ToString(),
-                    CheckForSham = conf.PutPenalty.ToString(),
+                    CheckForSham = conf.CheckPenalty.ToString(),
                     DestroyPiece = conf.DestroyPenalty.ToString(),
                 };
                 payload.ShamPieceProbability = conf.ShamPieceProbability / 100.0f;
@@ -339,10 +341,19 @@ namespace GameMaster.Models
                 board[i] = new AbstractField[conf.Width];
             }
 
-            Func<int, int, AbstractField> nonGoalFieldGenerator = (int y, int x) => new NonGoalField(y, x);
+            int goalFields = 0;
+            AbstractField NonGoalOrGoalFieldGenerator(int y, int x)
+            {
+                if (goalFields < conf.NumberOfGoals)
+                {
+                    ++goalFields;
+                    return new GoalField(y, x);
+                }
+                return new NonGoalField(y, x);
+            }
             for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
             {
-                FillBoardRow(rowIt, nonGoalFieldGenerator);
+                FillBoardRow(rowIt, NonGoalOrGoalFieldGenerator);
             }
 
             Func<int, int, AbstractField> taskFieldGenerator = (int y, int x) => new TaskField(y, x);
@@ -352,9 +363,10 @@ namespace GameMaster.Models
                 FillBoardRow(rowIt, taskFieldGenerator);
             }
 
+            goalFields = 0;
             for (int rowIt = secondGoalAreaStart; rowIt < conf.Height; ++rowIt)
             {
-                FillBoardRow(rowIt, nonGoalFieldGenerator);
+                FillBoardRow(rowIt, NonGoalOrGoalFieldGenerator);
             }
         }
 
@@ -376,7 +388,7 @@ namespace GameMaster.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
-            TimeSpan cancellationTimespan = TimeSpan.FromMilliseconds(100);
+            TimeSpan cancellationTimespan = TimeSpan.FromMinutes(1);
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
@@ -385,13 +397,13 @@ namespace GameMaster.Models
                     await AcceptMessage(message, cancellationToken);
                     if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
                     {
-                        EndGame();
+                        await EndGame(cancellationToken);
                         break;
                     }
                 }
-                catch (OperationCanceledException e)
+                catch (TimeoutException e)
                 {
-                    logger.Warning($"Message retrieve was cancelled: {e.Message}");
+                    // logger.Warning($"Message retrieve was cancelled: {e.Message}");
                 }
             }
         }
@@ -512,13 +524,23 @@ namespace GameMaster.Models
                     Id = GMMessageID.GiveInfoForwarded,
                     Payload = answerPayload.Serialize(),
                 };
-                await socketManager.SendMessageAsync(payload.RespondToID.ToString(), answer, cancellationToken);
+                await socketManager.SendMessageAsync(payload.RespondToID, answer, cancellationToken);
             }
         }
 
-        internal void EndGame()
+        internal async Task EndGame(CancellationToken cancellationToken)
         {
-            logger.Information("The winner is team {0}", redTeamPoints > blueTeamPoints ? Team.Red : Team.Blue);
+            var winner = redTeamPoints > blueTeamPoints ? Team.Red : Team.Blue;
+            logger.Information($"The winner is team {winner}");
+            var payload = new EndGamePayload()
+            {
+                Winner = winner,
+            };
+            GMMessage answer = new GMMessage(GMMessageID.EndGame, payload);
+            await socketManager.SendMessageToAllAsync(answer, cancellationToken);
+            logger.Information("Sent endGame to all.");
+
+            await Task.Delay(4000);
             lifetime.StopApplication();
         }
     }

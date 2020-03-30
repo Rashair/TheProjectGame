@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using GameMaster.Managers;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
+using Serilog;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Payloads;
@@ -14,6 +15,7 @@ namespace GameMaster.Models
 {
     public class GMPlayer
     {
+        private ILogger logger;
         private readonly int id;
         private readonly GameConfiguration conf;
         private readonly ISocketManager<WebSocket, GMMessage> socketManager;
@@ -36,7 +38,7 @@ namespace GameMaster.Models
 
         public AbstractPiece Holding { get; set; }
 
-        public string SocketID { get; set; }
+        public int SocketID { get; set; }
 
         public bool IsLeader { get; set; }
 
@@ -45,6 +47,7 @@ namespace GameMaster.Models
         public GMPlayer(int id, GameConfiguration conf, ISocketManager<WebSocket, GMMessage> socketManager, Team team,
             bool isLeader = false)
         {
+            logger = Log.ForContext<GMPlayer>();
             this.id = id;
             this.conf = conf;
             this.socketManager = socketManager;
@@ -69,7 +72,7 @@ namespace GameMaster.Models
             bool isUnlocked = await TryLockAsync(conf.MovePenalty, cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
-                bool moved = field.MoveHere(this);
+                bool moved = field?.MoveHere(this) == true;
                 GMMessage message = MoveAnswerMessage(moved, gm);
                 await socketManager.SendMessageAsync(SocketID, message, cancellationToken);
                 return moved;
@@ -77,10 +80,12 @@ namespace GameMaster.Models
             return false;
         }
 
+        public int DestroyPenalty { get; private set; } = 100;
+
         public async Task<bool> DestroyHoldingAsync(CancellationToken cancellationToken)
         {
             // TODO from config, issue 137
-            bool isUnlocked = await TryLockAsync(0, cancellationToken);
+            bool isUnlocked = await TryLockAsync(DestroyPenalty, cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 GMMessage message;
@@ -155,10 +160,13 @@ namespace GameMaster.Models
             return (goal, removed);
         }
 
+        // Delete !
+        public int PickPenalty { get; private set; } = 100;
+
         public async Task<bool> PickAsync(CancellationToken cancellationToken)
         {
             // TODO from config, issue 137
-            bool isUnlocked = await TryLockAsync(0, cancellationToken);
+            bool isUnlocked = await TryLockAsync(PickPenalty, cancellationToken);
             bool picked = false;
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
@@ -223,11 +231,24 @@ namespace GameMaster.Models
         {
             MoveAnswerPayload payload = new MoveAnswerPayload()
             {
-                ClosestPiece = gm.Discover(Position)[Direction.FromCurrent],
+                ClosestPiece = DiscoverWrapper(gm),
                 CurrentPosition = Position.GetPositionObject(),
                 MadeMove = madeMove,
             };
             return new GMMessage(GMMessageID.MoveAnswer, payload);
+        }
+
+        // TODO: delete !
+        private int DiscoverWrapper(GM gm)
+        {
+            if (Position.ContainsPieces() && position.CanPick())
+            {
+                return 0;
+            }
+
+            return 1;
+
+            // return gm.Discover(Position)[Direction.FromCurrent];
         }
 
         private GMMessage UnknownErrorMessage()

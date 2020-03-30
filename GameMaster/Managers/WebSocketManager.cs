@@ -5,11 +5,19 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json;
+using Serilog;
 
 namespace GameMaster.Managers
 {
     public class WebSocketManager<TMessage> : SocketManager<WebSocket, TMessage>
     {
+        private readonly ILogger logger;
+
+        public WebSocketManager()
+        {
+            this.logger = Log.ForContext<WebSocketManager<TMessage>>();
+        }
+
         protected override bool IsSame(WebSocket a, WebSocket b)
         {
             return a == b;
@@ -19,7 +27,7 @@ namespace GameMaster.Managers
         {
             if (!cancellationToken.IsCancellationRequested && (socket.State == WebSocketState.Open))
             {
-                await socket.CloseAsync(
+                await socket.CloseOutputAsync(
                     closeStatus: WebSocketCloseStatus.NormalClosure,
                     statusDescription: "Closed by the WebSocketManager",
                     cancellationToken: cancellationToken);

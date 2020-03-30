@@ -13,7 +13,8 @@
       "allowedHungarianPrefixes": [
         "gm",
         "x",
-        "y"
+        "y",
+        "id"
       ]
     },
     "orderingRules": {

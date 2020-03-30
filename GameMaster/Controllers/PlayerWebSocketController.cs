@@ -6,25 +6,31 @@ using System.Threading.Tasks.Dataflow;
 using GameMaster.Managers;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Serilog;
 using Shared.Messages;
 
 namespace GameMaster.Controllers
 {
-    [Route("ws/player")]
+    [Route("/player")]
     public class PlayerWebSocketController : WebSocketController<GMMessage>
     {
+        private readonly ILogger logger;
         private readonly BufferBlock<PlayerMessage> queue;
 
         public PlayerWebSocketController(BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> manager)
             : base(manager)
         {
             this.queue = queue;
+            logger = Log.ForContext<PlayerWebSocketController>();
         }
 
-        public override async Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
+        protected override async Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
             string json = Encoding.UTF8.GetString(buffer, 0, result.Count);
             PlayerMessage message = JsonConvert.DeserializeObject<PlayerMessage>(json);
+
+            // TODO: To be changed later.
+            message.PlayerID = Manager.GetId(socket);
             await queue.SendAsync(message);
         }
     }

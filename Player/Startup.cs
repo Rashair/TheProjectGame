@@ -22,13 +22,15 @@ namespace Player
     {
         public Startup(IConfiguration configuration)
         {
+            var template = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
             Log.Logger = new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
                path: GetFolderPath(SpecialFolder.MyDocuments)
                + "\\TheProjectGameLogs\\Player_" + DateTime.Today.ToString("dd_MM_yyyy") + ".txt",
                rollOnFileSizeLimit: true,
-               outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}")
+               outputTemplate: template)
+                .WriteTo.Console(outputTemplate: template)
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
@@ -44,16 +46,13 @@ namespace Player
         {
             PlayerConfiguration conf = new PlayerConfiguration();
             Configuration.Bind("DefaultPlayerConfig", conf);
-
             services.AddSingleton(conf);
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, WebSocketClient<GMMessage, PlayerMessage>>();
             services.AddSingleton<BufferBlock<GMMessage>>();
-            services.AddSingleton<PlayerConfiguration>();
+            services.AddSingleton<Player.Models.Player>();
 
             services.AddHostedService<SocketService>();
-
-            services.AddSingleton<Player.Models.Player>();
             services.AddHostedService<PlayerService>();
         }
 

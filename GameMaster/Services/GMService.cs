@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 using GameMaster.Models;
@@ -25,11 +26,20 @@ namespace GameMaster.Services
         {
             await WaitForInit(cancellationToken);
 
-            logger.Information("Stopped waiting");
             if (!cancellationToken.IsCancellationRequested)
             {
                 // Task.Run is important - if gameMaster have nothing to do blocks thread
-                await Task.Run(() => gameMaster.Work(cancellationToken));
+                await Task.Run(async () =>
+                {
+                    try
+                    {
+                        await gameMaster.Work(cancellationToken);
+                    }
+                    catch (Exception e)
+                    {
+                        logger.Error($"{e.Message}");
+                    }
+                });
             }
         }
 

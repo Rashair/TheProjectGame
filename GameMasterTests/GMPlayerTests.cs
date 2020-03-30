@@ -42,14 +42,14 @@ namespace GameMaster.Tests
 
             public bool AddSocket(WebSocket socket) => throw new NotImplementedException();
 
-            public string GetId(WebSocket socket) => throw new NotImplementedException();
+            public int GetId(WebSocket socket) => throw new NotImplementedException();
 
-            public WebSocket GetSocketById(string id) => throw new NotImplementedException();
+            public WebSocket GetSocketById(int id) => throw new NotImplementedException();
 
-            public Task<bool> RemoveSocketAsync(string id, CancellationToken cancellationToken)
+            public Task<bool> RemoveSocketAsync(int id, CancellationToken cancellationToken)
                 => throw new NotImplementedException();
 
-            public async Task SendMessageAsync(string id, GMMessage message, CancellationToken cancellationToken)
+            public async Task SendMessageAsync(int id, GMMessage message, CancellationToken cancellationToken)
             {
                 send(message);
                 await Task.CompletedTask;
@@ -252,6 +252,7 @@ namespace GameMaster.Tests
             Assert.True(lastSended.Id == GMMessageID.DestructionAnswer);
 
             // delay
+            await Task.Delay(player.DestroyPenalty * 2);
             lastSended = null;
             detroyed = await player.DestroyHoldingAsync(CancellationToken.None);
             Assert.False(detroyed);
@@ -338,6 +339,7 @@ namespace GameMaster.Tests
             Assert.True(payload.ErrorSubtype == PickError.NothingThere);
 
             // delay
+            await Task.Delay(player.PickPenalty * 2);
             field.Put(piece);
             lastSended = null;
             picked = await player.PickAsync(CancellationToken.None);
@@ -346,6 +348,7 @@ namespace GameMaster.Tests
             Assert.True(lastSended.Id == GMMessageID.PickAnswer);
 
             // delay
+            await Task.Delay(player.PickPenalty * 2);
             lastSended = null;
             picked = await player.PickAsync(CancellationToken.None);
             Assert.False(picked);
@@ -355,6 +358,7 @@ namespace GameMaster.Tests
             Assert.True(payload.ErrorSubtype == PickError.Other);
 
             // delay
+            await Task.Delay(player.PickPenalty * 2);
             var secondPiece = new NormalPiece();
             field.Put(secondPiece);
             lastSended = null;
