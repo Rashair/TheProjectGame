@@ -1,0 +1,25 @@
+# Check our guides at https://confluence.atlassian.com/x/5Q4SMw for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+image: rashair/dotnet-node-sdk
+
+definitions:
+  steps:
+    - step: &Build-and-test
+        name: Build and test solution
+        services:
+              - docker
+        caches:
+              - docker
+              - dotnetcore
+              - node
+        script:
+          - dotnet restore
+          - dotnet build --no-restore $SOLUTION_NAME
+          - dotnet test --no-build --no-restore $SOLUTION_NAME
+pipelines:
+    branches:
+      master:
+        - step: *Build-and-test
+      develop:
+        - step: *Build-and-test
