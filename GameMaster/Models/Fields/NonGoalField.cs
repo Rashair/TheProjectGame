@@ -37,5 +37,10 @@ namespace GameMaster.Models.Fields
             PutSham(piece);
             return (false, true);
         }
+
+        public override bool CanPick()
+        {
+            return false;
+        }
     }
 }

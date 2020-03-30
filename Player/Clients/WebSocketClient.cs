@@ -31,7 +31,7 @@ namespace Player.Clients
 
         public async Task CloseAsync(CancellationToken cancellationToken)
         {
-            await client.CloseAsync(
+            await client.CloseOutputAsync(
                 closeStatus: WebSocketCloseStatus.NormalClosure,
                 statusDescription: "Closed by the WebSocketClient",
                 cancellationToken: cancellationToken);

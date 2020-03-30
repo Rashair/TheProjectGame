@@ -83,7 +83,7 @@ namespace GameMaster.Models
         public async Task<bool> DestroyHoldingAsync(CancellationToken cancellationToken)
         {
             // TODO from config, issue 137
-            bool isUnlocked = await TryLockAsync(0, cancellationToken);
+            bool isUnlocked = await TryLockAsync(100, cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 GMMessage message;
@@ -161,7 +161,7 @@ namespace GameMaster.Models
         public async Task<bool> PickAsync(CancellationToken cancellationToken)
         {
             // TODO from config, issue 137
-            bool isUnlocked = await TryLockAsync(0, cancellationToken);
+            bool isUnlocked = await TryLockAsync(100, cancellationToken);
             bool picked = false;
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
@@ -226,11 +226,24 @@ namespace GameMaster.Models
         {
             MoveAnswerPayload payload = new MoveAnswerPayload()
             {
-                ClosestPiece = gm.Discover(Position)[Direction.FromCurrent],
+                ClosestPiece = DiscoverWrapper(gm),
                 CurrentPosition = Position.GetPositionObject(),
                 MadeMove = madeMove,
             };
             return new GMMessage(GMMessageID.MoveAnswer, payload);
+        }
+
+        // TODO: delete !
+        private int DiscoverWrapper(GM gm)
+        {
+            if (Position.ContainsPieces() && position.CanPick())
+            {
+                return 0;
+            }
+
+            return 1;
+
+            // return gm.Discover(Position)[Direction.FromCurrent];
         }
 
         private GMMessage UnknownErrorMessage()

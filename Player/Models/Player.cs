@@ -31,6 +31,7 @@ namespace Player.Models
         private bool working;
         private readonly PlayerConfiguration conf;
         private Team winner;
+        private int discovered;
 
         public int PreviousDistToPiece { get; private set; }
 
@@ -273,7 +274,7 @@ namespace Player.Models
         {
             var cancellationTimespan = TimeSpan.FromMinutes(1);
             GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
-            logger.Information($"|{message.Id} | {message.Payload}");
+            logger.Information($"|{message.Id} | {message.Payload} | HasPiece: {HasPiece} | {discovered} ");
             switch (message.Id)
             {
                 case GMMessageID.CheckAnswer:
@@ -284,7 +285,9 @@ namespace Player.Models
                 case GMMessageID.DestructionAnswer:
                     HasPiece = false;
                     IsHeldPieceSham = null;
-                    penaltyTime = int.Parse(PenaltiesTimes.DestroyPiece);
+
+                    // TODO: switch to conf
+                    penaltyTime = 100;
                     break;
                 case GMMessageID.DiscoverAnswer:
                     DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
@@ -368,13 +371,19 @@ namespace Player.Models
                     HasPiece = true;
 
                     // TODO: Add if this value will be in configuration
-                    penaltyTime = 0;
+                    Board[Position.y, Position.x].DistToPiece = int.MaxValue;
+                    penaltyTime = 100;
                     break;
                 case GMMessageID.PutAnswer:
                     HasPiece = false;
+                    IsHeldPieceSham = null;
 
                     // TODO: info about discovered goal !!!
                     var payload = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
+                    if (Board[Position.y, Position.x].GoalInfo == GoalInfo.IDK)
+                    {
+                        ++discovered;
+                    }
                     Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredNotGoal;
                     penaltyTime = int.Parse(PenaltiesTimes.PutPiece);
                     break;
@@ -407,10 +416,19 @@ namespace Player.Models
                         penaltyTime = toWait;
                     }
                     break;
-                default:
+                case GMMessageID.PickError:
+                    // TODO: from config
+                    penaltyTime = 100;
+                    break;
+                case GMMessageID.PutError:
+                    penaltyTime = int.Parse(PenaltiesTimes.PutPiece);
+                    break;
+                case GMMessageID.UnknownError:
+                    penaltyTime = 50;
                     break;
             }
 
+            await Task.Delay(20);
             return false;
         }
 

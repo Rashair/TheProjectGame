@@ -70,7 +70,8 @@ namespace GameMaster.Models
             }
 
             players.TryGetValue(message.PlayerID, out GMPlayer player);
-            logger.Information($"|{message.MessageID} | {message.Payload} | {player?.SocketID} | {player?.Team}");
+
+            // logger.Information($"|{message.MessageID} | {message.Payload} | {player?.SocketID} | {player?.Team}");
             switch (message.MessageID)
             {
                 case PlayerMessageID.CheckPiece:
@@ -175,6 +176,7 @@ namespace GameMaster.Models
                             blueTeamPoints++;
                         }
                         logger.Information($"by {player.Team}");
+                        logger.Information($"RED: {redTeamPoints} | BLUE: {blueTeamPoints}");
                     }
                     if (removed)
                     {
@@ -269,7 +271,7 @@ namespace GameMaster.Models
                     InformationExchange = conf.AskPenalty.ToString(),
                     Discovery = conf.DiscoverPenalty.ToString(),
                     PutPiece = conf.PutPenalty.ToString(),
-                    CheckForSham = conf.PutPenalty.ToString(),
+                    CheckForSham = conf.CheckPenalty.ToString(),
                     DestroyPiece = conf.DestroyPenalty.ToString(),
                 };
                 payload.ShamPieceProbability = conf.ShamPieceProbability / 100.0f;

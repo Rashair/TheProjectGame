@@ -38,6 +38,9 @@ namespace GameMaster.Models.Fields
 
         public abstract bool PutSham(AbstractPiece piece);
 
+        // TODO
+        public abstract bool CanPick();
+
         public bool MoveHere(GMPlayer player)
         {
             if (whosHere == null && player != null)
