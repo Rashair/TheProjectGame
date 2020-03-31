@@ -1,5 +1,4 @@
-#!/bin/sh
-
+#!/bin/bash
 proj="IntegrationTests/IntegrationTests.csproj"
 
 dotnet restore "$proj"

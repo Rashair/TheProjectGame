@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 projects=(Shared GameMaster CommunicationServer Player)
 
 # Build

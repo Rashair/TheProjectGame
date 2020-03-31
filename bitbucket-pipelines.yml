@@ -13,7 +13,7 @@ definitions:
             - dotnetcore
             - react-client
         script:
-            - /bin/sh tools/build_and_test.sh
+            - /bin/bash tools/build_and_test.sh
         artifacts:
             - GameMaster/**
             - CommunicationServer/**
@@ -25,13 +25,13 @@ definitions:
             - dotnetcore
         trigger: manual
         script:
-            - /bin/sh tools/integration-tests.sh
+            - /bin/bash tools/integration-tests.sh
     - step: &Run-integration-tests-auto
         name: Run integration tests
         caches:
             - dotnetcore
         script:
-            - /bin/sh tools/integration-tests.sh
+            - /bin/bash tools/integration-tests.sh
 pipelines:
     branches:
       master:
