@@ -21,11 +21,11 @@ definitions:
         name: Run integration tests
         trigger: manual
         script:
-            - dotnet test --no-build --no-restore **\IntegrationTests.csproj
+            - dotnet test --no-build --no-restore **/IntegrationTests.csproj
     - step: &Run-integration-tests-auto
         name: Run integration tests
         script:
-            - dotnet test --no-build --no-restore **\IntegrationTests.csproj
+            - dotnet test --no-build --no-restore **/IntegrationTests.csproj
 pipelines:
     branches:
       master:
