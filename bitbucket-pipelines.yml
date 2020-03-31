@@ -29,7 +29,6 @@ definitions:
         trigger: manual
         script:
             - dotnet restore "IntegrationTests/IntegrationTests.csproj"
-            - dotnet build --no-restore "IntegrationTests/IntegrationTests.csproj"
             - dotnet test --no-build --no-restore "IntegrationTests/IntegrationTests.csproj"
 
     - step: &Run-integration-tests-auto
@@ -37,7 +36,8 @@ definitions:
         caches:
             - dotnetcore
         script:
-            - dotnet test "IntegrationTests/IntegrationTests.csproj"
+            - dotnet restore "IntegrationTests/IntegrationTests.csproj"
+            - dotnet test --no-build --no-restore "IntegrationTests/IntegrationTests.csproj"
 pipelines:
     branches:
       master:
