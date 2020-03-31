@@ -4,28 +4,36 @@
 image: rashair/dotnet-node-sdk
 
 definitions:
+  caches:
+    react-client: GameMaster/ClientApp/node_modules
   steps:
     - step: &Build-and-test
         name: Build and test solution
-        services:
-              - docker
         caches:
-              - docker
-              - dotnetcore
-              - node
+            - dotnetcore
+            - react-client
         script:
             - dotnet restore
             - dotnet build --no-restore $SOLUTION_NAME
             - dotnet test --no-build --no-restore --filter FullyQualifiedName\!~IntegrationTests $SOLUTION_NAME
+        artifacts:
+            - GameMaster/**
+            - CommunicationServer/**
+            - Player/**
+            - IntegrationTests/**
     - step: &Run-integration-tests-manual
         name: Run integration tests
+        caches:
+            - dotnetcore
         trigger: manual
         script:
-            - dotnet test --no-build --no-restore **/IntegrationTests.csproj
+            - dotnet test --no-build --no-restore **/IntegrationTests*
     - step: &Run-integration-tests-auto
         name: Run integration tests
+        caches:
+            - dotnetcore
         script:
-            - dotnet test --no-build --no-restore **/IntegrationTests.csproj
+            - dotnet test --no-build --no-restore **/IntegrationTests*
 pipelines:
     branches:
       master:
@@ -34,3 +42,5 @@ pipelines:
       develop:
         - step: *Build-and-test
         - step: *Run-integration-tests-manual
+    integration-test:
+        -step: 
