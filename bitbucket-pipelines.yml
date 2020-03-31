@@ -1,7 +1,7 @@
 # Check our guides at https://confluence.atlassian.com/x/5Q4SMw for more examples.
 # Only use spaces to indent your .yml configuration.
 # -----
-image: rashair/dotnet-node-sdk
+image: rashair/dotnet-node-sdk:2.1_10
 
 definitions:
   caches:
