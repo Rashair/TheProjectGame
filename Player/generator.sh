@@ -1,40 +1,22 @@
 #!/bin/sh
-num=${1-2}
-sourceFile=${2-netcoreapp2.1}
 set -x
+set -e
 
-cd "bin/Debug";
+num=${1-2}
+# Port:0 means dynamically bound port
+redComm='dotnet run TeamId=red --urls https://127.0.0.1:0'
+blueComm='dotnet run TeamId=blue --urls https://127.0.0.1:0'
 
-for i in `seq 1 $num`
-do
-	f0="blue-${i}"
-	f2="red-${i}"
-	
-	rm -rf "$f0"
-	cp -r "${sourceFile}/" "$f0"
-	rm -rf "$f2"
-	cp -r "${sourceFile}/" "$f2"
-	
-	defP=6001
-	port0=$(expr 6000 + $i)
-	sed -i "s/$defP/$port0/" "${f0}/appsettings.Development.json"
-    sed -i "s/$defP/$port0/" "${f0}/appsettings.json"
-	port2=$(expr 6000 + $i + $num)
-	sed -i "s/blue/red/; s/$defP/$port2/" "${f2}/appsettings.Development.json"
-    sed -i "s/blue/red/; s/$defP/$port2/" "${f2}/appsettings.json"
-	
-	if [ "$OSTYPE" == "msys" ]; then
-		cd "$f0";
-		cmd //c start cmd //k  "dotnet player.dll" & disown
-		cd "../$f2";
-		cmd //c start cmd //k  "dotnet player.dll" & disown
-	else 
-		cd "$f0";
-		gnome-terminal -e "dotnet player.dll" & disown
-		cd "../$f2";
-		gnome-terminal -e "dotnet player.dll" & disown
-		# TODO: rest
-	fi
-	cd ".."
-	
-done
+
+if [ "$OSTYPE" == "msys" ]; then
+	for i in `seq 1 $num`; do
+		cmd //c start cmd //k "$redComm" & disown
+        cmd //c start cmd //k "$blueComm"  & disown
+	done
+else
+	for i in `seq 1 $num`; do
+		gnome-terminal -e "$redComm" & disown
+        gnome-terminal -e "$blueComm" & disown
+	done
+	#TODO: rest
+fi
