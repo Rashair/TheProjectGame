@@ -28,7 +28,9 @@ definitions:
             - dotnetcore
         trigger: manual
         script:
-            - dotnet test "IntegrationTests/IntegrationTests.csproj"
+            - dotnet restore "IntegrationTests/IntegrationTests.csproj"
+            - dotnet build --no-restore "IntegrationTests/IntegrationTests.csproj"
+            - dotnet test --no-build --no-restore "IntegrationTests/IntegrationTests.csproj"
 
     - step: &Run-integration-tests-auto
         name: Run integration tests
