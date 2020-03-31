@@ -14,12 +14,23 @@ definitions:
               - dotnetcore
               - node
         script:
-          - dotnet restore
-          - dotnet build --no-restore $SOLUTION_NAME
-          - dotnet test --no-build --no-restore $SOLUTION_NAME
+            - dotnet restore
+            - dotnet build --no-restore $SOLUTION_NAME
+            - dotnet test --no-build --no-restore --filter FullyQualifiedName\!~IntegrationTests $SOLUTION_NAME
+    - step: &Run-integration-tests-manual
+        name: Run integration tests
+        trigger: manual
+        script:
+            - dotnet test --no-build --no-restore **\IntegrationTests.csproj
+    - step: &Run-integration-tests-auto
+        name: Run integration tests
+        script:
+            - dotnet test --no-build --no-restore **\IntegrationTests.csproj
 pipelines:
     branches:
       master:
         - step: *Build-and-test
+        - step: *Run-integration-tests-auto
       develop:
         - step: *Build-and-test
+        - step: *Run-integration-tests-manual
