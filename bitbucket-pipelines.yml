@@ -13,25 +13,29 @@ definitions:
             - dotnetcore
             - react-client
         script:
-            - /bin/bash tools/build_and_test.sh
+            - dotnet restore
+            - dotnet build --no-restore $SOLUTION_NAME
+            - dotnet test --no-build --no-restore --filter FullyQualifiedName\!~IntegrationTests $SOLUTION_NAME
         artifacts:
             - GameMaster/**
             - CommunicationServer/**
             - Player/**
             - Shared/**
+            - IntegrationTests/**
     - step: &Run-integration-tests-manual
         name: Run integration tests
         caches:
             - dotnetcore
         trigger: manual
         script:
-            - /bin/bash tools/integration-tests.sh
+            - dotnet test --no-build --no-restore "IntegrationTests/IntegrationTests.csproj"
+
     - step: &Run-integration-tests-auto
         name: Run integration tests
         caches:
             - dotnetcore
         script:
-            - /bin/bash tools/integration-tests.sh
+            - dotnet test --no-build --no-restore "IntegrationTests/IntegrationTests.csproj"
 pipelines:
     branches:
       master:
