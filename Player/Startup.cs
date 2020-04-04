@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks.Dataflow;
 
 using Microsoft.AspNetCore.Builder;
@@ -22,12 +23,14 @@ namespace Player
     {
         public Startup(IConfiguration configuration)
         {
+            string folderName = "TheProjectGameLogs";
+            string fileName = $"Player_{DateTime.Today.ToString("dd_MM_yyyy")}.txt";
+            string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
             var template = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
             Log.Logger = new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
-               path: GetFolderPath(SpecialFolder.MyDocuments)
-               + "\\TheProjectGameLogs\\Player_" + DateTime.Today.ToString("dd_MM_yyyy") + ".txt",
+               path: path,
                rollOnFileSizeLimit: true,
                outputTemplate: template)
                 .WriteTo.Console(outputTemplate: template)

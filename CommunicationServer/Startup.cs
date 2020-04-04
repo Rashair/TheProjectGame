@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 using static System.Environment;
 
@@ -15,11 +16,13 @@ namespace CommunicationServer
     {
         public Startup()
         {
+            string folderName = "TheProjectGameLogs";
+            string fileName = $"CS_{DateTime.Today.ToString("dd_MM_yyyy")}.txt";
+            string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
             Log.Logger = new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
-               path: GetFolderPath(SpecialFolder.MyDocuments)
-               + "\\TheProjectGameLogs\\CS_" + DateTime.Today.ToString("dd_MM_yyyy") + ".txt",
+               path: path,
                rollOnFileSizeLimit: true,
                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}")
                 .MinimumLevel.Information()

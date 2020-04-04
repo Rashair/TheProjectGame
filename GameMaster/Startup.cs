@@ -24,12 +24,14 @@ namespace GameMaster
     {
         public Startup(IConfiguration configuration)
         {
+            string folderName = "TheProjectGameLogs";
+            string fileName = $"Main_{DateTime.Today.ToString("dd_MM_yyyy")}.txt";
+            string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
             var template = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
             Log.Logger = new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
-               path: GetFolderPath(SpecialFolder.MyDocuments)
-               + "\\TheProjectGameLogs\\Main_" + DateTime.Today.ToString("dd_MM_yyyy") + ".txt",
+               path: path,
                rollOnFileSizeLimit: true,
                outputTemplate: template)
                .WriteTo.Console(outputTemplate: template)
