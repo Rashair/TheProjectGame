@@ -248,7 +248,7 @@ namespace GameMaster.Tests
             var manager = new WebSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
             var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
-            var sockets = manager.GetValue<WebSocketManager<GMMessage>, ConcurrentDictionary<int, WebSocket>>("sockets");
+            var sockets = manager.GetValue<SocketManager<WebSocket, GMMessage>, ConcurrentDictionary<int, WebSocket>>("sockets");
             for (int idRed = 0; idRed < conf.NumberOfPlayersPerTeam; ++idRed)
             {
                 var player = new GMPlayer(idRed, conf, manager, Team.Red)

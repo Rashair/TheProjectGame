@@ -71,19 +71,6 @@ namespace Player
 
             services.AddHostedService<SocketService>();
             services.AddHostedService<PlayerService>();
-            services.AddTransient<ServiceResolver<IHostedService>>(serviceProvider => key =>
-            {
-                switch (key)
-                {
-                    case nameof(SocketService):
-                        return serviceProvider.GetService<SocketService>();
-                    case nameof(PlayerService):
-                        return serviceProvider.GetService<PlayerService>();
-
-                    default:
-                        return null;
-                }
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
