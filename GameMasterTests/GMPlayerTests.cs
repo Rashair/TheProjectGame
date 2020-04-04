@@ -16,6 +16,7 @@ using Shared;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Payloads;
+using TestsShared;
 using Xunit;
 
 namespace GameMaster.Tests

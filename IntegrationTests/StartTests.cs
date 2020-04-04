@@ -28,8 +28,6 @@ namespace IntegrationTests
             // Assert
             var player = webhost.Services.GetService<Player.Models.Player>();
             Assert.False(player == null, "Player should not be null");
-
-            // TODO: get hosted services and assert those are not null after move to dotnet-core 3.0
         }
     }
 }

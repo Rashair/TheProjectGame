@@ -16,9 +16,9 @@ using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Shared;
 using Shared.Enums;
 using Shared.Messages;
+using TestsShared;
 using Xunit;
 
 namespace GameMaster.Tests

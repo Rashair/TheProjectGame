@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Shared
+namespace TestsShared
 {
     public static class ReflectionHelpers
     {
