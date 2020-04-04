@@ -19,7 +19,7 @@ namespace GameMaster.Tests
 {
     public class GMServiceTests
     {
-        [Fact(Timeout = 3000)]
+        [Fact(Timeout = 3500)]
         public async Task TestExecuteAsyncShouldWaitForStartAndReadMessages()
         {
             // Arrange
