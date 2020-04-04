@@ -12,12 +12,11 @@ using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using Newtonsoft.Json;
+using Shared;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Payloads;
 using Xunit;
-
-using static GameMaster.Tests.Helpers.ReflectionHelpers;
 
 namespace GameMaster.Tests
 {
