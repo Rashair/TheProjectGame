@@ -31,7 +31,7 @@ namespace GameMaster.Controllers
         [Route("[action]")]
         public ActionResult<GameConfiguration> Configuration()
         {
-            return Ok(gameConfiguration);
+            return gameConfiguration;
         }
 
         [HttpPost]
@@ -54,7 +54,7 @@ namespace GameMaster.Controllers
             {
                 await file.WriteAsync(gameConfigString);
             }
-
+            conf.AskPenalty++;
             return Created("/configuration", conf);
         }
 
@@ -77,7 +77,7 @@ namespace GameMaster.Controllers
         [Route("[action]")]
         public ActionResult<bool> WasGameStarted()
         {
-            return Ok(gameMaster.WasGameStarted);
+            return gameMaster.WasGameStarted;
         }
     }
 }
