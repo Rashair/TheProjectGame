@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Controllers;
 using GameMaster.Managers;
 using GameMaster.Models;
+using GameMaster.Tests.Helpers;
 using GameMaster.Tests.Mocks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +15,8 @@ using Microsoft.Extensions.Hosting;
 using Moq;
 using Shared.Messages;
 using Xunit;
+
+using static GameMaster.Tests.Helpers.ReflectionHelpers;
 
 namespace GameMaster.Tests
 {
@@ -96,7 +100,7 @@ namespace GameMaster.Tests
         }
 
         [Fact]
-        public async Task TestParameterlessConfigurationShouldReturnValidConfiguration()
+        public void TestParameterlessConfigurationShouldReturnValidConfiguration()
         {
             // Arrange
             var inMemorySettings = new Dictionary<string, string>
@@ -118,7 +122,7 @@ namespace GameMaster.Tests
             var result = gameController.Configuration();
 
             // Assert
-            Assert.IsType(typeof(ActionResult<GameConfiguration>), result);
+            Assert.IsType<ActionResult<GameConfiguration>>(result);
             Assert.Equal(gameConfig.AskPenalty, result.Value.AskPenalty);
             Assert.Equal(gameConfig.CheckPenalty, result.Value.CheckPenalty);
             Assert.Equal(gameConfig.DiscoverPenalty, result.Value.DiscoverPenalty);
@@ -136,7 +140,7 @@ namespace GameMaster.Tests
         }
 
         [Fact]
-        public async Task TestInitGameShouldReturnOkResult()
+        public void TestInitGameShouldReturnOkResult()
         {
             // Arrange
             var inMemorySettings = new Dictionary<string, string>
@@ -158,11 +162,11 @@ namespace GameMaster.Tests
             var result = gameController.InitGame();
 
             // Assert
-            Assert.IsType(typeof(OkResult), result);
+            Assert.IsType<OkResult>(result);
         }
 
         [Fact]
-        public async Task TestWasGameStartedShouldReturnBool()
+        public void TestWasGameStartedShouldReturnBool()
         {
             // Arrange
             var inMemorySettings = new Dictionary<string, string>
@@ -177,22 +181,24 @@ namespace GameMaster.Tests
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
             var manager = new WebSocketManager<GMMessage>();
+            gameConfig.NumberOfPlayersPerTeam = 0;
             var gameMaster = new GM(lifetime, gameConfig, queue, manager);
             GameController gameController = new GameController(config, gameConfig, gameMaster);
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
             var result = gameController.WasGameStarted();
             bool expectedResult = false;
-            gameMaster.WasGameStarted = true;
+            gameMaster.Invoke("StartGame", cancellationToken);
             gameController = new GameController(config, gameConfig, gameMaster);
             var result2 = gameController.WasGameStarted();
             bool expectedResult2 = true;
 
             // Assert
-            Assert.IsType(typeof(ActionResult<bool>), result);
+            Assert.IsType<ActionResult<bool>>(result);
             Assert.Equal(expectedResult, result.Value);
 
-            Assert.IsType(typeof(ActionResult<bool>), result2);
+            Assert.IsType<ActionResult<bool>>(result2);
             Assert.Equal(expectedResult2, result2.Value);
         }
     }
