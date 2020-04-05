@@ -54,7 +54,7 @@ namespace GameMaster.Controllers
             {
                 await file.WriteAsync(gameConfigString);
             }
-            conf.AskPenalty++;
+
             return Created("/configuration", conf);
         }
 
