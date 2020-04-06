@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Player.Clients;
 using Player.Models;
-using Player.Models.Strategies;
+
 using Player.Services;
 using Serilog;
 using Serilog.Events;
@@ -49,6 +49,11 @@ namespace Player
         {
             PlayerConfiguration conf = new PlayerConfiguration();
             Configuration.Bind("DefaultPlayerConfig", conf);
+
+            // For console override;
+            Configuration.Bind(conf);
+            Log.Information($"Team: {conf.TeamID}, strategy: {conf.Strategy}");
+
             services.AddSingleton(conf);
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, WebSocketClient<GMMessage, PlayerMessage>>();
