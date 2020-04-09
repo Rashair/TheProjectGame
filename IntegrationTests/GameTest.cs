@@ -17,10 +17,11 @@ namespace IntegrationTests
     public class GameTest : IDisposable
     {
         private readonly GameConfiguration conf;
+        private readonly CancellationTokenSource tokenSource;
 
-        private IWebHost gmHost;
-        private IWebHost[] redPlayersHosts;
-        private IWebHost[] bluePlayersHosts;
+        private IWebHost gmServer;
+        private IWebHost[] redPlayersServers;
+        private IWebHost[] bluePlayersServers;
 
         public GameTest()
         {
@@ -43,6 +44,7 @@ namespace IntegrationTests
                 NumberOfPlayersPerTeam = 3,
                 ShamPieceProbability = 20,
             };
+            tokenSource = new CancellationTokenSource();
         }
 
         public HttpClient Client { get; set; }
@@ -50,70 +52,65 @@ namespace IntegrationTests
         [Fact]
         public async void Test()
         {
-            // Arrange
-            var tokenSource = new CancellationTokenSource();
-
-            // TODO: Switch to CS
-            string gmUrl = $"http://{conf.CsIP}:{conf.CsPort}";
-            string[] args = new string[] { $"urls={gmUrl}" };
-            gmHost = Utilities.CreateWebHost(typeof(GameMaster.Startup), args);
-
-            string[] argsRed = new string[] { "TeamID=red", "urls=http://127.0.0.1:0", $"CsIP={conf.CsIP}", $"CsPort={conf.CsPort}" };
-            string[] argsBlue = new string[] { "TeamID=blue", "urls=http://127.0.0.1:0", $"CsIP={conf.CsIP}", $"CsPort={conf.CsPort}" };
-            int playersCount = conf.NumberOfPlayersPerTeam;
-            redPlayersHosts = new IWebHost[playersCount];
-            bluePlayersHosts = new IWebHost[playersCount];
-            for (int i = 0; i < playersCount; ++i)
+            await Task.Run(async () =>
             {
-                redPlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsRed);
-                bluePlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsBlue);
-            }
+                // Arrange
+                // TODO: Switch to CS
+                string gmUrl = $"http://{conf.CsIP}:{conf.CsPort}";
+                string[] args = new string[] { $"urls={gmUrl}" };
+                gmServer = Utilities.CreateWebHost(typeof(GameMaster.Startup), args);
 
-            // Act
-            await gmHost.StartAsync(tokenSource.Token);
+                string[] argsRed = new string[] { "TeamID=red", "urls=http://127.0.0.1:0", $"CsIP={conf.CsIP}", $"CsPort={conf.CsPort}" };
+                string[] argsBlue = new string[] { "TeamID=blue", "urls=http://127.0.0.1:0", $"CsIP={conf.CsIP}", $"CsPort={conf.CsPort}" };
+                int playersCount = conf.NumberOfPlayersPerTeam;
+                redPlayersServers = new IWebHost[playersCount];
+                bluePlayersServers = new IWebHost[playersCount];
+                for (int i = 0; i < playersCount; ++i)
+                {
+                    redPlayersServers[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsRed);
+                    bluePlayersServers[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsBlue);
+                }
 
-            Client = new HttpClient()
-            {
-                BaseAddress = new Uri(gmUrl),
-            };
-            var responseConf = await Client.PostAsJsonAsync("api/Configuration", conf);
-            var responseInit = await Client.PostAsync("api/InitGame", null);
+                // Act
+                await gmServer.StartAsync(tokenSource.Token);
+                await Task.Yield();
+                for (int i = 0; i < playersCount; ++i)
+                {
+                    await redPlayersServers[i].StartAsync(tokenSource.Token);
+                    await bluePlayersServers[i].StartAsync(tokenSource.Token);
+                }
 
-            for (int i = 0; i < playersCount; ++i)
-            {
-                await redPlayersHosts[i].StartAsync(tokenSource.Token);
-                await bluePlayersHosts[i].StartAsync(tokenSource.Token);
-            }
+                Client = new HttpClient()
+                {
+                    BaseAddress = new Uri(gmUrl),
+                };
+                var responseConf = await Client.PostAsJsonAsync("api/Configuration", conf);
+                var responseInit = await Client.PostAsync("api/InitGame", null);
 
-
-            await Task.Yield();
-
-            // Assert
-            Assert.Equal(System.Net.HttpStatusCode.Created, responseConf.StatusCode);
-            Assert.Equal(System.Net.HttpStatusCode.OK, responseInit.StatusCode);
+                // Assert
+                Assert.Equal(System.Net.HttpStatusCode.Created, responseConf.StatusCode);
+                Assert.Equal(System.Net.HttpStatusCode.OK, responseInit.StatusCode);
+            });
 
             await Task.Delay(5000);
 
-            var gameMaster = gmHost.Services.GetService<GM>();
+            var gameMaster = gmServer.Services.GetService<GM>();
             Assert.True(gameMaster.WasGameInitialized, "Game should be initialized");
             Assert.True(gameMaster.WasGameStarted, "Game should be started");
-        }
-
-        private string[] CreatePlayerArgs()
-        {
-
         }
 
         public void Dispose()
         {
             Client?.Dispose();
-            gmHost?.Dispose();
+            gmServer?.Dispose();
 
             for (int i = 0; i < conf?.NumberOfPlayersPerTeam; ++i)
             {
-                redPlayersHosts[i].Dispose();
-                bluePlayersHosts[i].Dispose();
+                redPlayersServers[i].Dispose();
+                bluePlayersServers[i].Dispose();
             }
+
+            tokenSource.Cancel();
         }
     }
 }

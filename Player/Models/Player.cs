@@ -269,7 +269,7 @@ namespace Player.Models
 
         public async Task<bool> AcceptMessage(CancellationToken cancellationToken) // returns true if StartGameMessage was accepted
         {
-            var cancellationTimespan = TimeSpan.FromMinutes(1);
+            var cancellationTimespan = TimeSpan.FromMinutes(2);
             GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
             logger.Information($"|{message.Id} | {message.Payload} | HasPiece: {HasPiece} | {discovered} ");
             switch (message.Id)
