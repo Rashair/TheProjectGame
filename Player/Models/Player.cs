@@ -30,7 +30,7 @@ namespace Player.Models
         private IStrategy strategy;
         private bool working;
         private readonly PlayerConfiguration conf;
-        private Team winner;
+        private Team? winner;
         private int discovered;
 
         public int PreviousDistToPiece { get; private set; }

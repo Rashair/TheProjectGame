@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +9,7 @@ using GameMaster.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Enums;
+using TestsShared;
 using Xunit;
 
 namespace IntegrationTests
@@ -46,7 +49,7 @@ namespace IntegrationTests
 
         public HttpClient Client { get; set; }
 
-        [Fact]
+        [Fact(Timeout = 60 * 1000)]
         public async Task StartGame()
         {
             await Task.Run(async () =>
@@ -104,9 +107,59 @@ namespace IntegrationTests
             Assert.True(playerBlue.Position.y >= conf.GoalAreaHeight, "Player should not be present on enemy team field");
         }
 
+        // TODO: Add strategy here, when we will have second strategy :) 
         protected string[] CreatePlayerConfig(Team team)
         {
             return new[] { $"TeamID={team.ToString().ToLower()}", "urls=http://127.0.0.1:0", $"CsIP={conf.CsIP}", $"CsPort={conf.CsPort}" };
+        }
+
+        [Fact(Timeout = 180 * 1000)]
+        public async Task RunGame()
+        {
+            await StartGame();
+
+            var teamRed = redPlayersHosts.Select(host => host.Services.GetService<Player.Models.Player>()).ToList();
+            var teamRedPositions = teamRed.Select(player => player.Position).ToList();
+            int[] positionsCounterRed = new int[teamRedPositions.Count];
+
+            var teamBlue = redPlayersHosts.Select(host => host.Services.GetService<Player.Models.Player>()).ToList();
+            var teamBluePositions = teamBlue.Select(player => player.Position).ToList();
+            int[] positionsCounterBlue = new int[teamBluePositions.Count];
+
+            while (teamRed[0].GetValue<Player.Models.Player, bool>("working"))
+            {
+                await Task.Delay(5000);
+                AssertPositionsChange(teamRed, teamRedPositions, positionsCounterRed);
+                AssertPositionsChange(teamBlue, teamBluePositions, positionsCounterBlue);
+            }
+
+            var winner = teamRed[0].GetValue<Player.Models.Player, Team?>("winner");
+            Assert.False(winner == null, "Winner should not be null");
+            Assert.True(winner == teamBlue[0].GetValue<Player.Models.Player, Team?>("winner"),
+                "Players should have same winner saved");
+
+            var gm = gmHost.Services.GetService<GM>();
+            var redPoints = gm.GetValue<GM, int>("redTeamPoints");
+            var bluePoints = gm.GetValue<GM, int>("blueTeamPoints");
+            var expectedWinner = redPoints > bluePoints ? Team.Red : Team.Blue;
+            Assert.True(winner == expectedWinner, "GM and players should have same winner");
+        }
+
+        private void AssertPositionsChange(List<Player.Models.Player> teamRed, List<(int y, int x)> teamRedPositions, int[] positionsCounterRed)
+        {
+            for (int i = 0; i < teamRed.Count; ++i)
+            {
+                if (teamRed[i].Position == teamRedPositions[i])
+                {
+                    ++positionsCounterRed[i];
+                    Assert.False(positionsCounterRed[i] > 3, "Player should not be stuck on one position");
+                }
+                else
+                {
+                    teamRedPositions[i] = teamRed[i].Position;
+                    positionsCounterRed[i] = 0;
+                }
+            }
         }
 
         public void Dispose()

@@ -32,15 +32,11 @@ namespace IntegrationTests
             }
 
             // Act
-            int msForEachPlayer = 50;
-            AssertAsync.CompletesIn(playersCount * msForEachPlayer, async () =>
+            for (int i = 0; i < playersCount; ++i)
             {
-                for (int i = 0; i < playersCount; ++i)
-                {
-                    await webHostsRed[i].StartAsync(source.Token);
-                    await webHostsBlue[i].StartAsync(source.Token);
-                }
-            });
+                await webHostsRed[i].StartAsync(source.Token);
+                await webHostsBlue[i].StartAsync(source.Token);
+            }
             await Task.Delay(500);
             source.Cancel();
 
