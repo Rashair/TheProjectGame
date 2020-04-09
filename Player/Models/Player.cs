@@ -52,10 +52,7 @@ namespace Player.Models
         public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
         {
             this.conf = conf;
-            if (conf.TeamID == "red")
-                Team = Team.Red;
-            else
-                Team = Team.Blue;
+            this.Team = conf.TeamID == "red" ? Team.Red : Team.Blue;
             this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
             this.queue = queue;
             this.client = client;
