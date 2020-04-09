@@ -1,31 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
 using GameMaster.Models;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Enums;
-using TestsShared;
 using Xunit;
 
 namespace IntegrationTests
 {
     public class GameTest : IDisposable
     {
-        private readonly GameConfiguration conf;
-        private readonly CancellationTokenSource tokenSource;
+        protected readonly GameConfiguration conf;
+        protected readonly CancellationTokenSource tokenSource;
 
-        private IWebHost gmServer;
-        private IWebHost[] redPlayersServers;
-        private IWebHost[] bluePlayersServers;
+        protected IWebHost gmHost;
+        protected IWebHost[] redPlayersHosts;
+        protected IWebHost[] bluePlayersHosts;
 
         public GameTest()
         {
-            conf = new GameConfiguration
+            this.conf = new GameConfiguration
             {
                 CsIP = "127.0.0.1",
                 CsPort = 5001,
@@ -50,7 +47,7 @@ namespace IntegrationTests
         public HttpClient Client { get; set; }
 
         [Fact]
-        public async void Test()
+        public async Task StartGame()
         {
             await Task.Run(async () =>
             {
@@ -58,26 +55,26 @@ namespace IntegrationTests
                 // TODO: Switch to CS
                 string gmUrl = $"http://{conf.CsIP}:{conf.CsPort}";
                 string[] args = new string[] { $"urls={gmUrl}" };
-                gmServer = Utilities.CreateWebHost(typeof(GameMaster.Startup), args);
+                gmHost = Utilities.CreateWebHost(typeof(GameMaster.Startup), args);
 
-                string[] argsRed = new string[] { "TeamID=red", "urls=http://127.0.0.1:0", $"CsIP={conf.CsIP}", $"CsPort={conf.CsPort}" };
-                string[] argsBlue = new string[] { "TeamID=blue", "urls=http://127.0.0.1:0", $"CsIP={conf.CsIP}", $"CsPort={conf.CsPort}" };
+                string[] argsRed = CreatePlayerConfig(Team.Red);
+                string[] argsBlue = CreatePlayerConfig(Team.Blue);
                 int playersCount = conf.NumberOfPlayersPerTeam;
-                redPlayersServers = new IWebHost[playersCount];
-                bluePlayersServers = new IWebHost[playersCount];
+                redPlayersHosts = new IWebHost[playersCount];
+                bluePlayersHosts = new IWebHost[playersCount];
                 for (int i = 0; i < playersCount; ++i)
                 {
-                    redPlayersServers[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsRed);
-                    bluePlayersServers[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsBlue);
+                    redPlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsRed);
+                    bluePlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsBlue);
                 }
 
                 // Act
-                await gmServer.StartAsync(tokenSource.Token);
+                await gmHost.StartAsync(tokenSource.Token);
                 await Task.Yield();
                 for (int i = 0; i < playersCount; ++i)
                 {
-                    await redPlayersServers[i].StartAsync(tokenSource.Token);
-                    await bluePlayersServers[i].StartAsync(tokenSource.Token);
+                    await redPlayersHosts[i].StartAsync(tokenSource.Token);
+                    await bluePlayersHosts[i].StartAsync(tokenSource.Token);
                 }
 
                 Client = new HttpClient()
@@ -94,20 +91,31 @@ namespace IntegrationTests
 
             await Task.Delay(5000);
 
-            var gameMaster = gmServer.Services.GetService<GM>();
+            var gameMaster = gmHost.Services.GetService<GM>();
             Assert.True(gameMaster.WasGameInitialized, "Game should be initialized");
             Assert.True(gameMaster.WasGameStarted, "Game should be started");
+
+            var playerRed = redPlayersHosts[0].Services.GetService<Player.Models.Player>();
+            Assert.True(playerRed.Team == Team.Red, "Player should have team passed with conf");
+
+            var playerBlue = bluePlayersHosts[0].Services.GetService<Player.Models.Player>();
+            Assert.True(playerBlue.Team == Team.Blue, "Player should have team passed with conf");
+        }
+
+        protected string[] CreatePlayerConfig(Team team)
+        {
+            return new[] { $"TeamID={team.ToString().ToLower()}", "urls=http://127.0.0.1:0", $"CsIP={conf.CsIP}", $"CsPort={conf.CsPort}" };
         }
 
         public void Dispose()
         {
             Client?.Dispose();
-            gmServer?.Dispose();
+            gmHost?.Dispose();
 
             for (int i = 0; i < conf?.NumberOfPlayersPerTeam; ++i)
             {
-                redPlayersServers[i].Dispose();
-                bluePlayersServers[i].Dispose();
+                redPlayersHosts[i].Dispose();
+                bluePlayersHosts[i].Dispose();
             }
 
             tokenSource.Cancel();
