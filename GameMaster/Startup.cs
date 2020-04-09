@@ -45,6 +45,7 @@ namespace GameMaster
                rollOnFileSizeLimit: true,
                outputTemplate: LoggerTemplate)
                .WriteTo.Console(outputTemplate: LoggerTemplate)
+               .WriteTo.Debug(outputTemplate: LoggerTemplate)
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)

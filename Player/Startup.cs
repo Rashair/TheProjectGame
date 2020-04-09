@@ -12,7 +12,6 @@ using Player.Models;
 using Player.Services;
 using Serilog;
 using Serilog.Events;
-using Shared;
 using Shared.Messages;
 
 using static System.Environment;
@@ -37,7 +36,7 @@ namespace Player
         private void ConfigureLogger()
         {
             string folderName = "TheProjectGameLogs";
-            string fileName = $"Player_{DateTime.Today.ToString("dd_MM_yyyy")}.log";
+            string fileName = $"Player_{DateTime.Today:dd_MM_yyyy}_log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
             Log.Logger = new LoggerConfiguration()
                .Enrich.FromLogContext()
@@ -46,6 +45,7 @@ namespace Player
                rollOnFileSizeLimit: true,
                outputTemplate: LoggerTemplate)
                 .WriteTo.Console(outputTemplate: LoggerTemplate)
+                .WriteTo.Debug(outputTemplate: LoggerTemplate)
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
