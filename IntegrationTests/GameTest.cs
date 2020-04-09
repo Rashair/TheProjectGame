@@ -97,9 +97,11 @@ namespace IntegrationTests
 
             var playerRed = redPlayersHosts[0].Services.GetService<Player.Models.Player>();
             Assert.True(playerRed.Team == Team.Red, "Player should have team passed with conf");
+            Assert.True(playerRed.Position.y < conf.Height - conf.GoalAreaHeight, "Player should not be present on enemy team field");
 
             var playerBlue = bluePlayersHosts[0].Services.GetService<Player.Models.Player>();
             Assert.True(playerBlue.Team == Team.Blue, "Player should have team passed with conf");
+            Assert.True(playerBlue.Position.y >= conf.GoalAreaHeight, "Player should not be present on enemy team field");
         }
 
         protected string[] CreatePlayerConfig(Team team)
