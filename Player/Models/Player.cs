@@ -33,6 +33,17 @@ namespace Player.Models
         private Team? winner;
         private int discovered;
 
+        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
+        {
+            this.conf = conf;
+            this.Team = conf.TeamID == "red" ? Team.Red : Team.Blue;
+            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
+            this.queue = queue;
+            this.client = client;
+            this.logger = Log.ForContext<Player>();
+            this.Position = (-1, -1);
+        }
+
         public int PreviousDistToPiece { get; private set; }
 
         public Penalties PenaltiesTimes { get; private set; }
@@ -48,16 +59,6 @@ namespace Player.Models
         public float ShamPieceProbability { get; private set; }
 
         public Team Team { get; private set; }
-
-        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
-        {
-            this.conf = conf;
-            this.Team = conf.TeamID == "red" ? Team.Red : Team.Blue;
-            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
-            this.queue = queue;
-            this.client = client;
-            this.logger = Log.ForContext<Player>();
-        }
 
         public bool IsLeader { get; private set; }
 

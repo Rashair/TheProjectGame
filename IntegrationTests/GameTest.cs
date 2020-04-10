@@ -49,8 +49,7 @@ namespace IntegrationTests
 
         public HttpClient Client { get; set; }
 
-        [Fact(Timeout = 60 * 1000)]
-        public async Task StartGame()
+        protected async Task StartGame()
         {
             await Task.Run(async () =>
             {
@@ -98,12 +97,16 @@ namespace IntegrationTests
             Assert.True(gameMaster.WasGameInitialized, "Game should be initialized");
             Assert.True(gameMaster.WasGameStarted, "Game should be started");
 
+            await Task.Delay(1000);
+
             var playerRed = redPlayersHosts[0].Services.GetService<Player.Models.Player>();
             Assert.True(playerRed.Team == Team.Red, "Player should have team passed with conf");
+            Assert.True(playerRed.Position.y >= 0, "Player should have position set.");
             Assert.True(playerRed.Position.y < conf.Height - conf.GoalAreaHeight, "Player should not be present on enemy team field");
 
             var playerBlue = bluePlayersHosts[0].Services.GetService<Player.Models.Player>();
             Assert.True(playerBlue.Team == Team.Blue, "Player should have team passed with conf");
+            Assert.True(playerBlue.Position.y >= 0, "Player should have position set.");
             Assert.True(playerBlue.Position.y >= conf.GoalAreaHeight, "Player should not be present on enemy team field");
         }
 
