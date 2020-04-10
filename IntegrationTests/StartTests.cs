@@ -55,7 +55,7 @@ namespace IntegrationTests
         {
             // Arrange
             var source = new CancellationTokenSource();
-            string url = "http://127.0.0.1:0";
+            string url = "http://127.0.0.1:5003";
             string[] args = new string[] { $"urls={url}" };
             var webhost = GameMaster.Program.CreateWebHostBuilder(args).Build();
 
