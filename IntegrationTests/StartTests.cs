@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Shared.Enums;
 using TestsShared;
 using Xunit;
@@ -19,14 +20,18 @@ namespace IntegrationTests
             // Arrange
             int playersCount = 10;
             var source = new CancellationTokenSource();
-            string[] argsRed = new string[] { "TeamID=red", "urls=https://127.0.0.1:0" };
-            string[] argsBlue = new string[] { "TeamID=blue", "urls=https://127.0.0.1:0" };
+            string[] argsRed = new string[] { "TeamID=red", "urls=https://127.0.0.1:0", "CsPort=1" };
+            string[] argsBlue = new string[] { "TeamID=blue", "urls=https://127.0.0.1:0", "CsPort=1" };
             IWebHost[] webHostsRed = new IWebHost[playersCount];
             IWebHost[] webHostsBlue = new IWebHost[playersCount];
             for (int i = 0; i < playersCount; ++i)
             {
-                webHostsRed[i] = Player.Program.CreateWebHostBuilder(argsRed).Build();
-                webHostsBlue[i] = Player.Program.CreateWebHostBuilder(argsBlue).Build();
+                webHostsRed[i] = Player.Program.CreateWebHostBuilder(argsRed).
+                                    ConfigureLogging((ILoggingBuilder logging) => logging.ClearProviders()).
+                                    Build();
+                webHostsBlue[i] = Player.Program.CreateWebHostBuilder(argsBlue).
+                                    ConfigureLogging((ILoggingBuilder logging) => logging.ClearProviders()).
+                                    Build();
             }
 
             // Act
@@ -55,7 +60,10 @@ namespace IntegrationTests
             var source = new CancellationTokenSource();
             string url = "http://127.0.0.1:5003";
             string[] args = new string[] { $"urls={url}" };
-            var webhost = GameMaster.Program.CreateWebHostBuilder(args).Build();
+            var webhost = GameMaster.Program.
+                CreateWebHostBuilder(args).
+                ConfigureLogging((ILoggingBuilder logging) => logging.ClearProviders()).
+                Build();
 
             // Act
             await webhost.StartAsync(source.Token);
@@ -82,7 +90,9 @@ namespace IntegrationTests
             // Arrange
             var source = new CancellationTokenSource();
             string[] args = new string[] { "urls=https://127.0.0.1:0" };
-            var webhost = CommunicationServer.Program.CreateWebHostBuilder(args).Build();
+            var webhost = CommunicationServer.Program.CreateWebHostBuilder(args).
+                ConfigureLogging((ILoggingBuilder logging) => logging.ClearProviders()).
+                Build();
 
             // Act
             await webhost.StartAsync(source.Token);

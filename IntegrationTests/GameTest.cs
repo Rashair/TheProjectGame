@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using GameMaster.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Shared.Enums;
 using TestsShared;
 using Xunit;
@@ -41,7 +42,7 @@ namespace IntegrationTests
                 // TODO: Switch to CS
                 string gmUrl = $"http://{conf.CsIP}:{conf.CsPort}";
                 string[] args = new string[] { $"urls={gmUrl}" };
-                gmHost = Utilities.CreateWebHost(typeof(GameMaster.Startup), args);
+                gmHost = Utilities.CreateWebHost(typeof(GameMaster.Startup), args).Build();
 
                 string[] argsRed = CreatePlayerConfig(Team.Red);
                 string[] argsBlue = CreatePlayerConfig(Team.Blue);
@@ -50,8 +51,12 @@ namespace IntegrationTests
                 bluePlayersHosts = new IWebHost[playersCount];
                 for (int i = 0; i < playersCount; ++i)
                 {
-                    redPlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsRed);
-                    bluePlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsBlue);
+                    redPlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsRed).
+                                    ConfigureLogging((ILoggingBuilder logging) => logging.ClearProviders()).
+                                    Build();
+                    bluePlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsBlue).
+                                    ConfigureLogging((ILoggingBuilder logging) => logging.ClearProviders()).
+                                    Build();
                 }
 
                 // Act

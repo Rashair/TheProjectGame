@@ -12,7 +12,7 @@ namespace IntegrationTests
 {
     public static class Utilities
     {
-        public static IWebHost CreateWebHost(Type startupType, string[] args = null)
+        public static IWebHostBuilder CreateWebHost(Type startupType, string[] args = null)
         {
             var projectDir = GetProjectPath("", startupType.GetTypeInfo().Assembly);
             return WebHost.CreateDefaultBuilder(args)
@@ -23,7 +23,7 @@ namespace IntegrationTests
                     .AddCommandLine(args)
                     .Build())
                 .UseSerilog()
-                .UseStartup(startupType).Build();
+                .UseStartup(startupType);
         }
 
         /// Ref: https://stackoverflow.com/a/52136848/3634867
