@@ -14,10 +14,13 @@ using Xunit;
 
 namespace IntegrationTests
 {
-    public class GameTest : IDisposable
+    public abstract class GameTest : IDisposable
     {
-        protected readonly GameConfiguration conf;
         protected readonly CancellationTokenSource tokenSource;
+
+        protected GameConfiguration conf;
+        protected int positionsCheckTime = 5000;
+        protected int positionNotChangedCount = 3;
 
         protected IWebHost gmHost;
         protected IWebHost[] redPlayersHosts;
@@ -25,25 +28,6 @@ namespace IntegrationTests
 
         public GameTest()
         {
-            this.conf = new GameConfiguration
-            {
-                CsIP = "127.0.0.1",
-                CsPort = 5001,
-                AskPenalty = 1000,
-                PutPenalty = 750,
-                CheckPenalty = 400,
-                MovePenalty = 300,
-                DestroyPenalty = 100,
-                DiscoverPenalty = 1500,
-                ResponsePenalty = 600,
-                Height = 12,
-                Width = 6,
-                GoalAreaHeight = 3,
-                NumberOfGoals = 4,
-                NumberOfPiecesOnBoard = 6,
-                NumberOfPlayersPerTeam = 3,
-                ShamPieceProbability = 20,
-            };
             tokenSource = new CancellationTokenSource();
         }
 
@@ -116,7 +100,6 @@ namespace IntegrationTests
             return new[] { $"TeamID={team.ToString().ToLower()}", "urls=http://127.0.0.1:0", $"CsIP={conf.CsIP}", $"CsPort={conf.CsPort}" };
         }
 
-        [Fact(Timeout = 180 * 1000)]
         public async Task RunGame()
         {
             await StartGame();
@@ -131,7 +114,7 @@ namespace IntegrationTests
 
             while (teamRed[0].GetValue<Player.Models.Player, bool>("working"))
             {
-                await Task.Delay(5000);
+                await Task.Delay(positionsCheckTime);
                 AssertPositionsChange(teamRed, teamRedPositions, positionsCounterRed);
                 AssertPositionsChange(teamBlue, teamBluePositions, positionsCounterBlue);
             }
@@ -148,19 +131,21 @@ namespace IntegrationTests
             Assert.True(winner == expectedWinner, "GM and players should have same winner");
         }
 
-        private void AssertPositionsChange(List<Player.Models.Player> teamRed, List<(int y, int x)> teamRedPositions, int[] positionsCounterRed)
+        public abstract void RunGameWithConfiguration();
+
+        private void AssertPositionsChange(List<Player.Models.Player> team, List<(int y, int x)> teamPositions, int[] positionsCounter)
         {
-            for (int i = 0; i < teamRed.Count; ++i)
+            for (int i = 0; i < team.Count; ++i)
             {
-                if (teamRed[i].Position == teamRedPositions[i])
+                if (team[i].Position == teamPositions[i])
                 {
-                    ++positionsCounterRed[i];
-                    Assert.False(positionsCounterRed[i] > 3, "Player should not be stuck on one position");
+                    ++positionsCounter[i];
+                    Assert.False(positionsCounter[i] > positionNotChangedCount, "Player should not be stuck on one position");
                 }
                 else
                 {
-                    teamRedPositions[i] = teamRed[i].Position;
-                    positionsCounterRed[i] = 0;
+                    teamPositions[i] = team[i].Position;
+                    positionsCounter[i] = 0;
                 }
             }
         }

@@ -13,13 +13,11 @@ namespace IntegrationTests
 {
     public class StartTests
     {
-        [Theory]
-        [InlineData(1)]
-        [InlineData(10)]
-        [InlineData(100)]
-        public async void PlayersStart(int playersCount)
+        [Fact]
+        public async void PlayersStart()
         {
             // Arrange
+            int playersCount = 10;
             var source = new CancellationTokenSource();
             string[] argsRed = new string[] { "TeamID=red", "urls=https://127.0.0.1:0" };
             string[] argsBlue = new string[] { "TeamID=blue", "urls=https://127.0.0.1:0" };
