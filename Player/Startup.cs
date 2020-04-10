@@ -36,7 +36,7 @@ namespace Player
         private void ConfigureLogger()
         {
             string folderName = "TheProjectGameLogs";
-            string fileName = $"Player_{DateTime.Today:dd_MM_yyyy}_log";
+            string fileName = $"Player_{DateTime.Today:dd_MM_yyyy}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
             Log.Logger = new LoggerConfiguration()
                .Enrich.FromLogContext()

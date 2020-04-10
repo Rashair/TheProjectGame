@@ -9,6 +9,8 @@ using GameMaster.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Core;
 using Shared.Enums;
 using TestsShared;
 using Xunit;
@@ -52,10 +54,10 @@ namespace IntegrationTests
                 for (int i = 0; i < playersCount; ++i)
                 {
                     redPlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsRed).
-                                    ConfigureLogging((ILoggingBuilder logging) => logging.ClearProviders()).
+                                    UseSerilog((Logger)null, true).
                                     Build();
                     bluePlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsBlue).
-                                    ConfigureLogging((ILoggingBuilder logging) => logging.ClearProviders()).
+                                    UseSerilog((Logger)null, true).
                                     Build();
                 }
 
