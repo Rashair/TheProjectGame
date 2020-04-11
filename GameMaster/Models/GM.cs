@@ -27,7 +27,8 @@ namespace GameMaster.Models
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketManager<WebSocket, GMMessage> socketManager;
 
-        private HashSet<(int recipient, int sender)> legalKnowledgeReplies;
+        private readonly Random rand;
+        private readonly HashSet<(int recipient, int sender)> legalKnowledgeReplies;
         private readonly Dictionary<int, GMPlayer> players;
         private AbstractField[][] board;
 
@@ -51,6 +52,7 @@ namespace GameMaster.Models
 
             players = new Dictionary<int, GMPlayer>();
             legalKnowledgeReplies = new HashSet<(int, int)>();
+            rand = new Random();
         }
 
         public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
@@ -341,32 +343,34 @@ namespace GameMaster.Models
                 board[i] = new AbstractField[conf.Width];
             }
 
-            int goalFields = 0;
-            AbstractField NonGoalOrGoalFieldGenerator(int y, int x)
-            {
-                if (goalFields < conf.NumberOfGoals)
-                {
-                    ++goalFields;
-                    return new GoalField(y, x);
-                }
-                return new NonGoalField(y, x);
-            }
+            GenerateGoalFields(0, conf.GoalAreaHeight);
+            AbstractField NonGoalFieldGenerator(int y, int x) => new NonGoalField(y, x);
             for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
             {
-                FillBoardRow(rowIt, NonGoalOrGoalFieldGenerator);
+                FillBoardRow(rowIt, NonGoalFieldGenerator);
             }
 
-            Func<int, int, AbstractField> taskFieldGenerator = (int y, int x) => new TaskField(y, x);
+            AbstractField TaskFieldGenerator(int y, int x) => new TaskField(y, x);
             int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
             for (int rowIt = conf.GoalAreaHeight; rowIt < secondGoalAreaStart; ++rowIt)
             {
-                FillBoardRow(rowIt, taskFieldGenerator);
+                FillBoardRow(rowIt, TaskFieldGenerator);
             }
 
-            goalFields = 0;
+            GenerateGoalFields(secondGoalAreaStart, conf.Height);
             for (int rowIt = secondGoalAreaStart; rowIt < conf.Height; ++rowIt)
             {
-                FillBoardRow(rowIt, NonGoalOrGoalFieldGenerator);
+                FillBoardRow(rowIt, NonGoalFieldGenerator);
+            }
+        }
+
+        private void GenerateGoalFields(int beg, int end)
+        {
+            for (int i = 0; i < conf.NumberOfGoals; ++i)
+            {
+                int row = rand.Next(beg, end);
+                int col = rand.Next(conf.Width);
+                board[row][col] = new GoalField(row, col);
             }
         }
 
@@ -374,7 +378,11 @@ namespace GameMaster.Models
         {
             for (int col = 0; col < board[row].Length; ++col)
             {
-                board[row][col] = getField(row, col);
+                // Goal-field generation
+                if (board[row][col] == null)
+                {
+                    board[row][col] = getField(row, col);
+                }
             }
         }
 
@@ -450,7 +458,6 @@ namespace GameMaster.Models
 
         private void GeneratePiece()
         {
-            var rand = new Random();
             bool isSham = rand.Next(0, 101) < conf.ShamPieceProbability;
             AbstractPiece piece;
             if (isSham)
