@@ -370,6 +370,19 @@ namespace GameMaster.Models
             {
                 int row = rand.Next(beg, end);
                 int col = rand.Next(conf.Width);
+                while (board[row][col] != null)
+                {
+                    ++col;
+                    if (col == conf.Width)
+                    {
+                        col = 0;
+                        ++row;
+                        if (row == conf.Height)
+                        {
+                            row = 0;
+                        }
+                    }
+                }
                 board[row][col] = new GoalField(row, col);
             }
         }

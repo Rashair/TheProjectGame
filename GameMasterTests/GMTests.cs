@@ -240,6 +240,63 @@ namespace GameMaster.Tests
         }
 
         [Fact]
+        public void TestInitGame()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration();
+            var queue = new BufferBlock<PlayerMessage>();
+            var lifetime = Mock.Of<IApplicationLifetime>();
+            var manager = new WebSocketManager<GMMessage>();
+            var gameMaster = new GM(lifetime, conf, queue, manager);
+
+            // Act
+            gameMaster.Invoke("InitGame");
+
+            // Assert
+            Assert.True(gameMaster.WasGameInitialized);
+
+            int goalFieldsCount = 0;
+            int taskFieldsCount = 0;
+            int piecesCount = 0;
+            var board = gameMaster.GetValue<AbstractField[][]>("board");
+            for (int i = 0; i < board.Length; ++i)
+            {
+                for (int j = 0; j < board[i].Length; ++j)
+                {
+                    if (board[i][j] is GoalField)
+                    {
+                        ++goalFieldsCount;
+                    }
+                    else if (board[i][j] is TaskField taskField)
+                    {
+                        ++taskFieldsCount;
+                        if (board[i][j].ContainsPieces())
+                        {
+                            piecesCount += GetPieceCount(taskField);
+                        }
+                    }
+                }
+            }
+
+            int expectedGoalFieldsCount = conf.NumberOfGoals * 2;
+            Assert.True(expectedGoalFieldsCount == goalFieldsCount,
+                $"Number of goal fields should match configuration setting.\n" +
+                $"Have: {goalFieldsCount}\n" +
+                $"Expected: {expectedGoalFieldsCount}");
+
+            int expectedTaskFieldsCount = (conf.Height - (2 * conf.GoalAreaHeight)) * conf.Width;
+            Assert.True(expectedTaskFieldsCount == taskFieldsCount,
+                "Task fields should cover all fields except goal areas.\n" +
+                 $"Have: {taskFieldsCount}\n" +
+                 $"Expected: {expectedTaskFieldsCount}");
+
+            Assert.True(conf.NumberOfPiecesOnBoard == piecesCount,
+                "GM should generate enough pieces.\n" +
+                 $"Have: {piecesCount}\n" +
+                 $"Expected: {conf.NumberOfPiecesOnBoard}");
+        }
+
+        [Fact]
         public void TestStartGame()
         {
             // Arrange
