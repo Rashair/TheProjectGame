@@ -21,7 +21,7 @@ using static GameMaster.Tests.Helpers.ReflectionHelpers;
 
 namespace GameMaster.Tests
 {
-    public class GMPlayerTests
+    public partial class GMPlayerTests
     {
         private const int DefaultId = 15;
         private const Team DefaultTeam = Team.Blue;
@@ -29,52 +29,9 @@ namespace GameMaster.Tests
 
         private GMMessage lastSended;
 
-        private class MockSocketManager : ISocketManager<WebSocket, GMMessage>
-        {
-            private readonly Send send;
-
-            public delegate void Send(GMMessage message);
-
-            public MockSocketManager(Send send)
-            {
-                this.send = send;
-            }
-
-            public bool AddSocket(WebSocket socket) => throw new NotImplementedException();
-
-            public int GetId(WebSocket socket) => throw new NotImplementedException();
-
-            public WebSocket GetSocketById(int id) => throw new NotImplementedException();
-
-            public Task<bool> RemoveSocketAsync(int id, CancellationToken cancellationToken)
-                => throw new NotImplementedException();
-
-            public async Task SendMessageAsync(int id, GMMessage message, CancellationToken cancellationToken)
-            {
-                send(message);
-                await Task.CompletedTask;
-            }
-
-            public Task SendMessageToAllAsync(GMMessage message, CancellationToken cancellationToken)
-                => throw new NotImplementedException();
-        }
-
         private ISocketManager<WebSocket, GMMessage> GenerateSocketManager()
         {
             return new MockSocketManager((m) => { lastSended = m; });
-        }
-
-        private GameConfiguration GenerateConfiguration()
-        {
-            return new GameConfiguration
-            {
-                AskPenalty = 100,
-                CheckPenalty = 100,
-                DiscoverPenalty = 100,
-                ResponsePenalty = 100,
-                PutPenalty = 100,
-                MovePenalty = 100,
-            };
         }
 
         private BufferBlock<PlayerMessage> GenerateBuffer()
@@ -90,7 +47,7 @@ namespace GameMaster.Tests
 
         private GMPlayer GenerateGMPlayer(int id = DefaultId, Team team = DefaultTeam, bool isLeader = DefaultIsLeader)
         {
-            return GenerateGMPlayer(GenerateConfiguration(), GenerateSocketManager(), id, team, isLeader);
+            return GenerateGMPlayer(new MockGameConfiguration(), GenerateSocketManager(), id, team, isLeader);
         }
 
         private GM GenerateGM()
@@ -216,7 +173,7 @@ namespace GameMaster.Tests
         public async Task TestMoveAsyncAfterPenalty()
         {
             var gm = GenerateGM();
-            var conf = GenerateConfiguration();
+            var conf = new MockGameConfiguration();
             var socketManager = GenerateSocketManager();
             var player = GenerateGMPlayer(conf, socketManager);
             var startField = new TaskField(0, 0);
@@ -261,7 +218,7 @@ namespace GameMaster.Tests
         [Fact]
         public async Task TestCheckHoldingAsync()
         {
-            var conf = GenerateConfiguration();
+            var conf = new MockGameConfiguration();
             var socketManager = GenerateSocketManager();
             var player = GenerateGMPlayer(conf, socketManager);
             var piece = new ShamPiece();
@@ -296,7 +253,7 @@ namespace GameMaster.Tests
         [Fact]
         public async Task TestPutAsync()
         {
-            var conf = GenerateConfiguration();
+            var conf = new MockGameConfiguration();
             var socketManager = GenerateSocketManager();
             var player = GenerateGMPlayer(conf, socketManager);
             var piece = new NormalPiece();
@@ -322,7 +279,7 @@ namespace GameMaster.Tests
         [Fact]
         public async Task TestPickAsync()
         {
-            var conf = GenerateConfiguration();
+            var conf = new MockGameConfiguration();
             var socketManager = GenerateSocketManager();
             var player = GenerateGMPlayer(conf, socketManager);
             var piece = new ShamPiece();

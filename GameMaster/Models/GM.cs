@@ -42,7 +42,7 @@ namespace GameMaster.Models
         public int TaskAreaEnd { get => conf.Height - conf.GoalAreaHeight; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
-            BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> socketManager)
+            BufferBlock<PlayerMessage> queue, ISocketManager<WebSocket, GMMessage> socketManager)
         {
             this.logger = Log.ForContext<GM>();
             this.lifetime = lifetime;

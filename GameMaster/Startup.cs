@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net.WebSockets;
 using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Managers;
@@ -56,7 +57,7 @@ namespace GameMaster
             });
 
             services.AddSingleton<WebSocketManager<BackendMessage>>();
-            services.AddSingleton<WebSocketManager<GMMessage>>();
+            services.AddSingleton<ISocketManager<WebSocket, GMMessage>, WebSocketManager<GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
             GameConfiguration conf;
