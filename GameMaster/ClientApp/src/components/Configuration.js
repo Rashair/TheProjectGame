@@ -30,7 +30,7 @@ export class Configuration extends Component {
       goalAreaHeight: 0,
       numberOfGoals: 0,
       numberOfPlayersPerTeam: 0,
-      shamPieceProbability: 0,
+      shamPieceProbability: 0.0,
       numberOfPiecesOnBoard: 0,
     };
 
@@ -73,8 +73,8 @@ export class Configuration extends Component {
       }
     }
 
-    if (this.state.shamPieceProbability > 100) {
-      alert("Prawdopodobieństwo musi być liczbą z przedziału między 0 a 100.");
+    if (this.state.shamPieceProbability > 1) {
+      alert("Prawdopodobieństwo musi być liczbą z przedziału między 0 a 1.");
       return;
     }
 
@@ -223,7 +223,7 @@ export class Configuration extends Component {
             className="form-control"
             type="number"
             min="0"
-            max="100"
+            max="1"
             name="shamPieceProbability"
             value={this.state.shamPieceProbability}
             onChange={e => this.setState({ shamPieceProbability: e.target.value })}
