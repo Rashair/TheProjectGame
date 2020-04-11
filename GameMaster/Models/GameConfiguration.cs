@@ -31,6 +31,8 @@ namespace GameMaster.Models
 
         public int Height { get; set; }
 
+        public int NumberOfPlayersPerTeam { get; set; }
+
         public int GoalAreaHeight { get; set; }
 
         public int NumberOfGoals { get; set; }
@@ -41,8 +43,6 @@ namespace GameMaster.Models
         /// Percentage, between 0 and 1.
         /// </summary>
         public float ShamPieceProbability { get; set; }
-
-        public int NumberOfPlayersPerTeam { get; set; }
 
         public GameConfiguration()
         {
