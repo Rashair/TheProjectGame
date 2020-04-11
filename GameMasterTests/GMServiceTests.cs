@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Net.WebSockets;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -27,7 +28,7 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             services.AddSingleton<GameConfiguration>(conf);
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
-            services.AddSingleton<WebSocketManager<GMMessage>>();
+            services.AddSingleton<ISocketManager<WebSocket, GMMessage>, WebSocketManager<GMMessage>>();
             int messagesNum = 10;
             var queue = new BufferBlock<PlayerMessage>();
             for (int i = 0; i < messagesNum; ++i)
@@ -68,7 +69,7 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
             services.AddSingleton<GameConfiguration>(conf);
-            services.AddSingleton<WebSocketManager<GMMessage>>();
+            services.AddSingleton<ISocketManager<WebSocket, GMMessage>, WebSocketManager<GMMessage>>();
             int messagesNum = 10;
             var queue = new BufferBlock<PlayerMessage>();
             for (int i = 0; i < messagesNum; ++i)
