@@ -15,7 +15,7 @@ namespace GameMaster.Managers
 
         public TcpSocketManager()
         {
-            this.logger = Log.ForContext<WebSocketManager<TMessage>>();
+            this.logger = Log.ForContext<TcpSocketManager<TMessage>>();
         }
 
         protected override bool IsSame(TcpClient a, TcpClient b)
@@ -27,6 +27,7 @@ namespace GameMaster.Managers
         {
             // Can close after some time
             socket.Close();
+            logger.Information("Closing socket");
             return Task.CompletedTask;
         }
 

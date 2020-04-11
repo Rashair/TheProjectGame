@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net.Sockets;
 using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Managers;
@@ -55,8 +56,8 @@ namespace GameMaster
                 configuration.RootPath = "ClientApp/build";
             });
 
-            services.AddSingleton<WebSocketManager<BackendMessage>>();
-            services.AddSingleton<WebSocketManager<GMMessage>>();
+            services.AddSingleton<TcpSocketManager<BackendMessage>>();
+            services.AddSingleton<ISocketManager<TcpClient, GMMessage>, TcpSocketManager<GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
             GameConfiguration conf;

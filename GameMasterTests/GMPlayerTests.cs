@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +30,7 @@ namespace GameMaster.Tests
 
         private GMMessage lastSended;
 
-        private class MockSocketManager : ISocketManager<WebSocket, GMMessage>
+        private class MockSocketManager : ISocketManager<TcpClient, GMMessage>
         {
             private readonly Send send;
 
@@ -40,11 +41,11 @@ namespace GameMaster.Tests
                 this.send = send;
             }
 
-            public bool AddSocket(WebSocket socket) => throw new NotImplementedException();
+            public bool AddSocket(TcpClient socket) => throw new NotImplementedException();
 
-            public int GetId(WebSocket socket) => throw new NotImplementedException();
+            public int GetId(TcpClient socket) => throw new NotImplementedException();
 
-            public WebSocket GetSocketById(int id) => throw new NotImplementedException();
+            public TcpClient GetSocketById(int id) => throw new NotImplementedException();
 
             public Task<bool> RemoveSocketAsync(int id, CancellationToken cancellationToken)
                 => throw new NotImplementedException();
@@ -59,7 +60,7 @@ namespace GameMaster.Tests
                 => throw new NotImplementedException();
         }
 
-        private ISocketManager<WebSocket, GMMessage> GenerateSocketManager()
+        private ISocketManager<TcpClient, GMMessage> GenerateSocketManager()
         {
             return new MockSocketManager((m) => { lastSended = m; });
         }
@@ -82,7 +83,7 @@ namespace GameMaster.Tests
             return new BufferBlock<PlayerMessage>();
         }
 
-        private GMPlayer GenerateGMPlayer(GameConfiguration conf, ISocketManager<WebSocket, GMMessage> socketManager,
+        private GMPlayer GenerateGMPlayer(GameConfiguration conf, ISocketManager<TcpClient, GMMessage> socketManager,
             int id = DefaultId, Team team = DefaultTeam, bool isLeader = DefaultIsLeader)
         {
             return new GMPlayer(id, conf, socketManager, team, isLeader);
@@ -97,7 +98,7 @@ namespace GameMaster.Tests
         {
             var conf = new MockGameConfiguration();
             var queue = GenerateBuffer();
-            var manager = new WebSocketManager<GMMessage>();
+            var manager = new TcpSocketManager<GMMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
             gameMaster.Invoke("InitGame");

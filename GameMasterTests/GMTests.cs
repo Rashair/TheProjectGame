@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Threading;
@@ -12,6 +13,7 @@ using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
+using GameMaster.Tests.Helpers;
 using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -37,7 +39,7 @@ namespace GameMaster.Tests
             conf.NumberOfPiecesOnBoard = 0;
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new WebSocketManager<GMMessage>();
+            var manager = new TcpSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
             gameMaster.Invoke("InitGame");
 
@@ -137,7 +139,7 @@ namespace GameMaster.Tests
             var queue = new BufferBlock<PlayerMessage>();
             var logger = Mock.Of<ILogger<GM>>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new WebSocketManager<GMMessage>();
+            var manager = new TcpSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
             gameMaster.Invoke("InitGame");
             for (int i = 0; i < pieceCount; ++i)
@@ -201,7 +203,7 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new WebSocketManager<GMMessage>();
+            var manager = new TcpSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
             var players = gameMaster.GetValue<Dictionary<int, GMPlayer>>("players");
             for (int i = 0; i < conf.NumberOfPlayersPerTeam; ++i)
@@ -246,10 +248,11 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new WebSocketManager<GMMessage>();
+            var manager = new TcpSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
             var players = gameMaster.GetValue<Dictionary<int, GMPlayer>>("players");
-            var sockets = manager.GetValue<ConcurrentDictionary<int, WebSocket>, SocketManager<WebSocket, GMMessage>>("sockets");
+            var sockets = manager.GetValue<ConcurrentDictionary<int, TcpClient>,
+                SocketManager<TcpClient, GMMessage>>("sockets");
             for (int idRed = 0; idRed < conf.NumberOfPlayersPerTeam; ++idRed)
             {
                 var player = new GMPlayer(idRed, conf, manager, Team.Red)
@@ -257,7 +260,7 @@ namespace GameMaster.Tests
                     SocketID = idRed,
                 };
                 players.Add(idRed, player);
-                sockets.TryAdd(idRed, Mock.Of<WebSocket>());
+                sockets.TryAdd(idRed, Mock.Of<TcpClient>());
 
                 int idBlue = idRed + conf.NumberOfPlayersPerTeam;
                 player = new GMPlayer(idBlue, conf, manager, Team.Blue)
@@ -265,7 +268,7 @@ namespace GameMaster.Tests
                     SocketID = idBlue,
                 };
                 players.Add(idBlue, player);
-                sockets.TryAdd(idBlue, Mock.Of<WebSocket>());
+                sockets.TryAdd(idBlue, Mock.Of<TcpClient>());
             }
             gameMaster.Invoke("InitGame");
 

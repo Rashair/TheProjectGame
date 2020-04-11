@@ -37,7 +37,7 @@ namespace GameMaster.Tests
             var gameConfig = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new WebSocketManager<GMMessage>();
+            var manager = new TcpSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, gameConfig, queue, manager);
             GameController gameController = new GameController(config, gameConfig, gameMaster);
 
@@ -84,7 +84,7 @@ namespace GameMaster.Tests
             var gameConfig = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new WebSocketManager<GMMessage>();
+            var manager = new TcpSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, gameConfig, queue, manager);
             GameController gameController = new GameController(config, gameConfig, gameMaster);
 
@@ -114,7 +114,7 @@ namespace GameMaster.Tests
             var gameConfig = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new WebSocketManager<GMMessage>();
+            var manager = new TcpSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, gameConfig, queue, manager);
             GameController gameController = new GameController(config, gameConfig, gameMaster);
 
@@ -154,7 +154,7 @@ namespace GameMaster.Tests
             var gameConfig = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new WebSocketManager<GMMessage>();
+            var manager = new TcpSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, gameConfig, queue, manager);
             GameController gameController = new GameController(config, gameConfig, gameMaster);
 
@@ -180,7 +180,7 @@ namespace GameMaster.Tests
             var gameConfig = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new WebSocketManager<GMMessage>();
+            var manager = new TcpSocketManager<GMMessage>();
             gameConfig.NumberOfPlayersPerTeam = 0;
             var gameMaster = new GM(lifetime, gameConfig, queue, manager);
             GameController gameController = new GameController(config, gameConfig, gameMaster);

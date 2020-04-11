@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,10 +16,10 @@ namespace GameMaster.Models
 {
     public class GMPlayer
     {
-        private ILogger logger;
+        private readonly ILogger logger;
         private readonly int id;
         private readonly GameConfiguration conf;
-        private readonly ISocketManager<WebSocket, GMMessage> socketManager;
+        private readonly ISocketManager<TcpClient, GMMessage> socketManager;
         private int messageCorrelationId;
         private DateTime lockedTill;
         private AbstractField position;
@@ -44,7 +45,7 @@ namespace GameMaster.Models
 
         public Team Team { get; }
 
-        public GMPlayer(int id, GameConfiguration conf, ISocketManager<WebSocket, GMMessage> socketManager, Team team,
+        public GMPlayer(int id, GameConfiguration conf, ISocketManager<TcpClient, GMMessage> socketManager, Team team,
             bool isLeader = false)
         {
             logger = Log.ForContext<GMPlayer>();

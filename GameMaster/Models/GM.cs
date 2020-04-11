@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace GameMaster.Models
         private readonly IApplicationLifetime lifetime;
         private readonly GameConfiguration conf;
         private readonly BufferBlock<PlayerMessage> queue;
-        private readonly ISocketManager<WebSocket, GMMessage> socketManager;
+        private readonly ISocketManager<TcpClient, GMMessage> socketManager;
 
         private HashSet<(int recipient, int sender)> legalKnowledgeReplies;
         private readonly Dictionary<int, GMPlayer> players;
@@ -41,7 +42,7 @@ namespace GameMaster.Models
         public int TaskAreaEnd { get => conf.Height - conf.GoalAreaHeight; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
-            BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> socketManager)
+            BufferBlock<PlayerMessage> queue, ISocketManager<TcpClient, GMMessage> socketManager)
         {
             this.logger = Log.ForContext<GM>();
             this.lifetime = lifetime;
