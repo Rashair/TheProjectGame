@@ -20,7 +20,7 @@ namespace GameMaster.Tests
 {
     public class GMServiceTests
     {
-        [Fact(Timeout = 3000)]
+        [Fact(Timeout = 4000)]
         public async Task TestExecuteAsyncShouldWaitForStartAndReadMessages()
         {
             // Arrange
@@ -53,7 +53,7 @@ namespace GameMaster.Tests
 
                 gameMaster.Invoke("InitGame");
 
-                await Task.Delay(hostedService.WaitForStartDelay + 500);
+                await Task.Delay(hostedService.WaitForInitDelay + 500);
                 await hostedService.StopAsync(CancellationToken.None);
             });
 
