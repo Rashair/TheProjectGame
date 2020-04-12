@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
-using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -408,6 +407,7 @@ namespace GameMaster.Models
                     if (!socketManager.IsAnyOpen())
                     {
                         logger.Error("No open connection. Exiting.");
+                        lifetime.StopApplication();
                         break;
                     }
                 }

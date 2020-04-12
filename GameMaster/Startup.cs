@@ -94,7 +94,6 @@ namespace GameMaster
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
-            app.UseWebSockets();
 
             app.UseMvc(routes =>
             {

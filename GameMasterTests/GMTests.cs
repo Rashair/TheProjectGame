@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Net.WebSockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -279,7 +278,7 @@ namespace GameMaster.Tests
             // Assert
             Assert.True(gameMaster.WasGameStarted);
 
-            // TODO create mock of websocket and check if GM sends messages
+            // TODO create mock of socket and check if GM sends messages
         }
     }
 }

@@ -72,8 +72,6 @@ namespace Player
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseWebSockets();
-
             app.Run(async (context) =>
             {
                 await context.Response.WriteAsync("Hello World!");
