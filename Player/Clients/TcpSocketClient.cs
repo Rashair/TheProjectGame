@@ -89,6 +89,10 @@ namespace Player.Clients
                 await stream.WriteAsync(length, 0, 2, cancellationToken);
                 await stream.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
             }
+            else if (!IsOpen)
+            {
+                logger.Warning("Tried to send message with closed socket");
+            }
         }
     }
 }

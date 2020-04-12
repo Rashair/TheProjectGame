@@ -71,11 +71,6 @@ namespace GameMaster.Services
                     var client = await listener.AcceptTcpClientAsync();
                     OnConnected(client);
                     logger.Information($"Client: {client.Client.RemoteEndPoint} connected.");
-
-                    var stream = client.GetStream();
-                    var buffer = new byte[BufferSize];
-                    int readCount = await ReadMessage(stream, buffer, new byte[2], cancellationToken);
-                    await OnMessageAsync(client, buffer, readCount);
                     HandleMessages(client, cancellationToken).ConfigureAwait(false);
                 }
                 else
