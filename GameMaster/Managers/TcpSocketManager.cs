@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 using Serilog;
+using Shared;
 
 namespace GameMaster.Managers
 {
@@ -18,6 +19,11 @@ namespace GameMaster.Managers
             this.logger = Log.ForContext<TcpSocketManager<TMessage>>();
         }
 
+        protected override bool IsOpen(TcpClient socket)
+        {
+            return socket.Connected;
+        }
+
         protected override bool IsSame(TcpClient a, TcpClient b)
         {
             return a == b;
@@ -25,7 +31,6 @@ namespace GameMaster.Managers
 
         protected override Task CloseSocketAsync(TcpClient socket, CancellationToken cancellationToken)
         {
-            // Can close after some time
             socket.Close();
             logger.Information("Closing socket");
             return Task.CompletedTask;
@@ -35,14 +40,26 @@ namespace GameMaster.Managers
         {
             if (!cancellationToken.IsCancellationRequested && socket.Connected)
             {
-                var stream = socket.GetStream();
+                try
+                {
+                    var stream = socket.GetStream();
 
-                string serialized = JsonConvert.SerializeObject(message);
-                byte[] buffer = Encoding.UTF8.GetBytes(serialized);
-
-                await stream.WriteAsync(buffer, cancellationToken);
-
-                stream.Close();
+                    string serialized = JsonConvert.SerializeObject(message);
+                    byte[] buffer = Encoding.UTF8.GetBytes(serialized);
+                    var length = buffer.Length.ToLittleEndian();
+                    logger.Information($"Trying to send message: {serialized} with lenght {length[0]}, {length[1]}");
+                    await stream.WriteAsync(length, cancellationToken);
+                    await stream.WriteAsync(buffer, cancellationToken);
+                    logger.Information("Sent msg");
+                }
+                catch (Exception e)
+                {
+                    logger.Error($"Failed to send message: {e}");
+                }
+            }
+            else
+            {
+                logger.Information($"Connection state: {socket.Connected}");
             }
         }
     }

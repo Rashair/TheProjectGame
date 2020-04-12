@@ -28,11 +28,12 @@ namespace Player.Services
                 {
                     try
                     {
+                        logger.Information("Player service working");
                         await player.Work(cancellationToken);
                     }
                     catch (Exception e)
                     {
-                        logger.Information(e.Message);
+                        logger.Error($"Error running service: {e}");
                     }
                 });
 

@@ -72,7 +72,7 @@ namespace GameMaster.Models
 
             players.TryGetValue(message.PlayerID, out GMPlayer player);
 
-            // logger.Information($"|{message.MessageID} | {message.Payload} | {player?.SocketID} | {player?.Team}");
+            logger.Information($"|{message.MessageID} | {message.Payload} | {player?.SocketID} | {player?.Team}");
             switch (message.MessageID)
             {
                 case PlayerMessageID.CheckPiece:
@@ -404,7 +404,12 @@ namespace GameMaster.Models
                 }
                 catch (TimeoutException e)
                 {
-                    // logger.Warning($"Message retrieve was cancelled: {e.Message}");
+                    logger.Warning($"Message retrieve was cancelled: {e.Message}");
+                    if (!socketManager.IsAnyOpen())
+                    {
+                        logger.Error("No open connection. Exiting.");
+                        break;
+                    }
                 }
             }
         }

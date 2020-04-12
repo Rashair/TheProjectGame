@@ -32,7 +32,14 @@ namespace GameMaster.Services
 
             if (!cancellationToken.IsCancellationRequested)
             {
-                await RunService(cancellationToken);
+                try
+                {
+                    await RunService(cancellationToken);
+                }
+                catch (Exception e)
+                {
+                    logger.Error($"Error running service: {e}");
+                }
             }
         }
 

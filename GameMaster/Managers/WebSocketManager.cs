@@ -48,5 +48,10 @@ namespace GameMaster.Managers
                     cancellationToken: cancellationToken);
             }
         }
+
+        protected override bool IsOpen(WebSocket socket)
+        {
+            return socket.State == WebSocketState.Open;
+        }
     }
 }

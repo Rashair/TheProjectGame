@@ -56,7 +56,7 @@ namespace Player
 
             services.AddSingleton(conf);
 
-            services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, WebSocketClient<GMMessage, PlayerMessage>>();
+            services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, TcpSocketClient<GMMessage, PlayerMessage>>();
             services.AddSingleton<BufferBlock<GMMessage>>();
             services.AddSingleton<Player.Models.Player>();
 

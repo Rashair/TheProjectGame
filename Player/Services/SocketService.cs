@@ -7,44 +7,65 @@ using Microsoft.Extensions.Hosting;
 using Player.Clients;
 using Player.Models;
 using Serilog;
+using Shared;
 using Shared.Messages;
 
 namespace Player.Services
 {
     public class SocketService : BackgroundService
     {
-        private readonly PlayerConfiguration conf;
         private readonly ILogger logger;
         private readonly ISocketClient<GMMessage, PlayerMessage> client;
+        private readonly PlayerConfiguration conf;
         private readonly BufferBlock<GMMessage> queue;
+        private readonly IApplicationLifetime lifetime;
 
-        public Uri ConnectUri => new Uri($"wss://{conf.CsIP}:{conf.CsPort}/player");
+        public Uri ConnectUri => new Uri($"http://{conf.CsIP}:{conf.CsPort}");
 
         public SocketService(ISocketClient<GMMessage, PlayerMessage> client, PlayerConfiguration conf,
-            BufferBlock<GMMessage> queue)
+            BufferBlock<GMMessage> queue, IApplicationLifetime lifetime)
         {
+            this.logger = Log.ForContext<SocketService>();
             this.client = client;
             this.conf = conf;
-            this.logger = Log.ForContext<SocketService>();
             this.queue = queue;
+            this.lifetime = lifetime;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // TODO add reconnect policy in the future
             if (!stoppingToken.IsCancellationRequested)
             {
-                await Task.Yield();
-                await client.ConnectAsync(ConnectUri, stoppingToken);
-                (bool result, GMMessage message) = await client.ReceiveAsync(stoppingToken);
-                while (!stoppingToken.IsCancellationRequested && result)
+                var (success, errorMessage) = await Helpers.Retry(async () =>
                 {
-                    bool sended = await queue.SendAsync(message, stoppingToken);
-                    if (!sended)
+                    await Task.Yield();
+                    await client.ConnectAsync(ConnectUri, stoppingToken);
+                }, 60, 1000, stoppingToken);
+                if (!success)
+                {
+                    logger.Error($"No connection could be made. Error: {errorMessage}");
+                    lifetime.StopApplication();
+                    return;
+                }
+
+                (bool receivedMessage, GMMessage message) = await client.ReceiveAsync(stoppingToken);
+                while (!stoppingToken.IsCancellationRequested && client.IsOpen)
+                {
+                    if (receivedMessage)
                     {
-                        logger.Warning($"SocketService| GMMessage id: {message.Id} has been lost");
+                        logger.Information($"Sending message to queue: {message}");
+                        bool sended = await queue.SendAsync(message, stoppingToken);
+                        if (!sended)
+                        {
+                            logger.Warning($"SocketService| GMMessage id: {message.Id} has been lost");
+                        }
                     }
-                    (result, message) = await client.ReceiveAsync(stoppingToken);
+                    else
+                    {
+                        await Task.Delay(1000);
+                        logger.Information("Waiting");
+                    }
+                    (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
                 }
             }
         }

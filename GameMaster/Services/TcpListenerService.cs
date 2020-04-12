@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using GameMaster.Managers;
 using GameMaster.Models;
 using Serilog;
+using Shared;
 using Shared.Messages;
 
 namespace GameMaster.Services
@@ -30,6 +32,10 @@ namespace GameMaster.Services
         protected virtual void OnConnected(TcpClient socket)
         {
             bool result = manager.AddSocket(socket);
+            if (!result)
+            {
+                logger.Error($"Failed to add socket: {socket.Client.RemoteEndPoint}");
+            }
         }
 
         protected virtual async Task OnDisconnectedAsync(TcpClient socket, CancellationToken cancellationToken)
@@ -46,44 +52,82 @@ namespace GameMaster.Services
         {
             var ip = IPAddress.Parse(conf.CsIP);
             var listener = new TcpListener(ip, conf.CsPort);
-            await Task.Run(async () =>
+            try
             {
-                while (!cancellationToken.IsCancellationRequested && AcceptConnection())
+                listener.Start();
+            }
+            catch (SocketException e)
+            {
+                logger.Error($"Error starting listener on: {ip}:{conf.CsPort}, Exception:\n {e}");
+                return;
+            }
+
+            List<Task> readTasks = new List<Task>();
+
+            while (!cancellationToken.IsCancellationRequested && AcceptConnection())
+            {
+                if (listener.Pending())
                 {
-                    if (listener.Pending())
+                    var client = await listener.AcceptTcpClientAsync();
+                    OnConnected(client);
+                    logger.Information($"Client: {client.Client.RemoteEndPoint} connected.");
+
+                    var stream = client.GetStream();
+                    var buffer = new byte[BufferSize];
+                    int readCount = await ReadMessage(stream, buffer, new byte[2], cancellationToken);
+                    await OnMessageAsync(client, buffer, readCount).ConfigureAwait(false);
+                    HandleMessages(client, cancellationToken);
+                }
+                else
+                {
+                    await Task.Delay(1000);
+                }
+            }
+        }
+
+        private async Task HandleMessages(TcpClient client, CancellationToken cancellationToken)
+        {
+            var stream = client.GetStream();
+            var buffer = new byte[BufferSize];
+            var lengthBuffer = new byte[2];
+            logger.Information("Started handling messages");
+            int count = 0;
+            while (!cancellationToken.IsCancellationRequested && client.Connected)
+            {
+                if (stream.DataAvailable)
+                {
+                    try
                     {
-                        var client = await listener.AcceptTcpClientAsync();
-                        OnConnected(client);
-                        logger.Information($"Client: {client.Client.RemoteEndPoint} connected.");
-
-                        var stream = client.GetStream();
-                        var buffer = new byte[BufferSize];
-
-                        // Read JoinTheGameMessage, blocking!
-                        int count = stream.Read(buffer, 0, BufferSize);
-                        await OnMessageAsync(client, buffer, count);
-
-                        var receiveTask = Task.Run(async () =>
-                        {
-                            while (!cancellationToken.IsCancellationRequested && client.Connected)
-                            {
-                                if (stream.DataAvailable)
-                                {
-                                    {
-                                        int countRead = await stream.ReadAsync(buffer, 0, BufferSize);
-                                        await OnMessageAsync(client, buffer, countRead);
-                                    }
-                                }
-                            }
-                            stream.Close();
-                        }, cancellationToken);
+                        int countRead = await ReadMessage(stream, buffer, lengthBuffer, cancellationToken);
+                        await OnMessageAsync(client, buffer, countRead);
                     }
-                    else
+                    catch (Exception e)
                     {
-                        await Task.Delay(500);
+                        logger.Error($"Error reading message: {e}");
+                        break;
                     }
                 }
-            }, cancellationToken);
+                else
+                {
+                    await Task.Delay(500);
+                }
+                ++count;
+                if (count % 30 == 0)
+                {
+                    logger.Information("Made 30 loops");
+                }
+            }
+            logger.Information("Finished handling messages.");
+        }
+
+        private async Task<int> ReadMessage(NetworkStream stream, byte[] buffer, byte[] lengthBuffer,
+            CancellationToken cancellationToken)
+        {
+            await stream.ReadAsync(lengthBuffer, 0, 2, cancellationToken);
+            int toRead = lengthBuffer.ToInt16();
+
+            int countRead = await stream.ReadAsync(buffer, 0, toRead, cancellationToken);
+            return countRead;
         }
     }
 }

@@ -9,6 +9,7 @@ using Player.Clients;
 using Player.Models.Strategies;
 using Player.Models.Strategies.Utils;
 using Serilog;
+using Shared;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
@@ -84,19 +85,20 @@ namespace Player.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
-            while (!client.IsOpen)
+            while (!cancellationToken.IsCancellationRequested && !client.IsOpen)
             {
-                await Task.Delay(500);
+                await Task.Delay(1000);
             }
 
             await JoinTheGame(cancellationToken);
-            bool startGame = false;
 
+            bool startGame = false;
             while (!cancellationToken.IsCancellationRequested && !startGame)
             {
                 startGame = await AcceptMessage(cancellationToken);
             }
 
+            logger.Information("Starting game");
             await Start(cancellationToken);
         }
 
@@ -270,7 +272,10 @@ namespace Player.Models
             await Communicate(message, cancellationToken);
         }
 
-        public async Task<bool> AcceptMessage(CancellationToken cancellationToken) // returns true if StartGameMessage was accepted
+        /// <summary>
+        /// Returns true if StartGameMessage was accepted
+        /// </summary>
+        public async Task<bool> AcceptMessage(CancellationToken cancellationToken)
         {
             var cancellationTimespan = TimeSpan.FromMinutes(1);
             GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
