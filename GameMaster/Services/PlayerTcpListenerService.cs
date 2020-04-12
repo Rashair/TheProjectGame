@@ -29,7 +29,6 @@ namespace GameMaster.Services
 
             // TODO: To be changed later.
             message.PlayerID = manager.GetId(socket);
-            logger.Information($"Pushing message, {message.PlayerID}");
             await queue.SendAsync(message);
         }
     }

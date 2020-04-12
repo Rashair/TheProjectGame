@@ -72,7 +72,7 @@ namespace GameMaster.Models
 
             players.TryGetValue(message.PlayerID, out GMPlayer player);
 
-            logger.Information($"|{message.MessageID} | {message.Payload} | {player?.SocketID} | {player?.Team}");
+            // logger.Information($"|{message.MessageID} | {message.Payload} | {player?.SocketID} | {player?.Team}");
             switch (message.MessageID)
             {
                 case PlayerMessageID.CheckPiece:

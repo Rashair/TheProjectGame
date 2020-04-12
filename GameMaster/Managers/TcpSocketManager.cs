@@ -47,10 +47,8 @@ namespace GameMaster.Managers
                     string serialized = JsonConvert.SerializeObject(message);
                     byte[] buffer = Encoding.UTF8.GetBytes(serialized);
                     var length = buffer.Length.ToLittleEndian();
-                    logger.Information($"Trying to send message: {serialized} with lenght {length[0]}, {length[1]}");
                     await stream.WriteAsync(length, cancellationToken);
                     await stream.WriteAsync(buffer, cancellationToken);
-                    logger.Information("Sent msg");
                 }
                 catch (Exception e)
                 {

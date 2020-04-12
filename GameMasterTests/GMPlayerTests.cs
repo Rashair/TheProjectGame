@@ -58,6 +58,11 @@ namespace GameMaster.Tests
 
             public Task SendMessageToAllAsync(GMMessage message, CancellationToken cancellationToken)
                 => throw new NotImplementedException();
+
+            public bool IsAnyOpen()
+            {
+                return true;
+            }
         }
 
         private ISocketManager<TcpClient, GMMessage> GenerateSocketManager()

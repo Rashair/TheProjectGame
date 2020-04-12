@@ -53,7 +53,6 @@ namespace Player.Services
                 {
                     if (receivedMessage)
                     {
-                        logger.Information($"Sending message to queue: {message}");
                         bool sended = await queue.SendAsync(message, stoppingToken);
                         if (!sended)
                         {
@@ -63,7 +62,6 @@ namespace Player.Services
                     else
                     {
                         await Task.Delay(1000);
-                        logger.Information("Waiting");
                     }
                     (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
                 }

@@ -45,27 +45,35 @@ namespace Player.Clients
             if (!cancellationToken.IsCancellationRequested && stream.DataAvailable)
             {
                 byte[] lengthEndian = new byte[2];
-                int count = await stream.ReadAsync(lengthEndian, 0, 2, cancellationToken);
-                if (count > 0)
+                await stream.ReadAsync(lengthEndian, 0, 2, cancellationToken);
+                int length;
+                try
                 {
-                    int length = lengthEndian.ToInt16();
-                    logger.Information($"Length: {length}");
-                    byte[] buffer = new byte[length];
-                    count = await stream.ReadAsync(buffer, 0, length, cancellationToken);
-                    logger.Information($"Read message: {count}");
-                    if (cancellationToken.IsCancellationRequested)
-                        return (false, default(R));
-
-                    string json = Encoding.UTF8.GetString(buffer, 0, count);
-                    R message = JsonConvert.DeserializeObject<R>(json);
-                    return (true, message);
+                    length = lengthEndian.ToInt16();
                 }
-                else
+                catch (Exception e)
                 {
-                    logger.Error("Wrong message template");
-
-                    // throw new ArgumentException($"Wrong message!: {lengthEndian[0]}, {lengthEndian[1]}");
+                    logger.Warning($"Cannot convert to little-endian. Message will be aborted. \n{e}");
+                    await stream.FlushAsync();
+                    return (false, default);
                 }
+
+                byte[] buffer = new byte[length];
+                int count = await stream.ReadAsync(buffer, 0, length, cancellationToken);
+                if (count != length)
+                {
+                    logger.Warning("Unexpected message - wrong length provided.\n Message will be aborted");
+                    await stream.FlushAsync();
+                    return (false, default);
+                }
+                else if (cancellationToken.IsCancellationRequested)
+                {
+                    return (false, default(R));
+                }
+
+                string json = Encoding.UTF8.GetString(buffer, 0, length);
+                R message = JsonConvert.DeserializeObject<R>(json);
+                return (true, message);
             }
 
             return (false, default(R));
