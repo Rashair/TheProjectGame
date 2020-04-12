@@ -34,37 +34,34 @@ namespace Player.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (!stoppingToken.IsCancellationRequested)
+            var (success, errorMessage) = await Helpers.Retry(async () =>
             {
-                var (success, errorMessage) = await Helpers.Retry(async () =>
-                {
-                    await Task.Yield();
-                    await client.ConnectAsync(ConnectUri, stoppingToken);
-                }, 60, 1000, stoppingToken);
-                if (!success)
-                {
-                    logger.Error($"No connection could be made. Error: {errorMessage}");
-                    lifetime.StopApplication();
-                    return;
-                }
+                await Task.Yield();
+                await client.ConnectAsync(ConnectUri, stoppingToken);
+            }, 60, 1000, stoppingToken);
+            if (!success)
+            {
+                logger.Error($"No connection could be made. Error: {errorMessage}");
+                lifetime.StopApplication();
+                return;
+            }
 
-                (bool receivedMessage, GMMessage message) = await client.ReceiveAsync(stoppingToken);
-                while (!stoppingToken.IsCancellationRequested && client.IsOpen)
+            (bool receivedMessage, GMMessage message) = await client.ReceiveAsync(stoppingToken);
+            while (!stoppingToken.IsCancellationRequested && client.IsOpen)
+            {
+                if (receivedMessage)
                 {
-                    if (receivedMessage)
+                    bool sended = await queue.SendAsync(message, stoppingToken);
+                    if (!sended)
                     {
-                        bool sended = await queue.SendAsync(message, stoppingToken);
-                        if (!sended)
-                        {
-                            logger.Warning($"SocketService| GMMessage id: {message.Id} has been lost");
-                        }
+                        logger.Warning($"SocketService| GMMessage id: {message.Id} has been lost");
                     }
-                    else
-                    {
-                        await Task.Delay(1000);
-                    }
-                    (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
                 }
+                else
+                {
+                    await Task.Delay(50);
+                }
+                (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
             }
         }
     }

@@ -75,7 +75,7 @@ namespace GameMaster.Services
                 }
                 else
                 {
-                    await Task.Delay(1000);
+                    await Task.Delay(50);
                 }
             }
         }
@@ -103,7 +103,7 @@ namespace GameMaster.Services
                 }
                 else
                 {
-                    await Task.Delay(500);
+                    await Task.Delay(20);
                 }
             }
             logger.Information($"Finished handling messages for {client.Client.RemoteEndPoint}");

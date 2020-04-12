@@ -13,7 +13,6 @@ namespace Player.Clients
 {
     public class TcpSocketClient<R, S> : ISocketClient<R, S>
     {
-        private const int BufferSize = 1024 * 4;
         private readonly ILogger logger;
         private readonly TcpClient client;
         private NetworkStream stream;
@@ -68,7 +67,7 @@ namespace Player.Clients
                 }
                 else if (cancellationToken.IsCancellationRequested)
                 {
-                    return (false, default(R));
+                    return (false, default);
                 }
 
                 string json = Encoding.UTF8.GetString(buffer, 0, length);
@@ -76,11 +75,17 @@ namespace Player.Clients
                 return (true, message);
             }
 
-            return (false, default(R));
+            return (false, default);
         }
 
         public async Task SendAsync(S message, CancellationToken cancellationToken)
         {
+            if (this.stream == null)
+            {
+                logger.Warning("Sth went wrong with connect");
+                this.stream = client.GetStream();
+            }
+
             if (!cancellationToken.IsCancellationRequested && IsOpen)
             {
                 string serialized = JsonConvert.SerializeObject(message);

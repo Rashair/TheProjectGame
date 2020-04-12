@@ -86,9 +86,9 @@ namespace Player.Models
         internal async Task Work(CancellationToken cancellationToken)
         {
             // Will be canceled by SocketService if can't connect
-            while (!client.IsOpen || !cancellationToken.IsCancellationRequested)
+            while (!client.IsOpen && !cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(1000, cancellationToken);
+                await Task.Delay(500, cancellationToken);
             }
 
             await JoinTheGame(cancellationToken);
