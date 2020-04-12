@@ -75,8 +75,8 @@ namespace GameMaster.Services
                     var stream = client.GetStream();
                     var buffer = new byte[BufferSize];
                     int readCount = await ReadMessage(stream, buffer, new byte[2], cancellationToken);
-                    await OnMessageAsync(client, buffer, readCount).ConfigureAwait(false);
-                    HandleMessages(client, cancellationToken);
+                    await OnMessageAsync(client, buffer, readCount);
+                    HandleMessages(client, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -90,8 +90,7 @@ namespace GameMaster.Services
             var stream = client.GetStream();
             var buffer = new byte[BufferSize];
             var lengthBuffer = new byte[2];
-            logger.Information("Started handling messages");
-            int count = 0;
+            logger.Information($"Started handling messages for {client.Client.RemoteEndPoint}");
             while (!cancellationToken.IsCancellationRequested && client.Connected)
             {
                 if (stream.DataAvailable)
@@ -111,13 +110,8 @@ namespace GameMaster.Services
                 {
                     await Task.Delay(500);
                 }
-                ++count;
-                if (count % 30 == 0)
-                {
-                    logger.Information("Made 30 loops");
-                }
             }
-            logger.Information("Finished handling messages.");
+            logger.Information($"Finished handling messages for {client.Client.RemoteEndPoint}");
         }
 
         private async Task<int> ReadMessage(NetworkStream stream, byte[] buffer, byte[] lengthBuffer,
@@ -125,8 +119,11 @@ namespace GameMaster.Services
         {
             await stream.ReadAsync(lengthBuffer, 0, 2, cancellationToken);
             int toRead = lengthBuffer.ToInt16();
-
             int countRead = await stream.ReadAsync(buffer, 0, toRead, cancellationToken);
+            if (countRead != toRead)
+            {
+                logger.Warning("Wrong message length");
+            }
             return countRead;
         }
     }

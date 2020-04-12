@@ -81,7 +81,7 @@ namespace Player.Clients
 
         public async Task SendAsync(S message, CancellationToken cancellationToken)
         {
-            if (!cancellationToken.IsCancellationRequested)
+            if (!cancellationToken.IsCancellationRequested && IsOpen)
             {
                 string serialized = JsonConvert.SerializeObject(message);
                 byte[] buffer = Encoding.UTF8.GetBytes(serialized);
