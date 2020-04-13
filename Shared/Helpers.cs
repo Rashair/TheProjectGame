@@ -8,17 +8,19 @@ namespace Shared
 {
     public static class Helpers
     {
-        public static async Task<(bool success, string errorMessage)> Retry(Func<Task> action, int retryCount,
-            int retryIntervalMs,
-            CancellationToken cancellationToken)
+        public static async Task<(bool success, string errorMessage)> Retry(Func<Task<bool>> action, int retryCount,
+            int retryIntervalMs, CancellationToken cancellationToken)
         {
             string message = "";
             for (int i = 0; i < retryCount && !cancellationToken.IsCancellationRequested; ++i)
             {
                 try
                 {
-                    await action();
-                    return (true, message);
+                    bool success = await action();
+                    if (success)
+                    {
+                        return (true, message);
+                    }
                 }
                 catch (Exception e)
                 {

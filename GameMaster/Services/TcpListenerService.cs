@@ -71,6 +71,8 @@ namespace GameMaster.Services
                     var client = await listener.AcceptTcpClientAsync();
                     OnConnected(client);
                     logger.Information($"Client: {client.Client.RemoteEndPoint} connected.");
+
+                    // TODO - improve handling messages
                     HandleMessages(client, cancellationToken).ConfigureAwait(false);
                 }
                 else

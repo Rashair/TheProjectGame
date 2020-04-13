@@ -16,6 +16,7 @@ namespace Player.Clients
         private readonly ILogger logger;
         private readonly TcpClient client;
         private NetworkStream stream;
+        private bool isOpen;
 
         public TcpSocketClient()
         {
@@ -23,7 +24,9 @@ namespace Player.Clients
             this.client = new TcpClient();
         }
 
-        public bool IsOpen => client.Connected;
+        public bool IsOpen => isOpen && client.Connected;
+
+        public int ReceiveTimeout => 50;
 
         public Task CloseAsync(CancellationToken cancellationToken)
         {
@@ -35,68 +38,105 @@ namespace Player.Clients
         public async Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
             await client.ConnectAsync(uri.Host, uri.Port);
-            logger.Information($"Connected to {uri.Host}:{uri.Port}");
             this.stream = client.GetStream();
+            logger.Information($"Connected to {uri.Host}:{uri.Port}");
+            isOpen = true;
         }
 
         public async Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
         {
-            if (!cancellationToken.IsCancellationRequested && stream.DataAvailable)
+            if (cancellationToken.IsCancellationRequested)
             {
-                byte[] lengthEndian = new byte[2];
-                await stream.ReadAsync(lengthEndian, 0, 2, cancellationToken);
-                int length;
-                try
-                {
-                    length = lengthEndian.ToInt16();
-                }
-                catch (Exception e)
-                {
-                    logger.Warning($"Cannot convert to little-endian. Message will be aborted. \n{e}");
-                    await stream.FlushAsync();
-                    return (false, default);
-                }
-
-                byte[] buffer = new byte[length];
-                int count = await stream.ReadAsync(buffer, 0, length, cancellationToken);
-                if (count != length)
-                {
-                    logger.Warning("Unexpected message - wrong length provided.\n Message will be aborted");
-                    await stream.FlushAsync();
-                    return (false, default);
-                }
-                else if (cancellationToken.IsCancellationRequested)
-                {
-                    return (false, default);
-                }
-
-                string json = Encoding.UTF8.GetString(buffer, 0, length);
-                R message = JsonConvert.DeserializeObject<R>(json);
-                return (true, message);
+                return (false, default);
             }
 
-            return (false, default);
+            byte[] lengthEndian = new byte[2];
+            int countRead = await TryGetMessageLengthAsync(lengthEndian, cancellationToken);
+            if (countRead == 0)
+            {
+                return (false, default);
+            }
+
+            int length = TryConvertToInt(lengthEndian);
+            if (length == 0)
+            {
+                await ClearStream(cancellationToken);
+                return (false, default);
+            }
+
+            byte[] buffer = new byte[length];
+            countRead = await stream.ReadAsync(buffer, 0, length, cancellationToken);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return (false, default);
+            }
+            if (countRead != length)
+            {
+                logger.Warning("Unexpected message - wrong length provided.\n Message will be aborted");
+                await ClearStream(cancellationToken);
+                return (false, default);
+            }
+
+            string json = Encoding.UTF8.GetString(buffer, 0, length);
+            R message = JsonConvert.DeserializeObject<R>(json);
+            return (true, message);
+        }
+
+        private async Task<int> TryGetMessageLengthAsync(byte[] lengthEndian, CancellationToken cancellationToken)
+        {
+            int count = await stream.ReadAsync(lengthEndian, 0, 2, cancellationToken);
+            if (count == 0)
+            {
+                await Task.Delay(ReceiveTimeout);
+                count = await stream.ReadAsync(lengthEndian, 0, 2, cancellationToken);
+            }
+
+            return count;
+        }
+
+        private int TryConvertToInt(byte[] lengthEndian)
+        {
+            int length;
+            try
+            {
+                length = lengthEndian.ToInt16();
+            }
+            catch (Exception e)
+            {
+                logger.Warning($"Cannot convert to little-endian. Message will be aborted. \n{e}");
+                return 0;
+            }
+
+            return length;
+        }
+
+        private async Task ClearStream(CancellationToken cancellationToken)
+        {
+            var buffer = new byte[4096];
+            int read;
+            do
+            {
+                read = await stream.ReadAsync(buffer, 0, buffer.Length);
+            }
+            while (read > 0 && !cancellationToken.IsCancellationRequested);
         }
 
         public async Task SendAsync(S message, CancellationToken cancellationToken)
         {
+            // To be removed!
             if (this.stream == null)
             {
                 logger.Warning("Sth went wrong with connect");
                 this.stream = client.GetStream();
             }
 
-            if (!cancellationToken.IsCancellationRequested && IsOpen)
+            if (!cancellationToken.IsCancellationRequested)
             {
                 string serialized = JsonConvert.SerializeObject(message);
                 byte[] buffer = Encoding.UTF8.GetBytes(serialized);
                 byte[] length = buffer.Length.ToLittleEndian();
                 await stream.WriteAsync(length, 0, 2, cancellationToken);
                 await stream.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
-            }
-            else if (!IsOpen)
-            {
-                logger.Warning("Tried to send message with closed socket");
             }
         }
     }

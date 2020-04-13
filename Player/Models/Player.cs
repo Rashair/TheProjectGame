@@ -34,20 +34,6 @@ namespace Player.Models
         private Team winner;
         private int discovered;
 
-        public int PreviousDistToPiece { get; private set; }
-
-        public Penalties PenaltiesTimes { get; private set; }
-
-        public int[] EnemiesIDs { get; private set; }
-
-        public NumberOfPlayers NumberOfPlayers { get; private set; }
-
-        public int NumberOfPieces { get; private set; }
-
-        public int NumberOfGoals { get; private set; }
-
-        public float ShamPieceProbability { get; private set; }
-
         public Team Team { get; private set; }
 
         public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
@@ -62,6 +48,20 @@ namespace Player.Models
             this.client = client;
             this.logger = Log.ForContext<Player>();
         }
+
+        public int PreviousDistToPiece { get; private set; }
+
+        public Penalties PenaltiesTimes { get; private set; }
+
+        public int[] EnemiesIDs { get; private set; }
+
+        public NumberOfPlayers NumberOfPlayers { get; private set; }
+
+        public int NumberOfPieces { get; private set; }
+
+        public int NumberOfGoals { get; private set; }
+
+        public float ShamPieceProbability { get; private set; }
 
         public bool IsLeader { get; private set; }
 
@@ -83,27 +83,19 @@ namespace Player.Models
 
         public int GoalAreaSize { get; private set; }
 
-        internal async Task Work(CancellationToken cancellationToken)
+        internal async Task Start(CancellationToken cancellationToken)
         {
-            // Will be canceled by SocketService if can't connect
-            while (!client.IsOpen && !cancellationToken.IsCancellationRequested)
-            {
-                await Task.Delay(500, cancellationToken);
-            }
-
-            await JoinTheGame(cancellationToken);
-
             bool startGame = false;
             while (!cancellationToken.IsCancellationRequested && !startGame)
             {
                 startGame = await AcceptMessage(cancellationToken);
             }
 
+            await Work(cancellationToken);
             logger.Information("Starting game");
-            await Start(cancellationToken);
         }
 
-        internal async Task JoinTheGame(CancellationToken cancellationToken)
+        public async Task JoinTheGame(CancellationToken cancellationToken)
         {
             JoinGamePayload payload = new JoinGamePayload()
             {
@@ -118,7 +110,7 @@ namespace Player.Models
             logger.Information("Sent JoinTheGame message");
         }
 
-        internal async Task Start(CancellationToken cancellationToken)
+        internal async Task Work(CancellationToken cancellationToken)
         {
             working = true;
             while (working && !cancellationToken.IsCancellationRequested)
@@ -131,7 +123,7 @@ namespace Player.Models
             await client.CloseAsync(cancellationToken);
         }
 
-        internal void Stop()
+        internal void StopWorking()
         {
             working = false;
             logger.Warning($"Stopped player: {Team}");
@@ -311,7 +303,7 @@ namespace Player.Models
                 case GMMessageID.EndGame:
                     EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
                     winner = payloadEnd.Winner;
-                    Stop();
+                    StopWorking();
                     break;
                 case GMMessageID.StartGame:
                     StartGamePayload payloadStart = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
@@ -361,7 +353,7 @@ namespace Player.Models
                     id = payloadJoin.PlayerID;
                     if (!payloadJoin.Accepted)
                     {
-                        Stop();
+                        StopWorking();
                     }
                     break;
                 case GMMessageID.MoveAnswer:

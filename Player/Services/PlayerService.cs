@@ -22,23 +22,28 @@ namespace Player.Services
 
         protected async override Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            if (!cancellationToken.IsCancellationRequested)
-            {
-                await Task.Run(async () =>
-                {
-                    try
-                    {
-                        logger.Information("Player service working");
-                        await player.Work(cancellationToken);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.Error($"Error running service: {e}");
-                    }
-                });
+            // Inital count = 0, so it will wait until socket service does it's job
+            await SynchronizationContext.SemaphoreSlim.WaitAsync(cancellationToken);
 
-                lifetime.StopApplication();
-            }
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    logger.Information("Player service working");
+                    await player.JoinTheGame(cancellationToken);
+
+                    // Now socketService can proceed with reading message
+                    SynchronizationContext.SemaphoreSlim.Release();
+
+                    await player.Start(cancellationToken);
+                }
+                catch (Exception e)
+                {
+                    logger.Error($"Error running service: {e}");
+                }
+            }, cancellationToken);
+
+            lifetime.StopApplication();
         }
     }
 }
