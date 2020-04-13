@@ -5,17 +5,16 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json;
-using Player.Models;
 using Serilog;
-using Shared;
 
-namespace Player.Clients
+namespace Shared.Clients
 {
     public class TcpSocketClient<R, S> : ISocketClient<R, S>
     {
         private readonly ILogger logger;
         private readonly TcpClient client;
         private NetworkStream stream;
+        private Uri connectionUri;
         private bool isOpen;
 
         public TcpSocketClient()
@@ -24,9 +23,24 @@ namespace Player.Clients
             this.client = new TcpClient();
         }
 
+        public TcpSocketClient(TcpClient tcpClient)
+        {
+            logger = Log.ForContext<TcpSocketClient<R, S>>();
+            client = tcpClient;
+            stream = tcpClient.GetStream();
+            isOpen = tcpClient.Connected;
+        }
+
         public bool IsOpen => isOpen && client.Connected;
 
         public int ReceiveTimeout => 50;
+
+        public Uri ConnectionUri => connectionUri;
+
+        public object GetSocket()
+        {
+            return client;
+        }
 
         public Task CloseAsync(CancellationToken cancellationToken)
         {
@@ -38,9 +52,10 @@ namespace Player.Clients
         public async Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
             await client.ConnectAsync(uri.Host, uri.Port);
-            this.stream = client.GetStream();
-            logger.Information($"Connected to {uri.Host}:{uri.Port}");
+            stream = client.GetStream();
+            connectionUri = uri;
             isOpen = true;
+            logger.Information($"Connected to {uri.Host}:{uri.Port}");
         }
 
         public async Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)

@@ -6,10 +6,10 @@ using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
-using Player.Clients;
 using Player.Models;
 using Player.Models.Strategies;
 using Player.Services;
+using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
@@ -77,6 +77,8 @@ namespace Player.Tests
         private class ClientMock<R, S> : ISocketClient<R, S>
         {
             public bool IsOpen => true;
+
+            public int ReceiveTimeout => 0;
 
             public Task CloseAsync(CancellationToken cancellationToken)
             {

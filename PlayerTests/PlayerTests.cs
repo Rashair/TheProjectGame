@@ -3,9 +3,8 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 using Newtonsoft.Json;
-using Player.Clients;
 using Player.Models;
-using Player.Models.Strategies;
+using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;

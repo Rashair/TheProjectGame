@@ -2,13 +2,17 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Player.Clients
+namespace Shared.Clients
 {
     public interface ISocketClient<R, S>
     {
+        bool IsOpen { get; }
+
         int ReceiveTimeout { get; }
 
-        bool IsOpen { get; }
+        Uri ConnectionUri { get; }
+
+        object GetSocket();
 
         Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
 

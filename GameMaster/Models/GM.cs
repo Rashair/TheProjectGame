@@ -388,7 +388,7 @@ namespace GameMaster.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
-            TimeSpan cancellationTimespan = TimeSpan.FromMinutes(1);
+            TimeSpan cancellationTimespan = TimeSpan.FromMinutes(2);
             while (!cancellationToken.IsCancellationRequested)
             {
                 try

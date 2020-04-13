@@ -9,6 +9,7 @@ using GameMaster.Managers;
 using GameMaster.Models;
 using Serilog;
 using Shared;
+using Shared.Clients;
 using Shared.Messages;
 
 namespace GameMaster.Services
@@ -27,7 +28,8 @@ namespace GameMaster.Services
             this.manager = manager;
         }
 
-        protected abstract Task OnMessageAsync(TcpClient socket, byte[] buffer, int count);
+        protected abstract Task OnMessageAsync(TcpClient socket, object message, 
+            CancellationToken cancellationToken);
 
         protected virtual void OnConnected(TcpClient socket)
         {
@@ -70,10 +72,10 @@ namespace GameMaster.Services
                 {
                     var client = await listener.AcceptTcpClientAsync();
                     OnConnected(client);
-                    logger.Information($"Client: {client.Client.RemoteEndPoint} connected.");
 
                     // TODO - improve handling messages
-                    HandleMessages(client, cancellationToken).ConfigureAwait(false);
+                    HandleMessages(new TcpSocketClient<PlayerMessage, GMMessage>(client), cancellationToken).
+                        ConfigureAwait(false);
                 }
                 else
                 {
@@ -82,46 +84,28 @@ namespace GameMaster.Services
             }
         }
 
-        private async Task HandleMessages(TcpClient client, CancellationToken cancellationToken)
-        {
-            var stream = client.GetStream();
-            var buffer = new byte[BufferSize];
-            var lengthBuffer = new byte[2];
-            logger.Information($"Started handling messages for {client.Client.RemoteEndPoint}");
-            while (!cancellationToken.IsCancellationRequested && client.Connected)
-            {
-                if (stream.DataAvailable)
-                {
-                    try
-                    {
-                        int countRead = await ReadMessage(stream, buffer, lengthBuffer, cancellationToken);
-                        await OnMessageAsync(client, buffer, countRead);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.Error($"Error reading message: {e}");
-                        break;
-                    }
-                }
-                else
-                {
-                    await Task.Delay(20);
-                }
-            }
-            logger.Information($"Finished handling messages for {client.Client.RemoteEndPoint}");
-        }
-
-        private async Task<int> ReadMessage(NetworkStream stream, byte[] buffer, byte[] lengthBuffer,
+        private async Task HandleMessages(ISocketClient<PlayerMessage, GMMessage> client, 
             CancellationToken cancellationToken)
         {
-            await stream.ReadAsync(lengthBuffer, 0, 2, cancellationToken);
-            int toRead = lengthBuffer.ToInt16();
-            int countRead = await stream.ReadAsync(buffer, 0, toRead, cancellationToken);
-            if (countRead != toRead)
+            logger.Information($"Started handling messages for {client.ConnectionUri}");
+            var socket = (TcpClient)client.GetSocket();
+            while (!cancellationToken.IsCancellationRequested && client.IsOpen)
             {
-                logger.Warning("Wrong message length");
+                try
+                {
+                    (bool messageReceived, PlayerMessage message) = await client.ReceiveAsync(cancellationToken);
+                    if (messageReceived)
+                    {
+                        await OnMessageAsync(socket, message, cancellationToken);
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.Error($"Error reading message: {e}");
+                    break;
+                }
             }
-            return countRead;
+            logger.Information($"Finished handling messages for {client.ConnectionUri}");
         }
     }
 }

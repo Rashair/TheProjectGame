@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 using Microsoft.Extensions.Hosting;
-using Player.Clients;
 using Player.Models;
 using Serilog;
 using Shared;
+using Shared.Clients;
 using Shared.Messages;
 
 namespace Player.Services

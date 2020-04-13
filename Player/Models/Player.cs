@@ -5,11 +5,10 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 using Newtonsoft.Json;
-using Player.Clients;
 using Player.Models.Strategies;
 using Player.Models.Strategies.Utils;
 using Serilog;
-using Shared;
+using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;

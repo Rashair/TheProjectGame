@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -22,14 +23,14 @@ namespace GameMaster.Services
             this.queue = queue;
         }
 
-        protected override async Task OnMessageAsync(TcpClient socket, byte[] buffer, int count)
+        protected override async Task OnMessageAsync(TcpClient socket, object message,
+            CancellationToken cancellationToken)
         {
-            string json = Encoding.UTF8.GetString(buffer, 0, count);
-            PlayerMessage message = JsonConvert.DeserializeObject<PlayerMessage>(json);
+            var playerMessage = (PlayerMessage)message;
 
             // TODO: To be changed later.
-            message.PlayerID = manager.GetId(socket);
-            await queue.SendAsync(message);
+            playerMessage.PlayerID = manager.GetId(socket);
+            await queue.SendAsync(playerMessage, cancellationToken);
         }
     }
 }
