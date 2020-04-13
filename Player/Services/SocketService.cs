@@ -50,10 +50,13 @@ namespace Player.Services
             SynchronizationContext.SemaphoreSlim.Release();
 
             // Wait for player service to pick up semaphore
+            logger.Information("Waiting for pick-up semaphore");
             while (SynchronizationContext.SemaphoreSlim.CurrentCount > 0 && !stoppingToken.IsCancellationRequested)
             {
-                await Task.Delay(1000);
+                await Task.Delay(200);
             }
+
+            logger.Information("Waiting for joinTheGame sent.");
 
             // Block until joinTheGame is sent
             await SynchronizationContext.SemaphoreSlim.WaitAsync(stoppingToken);

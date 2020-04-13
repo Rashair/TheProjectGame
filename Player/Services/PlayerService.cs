@@ -22,7 +22,7 @@ namespace Player.Services
 
         protected async override Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            // Inital count = 0, so it will wait until socket service does it's job
+            // Inital count = 0, so it will wait until socket service connects
             await SynchronizationContext.SemaphoreSlim.WaitAsync(cancellationToken);
 
             await Task.Run(async () =>
@@ -34,6 +34,7 @@ namespace Player.Services
 
                     // Now socketService can proceed with reading message
                     SynchronizationContext.SemaphoreSlim.Release();
+                    await Task.Delay(100);
 
                     await player.Start(cancellationToken);
                 }

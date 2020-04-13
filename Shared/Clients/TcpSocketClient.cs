@@ -28,7 +28,7 @@ namespace Shared.Clients
             logger = Log.ForContext<TcpSocketClient<R, S>>();
             client = tcpClient;
             stream = tcpClient.GetStream();
-            connectionUri = new Uri(tcpClient.Client.RemoteEndPoint.ToString());
+            connectionUri = new Uri($"https://{tcpClient.Client.RemoteEndPoint}");
             isOpen = tcpClient.Connected;
         }
 
@@ -61,7 +61,7 @@ namespace Shared.Clients
 
         public async Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
         {
-            if (cancellationToken.IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested || !client.Connected)
             {
                 return (false, default);
             }
@@ -139,14 +139,7 @@ namespace Shared.Clients
 
         public async Task SendAsync(S message, CancellationToken cancellationToken)
         {
-            // To be removed!
-            if (this.stream == null)
-            {
-                logger.Warning("Sth went wrong with connect");
-                this.stream = client.GetStream();
-            }
-
-            if (!cancellationToken.IsCancellationRequested)
+            if (!cancellationToken.IsCancellationRequested && client.Connected)
             {
                 string serialized = JsonConvert.SerializeObject(message);
                 byte[] buffer = Encoding.UTF8.GetBytes(serialized);
