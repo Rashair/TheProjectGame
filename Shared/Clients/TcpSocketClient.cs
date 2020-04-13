@@ -28,6 +28,7 @@ namespace Shared.Clients
             logger = Log.ForContext<TcpSocketClient<R, S>>();
             client = tcpClient;
             stream = tcpClient.GetStream();
+            connectionUri = new Uri(tcpClient.Client.RemoteEndPoint.ToString());
             isOpen = tcpClient.Connected;
         }
 

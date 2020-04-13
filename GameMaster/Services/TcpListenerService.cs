@@ -64,8 +64,6 @@ namespace GameMaster.Services
                 return;
             }
 
-            List<Task> readTasks = new List<Task>();
-
             while (!cancellationToken.IsCancellationRequested && AcceptConnection())
             {
                 if (listener.Pending())
