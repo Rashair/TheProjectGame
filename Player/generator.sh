@@ -4,10 +4,12 @@ set -e
 
 num=${1-2}
 background=${2-0}
-# Port:0 means dynamically bound port
-redComm='dotnet run TeamId=red --urls https://127.0.0.1:0'
-blueComm='dotnet run TeamId=blue --urls https://127.0.0.1:0'
 
+# Port:0 means dynamically bound port
+redComm='dotnet Player.dll TeamId=red --urls https://127.0.0.1:0'
+blueComm='dotnet Player.dll TeamId=blue --urls https://127.0.0.1:0'
+
+cd bin/Debug/netcoreapp2.1
 if [[ $background != 0 ]]; then
 	for i in `seq 1 $num`; do
 		$redComm &
