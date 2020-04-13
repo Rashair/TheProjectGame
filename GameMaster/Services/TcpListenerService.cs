@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -8,7 +7,6 @@ using System.Threading.Tasks;
 using GameMaster.Managers;
 using GameMaster.Models;
 using Serilog;
-using Shared;
 using Shared.Clients;
 using Shared.Messages;
 
@@ -28,7 +26,7 @@ namespace GameMaster.Services
             this.manager = manager;
         }
 
-        protected abstract Task OnMessageAsync(TcpClient socket, object message, 
+        protected abstract Task OnMessageAsync(TcpClient socket, object message,
             CancellationToken cancellationToken);
 
         protected virtual void OnConnected(TcpClient socket)
@@ -82,7 +80,7 @@ namespace GameMaster.Services
             }
         }
 
-        private async Task HandleMessages(ISocketClient<PlayerMessage, GMMessage> client, 
+        private async Task HandleMessages(ISocketClient<PlayerMessage, GMMessage> client,
             CancellationToken cancellationToken)
         {
             logger.Information($"Started handling messages for {client.ConnectionUri}");

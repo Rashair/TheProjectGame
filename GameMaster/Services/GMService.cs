@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using GameMaster.Models;
-using Microsoft.Extensions.Hosting;
 using Serilog;
 
 namespace GameMaster.Services
