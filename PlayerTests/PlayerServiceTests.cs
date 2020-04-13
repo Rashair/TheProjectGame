@@ -80,6 +80,8 @@ namespace Player.Tests
 
             public int ReceiveTimeout => 0;
 
+            public Uri ConnectionUri => throw new NotImplementedException();
+
             public Task CloseAsync(CancellationToken cancellationToken)
             {
                 return Task.CompletedTask;
@@ -88,6 +90,11 @@ namespace Player.Tests
             public Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
             {
                 return Task.CompletedTask;
+            }
+
+            public object GetSocket()
+            {
+                throw new NotImplementedException();
             }
 
             public Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)

@@ -18,12 +18,14 @@ elif [[ "$OSTYPE" == "msys" ]]; then
 		cmd //c start cmd //k "$redComm" & disown
         sleep 1
 		cmd //c start cmd //k "$blueComm"  & disown
+		sleep 1
 	done
 else
 	for i in `seq 1 $num`; do
 		gnome-terminal -e "$redComm" & disown
 		sleep 1
         gnome-terminal -e "$blueComm" & disown
+		sleep 1
 	done
 	#TODO: rest
 fi
