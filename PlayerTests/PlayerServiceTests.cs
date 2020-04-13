@@ -60,6 +60,7 @@ namespace Player.Tests
             services.AddHostedService<PlayerService>();
             var serviceProvider = services.BuildServiceProvider();
             var hostedService = (PlayerService)serviceProvider.GetService<IHostedService>();
+            Services.SynchronizationContext.SemaphoreSlim.Release();
 
             // Act
             int delay = 500;
