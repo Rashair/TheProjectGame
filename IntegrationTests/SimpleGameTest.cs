@@ -24,7 +24,7 @@ namespace IntegrationTests
                 NumberOfGoals = 4,
                 NumberOfPiecesOnBoard = 6,
                 NumberOfPlayersPerTeam = 3,
-                ShamPieceProbability = 20,
+                ShamPieceProbability = 0.2f,
             };
 
             this.positionNotChangedCount = 4;
