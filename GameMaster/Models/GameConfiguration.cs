@@ -37,9 +37,9 @@ namespace GameMaster.Models
         public int NumberOfPlayersPerTeam { get; set; }
 
         /// <summary>
-        /// Percentage, between 0 and 100.
+        /// Percentage, between 0 and 1.
         /// </summary>
-        public int ShamPieceProbability { get; set; }
+        public float ShamPieceProbability { get; set; }
 
         public GameConfiguration()
         {
