@@ -19,7 +19,7 @@ namespace GameMaster.Tests.Mocks
             this.Width = 10;
             this.NumberOfGoals = 4;
             this.GoalAreaHeight = 3;
-            this.ShamPieceProbability = 40;
+            this.ShamPieceProbability = 0.4f;
             this.NumberOfPiecesOnBoard = 10;
             this.NumberOfPlayersPerTeam = 6;
         }
