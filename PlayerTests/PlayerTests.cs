@@ -6,6 +6,7 @@ using System.Threading.Tasks.Dataflow;
 using Newtonsoft.Json;
 using Player.Clients;
 using Player.Models;
+using Player.Tests.Helpers;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
@@ -279,7 +280,7 @@ namespace Player.Tests
 
             await player.AcceptMessage(CancellationToken.None);
 
-            // TODO check playre id var playerIdResult = player.id;
+            var playerIdResult = player.GetValue<int, Player.Models.Player>("id");
             var leaderIdResult = player.LeaderId;
             var teamMatesResult = player.TeamMatesIds;
             var isLeaderResult = player.IsLeader;
@@ -295,7 +296,7 @@ namespace Player.Tests
             var shamProbabilityResult = player.ShamPieceProbability;
 
             // Assert
-            // Assert.Equal(playerId, playerIdResult); TODO
+            Assert.Equal(playerId, playerIdResult);
             Assert.Equal(leaderId, leaderIdResult);
             Assert.Equal(alliesId, teamMatesResult);
             Assert.Equal(expectedisLeader, isLeaderResult);
