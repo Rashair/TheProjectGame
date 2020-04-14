@@ -428,5 +428,55 @@ namespace Player.Tests
             Assert.Equal(expectedHasPieceValue, realHasPieceValue);
             Assert.Equal(expectedDistance, realDistToClosestPiece);
         }
+
+        [Fact]
+        public async Task TestAcceptMessageEndGameShouldSetWinnerField()
+        {
+            // Arrange
+            var endGamePayload = new EndGamePayload()
+            {
+                Winner = Team.Red,
+            };
+            GMMessage endGameMessage = new GMMessage(GMMessageID.EndGame, endGamePayload);
+
+            StartGamePayload payloadStart = new StartGamePayload
+            {
+                PlayerID = 1,
+                AlliesIDs = new int[1] { 2 },
+                LeaderID = 1,
+                EnemiesIDs = new int[2] { 3, 4 },
+                TeamId = Team.Red,
+                BoardSize = new BoardSize { X = 3, Y = 3 },
+                GoalAreaSize = 1,
+                NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
+                NumberOfPieces = 2,
+                NumberOfGoals = 2,
+                Penalties = new Penalties { Move = "0", CheckForSham = "0", Discovery = "0", DestroyPiece = "0", PutPiece = "0", InformationExchange = "0" },
+                ShamPieceProbability = 0.5f,
+                Position = new Position { X = 1, Y = 1 },
+            };
+            GMMessage startMessage = new GMMessage()
+            {
+                Id = GMMessageID.StartGame,
+                Payload = JsonConvert.SerializeObject(payloadStart),
+            };
+
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            input.Post<GMMessage>(startMessage);
+            input.Post<GMMessage>(endGameMessage);
+
+            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
+            var player = new Player.Models.Player(configuration, input, new WebSocketClient<GMMessage, PlayerMessage>());
+
+            // Act
+            Team expectedWinner = Team.Red;
+
+            await player.AcceptMessage(CancellationToken.None);
+            await player.AcceptMessage(CancellationToken.None);
+            var realWinner = player.GetValue<Team, Player.Models.Player>("winner");
+
+            // Assert
+            Assert.Equal(expectedWinner, realWinner);
+        }
     }
 }
