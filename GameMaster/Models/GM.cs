@@ -274,7 +274,7 @@ namespace GameMaster.Models
                     CheckForSham = conf.CheckPenalty.ToString(),
                     DestroyPiece = conf.DestroyPenalty.ToString(),
                 };
-                payload.ShamPieceProbability = conf.ShamPieceProbability / 100.0f;
+                payload.ShamPieceProbability = conf.ShamPieceProbability;
                 payload.Position = new Position
                 {
                     Y = player[0],
@@ -457,7 +457,7 @@ namespace GameMaster.Models
         private void GeneratePiece()
         {
             var rand = new Random();
-            bool isSham = rand.Next(0, 101) < conf.ShamPieceProbability;
+            bool isSham = rand.Next(0, 101) < conf.ShamPieceProbability * 100;
             AbstractPiece piece;
             if (isSham)
             {
