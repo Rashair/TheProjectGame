@@ -280,6 +280,7 @@ namespace Player.Tests
             await player.AcceptMessage(CancellationToken.None);
 
             // TODO check playre id var playerIdResult = player.id;
+            var leaderIdResult = player.LeaderId;
             var teamMatesResult = player.TeamMatesIds;
             var isLeaderResult = player.IsLeader;
             var teamResult = player.Team;
@@ -293,11 +294,9 @@ namespace Player.Tests
             var numOfGoalsResult = player.NumberOfGoals;
             var shamProbabilityResult = player.ShamPieceProbability;
 
-            bool realHasPieceValue = player.HasPiece;
-            bool? realIsHeldPieceShamValue = player.IsHeldPieceSham;
-
             // Assert
             // Assert.Equal(playerId, playerIdResult); TODO
+            Assert.Equal(leaderId, leaderIdResult);
             Assert.Equal(alliesId, teamMatesResult);
             Assert.Equal(expectedisLeader, isLeaderResult);
             Assert.Equal(teamId, teamResult);

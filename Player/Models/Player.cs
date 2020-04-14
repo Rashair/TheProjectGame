@@ -317,6 +317,7 @@ namespace Player.Models
                     {
                         IsLeader = false;
                     }
+                    LeaderId = payloadStart.LeaderID;
                     Team = payloadStart.TeamId;
                     BoardSize = (payloadStart.BoardSize.Y, payloadStart.BoardSize.X);
                     Board = new Field[payloadStart.BoardSize.Y, payloadStart.BoardSize.X];
