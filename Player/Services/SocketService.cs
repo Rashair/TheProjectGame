@@ -14,6 +14,10 @@ namespace Player.Services
 {
     public class SocketService : BackgroundService
     {
+        private const int ConnectRetries = 60;
+        private const int ReceiveJoinTheGameRetries = 30;
+        private const int RetryIntervalMs = 1000;
+
         private readonly ILogger logger;
         private readonly ISocketClient<GMMessage, PlayerMessage> client;
         private readonly PlayerConfiguration conf;
@@ -38,7 +42,7 @@ namespace Player.Services
             {
                 await client.ConnectAsync(connectUri, stoppingToken);
                 return true;
-            }, 60, 1000, stoppingToken);
+            }, ConnectRetries, RetryIntervalMs, stoppingToken);
             if (!success)
             {
                 logger.Error($"No connection could be made. Error: {errorMessage}");
@@ -64,7 +68,7 @@ namespace Player.Services
             {
                 (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
                 return receivedMessage;
-            }, 60, 500, stoppingToken);
+            }, ReceiveJoinTheGameRetries, RetryIntervalMs, stoppingToken);
             if (!success)
             {
                 logger.Error($"Did not receive JoinTheGame response. Error: {errorMessage}");
