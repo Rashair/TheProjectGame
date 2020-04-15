@@ -88,8 +88,8 @@ namespace Player.Models
                 startGame = await AcceptMessage(cancellationToken);
             }
 
-            await Work(cancellationToken);
             logger.Information("Starting game");
+            await Work(cancellationToken);
         }
 
         public async Task JoinTheGame(CancellationToken cancellationToken)
