@@ -14,17 +14,25 @@ namespace CommunicationServer
 {
     public class Startup
     {
+        public const string LoggerTemplate =
+            "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
+
         public Startup()
         {
+            ConfigureLogger();
+        }
+
+        private void ConfigureLogger()
+        {
             string folderName = "TheProjectGameLogs";
-            string fileName = $"CS_{DateTime.Today.ToString("dd_MM_yyyy")}.txt";
+            string fileName = $"CS_{DateTime.Today.ToString("dd_MM_yyyy")}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
             Log.Logger = new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
                path: path,
                rollOnFileSizeLimit: true,
-               outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}")
+               outputTemplate: LoggerTemplate)
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)

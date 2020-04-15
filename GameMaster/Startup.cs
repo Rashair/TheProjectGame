@@ -23,27 +23,35 @@ namespace GameMaster
 {
     public class Startup
     {
+        public const string LoggerTemplate =
+            "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
+
+        public IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
         {
+            Configuration = configuration;
+            ConfigureLogger();
+        }
+
+        private void ConfigureLogger()
+        {
             string folderName = "TheProjectGameLogs";
-            string fileName = $"Main_{DateTime.Today.ToString("dd_MM_yyyy")}.txt";
+            string fileName = $"Main_{DateTime.Today:dd_MM_yyyy}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
-            var template = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
             Log.Logger = new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
                path: path,
                rollOnFileSizeLimit: true,
-               outputTemplate: template)
-               .WriteTo.Console(outputTemplate: template)
+               outputTemplate: LoggerTemplate)
+               .WriteTo.Console(outputTemplate: LoggerTemplate)
+               .WriteTo.Debug(outputTemplate: LoggerTemplate)
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
                .CreateLogger();
-            Configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)

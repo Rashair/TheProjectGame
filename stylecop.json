@@ -14,7 +14,8 @@
         "gm",
         "x",
         "y",
-        "id"
+        "id",
+        "ms"
       ]
     },
     "orderingRules": {

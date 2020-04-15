@@ -12,16 +12,14 @@ using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
-using GameMaster.Tests.Helpers;
 using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shared.Enums;
 using Shared.Messages;
+using TestsShared;
 using Xunit;
-
-using static GameMaster.Tests.Helpers.ReflectionHelpers;
 
 namespace GameMaster.Tests
 {
@@ -50,7 +48,7 @@ namespace GameMaster.Tests
 
             // Assert
             int pieceCount = 0;
-            var board = gameMaster.GetValue<AbstractField[][]>("board");
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
             for (int i = 0; i < board.Length; ++i)
             {
                 for (int j = 0; j < board[i].Length; ++j)
@@ -147,10 +145,10 @@ namespace GameMaster.Tests
             }
 
             // Act
-            var discoveryActionResult = gameMaster.Invoke<Dictionary<Direction, int>>("Discover", field);
+            var discoveryActionResult = gameMaster.Invoke<GM, Dictionary<Direction, int>>("Discover", field);
 
             // Assert
-            var board = gameMaster.GetValue<AbstractField[][]>("board");
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
             List<(AbstractField field, int dist, Direction dir)> neighbours = GetNeighbours(field, board, conf.Height, conf.Width);
 
             for (int k = 0; k < neighbours.Count; k++)
@@ -204,7 +202,7 @@ namespace GameMaster.Tests
             var lifetime = Mock.Of<IApplicationLifetime>();
             var manager = new TcpSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
-            var players = gameMaster.GetValue<Dictionary<int, GMPlayer>>("players");
+            var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
             for (int i = 0; i < conf.NumberOfPlayersPerTeam; ++i)
             {
                 players.Add(i, new GMPlayer(i, conf, manager, Team.Red));
@@ -249,9 +247,9 @@ namespace GameMaster.Tests
             var lifetime = Mock.Of<IApplicationLifetime>();
             var manager = new TcpSocketManager<GMMessage>();
             var gameMaster = new GM(lifetime, conf, queue, manager);
-            var players = gameMaster.GetValue<Dictionary<int, GMPlayer>>("players");
-            var sockets = manager.GetValue<ConcurrentDictionary<int, TcpClient>,
-                SocketManager<TcpClient, GMMessage>>("sockets");
+            var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
+            var sockets = manager.GetValue<SocketManager<TcpClient, GMMessage>, 
+                ConcurrentDictionary<int, TcpClient>>("sockets");
             for (int idRed = 0; idRed < conf.NumberOfPlayersPerTeam; ++idRed)
             {
                 var player = new GMPlayer(idRed, conf, manager, Team.Red)
@@ -272,7 +270,7 @@ namespace GameMaster.Tests
             gameMaster.Invoke("InitGame");
 
             // Act
-            var task = gameMaster.Invoke<Task>("StartGame", CancellationToken.None);
+            var task = gameMaster.Invoke<GM, Task>("StartGame", CancellationToken.None);
             task.Wait();
 
             // Assert

@@ -129,13 +129,13 @@ namespace GameMaster.Models
                     switch (payloadMove.Direction)
                     {
                         case Direction.N:
-                            if (pos[0] + 1 < conf.Height)
+                            if (pos[0] + 1 < conf.Height && (player.Team == Team.Blue || pos[0] + 1 < TaskAreaEnd))
                             {
                                 field = board[pos[0] + 1][pos[1]];
                             }
                             break;
                         case Direction.S:
-                            if (pos[0] - 1 >= 0)
+                            if (pos[0] - 1 >= 0 && (player.Team == Team.Red || pos[0] - 1 >= conf.GoalAreaHeight))
                             {
                                 field = board[pos[0] - 1][pos[1]];
                             }
