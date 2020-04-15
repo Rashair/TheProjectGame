@@ -10,16 +10,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Shared.Messages;
-using Xunit;
 
-using static GameMaster.Tests.Helpers.ReflectionHelpers;
+using Shared.Messages;
+using TestsShared;
+using Xunit;
 
 namespace GameMaster.Tests
 {
     public class GMServiceTests
     {
-        [Fact(Timeout = 3000)]
+        [Fact(Timeout = 3500)]
         public async Task TestExecuteAsyncShouldWaitForStartAndReadMessages()
         {
             // Arrange

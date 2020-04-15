@@ -11,7 +11,6 @@ namespace Shared.Payloads
         public bool Leader { get; set; }
 
         [JsonProperty("teamId")]
-        [JsonConverter(typeof(StringEnumConverter))]
         public Team TeamId { get; set; }
     }
 }
