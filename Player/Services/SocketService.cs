@@ -18,7 +18,7 @@ namespace Player.Services
         private readonly ISocketClient<GMMessage, PlayerMessage> client;
         private readonly BufferBlock<GMMessage> queue;
 
-        public Uri ConnectUri => new Uri($"wss://{conf.CsIP}:{conf.CsPort}/player");
+        public Uri ConnectUri => new Uri($"ws://{conf.CsIP}:{conf.CsPort}/player");
 
         public SocketService(ISocketClient<GMMessage, PlayerMessage> client, PlayerConfiguration conf,
             BufferBlock<GMMessage> queue)
@@ -35,7 +35,16 @@ namespace Player.Services
             if (!stoppingToken.IsCancellationRequested)
             {
                 await Task.Yield();
-                await client.ConnectAsync(ConnectUri, stoppingToken);
+                try
+                {
+                    await client.ConnectAsync(ConnectUri, stoppingToken);
+                }
+                catch (Exception e)
+                {
+                    logger.Error($"Connect error: {e.Message}");
+                    return;
+                }
+
                 (bool result, GMMessage message) = await client.ReceiveAsync(stoppingToken);
                 while (!stoppingToken.IsCancellationRequested && result)
                 {

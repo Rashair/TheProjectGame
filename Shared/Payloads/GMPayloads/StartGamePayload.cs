@@ -16,7 +16,6 @@ namespace Shared.Payloads
         public int[] EnemiesIDs { get; set; }
 
         [JsonProperty("teamId")]
-        [JsonConverter(typeof(StringEnumConverter))]
         public Team TeamId { get; set; }
 
         public BoardSize BoardSize { get; set; }

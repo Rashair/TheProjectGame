@@ -7,7 +7,6 @@ namespace Shared.Payloads
     public class EndGamePayload : Payload
     {
         [JsonProperty("winner")]
-        [JsonConverter(typeof(StringEnumConverter))]
         public Team Winner { get; set; }
     }
 }
