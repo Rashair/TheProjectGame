@@ -59,7 +59,7 @@ namespace GameMaster.Services
             catch (SocketException e)
             {
                 logger.Error($"Error starting listener on: {ip}:{conf.CsPort}, Exception:\n {e}");
-                return;
+                throw;
             }
 
             while (!cancellationToken.IsCancellationRequested && AcceptConnection())
