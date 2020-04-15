@@ -404,6 +404,8 @@ namespace GameMaster.Models
                 catch (TimeoutException e)
                 {
                     logger.Warning($"Message retrieve was cancelled: {e.Message}");
+
+                    // TODO: change it with switch to SocketClient
                     if (!socketManager.IsAnyOpen())
                     {
                         logger.Error("No open connection. Exiting.");

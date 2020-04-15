@@ -127,7 +127,7 @@ namespace Shared.Clients
             int read;
             do
             {
-                read = await stream.ReadAsync(buffer, 0, buffer.Length);
+                read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
             }
             while (read > 0 && !cancellationToken.IsCancellationRequested);
         }
