@@ -83,8 +83,9 @@ namespace GameMaster.Services
         private async Task HandleMessages(ISocketClient<PlayerMessage, GMMessage> client,
             CancellationToken cancellationToken)
         {
-            logger.Information($"Started handling messages for {client.ConnectionUri}");
             var socket = (TcpClient)client.GetSocket();
+            logger.Information($"Started handling messages for {socket.Client.RemoteEndPoint}");
+
             while (!cancellationToken.IsCancellationRequested && client.IsOpen)
             {
                 try
@@ -101,7 +102,7 @@ namespace GameMaster.Services
                     break;
                 }
             }
-            logger.Information($"Finished handling messages for {client.ConnectionUri}");
+            logger.Information($"Finished handling messages for {socket.Client.RemoteEndPoint}");
         }
     }
 }

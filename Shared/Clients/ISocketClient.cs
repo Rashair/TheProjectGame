@@ -10,11 +10,9 @@ namespace Shared.Clients
 
         int ReceiveTimeout { get; }
 
-        Uri ConnectionUri { get; }
-
         object GetSocket();
 
-        Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
+        Task ConnectAsync(string host, int port, CancellationToken cancellationToken);
 
         Task CloseAsync(CancellationToken cancellationToken);
 

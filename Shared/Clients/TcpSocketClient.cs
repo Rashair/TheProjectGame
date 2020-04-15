@@ -14,7 +14,6 @@ namespace Shared.Clients
         private readonly ILogger logger;
         private readonly TcpClient client;
         private NetworkStream stream;
-        private Uri connectionUri;
         private bool isOpen;
 
         public TcpSocketClient()
@@ -28,15 +27,12 @@ namespace Shared.Clients
             logger = Log.ForContext<TcpSocketClient<R, S>>();
             client = tcpClient;
             stream = tcpClient.GetStream();
-            connectionUri = new Uri($"https://{tcpClient.Client.RemoteEndPoint}");
             isOpen = tcpClient.Connected;
         }
 
         public bool IsOpen => isOpen && client.Connected;
 
         public int ReceiveTimeout => 50;
-
-        public Uri ConnectionUri => connectionUri;
 
         public object GetSocket()
         {
@@ -50,13 +46,12 @@ namespace Shared.Clients
             return Task.CompletedTask;
         }
 
-        public async Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
+        public async Task ConnectAsync(string host, int port, CancellationToken cancellationToken)
         {
-            await client.ConnectAsync(uri.Host, uri.Port);
+            await client.ConnectAsync(host, port);
             stream = client.GetStream();
-            connectionUri = uri;
             isOpen = true;
-            logger.Information($"Connected to {uri.Host}:{uri.Port}");
+            logger.Information($"Connected to {host}:{port}");
         }
 
         public async Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)

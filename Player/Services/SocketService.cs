@@ -23,7 +23,6 @@ namespace Player.Services
         private readonly PlayerConfiguration conf;
         private readonly BufferBlock<GMMessage> queue;
         private readonly IApplicationLifetime lifetime;
-        private readonly Uri connectUri;
 
         public SocketService(ISocketClient<GMMessage, PlayerMessage> client, PlayerConfiguration conf,
             BufferBlock<GMMessage> queue, IApplicationLifetime lifetime)
@@ -33,14 +32,13 @@ namespace Player.Services
             this.conf = conf;
             this.queue = queue;
             this.lifetime = lifetime;
-            this.connectUri = new Uri($"http://{conf.CsIP}:{conf.CsPort}");
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var (success, errorMessage) = await Helpers.Retry(async () =>
             {
-                await client.ConnectAsync(connectUri, stoppingToken);
+                await client.ConnectAsync(conf.CsIP, conf.CsPort, stoppingToken);
                 return true;
             }, ConnectRetries, RetryIntervalMs, stoppingToken);
             if (!success)

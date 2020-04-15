@@ -81,14 +81,12 @@ namespace Player.Tests
 
             public int ReceiveTimeout => 0;
 
-            public Uri ConnectionUri => throw new NotImplementedException();
-
             public Task CloseAsync(CancellationToken cancellationToken)
             {
                 return Task.CompletedTask;
             }
 
-            public Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
+            public Task ConnectAsync(string host, int port, CancellationToken cancellationToken)
             {
                 return Task.CompletedTask;
             }
