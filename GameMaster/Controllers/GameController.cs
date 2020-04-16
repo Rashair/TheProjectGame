@@ -50,9 +50,15 @@ namespace GameMaster.Controllers
             string gameConfigString = JsonConvert.SerializeObject(conf);
             string path = configuration.GetValue<string>("GameConfigPath");
 
-            using (StreamWriter file = new StreamWriter(path))
+            if (path != null)
             {
-                await file.WriteAsync(gameConfigString);
+                using (StreamWriter file = new StreamWriter(path))
+                {
+                    if (file.BaseStream.CanWrite)
+                    {
+                        await file.WriteAsync(gameConfigString);
+                    }
+                }
             }
 
             return Created("/configuration", conf);
