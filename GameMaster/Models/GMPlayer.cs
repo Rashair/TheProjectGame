@@ -224,24 +224,21 @@ namespace GameMaster.Models
         {
             MoveAnswerPayload payload = new MoveAnswerPayload()
             {
-                ClosestPiece = DiscoverWrapper(gm),
+                ClosestPiece = DiscoverSpecifiedField(gm),
                 CurrentPosition = Position.GetPositionObject(),
                 MadeMove = madeMove,
             };
             return new GMMessage(GMMessageID.MoveAnswer, payload);
         }
 
-        // TODO: delete !
-        private int DiscoverWrapper(GM gm)
+        private int DiscoverSpecifiedField(GM gm)
         {
             if (Position.ContainsPieces() && position.CanPick())
             {
                 return 0;
             }
 
-            return 1;
-
-            // return gm.Discover(Position)[Direction.FromCurrent];
+            return gm.FindClosestPiece(Position);
         }
 
         private GMMessage UnknownErrorMessage()

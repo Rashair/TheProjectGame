@@ -448,6 +448,26 @@ namespace GameMaster.Models
             return discoveryResult;
         }
 
+        internal int FindClosestPiece(AbstractField field)
+        {
+            int[] center = field.GetPosition();
+            int distance = int.MaxValue;
+            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
+            for (int i = conf.GoalAreaHeight; i < secondGoalAreaStart; i++)
+            {
+                for (int j = 0; j < board[i].Length; j++)
+                {
+                    if (board[i][j].ContainsPieces())
+                    {
+                            int manhattanDistance = Math.Abs(center[0] - i) + Math.Abs(center[1] - j);
+                            if (manhattanDistance < distance)
+                                distance = manhattanDistance;
+                    }
+                }
+            }
+            return distance;
+        }
+
         private void GeneratePiece()
         {
             var rand = new Random();
