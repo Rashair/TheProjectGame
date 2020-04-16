@@ -88,11 +88,16 @@ namespace IntegrationTests
                 Assert.Equal(System.Net.HttpStatusCode.OK, responseInit.StatusCode);
             });
 
-            await Task.Delay(7000);
+            await Task.Delay(5000);
 
             var gameMaster = gmHost.Services.GetService<GM>();
             Assert.True(gameMaster.WasGameInitialized, "Game should be initialized");
-            Assert.True(gameMaster.WasGameStarted, "Game should be started");
+
+            var (success, errorMessage) = await Shared.Helpers.Retry(() =>
+            {
+                return Task.FromResult(gameMaster.WasGameStarted);
+            }, Conf.NumberOfPlayersPerTeam, 1000, tokenSource.Token);
+            Assert.True(success, "Game should be started");
 
             await Task.Delay(1000);
 
