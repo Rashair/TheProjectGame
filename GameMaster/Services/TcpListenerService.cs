@@ -14,7 +14,6 @@ namespace GameMaster.Services
 {
     public abstract class TcpListenerService : WaitForInitService
     {
-        private const int BufferSize = 1024 * 4;
         private readonly GameConfiguration conf;
         protected readonly ISocketManager<TcpClient, GMMessage> manager;
 

@@ -79,8 +79,6 @@ namespace Player.Tests
         {
             public bool IsOpen => true;
 
-            public int ReceiveTimeout => 0;
-
             public Task CloseAsync(CancellationToken cancellationToken)
             {
                 return Task.CompletedTask;

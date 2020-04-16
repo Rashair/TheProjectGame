@@ -8,8 +8,6 @@ namespace Shared.Clients
     {
         bool IsOpen { get; }
 
-        int ReceiveTimeout { get; }
-
         object GetSocket();
 
         Task ConnectAsync(string host, int port, CancellationToken cancellationToken);

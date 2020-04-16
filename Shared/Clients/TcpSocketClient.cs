@@ -32,8 +32,6 @@ namespace Shared.Clients
 
         public bool IsOpen => isOpen && client.Connected;
 
-        public int ReceiveTimeout => 50;
-
         public object GetSocket()
         {
             return client;
@@ -62,16 +60,22 @@ namespace Shared.Clients
             }
 
             byte[] lengthEndian = new byte[2];
-            int countRead = await TryGetMessageLengthAsync(lengthEndian, cancellationToken);
+            int countRead = await stream.ReadAsync(lengthEndian, 0, 2, cancellationToken);
             if (countRead == 0)
             {
+                logger.Warning("Tried to read from closed stream.");
+                return (false, default);
+            }
+            else if (countRead == 1)
+            {
+                logger.Warning("Message length should be wrote on 2 bytes.\nAborting message...");
                 return (false, default);
             }
 
             int length = TryConvertToInt(lengthEndian);
             if (length == 0)
             {
-                await ClearStream(cancellationToken);
+                logger.Warning("Bad message length or not in little-endian convention.\nAborting message...");
                 return (false, default);
             }
 
@@ -81,28 +85,20 @@ namespace Shared.Clients
             {
                 return (false, default);
             }
-            if (countRead != length)
+            else if (countRead == 0)
             {
-                logger.Warning("Unexpected message - wrong length provided.\n Message will be aborted");
-                await ClearStream(cancellationToken);
+                logger.Warning("Tried to read from closed stream.");
+                return (false, default);
+            }
+            else if (countRead != length)
+            {
+                logger.Warning("Unexpected message - wrong length provided.\nMessage will be aborted");
                 return (false, default);
             }
 
             string json = Encoding.UTF8.GetString(buffer, 0, length);
             R message = JsonConvert.DeserializeObject<R>(json);
             return (true, message);
-        }
-
-        private async Task<int> TryGetMessageLengthAsync(byte[] lengthEndian, CancellationToken cancellationToken)
-        {
-            int count = await stream.ReadAsync(lengthEndian, 0, 2, cancellationToken);
-            if (count == 0)
-            {
-                await Task.Delay(ReceiveTimeout);
-                count = await stream.ReadAsync(lengthEndian, 0, 2, cancellationToken);
-            }
-
-            return count;
         }
 
         private int TryConvertToInt(byte[] lengthEndian)
@@ -119,17 +115,6 @@ namespace Shared.Clients
             }
 
             return length;
-        }
-
-        private async Task ClearStream(CancellationToken cancellationToken)
-        {
-            var buffer = new byte[4096];
-            int read;
-            do
-            {
-                read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
-            }
-            while (read > 0 && !cancellationToken.IsCancellationRequested);
         }
 
         public async Task SendAsync(S message, CancellationToken cancellationToken)
