@@ -23,8 +23,8 @@ namespace Shared
                 catch (Exception e)
                 {
                     message = e.ToString();
-                    await Task.Delay(retryIntervalMs);
                 }
+                await Task.Delay(retryIntervalMs);
             }
 
             return (false, message);

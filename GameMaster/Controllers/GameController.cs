@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -47,18 +48,19 @@ namespace GameMaster.Controllers
             }
 
             gameConfiguration.Update(conf);
+
             string gameConfigString = JsonConvert.SerializeObject(conf);
             string path = configuration.GetValue<string>("GameConfigPath");
-
-            if (path != null)
+            try
             {
                 using (StreamWriter file = new StreamWriter(path))
                 {
-                    if (file.BaseStream.CanWrite)
-                    {
-                        await file.WriteAsync(gameConfigString);
-                    }
+                    await file.WriteAsync(gameConfigString);
                 }
+            }
+            catch (Exception e)
+            {
+                logger.Warning($"Error writing to file: {e}");
             }
 
             return Created("/configuration", conf);

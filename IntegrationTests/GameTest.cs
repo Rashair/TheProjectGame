@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using GameMaster.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Core;
 using Shared.Enums;
