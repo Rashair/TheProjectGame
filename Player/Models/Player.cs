@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -206,14 +206,14 @@ namespace Player.Models
                 WaitingPlayers.RemoveAt(0);
             }
 
-            response.Distances = new int[BoardSize.x, BoardSize.y];
-            response.RedTeamGoalAreaInformations = new GoalInfo[BoardSize.x, BoardSize.y];
-            response.BlueTeamGoalAreaInformations = new GoalInfo[BoardSize.x, BoardSize.y];
+            response.Distances = new int[BoardSize.y, BoardSize.x];
+            response.RedTeamGoalAreaInformations = new GoalInfo[BoardSize.y, BoardSize.x];
+            response.BlueTeamGoalAreaInformations = new GoalInfo[BoardSize.y, BoardSize.x];
 
             for (int i = 0; i < Board.Length; ++i)
             {
-                int row = i / BoardSize.y;
-                int col = i % BoardSize.y;
+                int row = i / BoardSize.x;
+                int col = i % BoardSize.x;
                 response.Distances[row, col] = Board[row, col].DistToPiece;
                 if (Team == Team.Red)
                 {
