@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 using Newtonsoft.Json;
 
@@ -14,13 +15,15 @@ namespace GameMaster.Models
 
         public int AskPenalty { get; set; }
 
+        public int ResponsePenalty { get; set; }
+
         public int DiscoverPenalty { get; set; }
 
-        public int PutPenalty { get; set; }
+        public int PickPenalty { get; set; }
 
         public int CheckPenalty { get; set; }
 
-        public int ResponsePenalty { get; set; }
+        public int PutPenalty { get; set; }
 
         public int DestroyPenalty { get; set; }
 
@@ -28,13 +31,13 @@ namespace GameMaster.Models
 
         public int Height { get; set; }
 
+        public int NumberOfPlayersPerTeam { get; set; }
+
         public int GoalAreaHeight { get; set; }
 
         public int NumberOfGoals { get; set; }
 
         public int NumberOfPiecesOnBoard { get; set; }
-
-        public int NumberOfPlayersPerTeam { get; set; }
 
         /// <summary>
         /// Percentage, between 0 and 1.
@@ -57,21 +60,52 @@ namespace GameMaster.Models
 
         public void Update(GameConfiguration conf)
         {
-            CsIP = conf.CsIP;
-            CsPort = conf.CsPort;
-            MovePenalty = conf.MovePenalty;
-            AskPenalty = conf.AskPenalty;
-            DiscoverPenalty = conf.DiscoverPenalty;
-            PutPenalty = conf.PutPenalty;
-            CheckPenalty = conf.CheckPenalty;
-            ResponsePenalty = conf.ResponsePenalty;
-            Width = conf.Width;
-            Height = conf.Height;
-            GoalAreaHeight = conf.GoalAreaHeight;
-            NumberOfGoals = conf.NumberOfGoals;
-            NumberOfPiecesOnBoard = conf.NumberOfPiecesOnBoard;
-            NumberOfPlayersPerTeam = conf.NumberOfPlayersPerTeam;
-            ShamPieceProbability = conf.ShamPieceProbability;
+            conf.CopyProperties(this);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is GameConfiguration configuration &&
+                   CsIP == configuration.CsIP &&
+                   CsPort == configuration.CsPort &&
+                   MovePenalty == configuration.MovePenalty &&
+                   AskPenalty == configuration.AskPenalty &&
+                   ResponsePenalty == configuration.ResponsePenalty &&
+                   DiscoverPenalty == configuration.DiscoverPenalty &&
+                   PickPenalty == configuration.PickPenalty &&
+                   CheckPenalty == configuration.CheckPenalty &&
+                   PutPenalty == configuration.PutPenalty &&
+                   DestroyPenalty == configuration.DestroyPenalty &&
+                   Width == configuration.Width &&
+                   Height == configuration.Height &&
+                   GoalAreaHeight == configuration.GoalAreaHeight &&
+                   NumberOfGoals == configuration.NumberOfGoals &&
+                   NumberOfPiecesOnBoard == configuration.NumberOfPiecesOnBoard &&
+                   ShamPieceProbability == configuration.ShamPieceProbability &&
+                   NumberOfPlayersPerTeam == configuration.NumberOfPlayersPerTeam;
+        }
+
+        public override int GetHashCode()
+        {
+            HashCode hash = default;
+            hash.Add(CsIP);
+            hash.Add(CsPort);
+            hash.Add(MovePenalty);
+            hash.Add(AskPenalty);
+            hash.Add(ResponsePenalty);
+            hash.Add(DiscoverPenalty);
+            hash.Add(PickPenalty);
+            hash.Add(CheckPenalty);
+            hash.Add(PutPenalty);
+            hash.Add(DestroyPenalty);
+            hash.Add(Width);
+            hash.Add(Height);
+            hash.Add(GoalAreaHeight);
+            hash.Add(NumberOfGoals);
+            hash.Add(NumberOfPiecesOnBoard);
+            hash.Add(ShamPieceProbability);
+            hash.Add(NumberOfPlayersPerTeam);
+            return hash.ToHashCode();
         }
     }
 }

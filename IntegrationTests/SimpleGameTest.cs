@@ -16,6 +16,7 @@ namespace IntegrationTests
                 CheckPenalty = 400,
                 MovePenalty = 300,
                 DestroyPenalty = 100,
+                PickPenalty = 100,
                 DiscoverPenalty = 1500,
                 ResponsePenalty = 600,
                 Height = 12,
