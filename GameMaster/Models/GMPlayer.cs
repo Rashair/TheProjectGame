@@ -274,15 +274,15 @@ namespace GameMaster.Models
             var discovered = gm.Discover(Position);
             DiscoveryAnswerPayload payload = new DiscoveryAnswerPayload()
             {
-                DistanceNW = discovered[Direction.NW],
-                DistanceN = discovered[Direction.N],
-                DistanceNE = discovered[Direction.NE],
-                DistanceW = discovered[Direction.W],
+                DistanceNW = discovered.ContainsKey(Direction.NW) ? discovered[Direction.NW] : -1,
+                DistanceN = discovered.ContainsKey(Direction.N) ? discovered[Direction.N] : -1,
+                DistanceNE = discovered.ContainsKey(Direction.NE) ? discovered[Direction.NE] : -1,
+                DistanceW = discovered.ContainsKey(Direction.W) ? discovered[Direction.W] : -1,
                 DistanceFromCurrent = discovered[Direction.FromCurrent],
-                DistanceE = discovered[Direction.E],
-                DistanceSW = discovered[Direction.SW],
-                DistanceS = discovered[Direction.S],
-                DistanceSE = discovered[Direction.SE],
+                DistanceE = discovered.ContainsKey(Direction.E) ? discovered[Direction.E] : -1,
+                DistanceSW = discovered.ContainsKey(Direction.SW) ? discovered[Direction.SW] : -1,
+                DistanceS = discovered.ContainsKey(Direction.S) ? discovered[Direction.S] : -1,
+                DistanceSE = discovered.ContainsKey(Direction.SE) ? discovered[Direction.SE] : -1,
             };
             return new GMMessage(GMMessageID.DiscoverAnswer, payload);
         }
