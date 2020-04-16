@@ -15,7 +15,6 @@ namespace Player.Services
     public class SocketService : BackgroundService
     {
         private const int ConnectRetries = 60;
-        private const int ReceiveJoinTheGameRetries = 30;
         private const int RetryIntervalMs = 1000;
 
         private readonly ILogger logger;
@@ -60,14 +59,9 @@ namespace Player.Services
             // Block until joinTheGame is sent
             await SynchronizationContext.SemaphoreSlim.WaitAsync(stoppingToken);
 
-            // Wait for JoinTheGame response for 30 seconds
-            (bool receivedMessage, GMMessage message) = (false, null);
-            (success, errorMessage) = await Helpers.Retry(async () =>
-            {
-                (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
-                return receivedMessage;
-            }, ReceiveJoinTheGameRetries, RetryIntervalMs, stoppingToken);
-            if (!success)
+            // Wait for JoinTheGame response
+            (bool receivedMessage, GMMessage message) = await client.ReceiveAsync(stoppingToken);
+            if (!receivedMessage)
             {
                 logger.Error($"Did not receive JoinTheGame response. Error: {errorMessage}");
                 lifetime.StopApplication();
