@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -6,11 +5,11 @@ using System.Threading.Tasks.Dataflow;
 using Newtonsoft.Json;
 using Player.Clients;
 using Player.Models;
-using Player.Tests.Helpers;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
 using Shared.Payloads;
+using TestsShared;
 using Xunit;
 
 namespace Player.Tests
@@ -79,7 +78,7 @@ namespace Player.Tests
             // Arrange
             CheckAnswerPayload payloadCheck = new CheckAnswerPayload()
             {
-               Sham = true,
+                Sham = true,
             };
             GMMessage messageCheck = new GMMessage()
             {
@@ -188,7 +187,7 @@ namespace Player.Tests
 
             await player.AcceptMessage(CancellationToken.None);
 
-            var playerIdResult = player.GetValue<int, Player.Models.Player>("id");
+            var playerIdResult = player.GetValue<Player.Models.Player, int>("id");
             var leaderIdResult = player.LeaderId;
             var teamMatesResult = player.TeamMatesIds;
             var isLeaderResult = player.IsLeader;
@@ -318,7 +317,7 @@ namespace Player.Tests
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);
-            var realWinner = player.GetValue<Team, Player.Models.Player>("winner");
+            var realWinner = player.GetValue<Player.Models.Player, Team>("winner");
 
             // Assert
             Assert.Equal(expectedWinner, realWinner);
