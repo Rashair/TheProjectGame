@@ -32,10 +32,12 @@ export class Configuration extends Component {
       csPort: 0,
       movePenalty: 0,
       askPenalty: 0,
-      discoverPenalty: 0,
-      putPenalty: 0,
-      checkPenalty: 0,
       responsePenalty: 0,
+      discoverPenalty: 0,
+      pickPenalty: 0,
+      checkPenalty: 0,
+      putPenalty: 0,
+      destroyPenalty: 0,
       width: 0,
       height: 0,
       goalAreaHeight: 0,
@@ -131,7 +133,7 @@ export class Configuration extends Component {
         </div>
 
         <div className="form-row">
-          <legend>Opóźnienie w wykonywaniu ruchów przez agenta </legend>
+          <legend>Opóźnienie w wykonywaniu akcji przez agenta </legend>
           {CustomFieldset({
             id: "movePenalty",
             label: "Kara za ruch",
@@ -140,15 +142,33 @@ export class Configuration extends Component {
           })}
           {CustomFieldset({
             id: "askPenalty",
-            label: "Kara za prośbę komunikacji",
+            label: "Kara za prośbę o komunikację",
             value: this.state.askPenalty,
             onChange: (e) => this.setState({ askPenalty: e.target.value }),
           })}
           {CustomFieldset({
+            id: "responsePenalty",
+            label: "Kara za odpowiedź na komunikację",
+            value: this.state.responsePenalty,
+            onChange: (e) => this.setState({ responsePenalty: e.target.value }),
+          })}
+          {CustomFieldset({
             id: "discoverPenalty",
-            label: "Kara za akcję Discovery",
+            label: "Kara za akcję discovery",
             value: this.state.discoverPenalty,
             onChange: (e) => this.setState({ discoverPenalty: e.target.value }),
+          })}
+          {CustomFieldset({
+            id: "pickPenalty",
+            label: "Kara za podniesienie fragmentu",
+            value: this.state.pickPenalty,
+            onChange: (e) => this.setState({ pickPenalty: e.target.value }),
+          })}
+          {CustomFieldset({
+            id: "checkPenalty",
+            label: "Kara za sprawdzenie fragmentu",
+            value: this.state.checkPenalty,
+            onChange: (e) => this.setState({ checkPenalty: e.target.value }),
           })}
           {CustomFieldset({
             id: "putPenalty",
@@ -157,17 +177,10 @@ export class Configuration extends Component {
             onChange: (e) => this.setState({ putPenalty: e.target.value }),
           })}
           {CustomFieldset({
-            id: "checkPenalty",
-            label: "Kara za sprawdzenie fragmentu",
-            value: this.state.checkPenalty,
-            onChange: (e) => this.setState({ checkPenalty: e.target.value }),
-          })}
-
-          {CustomFieldset({
-            id: "responsePenalty",
-            label: "Kara za odpowiedź",
-            value: this.state.responsePenalty,
-            onChange: (e) => this.setState({ responsePenalty: e.target.value }),
+            id: "destroyPenalty",
+            label: "Kara za zniszczenie fragmentu",
+            value: this.state.destroyPenalty,
+            onChange: (e) => this.setState({ destroyPenalty: e.target.value }),
           })}
         </div>
 
