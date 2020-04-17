@@ -16,6 +16,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunicationServer.Tests", "CommunicationServerTests\CommunicationServer.Tests.csproj", "{A6FE922B-29AF-453F-8666-8E970C0C77B9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.Tests", "PlayerTests\Player.Tests.csproj", "{484808C0-FF23-4E43-9326-EB9AA1BDE0D9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{12ADE676-714D-4AC7-8338-44B16731E93B} = {12ADE676-714D-4AC7-8338-44B16731E93B}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.Tests", "SharedTests\Shared.Tests.csproj", "{CF2A6B1F-376F-4682-92D8-CBFB8507C0CF}"
 EndProject
@@ -36,7 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		StyleCop.ruleset = StyleCop.ruleset
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsShared", "TestsShared\TestsShared.csproj", "{12ADE676-714D-4AC7-8338-44B16731E93B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestsShared", "TestsShared\TestsShared.csproj", "{12ADE676-714D-4AC7-8338-44B16731E93B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
