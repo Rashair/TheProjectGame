@@ -257,7 +257,7 @@ namespace GameMaster.Tests
             int goalFieldsCount = 0;
             int taskFieldsCount = 0;
             int piecesCount = 0;
-            var board = gameMaster.GetValue<AbstractField[][]>("board");
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
             for (int i = 0; i < board.Length; ++i)
             {
                 for (int j = 0; j < board[i].Length; ++j)

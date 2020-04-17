@@ -196,7 +196,7 @@ namespace GameMaster.Tests
         [Fact]
         public async Task TestDestroyAsync()
         {
-            var conf = GenerateConfiguration();
+            var conf = new MockGameConfiguration();
             var socketManager = GenerateSocketManager();
             var player = GenerateGMPlayer(conf, socketManager);
             var piece = new ShamPiece();
