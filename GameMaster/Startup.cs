@@ -36,8 +36,9 @@ namespace GameMaster
 
         private void ConfigureLogger()
         {
-            string folderName = "TheProjectGameLogs";
-            string fileName = $"Main_{DateTime.Today:dd_MM_yyyy}.log";
+            string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "GameMaster");
+            int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
+            string fileName = $"{DateTime.Now:HH-mm-ss}-{processId}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
             Log.Logger = new LoggerConfiguration()
                .Enrich.FromLogContext()
