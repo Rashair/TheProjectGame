@@ -64,7 +64,6 @@ namespace Shared.Clients
             int countRead = await stream.ReadAsync(lengthEndian, 0, 2, cancellationToken);
             if (countRead == 0)
             {
-                logger.Warning("Tried to read from closed stream.");
                 await CloseAsync(cancellationToken);
                 return (false, default);
             }
@@ -89,7 +88,6 @@ namespace Shared.Clients
             }
             else if (countRead == 0)
             {
-                logger.Warning("Tried to read from closed stream.");
                 await CloseAsync(cancellationToken);
                 return (false, default);
             }
