@@ -2,8 +2,8 @@
 
 namespace Player.Services
 {
-    public static class SynchronizationContext
+    public class SynchronizationContext
     {
-        public static SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(0, 1);
+        public SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(0, 1);
     }
 }

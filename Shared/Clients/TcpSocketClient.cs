@@ -39,6 +39,7 @@ namespace Shared.Clients
 
         public Task CloseAsync(CancellationToken cancellationToken)
         {
+            isOpen = false;
             stream.Close();
             client.Close();
             return Task.CompletedTask;
@@ -64,6 +65,7 @@ namespace Shared.Clients
             if (countRead == 0)
             {
                 logger.Warning("Tried to read from closed stream.");
+                await CloseAsync(cancellationToken);
                 return (false, default);
             }
             else if (countRead == 1)
@@ -88,6 +90,7 @@ namespace Shared.Clients
             else if (countRead == 0)
             {
                 logger.Warning("Tried to read from closed stream.");
+                await CloseAsync(cancellationToken);
                 return (false, default);
             }
             else if (countRead != length)

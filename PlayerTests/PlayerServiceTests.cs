@@ -61,11 +61,13 @@ namespace Player.Tests
             services.AddSingleton<IStrategy, StrategyMock>();
             services.AddSingleton<Models.Player>();
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
+            var context = new Services.SynchronizationContext();
+            context.SemaphoreSlim.Release();
+            services.AddSingleton(context);
 
             services.AddHostedService<PlayerService>();
             var serviceProvider = services.BuildServiceProvider();
             var hostedService = (PlayerService)serviceProvider.GetService<IHostedService>();
-            Services.SynchronizationContext.SemaphoreSlim.Release();
 
             // Act
             int delay = 500;

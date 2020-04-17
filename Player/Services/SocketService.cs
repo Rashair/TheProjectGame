@@ -17,20 +17,23 @@ namespace Player.Services
         private const int ConnectRetries = 60;
         private const int RetryIntervalMs = 1000;
 
-        private readonly ILogger logger;
         private readonly ISocketClient<GMMessage, PlayerMessage> client;
         private readonly PlayerConfiguration conf;
         private readonly BufferBlock<GMMessage> queue;
         private readonly IApplicationLifetime lifetime;
+        private readonly ILogger logger;
+        private readonly SynchronizationContext synchronizationContext;
 
         public SocketService(ISocketClient<GMMessage, PlayerMessage> client, PlayerConfiguration conf,
-            BufferBlock<GMMessage> queue, IApplicationLifetime lifetime, ILogger logger)
+            BufferBlock<GMMessage> queue, IApplicationLifetime lifetime, ILogger log, 
+            SynchronizationContext synchronizationContext)
         {
-            this.logger = logger.ForContext<SocketService>();
             this.client = client;
             this.conf = conf;
             this.queue = queue;
             this.lifetime = lifetime;
+            this.logger = log.ForContext<SocketService>();
+            this.synchronizationContext = synchronizationContext;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -48,16 +51,16 @@ namespace Player.Services
             }
 
             // Increment semafor initial count to 1
-            SynchronizationContext.SemaphoreSlim.Release();
+            synchronizationContext.SemaphoreSlim.Release();
 
             // Wait for player service to pick up semaphore
-            while (SynchronizationContext.SemaphoreSlim.CurrentCount > 0 && !stoppingToken.IsCancellationRequested)
+            while (synchronizationContext.SemaphoreSlim.CurrentCount > 0 && !stoppingToken.IsCancellationRequested)
             {
                 await Task.Delay(200);
             }
 
             // Block until joinTheGame is sent
-            await SynchronizationContext.SemaphoreSlim.WaitAsync(stoppingToken);
+            await synchronizationContext.SemaphoreSlim.WaitAsync(stoppingToken);
 
             // Wait for JoinTheGame response
             (bool receivedMessage, GMMessage message) = await client.ReceiveAsync(stoppingToken);

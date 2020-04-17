@@ -70,6 +70,7 @@ namespace Player
             services.AddSingleton<BufferBlock<GMMessage>>();
             services.AddSingleton<Models.Player>();
 
+            services.AddSingleton<SynchronizationContext>();
             services.AddHostedService<SocketService>();
             services.AddHostedService<PlayerService>();
         }
