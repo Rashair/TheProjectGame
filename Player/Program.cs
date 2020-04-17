@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore;
+﻿using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Serilog;
 

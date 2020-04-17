@@ -80,12 +80,9 @@ namespace GameMaster.Models
             return false;
         }
 
-        public int DestroyPenalty { get; private set; } = 100;
-
         public async Task<bool> DestroyHoldingAsync(CancellationToken cancellationToken)
         {
-            // TODO from config, issue 137
-            bool isUnlocked = await TryLockAsync(DestroyPenalty, cancellationToken);
+            bool isUnlocked = await TryLockAsync(conf.DestroyPenalty, cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 GMMessage message;
@@ -160,13 +157,9 @@ namespace GameMaster.Models
             return (goal, removed);
         }
 
-        // Delete !
-        public int PickPenalty { get; private set; } = 100;
-
         public async Task<bool> PickAsync(CancellationToken cancellationToken)
         {
-            // TODO from config, issue 137
-            bool isUnlocked = await TryLockAsync(PickPenalty, cancellationToken);
+            bool isUnlocked = await TryLockAsync(conf.PickPenalty, cancellationToken);
             bool picked = false;
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {

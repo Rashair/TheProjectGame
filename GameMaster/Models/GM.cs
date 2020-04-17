@@ -131,13 +131,13 @@ namespace GameMaster.Models
                     switch (payloadMove.Direction)
                     {
                         case Direction.N:
-                            if (pos[0] + 1 < conf.Height)
+                            if (pos[0] + 1 < conf.Height && (player.Team == Team.Blue || pos[0] + 1 < TaskAreaEnd))
                             {
                                 field = board[pos[0] + 1][pos[1]];
                             }
                             break;
                         case Direction.S:
-                            if (pos[0] - 1 >= 0)
+                            if (pos[0] - 1 >= 0 && (player.Team == Team.Red || pos[0] - 1 >= conf.GoalAreaHeight))
                             {
                                 field = board[pos[0] - 1][pos[1]];
                             }
@@ -276,7 +276,7 @@ namespace GameMaster.Models
                     CheckForSham = conf.CheckPenalty.ToString(),
                     DestroyPiece = conf.DestroyPenalty.ToString(),
                 };
-                payload.ShamPieceProbability = conf.ShamPieceProbability / 100.0f;
+                payload.ShamPieceProbability = conf.ShamPieceProbability;
                 payload.Position = new Position
                 {
                     Y = player[0],
@@ -471,7 +471,7 @@ namespace GameMaster.Models
 
         private void GeneratePiece()
         {
-            bool isSham = rand.Next(0, 101) < conf.ShamPieceProbability;
+            bool isSham = rand.Next(0, 101) < conf.ShamPieceProbability * 100;
             AbstractPiece piece;
             if (isSham)
             {

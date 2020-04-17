@@ -14,7 +14,7 @@ namespace GameMaster.Controllers
     [Route("/api")]
     public class GameController : ControllerBase
     {
-        private ILogger logger;
+        private readonly ILogger logger;
         private readonly IConfiguration configuration;
         private readonly GameConfiguration gameConfiguration;
         private readonly GM gameMaster;

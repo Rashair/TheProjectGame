@@ -30,8 +30,19 @@ namespace Player.Models
         private IStrategy strategy;
         private bool working;
         private readonly PlayerConfiguration conf;
-        private Team winner;
+        private Team? winner;
         private int discovered;
+
+        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
+        {
+            this.conf = conf;
+            this.Team = conf.TeamID == "red" ? Team.Red : Team.Blue;
+            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
+            this.queue = queue;
+            this.client = client;
+            this.logger = Log.ForContext<Player>();
+            this.Position = (-1, -1);
+        }
 
         public int PreviousDistToPiece { get; private set; }
 
@@ -48,19 +59,6 @@ namespace Player.Models
         public float ShamPieceProbability { get; private set; }
 
         public Team Team { get; private set; }
-
-        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
-        {
-            this.conf = conf;
-            if (conf.TeamID == "red")
-                Team = Team.Red;
-            else
-                Team = Team.Blue;
-            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
-            this.queue = queue;
-            this.client = client;
-            this.logger = Log.ForContext<Player>();
-        }
 
         public bool IsLeader { get; private set; }
 
@@ -272,7 +270,7 @@ namespace Player.Models
 
         public async Task<bool> AcceptMessage(CancellationToken cancellationToken) // returns true if StartGameMessage was accepted
         {
-            var cancellationTimespan = TimeSpan.FromMinutes(1);
+            var cancellationTimespan = TimeSpan.FromMinutes(2);
             GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
             logger.Information($"|{message.Id} | {message.Payload} | HasPiece: {HasPiece} | {discovered} ");
             switch (message.Id)
@@ -319,6 +317,7 @@ namespace Player.Models
                     {
                         IsLeader = false;
                     }
+                    LeaderId = payloadStart.LeaderID;
                     Team = payloadStart.TeamId;
                     BoardSize = (payloadStart.BoardSize.Y, payloadStart.BoardSize.X);
                     Board = new Field[payloadStart.BoardSize.Y, payloadStart.BoardSize.X];

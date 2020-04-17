@@ -7,16 +7,14 @@ using System.Threading.Tasks.Dataflow;
 using GameMaster.Controllers;
 using GameMaster.Managers;
 using GameMaster.Models;
-using GameMaster.Tests.Helpers;
 using GameMaster.Tests.Mocks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using Shared.Messages;
+using TestsShared;
 using Xunit;
-
-using static GameMaster.Tests.Helpers.ReflectionHelpers;
 
 namespace GameMaster.Tests
 {
@@ -45,28 +43,16 @@ namespace GameMaster.Tests
             GameConfiguration newGameConfig = new MockGameConfiguration();
             newGameConfig.AskPenalty = 200;
             newGameConfig.Height = 10;
+            newGameConfig.DestroyPenalty = 100;
+            newGameConfig.PickPenalty = 100;
 
             var result = await gameController.Configuration(newGameConfig);
             var createdResult = (CreatedResult)result.Result;
-            int expectedStatusCode = (int)HttpStatusCode.Created;
             GameConfiguration returnedGameConfig = (GameConfiguration)createdResult.Value;
 
             // Assert
-            Assert.Equal(expectedStatusCode, createdResult.StatusCode);
-            Assert.Equal(newGameConfig.AskPenalty, returnedGameConfig.AskPenalty);
-            Assert.Equal(newGameConfig.CheckPenalty, returnedGameConfig.CheckPenalty);
-            Assert.Equal(newGameConfig.DiscoverPenalty, returnedGameConfig.DiscoverPenalty);
-            Assert.Equal(newGameConfig.MovePenalty, returnedGameConfig.MovePenalty);
-            Assert.Equal(newGameConfig.PutPenalty, returnedGameConfig.PutPenalty);
-            Assert.Equal(newGameConfig.ResponsePenalty, returnedGameConfig.ResponsePenalty);
-            Assert.Equal(newGameConfig.CsIP, returnedGameConfig.CsIP);
-            Assert.Equal(newGameConfig.CsPort, returnedGameConfig.CsPort);
-            Assert.Equal(newGameConfig.GoalAreaHeight, returnedGameConfig.GoalAreaHeight);
-            Assert.Equal(newGameConfig.Height, returnedGameConfig.Height);
-            Assert.Equal(newGameConfig.NumberOfGoals, returnedGameConfig.NumberOfGoals);
-            Assert.Equal(newGameConfig.NumberOfPiecesOnBoard, returnedGameConfig.NumberOfPiecesOnBoard);
-            Assert.Equal(newGameConfig.NumberOfPlayersPerTeam, returnedGameConfig.NumberOfPlayersPerTeam);
-            Assert.Equal(newGameConfig.ShamPieceProbability, returnedGameConfig.ShamPieceProbability);
+            Assert.Equal((int)HttpStatusCode.Created, createdResult.StatusCode);
+            Assert.True(newGameConfig.Equals(returnedGameConfig), "Game config should be updated");
         }
 
         [Fact]
