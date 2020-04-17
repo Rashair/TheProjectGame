@@ -14,8 +14,8 @@ using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Moq;
+using Serilog;
 using Shared.Enums;
 using Shared.Messages;
 using TestsShared;
@@ -25,6 +25,8 @@ namespace GameMaster.Tests
 {
     public class GMTests
     {
+        private readonly ILogger logger = MockGenerator.Get<ILogger>();
+
         [Theory]
         [InlineData(1)]
         [InlineData(10)]
@@ -36,8 +38,8 @@ namespace GameMaster.Tests
             conf.NumberOfPiecesOnBoard = 0;
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>();
-            var gameMaster = new GM(lifetime, conf, queue, manager);
+            var manager = new TcpSocketManager<GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, manager, logger);
             gameMaster.Invoke("InitGame");
 
             // Act
@@ -134,10 +136,9 @@ namespace GameMaster.Tests
         {
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
-            var logger = Mock.Of<ILogger<GM>>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>();
-            var gameMaster = new GM(lifetime, conf, queue, manager);
+            var manager = new TcpSocketManager<GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, manager, logger);
             gameMaster.Invoke("InitGame");
             for (int i = 0; i < pieceCount; ++i)
             {
@@ -200,14 +201,14 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>();
-            var gameMaster = new GM(lifetime, conf, queue, manager);
+            var manager = new TcpSocketManager<GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, manager, logger);
             var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
             for (int i = 0; i < conf.NumberOfPlayersPerTeam; ++i)
             {
-                players.Add(i, new GMPlayer(i, conf, manager, Team.Red));
+                players.Add(i, new GMPlayer(i, conf, manager, Team.Red, logger));
                 int j = i + conf.NumberOfPlayersPerTeam;
-                players.Add(j, new GMPlayer(j, conf, manager, Team.Blue));
+                players.Add(j, new GMPlayer(j, conf, manager, Team.Blue, logger));
             }
             gameMaster.Invoke("InitGame");
 
@@ -245,14 +246,14 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>();
-            var gameMaster = new GM(lifetime, conf, queue, manager);
+            var manager = new TcpSocketManager<GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, manager, logger);
             var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
-            var sockets = manager.GetValue<SocketManager<TcpClient, GMMessage>, 
+            var sockets = manager.GetValue<SocketManager<TcpClient, GMMessage>,
                 ConcurrentDictionary<int, TcpClient>>("sockets");
             for (int idRed = 0; idRed < conf.NumberOfPlayersPerTeam; ++idRed)
             {
-                var player = new GMPlayer(idRed, conf, manager, Team.Red)
+                var player = new GMPlayer(idRed, conf, manager, Team.Red, logger)
                 {
                     SocketID = idRed,
                 };
@@ -260,7 +261,7 @@ namespace GameMaster.Tests
                 sockets.TryAdd(idRed, Mock.Of<TcpClient>());
 
                 int idBlue = idRed + conf.NumberOfPlayersPerTeam;
-                player = new GMPlayer(idBlue, conf, manager, Team.Blue)
+                player = new GMPlayer(idBlue, conf, manager, Team.Blue, logger)
                 {
                     SocketID = idBlue,
                 };

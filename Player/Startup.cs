@@ -28,18 +28,16 @@ namespace Player
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-
-            // TODO: add logpath path to appsettings and pass it to ConfigureLogger()
-            ConfigureLogger();
         }
 
-        private void ConfigureLogger()
+        private ILogger GetLogger()
         {
+            // TODO: add logpath path to appsettings and pass it to ConfigureLogger()
             string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "Player");
             int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
             string fileName = $"pl-{DateTime.Now:HH-MM-ss}-{processId:000000}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
-            Log.Logger = new LoggerConfiguration()
+            return new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
                path: path,
@@ -57,6 +55,8 @@ namespace Player
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<ILogger>(GetLogger());
+
             PlayerConfiguration conf = new PlayerConfiguration();
             Configuration.Bind("DefaultPlayerConfig", conf);
 

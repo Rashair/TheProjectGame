@@ -9,23 +9,28 @@ using Moq;
 using Player.Models;
 using Player.Models.Strategies;
 using Player.Services;
+using Serilog;
 using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
 using Shared.Payloads;
+using TestsShared;
 using Xunit;
 
 namespace Player.Tests
 {
     public class PlayerServiceTests
     {
+        private readonly ILogger logger = MockGenerator.Get<ILogger>();
+
         [Fact(Timeout = 2500)]
         [Obsolete]
         public async Task TestExecuteAsyncShouldReadMessages()
         {
             // Arrange
             IServiceCollection services = new ServiceCollection();
+            services.AddSingleton(logger);
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, ClientMock<GMMessage, PlayerMessage>>();
             var queue = new BufferBlock<GMMessage>();

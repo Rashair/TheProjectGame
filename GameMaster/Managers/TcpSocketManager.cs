@@ -14,9 +14,9 @@ namespace GameMaster.Managers
     {
         private readonly ILogger logger;
 
-        public TcpSocketManager()
+        public TcpSocketManager(ILogger log)
         {
-            this.logger = Log.ForContext<TcpSocketManager<TMessage>>();
+            this.logger = log.ForContext<TcpSocketManager<TMessage>>();
         }
 
         protected override bool IsOpen(TcpClient socket)

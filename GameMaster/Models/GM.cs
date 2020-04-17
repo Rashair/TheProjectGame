@@ -21,6 +21,7 @@ namespace GameMaster.Models
 {
     public class GM
     {
+        private readonly ILogger log;
         private readonly ILogger logger;
         private readonly IApplicationLifetime lifetime;
         private readonly GameConfiguration conf;
@@ -41,9 +42,11 @@ namespace GameMaster.Models
         public int TaskAreaEnd { get => conf.Height - conf.GoalAreaHeight; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
-            BufferBlock<PlayerMessage> queue, ISocketManager<TcpClient, GMMessage> socketManager)
+            BufferBlock<PlayerMessage> queue, ISocketManager<TcpClient, GMMessage> socketManager,
+            ILogger log)
         {
-            this.logger = Log.ForContext<GM>();
+            this.log = log;
+            this.logger = log.ForContext<GM>();
             this.lifetime = lifetime;
             this.conf = conf;
             this.queue = queue;
@@ -193,7 +196,8 @@ namespace GameMaster.Models
                 return false;
             }
 
-            var player = new GMPlayer(key, conf, socketManager, team)
+            // TODO: isLeader flag!
+            var player = new GMPlayer(key, conf, socketManager, team, log)
             {
                 SocketID = key,
             };

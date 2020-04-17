@@ -13,10 +13,10 @@ namespace Player.Services
         private readonly IApplicationLifetime lifetime;
         private readonly Models.Player player;
 
-        public PlayerService(Models.Player player, IApplicationLifetime lifetime)
+        public PlayerService(Models.Player player, IApplicationLifetime lifetime, ILogger logger)
         {
             this.player = player;
-            this.logger = Log.ForContext<PlayerService>();
+            this.logger = logger.ForContext<PlayerService>();
             this.lifetime = lifetime;
         }
 

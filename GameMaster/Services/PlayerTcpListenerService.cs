@@ -15,8 +15,9 @@ namespace GameMaster.Services
         private readonly BufferBlock<PlayerMessage> queue;
 
         public PlayerTcpListenerService(GM gameMaster, GameConfiguration conf,
-            ISocketManager<TcpClient, GMMessage> manager, BufferBlock<PlayerMessage> queue)
-            : base(Log.ForContext<PlayerTcpListenerService>(), gameMaster, conf, manager)
+            ISocketManager<TcpClient, GMMessage> manager, BufferBlock<PlayerMessage> queue,
+            ILogger log)
+            : base(gameMaster, conf, manager, log.ForContext<PlayerTcpListenerService>())
         {
             this.queue = queue;
         }

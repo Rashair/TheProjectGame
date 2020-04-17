@@ -44,10 +44,10 @@ namespace GameMaster.Models
 
         public Team Team { get; }
 
-        public GMPlayer(int id, GameConfiguration conf, ISocketManager<TcpClient, GMMessage> socketManager, Team team,
-            bool isLeader = false)
+        public GMPlayer(int id, GameConfiguration conf, ISocketManager<TcpClient, GMMessage> socketManager, Team team, 
+            ILogger log, bool isLeader = false)
         {
-            logger = Log.ForContext<GMPlayer>();
+            logger = log.ForContext<GMPlayer>();
             this.id = id;
             this.conf = conf;
             this.socketManager = socketManager;

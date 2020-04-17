@@ -24,9 +24,9 @@ namespace Player.Services
         private readonly IApplicationLifetime lifetime;
 
         public SocketService(ISocketClient<GMMessage, PlayerMessage> client, PlayerConfiguration conf,
-            BufferBlock<GMMessage> queue, IApplicationLifetime lifetime)
+            BufferBlock<GMMessage> queue, IApplicationLifetime lifetime, ILogger logger)
         {
-            this.logger = Log.ForContext<SocketService>();
+            this.logger = logger.ForContext<SocketService>();
             this.client = client;
             this.conf = conf;
             this.queue = queue;

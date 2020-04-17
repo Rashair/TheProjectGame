@@ -16,15 +16,15 @@ namespace Shared.Clients
         private NetworkStream stream;
         private bool isOpen;
 
-        public TcpSocketClient()
+        public TcpSocketClient(ILogger log)
         {
-            this.logger = Log.ForContext<TcpSocketClient<R, S>>();
+            this.logger = log.ForContext<TcpSocketClient<R, S>>();
             this.client = new TcpClient();
         }
 
-        public TcpSocketClient(TcpClient tcpClient)
+        public TcpSocketClient(TcpClient tcpClient, ILogger log)
         {
-            logger = Log.ForContext<TcpSocketClient<R, S>>();
+            logger = log.ForContext<TcpSocketClient<R, S>>();
             client = tcpClient;
             stream = tcpClient.GetStream();
             isOpen = tcpClient.Connected;

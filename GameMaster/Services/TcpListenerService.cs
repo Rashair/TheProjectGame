@@ -17,8 +17,8 @@ namespace GameMaster.Services
         private readonly GameConfiguration conf;
         protected readonly ISocketManager<TcpClient, GMMessage> manager;
 
-        public TcpListenerService(ILogger logger, GM gameMaster, GameConfiguration conf,
-           ISocketManager<TcpClient, GMMessage> manager)
+        public TcpListenerService(GM gameMaster, GameConfiguration conf,
+           ISocketManager<TcpClient, GMMessage> manager, ILogger logger)
             : base(gameMaster, logger)
         {
             this.conf = conf;
@@ -69,7 +69,7 @@ namespace GameMaster.Services
                     OnConnected(client);
 
                     // TODO - improve handling messages
-                    HandleMessages(new TcpSocketClient<PlayerMessage, GMMessage>(client), cancellationToken).
+                    HandleMessages(new TcpSocketClient<PlayerMessage, GMMessage>(client, logger), cancellationToken).
                         ConfigureAwait(false);
                 }
                 else

@@ -19,16 +19,15 @@ namespace CommunicationServer
 
         public Startup()
         {
-            ConfigureLogger();
         }
 
-        private void ConfigureLogger()
+        private ILogger GetLogger()
         {
             string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "CommunicationServer");
             int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
             string fileName = $"cs-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
-            Log.Logger = new LoggerConfiguration()
+            return new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
                path: path,
@@ -44,6 +43,7 @@ namespace CommunicationServer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<ILogger>(GetLogger());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

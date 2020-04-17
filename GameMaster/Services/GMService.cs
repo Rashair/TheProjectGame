@@ -9,8 +9,8 @@ namespace GameMaster.Services
 {
     public class GMService : WaitForInitService
     {
-        public GMService(GM gameMaster)
-            : base(gameMaster, Log.ForContext<GMService>())
+        public GMService(GM gameMaster, ILogger log)
+            : base(gameMaster, log.ForContext<GMService>())
         {
         }
 

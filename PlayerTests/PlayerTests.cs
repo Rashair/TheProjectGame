@@ -4,17 +4,21 @@ using System.Threading.Tasks.Dataflow;
 
 using Newtonsoft.Json;
 using Player.Models;
+using Serilog;
 using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
 using Shared.Payloads;
+using TestsShared;
 using Xunit;
 
 namespace Player.Tests
 {
     public class PlayerTests
     {
+        private readonly ILogger logger = MockGenerator.Get<ILogger>();
+
         [Fact]
         public async Task TestAcceptMessageDiscoverAccept()
         {
@@ -63,7 +67,7 @@ namespace Player.Tests
             input.Post<GMMessage>(messageDiscover);
 
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
-            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>());
+            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);
@@ -113,7 +117,7 @@ namespace Player.Tests
             input.Post(messageBeg);
 
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
-            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>());
+            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);

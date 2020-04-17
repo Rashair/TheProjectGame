@@ -33,13 +33,14 @@ namespace Player.Models
         private Team? winner;
         private int discovered;
 
-        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
+        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, 
+            PlayerMessage> client, ILogger logger)
         {
             this.conf = conf;
             this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
             this.queue = queue;
             this.client = client;
-            this.logger = Log.ForContext<Player>();
+            this.logger = logger.ForContext<Player>();
             this.Team = conf.TeamID == "red" ? Team.Red : Team.Blue;
             this.Position = (-1, -1);
         }

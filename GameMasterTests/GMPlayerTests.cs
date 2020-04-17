@@ -12,7 +12,7 @@ using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using Newtonsoft.Json;
-
+using Serilog;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Payloads;
@@ -27,6 +27,7 @@ namespace GameMaster.Tests
         private const Team DefaultTeam = Team.Blue;
         private const bool DefaultIsLeader = false;
 
+        private readonly ILogger logger = MockGenerator.Get<ILogger>();
         private GMMessage lastSended;
 
         private class MockSocketManager : ISocketManager<TcpClient, GMMessage>
@@ -90,7 +91,7 @@ namespace GameMaster.Tests
         private GMPlayer GenerateGMPlayer(GameConfiguration conf, ISocketManager<TcpClient, GMMessage> socketManager,
             int id = DefaultId, Team team = DefaultTeam, bool isLeader = DefaultIsLeader)
         {
-            return new GMPlayer(id, conf, socketManager, team, isLeader);
+            return new GMPlayer(id, conf, socketManager, team, logger, isLeader);
         }
 
         private GMPlayer GenerateGMPlayer(int id = DefaultId, Team team = DefaultTeam, bool isLeader = DefaultIsLeader)
@@ -102,9 +103,9 @@ namespace GameMaster.Tests
         {
             var conf = new MockGameConfiguration();
             var queue = GenerateBuffer();
-            var manager = new TcpSocketManager<GMMessage>();
+            var manager = new TcpSocketManager<GMMessage>(logger);
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var gameMaster = new GM(lifetime, conf, queue, manager);
+            var gameMaster = new GM(lifetime, conf, queue, manager, logger);
             gameMaster.Invoke("InitGame");
             gameMaster.Invoke("GeneratePiece");
             return gameMaster;

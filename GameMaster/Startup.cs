@@ -31,16 +31,15 @@ namespace GameMaster
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            ConfigureLogger();
         }
 
-        private void ConfigureLogger()
+        private ILogger GetLogger()
         {
             string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "GameMaster");
             int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
             string fileName = $"gm-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
-            Log.Logger = new LoggerConfiguration()
+            return new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
                path: path,
@@ -64,6 +63,8 @@ namespace GameMaster
             {
                 configuration.RootPath = "ClientApp/build";
             });
+
+            services.AddSingleton<ILogger>(GetLogger());
 
             services.AddSingleton<TcpSocketManager<BackendMessage>>();
             services.AddSingleton<ISocketManager<TcpClient, GMMessage>, TcpSocketManager<GMMessage>>();

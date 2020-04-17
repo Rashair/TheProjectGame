@@ -20,9 +20,10 @@ namespace GameMaster.Controllers
         private readonly GameConfiguration gameConfiguration;
         private readonly GM gameMaster;
 
-        public GameController(IConfiguration configuration, GameConfiguration gameConfiguration, GM gameMaster)
+        public GameController(IConfiguration configuration, GameConfiguration gameConfiguration, GM gameMaster, 
+            ILogger log)
         {
-            this.logger = Log.ForContext<GameController>();
+            this.logger = log.ForContext<GameController>();
             this.configuration = configuration;
             this.gameConfiguration = gameConfiguration;
             this.gameMaster = gameMaster;

@@ -9,9 +9,8 @@ using GameMaster.Services;
 using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Moq;
-
+using Serilog;
 using Shared.Messages;
 using TestsShared;
 using Xunit;
@@ -66,6 +65,7 @@ namespace GameMaster.Tests
         {
             // Arrange
             IServiceCollection services = new ServiceCollection();
+            AddLogging(services);
             var conf = new MockGameConfiguration();
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
             services.AddSingleton<GameConfiguration>(conf);
@@ -77,7 +77,6 @@ namespace GameMaster.Tests
                 queue.Post(new PlayerMessage());
             }
             services.AddSingleton(queue);
-            AddLogging(services);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
 
@@ -101,7 +100,7 @@ namespace GameMaster.Tests
 
         private void AddLogging(IServiceCollection services)
         {
-            services.AddSingleton<ILogger<GM>, MockLogger<GM>>();
+            services.AddSingleton(MockGenerator.Get<ILogger>());
         }
     }
 }

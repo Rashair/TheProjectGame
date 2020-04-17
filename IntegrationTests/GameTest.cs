@@ -59,10 +59,8 @@ namespace IntegrationTests
                 for (int i = 0; i < playersCount; ++i)
                 {
                     redPlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsRed).
-                                    UseSerilog((Logger)null, true).
                                     Build();
                     bluePlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsBlue).
-                                    UseSerilog((Logger)null, true).
                                     Build();
                 }
 
@@ -152,6 +150,8 @@ namespace IntegrationTests
             var bluePoints = gm.GetValue<GM, int>("blueTeamPoints");
             var expectedWinner = redPoints > bluePoints ? Team.Red : Team.Blue;
             Assert.True(winner == expectedWinner, "GM and players should have same winner");
+
+            tokenSource.Cancel();
         }
 
         public abstract void RunGameWithConfiguration();
@@ -183,8 +183,6 @@ namespace IntegrationTests
                 redPlayersHosts[i].Dispose();
                 bluePlayersHosts[i].Dispose();
             }
-
-            tokenSource.Cancel();
         }
     }
 }
