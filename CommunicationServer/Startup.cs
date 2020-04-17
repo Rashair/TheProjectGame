@@ -26,7 +26,7 @@ namespace CommunicationServer
         {
             string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "CommunicationServer");
             int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
-            string fileName = $"{DateTime.Now:HH-mm-ss}-{processId}.log";
+            string fileName = $"cs-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
             Log.Logger = new LoggerConfiguration()
                .Enrich.FromLogContext()
