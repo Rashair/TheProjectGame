@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -8,7 +7,6 @@ using System.Threading.Tasks;
 
 using GameMaster.Models;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Enums;
 using TestsShared;
@@ -20,7 +18,6 @@ namespace IntegrationTests
     {
         protected readonly CancellationTokenSource tokenSource;
         protected IWebHost gmHost;
-        private string gameConfigPath;
         protected IWebHost[] redPlayersHosts;
         protected IWebHost[] bluePlayersHosts;
 
@@ -51,7 +48,6 @@ namespace IntegrationTests
                 string gmUrl = $"http://{Conf.CsIP}:{Conf.CsPort + 100}";
                 string[] args = new string[] { $"urls={gmUrl}" };
                 gmHost = Utilities.CreateWebHost(typeof(GameMaster.Startup), args).Build();
-                gameConfigPath = gmHost.Services.GetService<IConfiguration>().GetValue<string>("GameConfigPath");
 
                 string[] argsRed = CreatePlayerConfig(Team.Red);
                 string[] argsBlue = CreatePlayerConfig(Team.Blue);
@@ -178,11 +174,6 @@ namespace IntegrationTests
 
         public void Dispose()
         {
-            if (File.Exists(gameConfigPath))
-            {
-                File.Delete(gameConfigPath);
-            }
-
             Client?.Dispose();
             gmHost?.Dispose();
 

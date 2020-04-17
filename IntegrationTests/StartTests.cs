@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -20,7 +18,6 @@ namespace IntegrationTests
     public class StartTests : IDisposable
     {
         private readonly List<IWebHost> hosts = new List<IWebHost>(20);
-        private string gameConfigPath;
 
         [Fact]
         public async void PlayersStart()
@@ -74,7 +71,6 @@ namespace IntegrationTests
             var webhost = Utilities.CreateWebHost(typeof(GameMaster.Startup), args).
                 Build();
             hosts.Add(webhost);
-            gameConfigPath = webhost.Services.GetService<IConfiguration>().GetValue<string>("GameConfigPath");
 
             // Act
             await webhost.StartAsync(source.Token);
@@ -120,11 +116,6 @@ namespace IntegrationTests
             for (int i = 0; i < hosts.Count; ++i)
             {
                 hosts[i].Dispose();
-            }
-
-            if (File.Exists(gameConfigPath))
-            {
-                File.Delete(gameConfigPath);
             }
         }
     }
