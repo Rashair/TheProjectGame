@@ -32,8 +32,10 @@ namespace IntegrationTests
             for (int i = 0; i < playersCount; ++i)
             {
                 webHostsRed[i] = Player.Program.CreateWebHostBuilder(argsRed).
+                                     UseSerilog((Logger)null, true).
                                      Build();
                 webHostsBlue[i] = Player.Program.CreateWebHostBuilder(argsBlue).
+                                    UseSerilog((Logger)null, true).
                                     Build();
 
                 hosts.Add(webHostsBlue[i]);

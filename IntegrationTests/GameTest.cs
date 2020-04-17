@@ -93,7 +93,7 @@ namespace IntegrationTests
             var (success, errorMessage) = await Shared.Helpers.Retry(() =>
             {
                 return Task.FromResult(gameMaster.WasGameStarted);
-            }, Conf.NumberOfPlayersPerTeam, 1000, tokenSource.Token);
+            }, Conf.NumberOfPlayersPerTeam, 3000, tokenSource.Token);
             Assert.True(success, "Game should be started");
 
             await Task.Delay(1000);
