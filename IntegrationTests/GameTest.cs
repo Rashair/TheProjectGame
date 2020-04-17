@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 
 using GameMaster.Models;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Core;
@@ -182,6 +184,12 @@ namespace IntegrationTests
             {
                 redPlayersHosts[i].Dispose();
                 bluePlayersHosts[i].Dispose();
+            }
+
+            var path = gmHost.Services.GetService<IConfiguration>().GetValue<string>("GameConfigPath");
+            if (File.Exists(path))
+            {
+                File.Delete(path);
             }
         }
     }
