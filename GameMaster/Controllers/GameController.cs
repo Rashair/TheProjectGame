@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -20,7 +19,7 @@ namespace GameMaster.Controllers
         private readonly GameConfiguration gameConfiguration;
         private readonly GM gameMaster;
 
-        public GameController(IConfiguration configuration, GameConfiguration gameConfiguration, GM gameMaster, 
+        public GameController(IConfiguration configuration, GameConfiguration gameConfiguration, GM gameMaster,
             ILogger log)
         {
             this.logger = log.ForContext<GameController>();
@@ -54,10 +53,7 @@ namespace GameMaster.Controllers
             string path = configuration.GetValue<string>("GameConfigPath");
             try
             {
-                using (StreamWriter file = new StreamWriter(path))
-                {
-                    await file.WriteAsync(gameConfigString);
-                }
+                await System.IO.File.WriteAllTextAsync(path, gameConfigString);
             }
             catch (Exception e)
             {
