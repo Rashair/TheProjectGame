@@ -10,8 +10,6 @@ using GameMaster.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
-using Serilog.Core;
 using Shared.Enums;
 using TestsShared;
 using Xunit;
@@ -22,6 +20,7 @@ namespace IntegrationTests
     {
         protected readonly CancellationTokenSource tokenSource;
         protected IWebHost gmHost;
+        private string gameConfigPath;
         protected IWebHost[] redPlayersHosts;
         protected IWebHost[] bluePlayersHosts;
 
@@ -52,6 +51,7 @@ namespace IntegrationTests
                 string gmUrl = $"http://{Conf.CsIP}:{Conf.CsPort + 100}";
                 string[] args = new string[] { $"urls={gmUrl}" };
                 gmHost = Utilities.CreateWebHost(typeof(GameMaster.Startup), args).Build();
+                gameConfigPath = gmHost.Services.GetService<IConfiguration>().GetValue<string>("GameConfigPath");
 
                 string[] argsRed = CreatePlayerConfig(Team.Red);
                 string[] argsBlue = CreatePlayerConfig(Team.Blue);
@@ -69,6 +69,7 @@ namespace IntegrationTests
                 // Act
                 await gmHost.StartAsync(tokenSource.Token);
                 await Task.Yield();
+
                 for (int i = 0; i < playersCount; ++i)
                 {
                     await redPlayersHosts[i].StartAsync(tokenSource.Token);
@@ -177,6 +178,11 @@ namespace IntegrationTests
 
         public void Dispose()
         {
+            if (File.Exists(gameConfigPath))
+            {
+                File.Delete(gameConfigPath);
+            }
+
             Client?.Dispose();
             gmHost?.Dispose();
 
@@ -184,12 +190,6 @@ namespace IntegrationTests
             {
                 redPlayersHosts[i].Dispose();
                 bluePlayersHosts[i].Dispose();
-            }
-
-            var path = gmHost.Services.GetService<IConfiguration>().GetValue<string>("GameConfigPath");
-            if (File.Exists(path))
-            {
-                File.Delete(path);
             }
         }
     }
