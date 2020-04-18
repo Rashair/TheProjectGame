@@ -55,7 +55,6 @@ namespace CommunicationServer.Services
             {
                 logger.Error($"Error reading message: {e}");
                 await OnExceptionAsync(client, e, cancellationToken);
-                throw;
             }
 
             logger.Information($"Finished handling messages for {socket.Client.RemoteEndPoint}");
