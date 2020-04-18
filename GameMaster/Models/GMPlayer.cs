@@ -19,7 +19,7 @@ namespace GameMaster.Models
         private readonly ILogger logger;
         private readonly int id;
         private readonly GameConfiguration conf;
-        private readonly TcpSocketClient<PlayerMessage, GMMessage> socketClient;
+        private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
         private int messageCorrelationId;
         private DateTime lockedTill;
         private AbstractField position;
@@ -43,7 +43,7 @@ namespace GameMaster.Models
 
         public Team Team { get; }
 
-        public GMPlayer(int id, GameConfiguration conf, TcpSocketClient<PlayerMessage, GMMessage> socketClient, Team team, 
+        public GMPlayer(int id, GameConfiguration conf, ISocketClient<PlayerMessage, GMMessage> socketClient, Team team, 
             ILogger log, bool isLeader = false)
         {
             logger = log.ForContext<GMPlayer>();

@@ -27,7 +27,7 @@ namespace GameMaster.Models
         private readonly IApplicationLifetime lifetime;
         private readonly GameConfiguration conf;
         private readonly BufferBlock<PlayerMessage> queue;
-        private readonly TcpSocketClient<PlayerMessage, GMMessage> socketClient;
+        private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
 
         private HashSet<(int recipient, int sender)> legalKnowledgeReplies;
         private readonly Dictionary<int, GMPlayer> players;
@@ -43,7 +43,7 @@ namespace GameMaster.Models
         public int TaskAreaEnd { get => conf.Height - conf.GoalAreaHeight; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
-            BufferBlock<PlayerMessage> queue, TcpSocketClient<PlayerMessage, GMMessage> socketClient,
+            BufferBlock<PlayerMessage> queue, ISocketClient<PlayerMessage, GMMessage> socketClient,
             ILogger log)
         {
             this.log = log;
