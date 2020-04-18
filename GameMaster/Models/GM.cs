@@ -170,17 +170,19 @@ namespace GameMaster.Models
                     if (point)
                     {
                         int y = player.GetPosition()[0];
+                        string teamStr;
                         if (y < conf.GoalAreaHeight)
                         {
-                            logger.Information("RED TEAM POINT !!!");
+                            teamStr = "RED";
                             redTeamPoints++;
                         }
                         else
                         {
-                            logger.Information("BLUE TEAM POINT !!!");
+                            teamStr = "BLUE";
                             blueTeamPoints++;
                         }
-                        logger.Information($"by {player.Team}");
+                        logger.Information($"{teamStr} TEAM POINT !!!\n" +
+                            $"    by {player.Team}");
                         logger.Information($"RED: {redTeamPoints} | BLUE: {blueTeamPoints}");
                     }
                     if (removed)

@@ -12,6 +12,7 @@ using Player.Services;
 using Serilog;
 using Serilog.Events;
 using Shared.Clients;
+using Shared.Enums;
 using Shared.Messages;
 
 using static System.Environment;
@@ -30,12 +31,13 @@ namespace Player
             Configuration = configuration;
         }
 
-        private ILogger GetLogger()
+        private ILogger GetLogger(string team)
         {
             // TODO: add logpath path to appsettings and pass it to ConfigureLogger()
             string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "Player");
             int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
-            string fileName = $"pl-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
+            string teamId = team.ToString().Substring(0, 3);
+            string fileName = $"{teamId}-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
             return new LoggerConfiguration()
                .Enrich.FromLogContext()
@@ -55,14 +57,15 @@ namespace Player
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ILogger>(GetLogger());
-
             PlayerConfiguration conf = new PlayerConfiguration();
             Configuration.Bind("DefaultPlayerConfig", conf);
 
             // For console override;
             Configuration.Bind(conf);
-            Log.Information($"Team: {conf.TeamID}, strategy: {conf.Strategy}");
+
+            var logger = GetLogger(conf.TeamID);
+            services.AddSingleton<ILogger>(logger);
+            logger.Information($"Team: {conf.TeamID}, strategy: {conf.Strategy}");
 
             services.AddSingleton(conf);
 
