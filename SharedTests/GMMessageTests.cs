@@ -32,6 +32,7 @@ namespace Shared.Tests
         {
             // Arrange
             Dictionary<int, GMMessageID> gmMessages = GetGMMessageMapping();
+            int playerId = 3;
 
             // Act
             foreach (var msg in gmMessages)
@@ -39,10 +40,11 @@ namespace Shared.Tests
                 var obj = new GMMessage
                 {
                     Id = msg.Value,
+                    PlayerId = playerId,
                     Payload = new EmptyAnswerPayload().Serialize(),
                 };
 
-                var expectedJsonString = "{\"Id\":" + msg.Key + ",\"Payload\":\"{}\"}";
+                var expectedJsonString = "{\"Id\":" + msg.Key + ",\"PlayerId\":" + playerId + ",\"Payload\":\"{}\"}";
                 var serializedObject = JsonConvert.SerializeObject(obj);
 
                 // Assert
