@@ -57,45 +57,44 @@ namespace Shared.Clients
 
         public async Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
         {
-            if (cancellationToken.IsCancellationRequested || !client.Connected)
+            if (!IsOpen)
             {
                 return (false, default);
             }
-
             byte[] lengthEndian = new byte[2];
             int countRead = await stream.ReadAsync(lengthEndian, 0, 2, cancellationToken);
-            if (countRead == 0)
+            if (cancellationToken.IsCancellationRequested || (countRead == 0) || (countRead == 1))
             {
-                await CloseAsync(cancellationToken);
-                return (false, default);
-            }
-            else if (countRead == 1)
-            {
-                logger.Warning("Message length should be wrote on 2 bytes.\nAborting message...");
+                if (countRead == 0)
+                {
+                    logger.Warning("End of stream");
+                }
+                else if (countRead == 1)
+                {
+                    logger.Warning("Message length should be wrote on 2 bytes.\n");
+                }
                 return (false, default);
             }
 
             int length = TryConvertToInt(lengthEndian);
             if (length == 0)
             {
-                logger.Warning("Bad message length or not in little-endian convention.\nAborting message...");
+                logger.Warning("Bad message length.\n");
                 return (false, default);
             }
 
             byte[] buffer = new byte[length];
             countRead = await stream.ReadAsync(buffer, 0, length, cancellationToken);
-            if (cancellationToken.IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested || (countRead == 0) || (countRead != length))
             {
-                return (false, default);
-            }
-            else if (countRead == 0)
-            {
-                await CloseAsync(cancellationToken);
-                return (false, default);
-            }
-            else if (countRead != length)
-            {
-                logger.Warning("Unexpected message - wrong length provided.\nMessage will be aborted");
+                if (countRead == 0)
+                {
+                    logger.Warning("End of stream");
+                }
+                else if (countRead != length)
+                {
+                    logger.Warning("Unexpected message - wrong length provided.\n");
+                }
                 return (false, default);
             }
 
@@ -106,18 +105,15 @@ namespace Shared.Clients
 
         private int TryConvertToInt(byte[] lengthEndian)
         {
-            int length;
             try
             {
-                length = lengthEndian.ToInt16();
+                return lengthEndian.ToInt16();
             }
             catch (Exception e)
             {
-                logger.Warning($"Cannot convert to little-endian. Message will be aborted. \n{e}");
-                return 0;
+                logger.Warning($"Cannot convert to little-endian.\n{e}");
+                throw;
             }
-
-            return length;
         }
 
         public async Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken)
@@ -127,7 +123,7 @@ namespace Shared.Clients
 
         public async Task SendAsync(S message, CancellationToken cancellationToken)
         {
-            if (!cancellationToken.IsCancellationRequested && client.Connected)
+            if (!cancellationToken.IsCancellationRequested && IsOpen)
             {
                 string serialized = JsonConvert.SerializeObject(message);
                 byte[] buffer = Encoding.UTF8.GetBytes(serialized);
