@@ -31,14 +31,14 @@ namespace CommunicationServer.Services
             this.logger = logger;
         }
 
-        public async Task ClientHandler(TcpSocketClient<R, S> client, bool raise, CancellationToken cancellationToken)
+        public async Task ClientHandler(TcpSocketClient<R, S> client, CancellationToken cancellationToken)
         {
             OnConnect(client);
-            await ClientLoopAsync(client, raise, cancellationToken);
+            await ClientLoopAsync(client, cancellationToken);
             await OnDisconnectAsync(client, cancellationToken);
         }
 
-        public async Task ClientLoopAsync(TcpSocketClient<R, S> client, bool raise, CancellationToken cancellationToken)
+        public async Task ClientLoopAsync(TcpSocketClient<R, S> client, CancellationToken cancellationToken)
         {
             var socket = (TcpClient)client.GetSocket();
             logger.Information($"Started handling messages for {socket.Client.RemoteEndPoint}");
@@ -55,10 +55,7 @@ namespace CommunicationServer.Services
             {
                 logger.Error($"Error reading message: {e}");
                 await OnExceptionAsync(client, e, cancellationToken);
-                if (raise)
-                {
-                    throw;
-                }
+                throw;
             }
 
             logger.Information($"Finished handling messages for {socket.Client.RemoteEndPoint}");

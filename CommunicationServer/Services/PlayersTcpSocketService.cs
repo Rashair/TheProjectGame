@@ -78,7 +78,7 @@ namespace CommunicationServer.Services
                 {
                     TcpClient socket = await listener.AcceptTcpClientAsync();
                     var client = new TcpSocketClient<PlayerMessage, GMMessage>(socket, log);
-                    var handlerTask = ClientHandler(client, false, stoppingToken).ConfigureAwait(false);
+                    var handlerTask = ClientHandler(client, stoppingToken).ConfigureAwait(false);
                     tasks.Add(handlerTask);
                 }
                 else

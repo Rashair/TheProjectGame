@@ -34,8 +34,7 @@ namespace CommunicationServer.Services
         public override async Task OnMessageAsync(TcpSocketClient<GMMessage, PlayerMessage> client, GMMessage message,
             CancellationToken cancellationToken)
         {
-            bool sent = await queue.SendAsync(message, cancellationToken);
-            logger.Information($"Send message: {sent}");
+            await queue.SendAsync(message, cancellationToken);
         }
 
         public override void OnConnect(TcpSocketClient<GMMessage, PlayerMessage> client)
@@ -75,7 +74,8 @@ namespace CommunicationServer.Services
 
             // GM connected, ServiceShareContainer initiated, release another services and start asycn section.
             await Task.Yield();
-            await ClientHandler(gmClient, true, stoppingToken);
+            await ClientHandler(gmClient, stoppingToken);
+            lifetime.StopApplication();
         }
 
         private TcpSocketClient<GMMessage, PlayerMessage> ConnectGM(string ip, int port,
