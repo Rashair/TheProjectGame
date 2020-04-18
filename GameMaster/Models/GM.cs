@@ -6,12 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-using GameMaster.Managers;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Serilog;
+using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
@@ -26,7 +26,7 @@ namespace GameMaster.Models
         private readonly IApplicationLifetime lifetime;
         private readonly GameConfiguration conf;
         private readonly BufferBlock<PlayerMessage> queue;
-        private readonly ISocketManager<TcpClient, GMMessage> socketManager;
+        private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
 
         private HashSet<(int recipient, int sender)> legalKnowledgeReplies;
         private readonly Dictionary<int, GMPlayer> players;
@@ -42,7 +42,7 @@ namespace GameMaster.Models
         public int TaskAreaEnd { get => conf.Height - conf.GoalAreaHeight; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
-            BufferBlock<PlayerMessage> queue, ISocketManager<TcpClient, GMMessage> socketManager,
+            BufferBlock<PlayerMessage> queue, ISocketClient<PlayerMessage, GMMessage> socketClient,
             ILogger log)
         {
             this.log = log;
@@ -50,7 +50,7 @@ namespace GameMaster.Models
             this.lifetime = lifetime;
             this.conf = conf;
             this.queue = queue;
-            this.socketManager = socketManager;
+            this.socketClient = socketClient;
 
             players = new Dictionary<int, GMPlayer>();
             legalKnowledgeReplies = new HashSet<(int, int)>();
@@ -111,9 +111,10 @@ namespace GameMaster.Models
                     GMMessage answerJoin = new GMMessage()
                     {
                         Id = GMMessageID.JoinTheGameAnswer,
+                        PlayerId = key,
                         Payload = JsonConvert.SerializeObject(answerJoinPayload),
                     };
-                    await socketManager.SendMessageAsync(players[key].SocketID, answerJoin, cancellationToken);
+                    await socketClient.SendAsync(answerJoin, cancellationToken);
 
                     if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
                        GetPlayersCount(Team.Blue) == conf.NumberOfPlayersPerTeam)
@@ -197,10 +198,7 @@ namespace GameMaster.Models
             }
 
             // TODO: isLeader flag!
-            var player = new GMPlayer(key, conf, socketManager, team, log)
-            {
-                SocketID = key,
-            };
+            var player = new GMPlayer(key, conf, socketClient, team, log);
             return players.TryAdd(key, player);
         }
 
@@ -288,10 +286,11 @@ namespace GameMaster.Models
                 var message = new GMMessage
                 {
                     Id = GMMessageID.StartGame,
+                    PlayerId = p.Key,
                     Payload = payload.Serialize(),
                 };
 
-                sendMessagesTasks.Add(socketManager.SendMessageAsync(player.SocketID, message, cancellationToken));
+                sendMessagesTasks.Add(socketClient.SendAsync(message, cancellationToken));
             }
 
             await Task.WhenAll(sendMessagesTasks);
@@ -410,7 +409,7 @@ namespace GameMaster.Models
                     logger.Warning($"Message retrieve was cancelled: {e.Message}");
 
                     // TODO: change it with switch to SocketClient
-                    if (!socketManager.IsAnyOpen())
+                    if (!socketClient.IsOpen)
                     {
                         logger.Error("No open connection. Exiting.");
                         lifetime.StopApplication();
@@ -524,13 +523,12 @@ namespace GameMaster.Models
             GMMessage gmMessage = new GMMessage()
             {
                 Id = GMMessageID.BegForInfoForwarded,
+                PlayerId = begPayload.AskedPlayerID,
                 Payload = payload.Serialize(),
             };
 
             legalKnowledgeReplies.Add((begPayload.AskedPlayerID, playerMessage.PlayerID));
-            await socketManager.SendMessageAsync(
-                players[begPayload.AskedPlayerID].SocketID,
-                gmMessage, cancellationToken);
+            await socketClient.SendAsync(gmMessage, cancellationToken);
         }
 
         private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
@@ -554,9 +552,10 @@ namespace GameMaster.Models
                 GMMessage answer = new GMMessage()
                 {
                     Id = GMMessageID.GiveInfoForwarded,
+                    PlayerId = payload.RespondToID,
                     Payload = answerPayload.Serialize(),
                 };
-                await socketManager.SendMessageAsync(payload.RespondToID, answer, cancellationToken);
+                await socketClient.SendAsync(answer, cancellationToken);
             }
         }
 
@@ -568,8 +567,13 @@ namespace GameMaster.Models
             {
                 Winner = winner,
             };
-            GMMessage answer = new GMMessage(GMMessageID.EndGame, payload);
-            await socketManager.SendMessageToAllAsync(answer, cancellationToken);
+            
+            List<GMMessage> messages = new List<GMMessage>();
+            foreach (var p in players)
+            {
+               messages.Add(new GMMessage(GMMessageID.EndGame, p.Key, payload));
+            }
+            await socketClient.SendToAllAsync(messages, cancellationToken);
             logger.Information("Sent endGame to all.");
 
             await Task.Delay(4000);

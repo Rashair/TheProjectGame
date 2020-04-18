@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Controllers;
-using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Tests.Mocks;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using Serilog;
+using Shared.Clients;
 using Shared.Messages;
 using TestsShared;
 using Xunit;
@@ -38,8 +38,8 @@ namespace GameMaster.Tests
             var gameConfig = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>(logger);
-            var gameMaster = new GM(lifetime, gameConfig, queue, manager, logger);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, gameConfig, queue, client, logger);
             GameController gameController = new GameController(config, gameConfig, gameMaster, logger);
 
             // Act
@@ -73,8 +73,8 @@ namespace GameMaster.Tests
             var gameConfig = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>(logger);
-            var gameMaster = new GM(lifetime, gameConfig, queue, manager, logger);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, gameConfig, queue, client, logger);
             GameController gameController = new GameController(config, gameConfig, gameMaster, logger);
 
             // Act
@@ -103,8 +103,8 @@ namespace GameMaster.Tests
             var gameConfig = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>(logger);
-            var gameMaster = new GM(lifetime, gameConfig, queue, manager, logger);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, gameConfig, queue, client, logger);
             GameController gameController = new GameController(config, gameConfig, gameMaster, logger);
 
             // Act
@@ -143,8 +143,8 @@ namespace GameMaster.Tests
             var gameConfig = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>(logger);
-            var gameMaster = new GM(lifetime, gameConfig, queue, manager, logger);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, gameConfig, queue, client, logger);
             GameController gameController = new GameController(config, gameConfig, gameMaster, logger);
 
             // Act
@@ -169,9 +169,9 @@ namespace GameMaster.Tests
             var gameConfig = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>(logger);
             gameConfig.NumberOfPlayersPerTeam = 0;
-            var gameMaster = new GM(lifetime, gameConfig, queue, manager, logger);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, gameConfig, queue, client, logger);
             GameController gameController = new GameController(config, gameConfig, gameMaster, logger);
             CancellationToken cancellationToken = CancellationToken.None;
 
