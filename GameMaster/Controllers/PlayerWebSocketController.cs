@@ -17,7 +17,7 @@ namespace GameMaster.Controllers
         private readonly ILogger logger;
         private readonly BufferBlock<PlayerMessage> queue;
 
-        public PlayerWebSocketController(BufferBlock<PlayerMessage> queue, WebSocketManager<GMMessage> manager)
+        public PlayerWebSocketController(BufferBlock<PlayerMessage> queue, ISocketManager<WebSocket, GMMessage> manager)
             : base(manager)
         {
             this.queue = queue;

@@ -15,9 +15,9 @@ namespace GameMaster.Controllers
         private const int BufferSize = 1024 * 4;
         private readonly ILogger logger;
 
-        public WebSocketManager<T> Manager { get; }
+        public ISocketManager<WebSocket, T> Manager { get; }
 
-        public WebSocketController(WebSocketManager<T> manager)
+        public WebSocketController(ISocketManager<WebSocket, T> manager)
         {
             logger = Log.ForContext<WebSocketController<T>>();
             Manager = manager;
