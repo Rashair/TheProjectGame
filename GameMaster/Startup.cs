@@ -1,11 +1,8 @@
 using System;
 using System.IO;
-using System.Net.Sockets;
 using System.Threading.Tasks.Dataflow;
 
-using GameMaster.Managers;
 using GameMaster.Models;
-using GameMaster.Models.Messages;
 using GameMaster.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
+using Shared.Clients;
 using Shared.Messages;
 
 using static System.Environment;
@@ -46,7 +44,6 @@ namespace GameMaster
                rollOnFileSizeLimit: true,
                outputTemplate: LoggerTemplate)
                .WriteTo.Console(outputTemplate: LoggerTemplate)
-               .WriteTo.Debug(outputTemplate: LoggerTemplate)
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
@@ -66,8 +63,7 @@ namespace GameMaster
 
             services.AddSingleton<ILogger>(GetLogger());
 
-            services.AddSingleton<TcpSocketManager<BackendMessage>>();
-            services.AddSingleton<ISocketManager<TcpClient, GMMessage>, TcpSocketManager<GMMessage>>();
+            services.AddSingleton<ISocketClient<PlayerMessage, GMMessage>, TcpSocketClient<PlayerMessage, GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
             GameConfiguration conf;
@@ -84,8 +80,8 @@ namespace GameMaster
             services.AddSingleton(conf);
 
             services.AddSingleton<GM>();
+            services.AddHostedService<SocketService>();
             services.AddHostedService<GMService>();
-            services.AddHostedService<TcpListenerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

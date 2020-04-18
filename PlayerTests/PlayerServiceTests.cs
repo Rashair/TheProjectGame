@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -36,10 +37,10 @@ namespace Player.Tests
             var queue = new BufferBlock<GMMessage>();
             StartGamePayload payloadStart = new StartGamePayload
             {
-                PlayerID = 1,
-                AlliesIDs = new int[2] { 1, 2 },
-                LeaderID = 1,
-                EnemiesIDs = new int[2] { 3, 4 },
+                PlayerId = 1,
+                AlliesIds = new int[2] { 1, 2 },
+                LeaderId = 1,
+                EnemiesIds = new int[2] { 3, 4 },
                 TeamId = Team.Red,
                 BoardSize = new BoardSize { X = 3, Y = 3 },
                 GoalAreaSize = 1,
@@ -52,7 +53,7 @@ namespace Player.Tests
             };
             GMMessage messageStart = new GMMessage()
             {
-                Id = GMMessageID.StartGame,
+                Id = GMMessageId.StartGame,
                 Payload = payloadStart.Serialize(),
             };
             queue.Post(messageStart);
@@ -108,6 +109,11 @@ namespace Player.Tests
 
             public async Task SendAsync(S message, CancellationToken cancellationToken)
             {
+            }
+
+            public Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
             }
         }
 

@@ -18,6 +18,7 @@ namespace Player.Tests
     public class PlayerTests
     {
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
+        private readonly int playerId = 1;
 
         [Fact]
         public async Task TestAcceptMessageDiscoverAccept()
@@ -34,14 +35,14 @@ namespace Player.Tests
                 DistanceNW = 0,
                 DistanceSW = 0,
             };
-            GMMessage messageDiscover = new GMMessage(GMMessageID.DiscoverAnswer, payloadDiscover);
+            GMMessage messageDiscover = new GMMessage(GMMessageId.DiscoverAnswer, playerId, payloadDiscover);
             GMMessage messageStart = CreateStartMessage();
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             input.Post(messageStart);
             input.Post(messageDiscover);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
+            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
             var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             await player.AcceptMessage(CancellationToken.None);
@@ -55,18 +56,18 @@ namespace Player.Tests
         {
             BegForInfoForwardedPayload payloadBeg = new BegForInfoForwardedPayload()
             {
-                AskingID = 2,
+                AskingId = 2,
                 Leader = false,
                 TeamId = Team.Red,
             };
-            GMMessage messageBeg = new GMMessage(GMMessageID.BegForInfoForwarded, payloadBeg);
+            GMMessage messageBeg = new GMMessage(GMMessageId.BegForInfoForwarded, playerId, payloadBeg);
             GMMessage messageStart = CreateStartMessage();
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             input.Post(messageStart);
             input.Post(messageBeg);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
+            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
             var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             await player.AcceptMessage(CancellationToken.None);
@@ -85,7 +86,7 @@ namespace Player.Tests
             };
             GMMessage messageCheck = new GMMessage()
             {
-                Id = GMMessageID.CheckAnswer,
+                Id = GMMessageId.CheckAnswer,
                 Payload = JsonConvert.SerializeObject(payloadCheck),
             };
             GMMessage startMessage = CreateStartMessage();
@@ -94,7 +95,7 @@ namespace Player.Tests
             input.Post(startMessage);
             input.Post(messageCheck);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
+            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
             var player = new Models.Player(configuration, input,
                 new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
@@ -114,10 +115,10 @@ namespace Player.Tests
         {
             // Arrange
             EmptyAnswerPayload destructionPayload = new EmptyAnswerPayload();
-            GMMessage destructionMessage = new GMMessage(GMMessageID.DestructionAnswer, destructionPayload);
+            GMMessage destructionMessage = new GMMessage(GMMessageId.DestructionAnswer, playerId, destructionPayload);
 
             EmptyAnswerPayload pickPayload = new EmptyAnswerPayload();
-            GMMessage pickMessage = new GMMessage(GMMessageID.PickAnswer, pickPayload);
+            GMMessage pickMessage = new GMMessage(GMMessageId.PickAnswer, playerId, pickPayload);
             GMMessage startMessage = CreateStartMessage();
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
@@ -125,7 +126,7 @@ namespace Player.Tests
             input.Post(pickMessage);
             input.Post(destructionMessage);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
+            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
             var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
@@ -162,10 +163,10 @@ namespace Player.Tests
             // Arrange
             StartGamePayload startGamePayload = new StartGamePayload
             {
-                PlayerID = playerId,
-                AlliesIDs = alliesId,
-                LeaderID = leaderId,
-                EnemiesIDs = enemiesId,
+                PlayerId = playerId,
+                AlliesIds = alliesId,
+                LeaderId = leaderId,
+                EnemiesIds = enemiesId,
                 TeamId = teamId,
                 BoardSize = boardSize,
                 GoalAreaSize = goalAreaSize,
@@ -176,12 +177,12 @@ namespace Player.Tests
                 ShamPieceProbability = shanProbability,
                 Position = position,
             };
-            GMMessage startMessage = new GMMessage(GMMessageID.StartGame, startGamePayload);
+            GMMessage startMessage = new GMMessage(GMMessageId.StartGame, playerId, startGamePayload);
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             input.Post(startMessage);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
+            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
             var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
@@ -199,7 +200,7 @@ namespace Player.Tests
             var boardSizeResult = player.BoardSize;
             var penaltiesResult = player.PenaltiesTimes;
             var positionResult = player.Position;
-            var enemiesResult = player.EnemiesIDs;
+            var enemiesResult = player.EnemiesIds;
             var goalAreaSizeResult = player.GoalAreaSize;
             var numOfPlayersResult = player.NumberOfPlayers;
             var numOfPiecesResult = player.NumberOfPieces;
@@ -246,14 +247,14 @@ namespace Player.Tests
                 CurrentPosition = newPosition,
                 ClosestPiece = distToClosestPiece,
             };
-            GMMessage moveAnswerMessage = new GMMessage(GMMessageID.MoveAnswer, moveAnswerPayload);
+            GMMessage moveAnswerMessage = new GMMessage(GMMessageId.MoveAnswer, playerId, moveAnswerPayload);
             GMMessage startMessage = CreateStartMessage();
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             input.Post<GMMessage>(startMessage);
             input.Post<GMMessage>(moveAnswerMessage);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
+            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
             var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
@@ -273,14 +274,14 @@ namespace Player.Tests
         public async Task TestAcceptMessagePickAnswerShouldChangeDistToPieceAndPickPiece()
         {
             EmptyAnswerPayload pickPayload = new EmptyAnswerPayload();
-            GMMessage pickAnswerMessage = new GMMessage(GMMessageID.PickAnswer, pickPayload);
+            GMMessage pickAnswerMessage = new GMMessage(GMMessageId.PickAnswer, playerId, pickPayload);
             GMMessage startMessage = CreateStartMessage();
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             input.Post(startMessage);
             input.Post(pickAnswerMessage);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
+            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
             var player = new Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
@@ -306,14 +307,14 @@ namespace Player.Tests
             {
                 Winner = Team.Red,
             };
-            GMMessage endGameMessage = new GMMessage(GMMessageID.EndGame, endGamePayload);
+            GMMessage endGameMessage = new GMMessage(GMMessageId.EndGame, playerId, endGamePayload);
             GMMessage startMessage = CreateStartMessage();
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             input.Post<GMMessage>(startMessage);
             input.Post<GMMessage>(endGameMessage);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
+            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
             var player = new Models.Player(configuration, input,
                 new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
@@ -332,10 +333,10 @@ namespace Player.Tests
         {
             StartGamePayload payloadStart = new StartGamePayload
             {
-                PlayerID = 1,
-                AlliesIDs = new int[1] { 2 },
-                LeaderID = 1,
-                EnemiesIDs = new int[2] { 3, 4 },
+                PlayerId = 1,
+                AlliesIds = new int[1] { 2 },
+                LeaderId = 1,
+                EnemiesIds = new int[2] { 3, 4 },
                 TeamId = Team.Red,
                 BoardSize = new BoardSize { X = 3, Y = 3 },
                 GoalAreaSize = 1,
@@ -347,7 +348,7 @@ namespace Player.Tests
                 Position = new Position { X = 1, Y = 1 },
             };
 
-            return new GMMessage(GMMessageID.StartGame, payloadStart);
+            return new GMMessage(GMMessageId.StartGame, playerId, payloadStart);
         }
     }
 }

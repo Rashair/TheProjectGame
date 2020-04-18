@@ -35,7 +35,7 @@ namespace Player
             // TODO: add logpath path to appsettings and pass it to ConfigureLogger()
             string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "Player");
             int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
-            string fileName = $"pl-{DateTime.Now:HH-MM-ss}-{processId:000000}.log";
+            string fileName = $"pl-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
             return new LoggerConfiguration()
                .Enrich.FromLogContext()
@@ -52,7 +52,7 @@ namespace Player
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkId=398940
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ILogger>(GetLogger());
@@ -62,7 +62,7 @@ namespace Player
 
             // For console override;
             Configuration.Bind(conf);
-            Log.Information($"Team: {conf.TeamID}, strategy: {conf.Strategy}");
+            Log.Information($"Team: {conf.TeamId}, strategy: {conf.Strategy}");
 
             services.AddSingleton(conf);
 

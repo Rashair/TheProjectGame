@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Net.Sockets;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Moq;
 using Newtonsoft.Json;
 using Serilog;
+using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Payloads;
@@ -30,44 +30,43 @@ namespace GameMaster.Tests
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
         private GMMessage lastSended;
 
-        private class MockSocketManager : ISocketManager<TcpClient, GMMessage>
+        private class MockSocketClient<R, S> : ISocketClient<R, S>
         {
             private readonly Send send;
 
-            public delegate void Send(GMMessage message);
+            public delegate void Send(S message);
 
-            public MockSocketManager(Send send)
+            public MockSocketClient(Send send)
             {
                 this.send = send;
             }
 
-            public bool AddSocket(TcpClient socket) => throw new NotImplementedException();
+            public bool IsOpen => throw new NotImplementedException();
 
-            public int GetId(TcpClient socket) => throw new NotImplementedException();
+            public object GetSocket() => throw new NotImplementedException();
 
-            public TcpClient GetSocketById(int id) => throw new NotImplementedException();
-
-            public Task<bool> RemoveSocketAsync(int id, CancellationToken cancellationToken)
+            public Task ConnectAsync(string host, int port, CancellationToken cancellationToken)
                 => throw new NotImplementedException();
 
-            public async Task SendMessageAsync(int id, GMMessage message, CancellationToken cancellationToken)
+            public Task CloseAsync(CancellationToken cancellationToken)
+                => throw new NotImplementedException();
+
+            public Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
+                 => throw new NotImplementedException();
+
+            public async Task SendAsync(S message, CancellationToken cancellationToken)
             {
                 send(message);
                 await Task.CompletedTask;
             }
 
-            public Task SendMessageToAllAsync(GMMessage message, CancellationToken cancellationToken)
+            public Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken)
                 => throw new NotImplementedException();
-
-            public bool IsAnyOpen()
-            {
-                return true;
-            }
         }
 
-        private ISocketManager<TcpClient, GMMessage> GenerateSocketManager()
+        private MockSocketClient<PlayerMessage, GMMessage> GenerateSocketClient()
         {
-            return new MockSocketManager((m) => { lastSended = m; });
+            return new MockSocketClient<PlayerMessage, GMMessage>((m) => { lastSended = m; });
         }
 
         private GameConfiguration GenerateConfiguration()
@@ -88,24 +87,24 @@ namespace GameMaster.Tests
             return new BufferBlock<PlayerMessage>();
         }
 
-        private GMPlayer GenerateGMPlayer(GameConfiguration conf, ISocketManager<TcpClient, GMMessage> socketManager,
+        private GMPlayer GenerateGMPlayer(GameConfiguration conf, ISocketClient<PlayerMessage, GMMessage> socketClient,
             int id = DefaultId, Team team = DefaultTeam, bool isLeader = DefaultIsLeader)
         {
-            return new GMPlayer(id, conf, socketManager, team, logger, isLeader);
+            return new GMPlayer(id, conf, socketClient, team, logger, isLeader);
         }
 
         private GMPlayer GenerateGMPlayer(int id = DefaultId, Team team = DefaultTeam, bool isLeader = DefaultIsLeader)
         {
-            return GenerateGMPlayer(GenerateConfiguration(), GenerateSocketManager(), id, team, isLeader);
+            return GenerateGMPlayer(GenerateConfiguration(), GenerateSocketClient(), id, team, isLeader);
         }
 
         private GM GenerateGM()
         {
             var conf = new MockGameConfiguration();
             var queue = GenerateBuffer();
-            var manager = new TcpSocketManager<GMMessage>(logger);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var gameMaster = new GM(lifetime, conf, queue, manager, logger);
+            var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
             gameMaster.Invoke("GeneratePiece");
             return gameMaster;
@@ -136,7 +135,7 @@ namespace GameMaster.Tests
             bool moved = await player.MoveAsync(playerEndField, gm, CancellationToken.None);
             Assert.True(moved);
             Assert.True(player.Position == playerEndField);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
 
             var payload = JsonConvert.DeserializeObject<MoveAnswerPayload>(lastSended.Payload);
             Assert.True(payload.MadeMove);
@@ -161,7 +160,7 @@ namespace GameMaster.Tests
             Assert.False(moved);
             Assert.True(firstPlayer.Position == firstPlayerField);
             Assert.True(secondPlayer.Position == secondPlayerField);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
 
             var payload = JsonConvert.DeserializeObject<MoveAnswerPayload>(lastSended.Payload);
             Assert.False(payload.MadeMove);
@@ -185,14 +184,14 @@ namespace GameMaster.Tests
             lastSended = null;
             bool moved = await secondPlayer.MoveAsync(secondPlayerEndField, gm, CancellationToken.None);
             Assert.True(moved);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
             var payload = JsonConvert.DeserializeObject<MoveAnswerPayload>(lastSended.Payload);
             Assert.True(payload.MadeMove);
 
             lastSended = null;
             moved = await firstPlayer.MoveAsync(secondPlayerField, gm, CancellationToken.None);
             Assert.True(moved);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
             payload = JsonConvert.DeserializeObject<MoveAnswerPayload>(lastSended.Payload);
             Assert.True(payload.MadeMove);
         }
@@ -210,12 +209,12 @@ namespace GameMaster.Tests
             lastSended = null;
             var moved = await player.MoveAsync(firstField, gm, CancellationToken.None);
             Assert.True(moved);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
 
             lastSended = null;
             moved = await player.MoveAsync(secondField, gm, CancellationToken.None);
             Assert.False(moved);
-            Assert.True(lastSended.Id == GMMessageID.NotWaitedError);
+            Assert.True(lastSended.Id == GMMessageId.NotWaitedError);
         }
 
         [Fact]
@@ -223,8 +222,8 @@ namespace GameMaster.Tests
         {
             var gm = GenerateGM();
             var conf = GenerateConfiguration();
-            var socketManager = GenerateSocketManager();
-            var player = GenerateGMPlayer(conf, socketManager);
+            var socketClient = GenerateSocketClient();
+            var player = GenerateGMPlayer(conf, socketClient);
             var startField = new TaskField(0, 0);
             var firstField = new TaskField(0, 1);
             var secondField = new TaskField(1, 1);
@@ -233,21 +232,21 @@ namespace GameMaster.Tests
             lastSended = null;
             var moved = await player.MoveAsync(firstField, gm, CancellationToken.None);
             Assert.True(moved);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
 
             await Task.Delay(conf.MovePenalty * 2);
             lastSended = null;
             moved = await player.MoveAsync(secondField, gm, CancellationToken.None);
             Assert.True(moved);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
         }
 
         [Fact]
         public async Task TestDestroyAsync()
         {
             var conf = GenerateConfiguration();
-            var socketManager = GenerateSocketManager();
-            var player = GenerateGMPlayer(conf, socketManager);
+            var socketClient = GenerateSocketClient();
+            var player = GenerateGMPlayer(conf, socketClient);
             var piece = new ShamPiece();
             player.Holding = piece;
             var field = new TaskField(0, 0);
@@ -257,7 +256,7 @@ namespace GameMaster.Tests
             bool detroyed = await player.DestroyHoldingAsync(CancellationToken.None);
             Assert.True(detroyed);
             Assert.True(player.Holding is null);
-            Assert.True(lastSended.Id == GMMessageID.DestructionAnswer);
+            Assert.True(lastSended.Id == GMMessageId.DestructionAnswer);
 
             // delay
             await Task.Delay(conf.DestroyPenalty * 2);
@@ -270,8 +269,8 @@ namespace GameMaster.Tests
         public async Task TestCheckHoldingAsync()
         {
             var conf = GenerateConfiguration();
-            var socketManager = GenerateSocketManager();
-            var player = GenerateGMPlayer(conf, socketManager);
+            var socketClient = GenerateSocketClient();
+            var player = GenerateGMPlayer(conf, socketClient);
             var piece = new ShamPiece();
             var field = new TaskField(0, 0);
             Assert.True(field.MoveHere(player));
@@ -285,7 +284,7 @@ namespace GameMaster.Tests
             player.Holding = piece;
             lastSended = null;
             await player.CheckHoldingAsync(CancellationToken.None);
-            Assert.True(lastSended.Id == GMMessageID.CheckAnswer);
+            Assert.True(lastSended.Id == GMMessageId.CheckAnswer);
         }
 
         [Fact]
@@ -298,15 +297,15 @@ namespace GameMaster.Tests
 
             lastSended = null;
             await player.DiscoverAsync(gm, CancellationToken.None);
-            Assert.True(lastSended.Id == GMMessageID.DiscoverAnswer);
+            Assert.True(lastSended.Id == GMMessageId.DiscoverAnswer);
         }
 
         [Fact]
         public async Task TestPutAsync()
         {
             var conf = GenerateConfiguration();
-            var socketManager = GenerateSocketManager();
-            var player = GenerateGMPlayer(conf, socketManager);
+            var socketClient = GenerateSocketClient();
+            var player = GenerateGMPlayer(conf, socketClient);
             var piece = new NormalPiece();
             var field = new GoalField(0, 0);
             player.Holding = piece;
@@ -316,13 +315,13 @@ namespace GameMaster.Tests
             (bool? goal, bool removed) = await player.PutAsync(CancellationToken.None);
             Assert.True(goal == true && removed);
             Assert.True(player.Holding is null);
-            Assert.True(lastSended.Id == GMMessageID.PutAnswer);
+            Assert.True(lastSended.Id == GMMessageId.PutAnswer);
 
             await Task.Delay(conf.PutPenalty * 2);
             lastSended = null;
             (goal, removed) = await player.PutAsync(CancellationToken.None);
             Assert.False(goal == true || removed);
-            Assert.True(lastSended.Id == GMMessageID.PutError);
+            Assert.True(lastSended.Id == GMMessageId.PutError);
             var payload = JsonConvert.DeserializeObject<PutErrorPayload>(lastSended.Payload);
             Assert.True(payload.ErrorSubtype == PutError.AgentNotHolding);
         }
@@ -331,8 +330,8 @@ namespace GameMaster.Tests
         public async Task TestPickAsync()
         {
             var conf = GenerateConfiguration();
-            var socketManager = GenerateSocketManager();
-            var player = GenerateGMPlayer(conf, socketManager);
+            var socketClient = GenerateSocketClient();
+            var player = GenerateGMPlayer(conf, socketClient);
             var piece = new ShamPiece();
             var field = new TaskField(0, 0);
             Assert.True(field.MoveHere(player));
@@ -342,7 +341,7 @@ namespace GameMaster.Tests
             bool picked = await player.PickAsync(CancellationToken.None);
             Assert.False(picked);
             Assert.True(player.Holding is null);
-            Assert.True(lastSended.Id == GMMessageID.PickError);
+            Assert.True(lastSended.Id == GMMessageId.PickError);
             var payload = JsonConvert.DeserializeObject<PickErrorPayload>(lastSended.Payload);
             Assert.True(payload.ErrorSubtype == PickError.NothingThere);
 
@@ -353,7 +352,7 @@ namespace GameMaster.Tests
             picked = await player.PickAsync(CancellationToken.None);
             Assert.True(picked);
             Assert.True(player.Holding == piece);
-            Assert.True(lastSended.Id == GMMessageID.PickAnswer);
+            Assert.True(lastSended.Id == GMMessageId.PickAnswer);
 
             // delay
             await Task.Delay(conf.PickPenalty * 2);
@@ -361,7 +360,7 @@ namespace GameMaster.Tests
             picked = await player.PickAsync(CancellationToken.None);
             Assert.False(picked);
             Assert.True(player.Holding == piece);
-            Assert.True(lastSended.Id == GMMessageID.PickError);
+            Assert.True(lastSended.Id == GMMessageId.PickError);
             payload = JsonConvert.DeserializeObject<PickErrorPayload>(lastSended.Payload);
             Assert.True(payload.ErrorSubtype == PickError.Other);
 
@@ -373,7 +372,7 @@ namespace GameMaster.Tests
             picked = await player.PickAsync(CancellationToken.None);
             Assert.False(picked);
             Assert.True(player.Holding == piece);
-            Assert.True(lastSended.Id == GMMessageID.PickError);
+            Assert.True(lastSended.Id == GMMessageId.PickError);
             payload = JsonConvert.DeserializeObject<PickErrorPayload>(lastSended.Payload);
             Assert.True(payload.ErrorSubtype == PickError.Other);
         }
