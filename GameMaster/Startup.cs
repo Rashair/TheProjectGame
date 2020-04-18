@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
+using Shared.Clients;
 using Shared.Messages;
 
 using static System.Environment;
@@ -67,7 +68,7 @@ namespace GameMaster
             services.AddSingleton<ILogger>(GetLogger());
 
             services.AddSingleton<TcpSocketManager<BackendMessage>>();
-            services.AddSingleton<ISocketManager<TcpClient, GMMessage>, TcpSocketManager<GMMessage>>();
+            services.AddSingleton<ISocketClient<PlayerMessage, GMMessage>, TcpSocketClient<PlayerMessage, GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
             GameConfiguration conf;
