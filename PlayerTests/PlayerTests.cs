@@ -348,7 +348,7 @@ namespace Player.Tests
                 Position = new Position { X = 1, Y = 1 },
             };
 
-            return new GMMessage(GMMessageId.StartGame,playerId, payloadStart);
+            return new GMMessage(GMMessageId.StartGame, playerId, payloadStart);
         }
     }
 }

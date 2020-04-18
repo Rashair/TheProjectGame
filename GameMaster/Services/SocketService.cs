@@ -12,7 +12,7 @@ using Shared.Messages;
 
 namespace GameMaster.Services
 {
-    public class SocketService : BackgroundService // TODO WaitForInitService
+    public class SocketService : WaitForInitService
     {
         private const int ConnectRetries = 60;
         private const int RetryIntervalMs = 1000;
@@ -21,19 +21,18 @@ namespace GameMaster.Services
         private readonly GameConfiguration conf;
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly IApplicationLifetime lifetime;
-        private readonly ILogger logger;
 
-        public SocketService(ISocketClient<PlayerMessage, GMMessage> client, GameConfiguration conf,
+        public SocketService(GM gameMaster, ISocketClient<PlayerMessage, GMMessage> client, GameConfiguration conf,
             BufferBlock<PlayerMessage> queue, IApplicationLifetime lifetime, ILogger log)
+            : base(gameMaster, log.ForContext<GMService>())
         {
             this.client = client;
             this.conf = conf;
             this.queue = queue;
             this.lifetime = lifetime;
-            this.logger = log.ForContext<SocketService>();
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task RunService(CancellationToken stoppingToken)
         {
             var (success, errorMessage) = await Helpers.Retry(async () =>
             {
