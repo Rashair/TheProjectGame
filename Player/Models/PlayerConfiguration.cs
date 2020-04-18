@@ -6,7 +6,7 @@ namespace Player.Models
 
         public int CsPort { get; set; }
 
-        public string TeamID { get; set; }
+        public string TeamId { get; set; }
 
         public int Strategy { get; set; }
     }

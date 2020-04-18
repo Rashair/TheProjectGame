@@ -214,7 +214,7 @@ namespace GameMaster.Models
             {
                 WaitUntil = lockedTill,
             };
-            return new GMMessage(GMMessageID.NotWaitedError, id, payload);
+            return new GMMessage(GMMessageId.NotWaitedError, id, payload);
         }
 
         private GMMessage MoveAnswerMessage(bool madeMove, GM gm)
@@ -225,7 +225,7 @@ namespace GameMaster.Models
                 CurrentPosition = Position.GetPositionObject(),
                 MadeMove = madeMove,
             };
-            return new GMMessage(GMMessageID.MoveAnswer, id, payload);
+            return new GMMessage(GMMessageId.MoveAnswer, id, payload);
         }
 
         private GMMessage UnknownErrorMessage()
@@ -235,13 +235,13 @@ namespace GameMaster.Models
                 HoldingPiece = !(Holding is null),
                 Position = Position.GetPositionObject(),
             };
-            return new GMMessage(GMMessageID.UnknownError, id, payload);
+            return new GMMessage(GMMessageId.UnknownError, id, payload);
         }
 
         private GMMessage DestructionAnswerMessage()
         {
             EmptyAnswerPayload payload = new EmptyAnswerPayload();
-            return new GMMessage(GMMessageID.DestructionAnswer, id, payload);
+            return new GMMessage(GMMessageId.DestructionAnswer, id, payload);
         }
 
         private GMMessage CheckAnswerMessage()
@@ -250,7 +250,7 @@ namespace GameMaster.Models
             {
                 Sham = Holding.CheckForSham(),
             };
-            return new GMMessage(GMMessageID.CheckAnswer, id, payload);
+            return new GMMessage(GMMessageId.CheckAnswer, id, payload);
         }
 
         private GMMessage DiscoverAnswerMessage(GM gm)
@@ -268,7 +268,7 @@ namespace GameMaster.Models
                 DistanceS = discovered[Direction.S],
                 DistanceSE = discovered[Direction.SE],
             };
-            return new GMMessage(GMMessageID.DiscoverAnswer, id, payload);
+            return new GMMessage(GMMessageId.DiscoverAnswer, id, payload);
         }
 
         private GMMessage PutErrorMessage(PutError error)
@@ -277,14 +277,14 @@ namespace GameMaster.Models
             {
                 ErrorSubtype = error,
             };
-            return new GMMessage(GMMessageID.PutError, id, payload);
+            return new GMMessage(GMMessageId.PutError, id, payload);
         }
 
         private GMMessage PutAnswerMessage(bool goal)
         {
             // TODO Issue 119
             EmptyAnswerPayload payload = new EmptyAnswerPayload();
-            return new GMMessage(GMMessageID.PutAnswer, id, payload);
+            return new GMMessage(GMMessageId.PutAnswer, id, payload);
         }
 
         private GMMessage PickErrorMessage(PickError error)
@@ -293,13 +293,13 @@ namespace GameMaster.Models
             {
                 ErrorSubtype = error,
             };
-            return new GMMessage(GMMessageID.PickError, id, payload);
+            return new GMMessage(GMMessageId.PickError, id, payload);
         }
 
         private GMMessage PickAnswerMessage()
         {
             EmptyAnswerPayload payload = new EmptyAnswerPayload();
-            return new GMMessage(GMMessageID.PickAnswer, id, payload);
+            return new GMMessage(GMMessageId.PickAnswer, id, payload);
         }
     }
 }

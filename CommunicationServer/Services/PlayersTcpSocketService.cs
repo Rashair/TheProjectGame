@@ -34,7 +34,7 @@ namespace CommunicationServer.Services
         public override async Task OnMessageAsync(TcpSocketClient<PlayerMessage, GMMessage> client,
             PlayerMessage message, CancellationToken cancellationToken)
         {
-            message.PlayerID = manager.GetId(client);
+            message.PlayerId = manager.GetId(client);
             await queue.SendAsync(message, cancellationToken);
         }
 

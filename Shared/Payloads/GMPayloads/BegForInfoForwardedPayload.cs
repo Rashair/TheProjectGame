@@ -6,7 +6,7 @@ namespace Shared.Payloads
 {
     public class BegForInfoForwardedPayload : Payload
     {
-        public int AskingID { get; set; }
+        public int AskingId { get; set; }
 
         public bool Leader { get; set; }
 

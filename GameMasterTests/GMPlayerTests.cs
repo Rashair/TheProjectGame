@@ -135,7 +135,7 @@ namespace GameMaster.Tests
             bool moved = await player.MoveAsync(playerEndField, gm, CancellationToken.None);
             Assert.True(moved);
             Assert.True(player.Position == playerEndField);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
 
             var payload = JsonConvert.DeserializeObject<MoveAnswerPayload>(lastSended.Payload);
             Assert.True(payload.MadeMove);
@@ -160,7 +160,7 @@ namespace GameMaster.Tests
             Assert.False(moved);
             Assert.True(firstPlayer.Position == firstPlayerField);
             Assert.True(secondPlayer.Position == secondPlayerField);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
 
             var payload = JsonConvert.DeserializeObject<MoveAnswerPayload>(lastSended.Payload);
             Assert.False(payload.MadeMove);
@@ -184,14 +184,14 @@ namespace GameMaster.Tests
             lastSended = null;
             bool moved = await secondPlayer.MoveAsync(secondPlayerEndField, gm, CancellationToken.None);
             Assert.True(moved);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
             var payload = JsonConvert.DeserializeObject<MoveAnswerPayload>(lastSended.Payload);
             Assert.True(payload.MadeMove);
 
             lastSended = null;
             moved = await firstPlayer.MoveAsync(secondPlayerField, gm, CancellationToken.None);
             Assert.True(moved);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
             payload = JsonConvert.DeserializeObject<MoveAnswerPayload>(lastSended.Payload);
             Assert.True(payload.MadeMove);
         }
@@ -209,12 +209,12 @@ namespace GameMaster.Tests
             lastSended = null;
             var moved = await player.MoveAsync(firstField, gm, CancellationToken.None);
             Assert.True(moved);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
 
             lastSended = null;
             moved = await player.MoveAsync(secondField, gm, CancellationToken.None);
             Assert.False(moved);
-            Assert.True(lastSended.Id == GMMessageID.NotWaitedError);
+            Assert.True(lastSended.Id == GMMessageId.NotWaitedError);
         }
 
         [Fact]
@@ -232,13 +232,13 @@ namespace GameMaster.Tests
             lastSended = null;
             var moved = await player.MoveAsync(firstField, gm, CancellationToken.None);
             Assert.True(moved);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
 
             await Task.Delay(conf.MovePenalty * 2);
             lastSended = null;
             moved = await player.MoveAsync(secondField, gm, CancellationToken.None);
             Assert.True(moved);
-            Assert.True(lastSended.Id == GMMessageID.MoveAnswer);
+            Assert.True(lastSended.Id == GMMessageId.MoveAnswer);
         }
 
         [Fact]
@@ -256,7 +256,7 @@ namespace GameMaster.Tests
             bool detroyed = await player.DestroyHoldingAsync(CancellationToken.None);
             Assert.True(detroyed);
             Assert.True(player.Holding is null);
-            Assert.True(lastSended.Id == GMMessageID.DestructionAnswer);
+            Assert.True(lastSended.Id == GMMessageId.DestructionAnswer);
 
             // delay
             await Task.Delay(conf.DestroyPenalty * 2);
@@ -284,7 +284,7 @@ namespace GameMaster.Tests
             player.Holding = piece;
             lastSended = null;
             await player.CheckHoldingAsync(CancellationToken.None);
-            Assert.True(lastSended.Id == GMMessageID.CheckAnswer);
+            Assert.True(lastSended.Id == GMMessageId.CheckAnswer);
         }
 
         [Fact]
@@ -297,7 +297,7 @@ namespace GameMaster.Tests
 
             lastSended = null;
             await player.DiscoverAsync(gm, CancellationToken.None);
-            Assert.True(lastSended.Id == GMMessageID.DiscoverAnswer);
+            Assert.True(lastSended.Id == GMMessageId.DiscoverAnswer);
         }
 
         [Fact]
@@ -315,13 +315,13 @@ namespace GameMaster.Tests
             (bool goal, bool removed) = await player.PutAsync(CancellationToken.None);
             Assert.True(goal && removed);
             Assert.True(player.Holding is null);
-            Assert.True(lastSended.Id == GMMessageID.PutAnswer);
+            Assert.True(lastSended.Id == GMMessageId.PutAnswer);
 
             await Task.Delay(conf.PutPenalty * 2);
             lastSended = null;
             (goal, removed) = await player.PutAsync(CancellationToken.None);
             Assert.False(goal || removed);
-            Assert.True(lastSended.Id == GMMessageID.PutError);
+            Assert.True(lastSended.Id == GMMessageId.PutError);
             var payload = JsonConvert.DeserializeObject<PutErrorPayload>(lastSended.Payload);
             Assert.True(payload.ErrorSubtype == PutError.AgentNotHolding);
         }
@@ -341,7 +341,7 @@ namespace GameMaster.Tests
             bool picked = await player.PickAsync(CancellationToken.None);
             Assert.False(picked);
             Assert.True(player.Holding is null);
-            Assert.True(lastSended.Id == GMMessageID.PickError);
+            Assert.True(lastSended.Id == GMMessageId.PickError);
             var payload = JsonConvert.DeserializeObject<PickErrorPayload>(lastSended.Payload);
             Assert.True(payload.ErrorSubtype == PickError.NothingThere);
 
@@ -352,7 +352,7 @@ namespace GameMaster.Tests
             picked = await player.PickAsync(CancellationToken.None);
             Assert.True(picked);
             Assert.True(player.Holding == piece);
-            Assert.True(lastSended.Id == GMMessageID.PickAnswer);
+            Assert.True(lastSended.Id == GMMessageId.PickAnswer);
 
             // delay
             await Task.Delay(conf.PickPenalty * 2);
@@ -360,7 +360,7 @@ namespace GameMaster.Tests
             picked = await player.PickAsync(CancellationToken.None);
             Assert.False(picked);
             Assert.True(player.Holding == piece);
-            Assert.True(lastSended.Id == GMMessageID.PickError);
+            Assert.True(lastSended.Id == GMMessageId.PickError);
             payload = JsonConvert.DeserializeObject<PickErrorPayload>(lastSended.Payload);
             Assert.True(payload.ErrorSubtype == PickError.Other);
 
@@ -372,7 +372,7 @@ namespace GameMaster.Tests
             picked = await player.PickAsync(CancellationToken.None);
             Assert.False(picked);
             Assert.True(player.Holding == piece);
-            Assert.True(lastSended.Id == GMMessageID.PickError);
+            Assert.True(lastSended.Id == GMMessageId.PickError);
             payload = JsonConvert.DeserializeObject<PickErrorPayload>(lastSended.Payload);
             Assert.True(payload.ErrorSubtype == PickError.Other);
         }

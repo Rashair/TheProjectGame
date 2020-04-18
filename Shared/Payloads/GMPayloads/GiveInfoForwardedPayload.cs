@@ -6,7 +6,7 @@ namespace Shared.Payloads
 {
     public class GiveInfoForwardedPayload : Payload
     {
-        public int AnsweringID { get; set; }
+        public int AnsweringId { get; set; }
 
         public int[,] Distances { get; set; }
 

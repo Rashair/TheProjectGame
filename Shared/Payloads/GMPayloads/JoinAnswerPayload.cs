@@ -4,6 +4,6 @@
     {
         public bool Accepted { get; set; }
 
-        public int PlayerID { get; set; }
+        public int PlayerId { get; set; }
     }
 }

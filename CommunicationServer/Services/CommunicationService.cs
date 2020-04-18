@@ -37,7 +37,7 @@ namespace CommunicationServer.Services
                 switch (message)
                 {
                     case GMMessage gm:
-                        await manager.SendMessageAsync(gm.PlayerID, gm, stoppingToken);
+                        await manager.SendMessageAsync(gm.PlayerId, gm, stoppingToken);
                         break;
 
                     case PlayerMessage pm:

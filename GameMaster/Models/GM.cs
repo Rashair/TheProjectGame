@@ -65,52 +65,52 @@ namespace GameMaster.Models
                 return;
             }
 
-            if (!WasGameStarted && message.MessageID != PlayerMessageID.JoinTheGame)
+            if (!WasGameStarted && message.MessageId != PlayerMessageId.JoinTheGame)
             {
                 // TODO: send error message
                 logger.Warning("Game was not started yet: GM can't accept messages other than JoinTheGame");
                 return;
             }
 
-            players.TryGetValue(message.PlayerID, out GMPlayer player);
+            players.TryGetValue(message.PlayerId, out GMPlayer player);
 
-            // logger.Information($"|{message.MessageID} | {message.Payload} | {player?.SocketID} | {player?.Team}");
-            switch (message.MessageID)
+            // logger.Information($"|{message.MessageId} | {message.Payload} | {player?.SocketId} | {player?.Team}");
+            switch (message.MessageId)
             {
-                case PlayerMessageID.CheckPiece:
+                case PlayerMessageId.CheckPiece:
                     await player.CheckHoldingAsync(cancellationToken);
                     break;
-                case PlayerMessageID.PieceDestruction:
+                case PlayerMessageId.PieceDestruction:
                     bool destroyed = await player.DestroyHoldingAsync(cancellationToken);
                     if (destroyed)
                     {
                         GeneratePiece();
                     }
                     break;
-                case PlayerMessageID.Discover:
+                case PlayerMessageId.Discover:
                     await player.DiscoverAsync(this, cancellationToken);
 
                     // TODO: send response here
                     break;
-                case PlayerMessageID.GiveInfo:
+                case PlayerMessageId.GiveInfo:
                     await ForwardKnowledgeReply(message, cancellationToken);
                     break;
-                case PlayerMessageID.BegForInfo:
+                case PlayerMessageId.BegForInfo:
                     await ForwardKnowledgeQuestion(message, cancellationToken);
                     break;
-                case PlayerMessageID.JoinTheGame:
+                case PlayerMessageId.JoinTheGame:
                 {
                     JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
-                    int key = message.PlayerID;
-                    bool accepted = TryToAddPlayer(key, payloadJoin.TeamID);
+                    int key = message.PlayerId;
+                    bool accepted = TryToAddPlayer(key, payloadJoin.TeamId);
                     JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
                     {
                         Accepted = accepted,
-                        PlayerID = key,
+                        PlayerId = key,
                     };
                     GMMessage answerJoin = new GMMessage()
                     {
-                        Id = GMMessageID.JoinTheGameAnswer,
+                        Id = GMMessageId.JoinTheGameAnswer,
                         PlayerId = key,
                         Payload = JsonConvert.SerializeObject(answerJoinPayload),
                     };
@@ -125,7 +125,7 @@ namespace GameMaster.Models
                     }
                     break;
                 }
-                case PlayerMessageID.Move:
+                case PlayerMessageId.Move:
                 {
                     MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
                     AbstractField field = null;
@@ -161,10 +161,10 @@ namespace GameMaster.Models
 
                     break;
                 }
-                case PlayerMessageID.Pick:
+                case PlayerMessageId.Pick:
                     await player.PickAsync(cancellationToken);
                     break;
-                case PlayerMessageID.Put:
+                case PlayerMessageId.Put:
                     (bool point, bool removed) = await player.PutAsync(cancellationToken);
                     if (point)
                     {
@@ -232,9 +232,9 @@ namespace GameMaster.Models
                 {
                     payload = new StartGamePayload
                     {
-                        AlliesIDs = teamBlueIds,
-                        LeaderID = teamBlueIds.First(),
-                        EnemiesIDs = teamRedIds,
+                        AlliesIds = teamBlueIds,
+                        LeaderId = teamBlueIds.First(),
+                        EnemiesIds = teamRedIds,
                         TeamId = Team.Blue,
                         NumberOfPlayers = new NumberOfPlayers
                         {
@@ -247,9 +247,9 @@ namespace GameMaster.Models
                 {
                     payload = new StartGamePayload
                     {
-                        AlliesIDs = teamRedIds,
-                        LeaderID = teamRedIds.First(),
-                        EnemiesIDs = teamBlueIds,
+                        AlliesIds = teamRedIds,
+                        LeaderId = teamRedIds.First(),
+                        EnemiesIds = teamBlueIds,
                         TeamId = Team.Red,
                         NumberOfPlayers = new NumberOfPlayers
                         {
@@ -258,7 +258,7 @@ namespace GameMaster.Models
                         },
                     };
                 }
-                payload.PlayerID = p.Key;
+                payload.PlayerId = p.Key;
                 payload.BoardSize = new BoardSize
                 {
                     Y = conf.Height,
@@ -285,7 +285,7 @@ namespace GameMaster.Models
 
                 var message = new GMMessage
                 {
-                    Id = GMMessageID.StartGame,
+                    Id = GMMessageId.StartGame,
                     PlayerId = p.Key,
                     Payload = payload.Serialize(),
                 };
@@ -516,18 +516,18 @@ namespace GameMaster.Models
             BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(playerMessage.Payload);
             BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
             {
-                AskingID = playerMessage.PlayerID,
-                Leader = players[playerMessage.PlayerID].IsLeader,
-                TeamId = players[playerMessage.PlayerID].Team,
+                AskingId = playerMessage.PlayerId,
+                Leader = players[playerMessage.PlayerId].IsLeader,
+                TeamId = players[playerMessage.PlayerId].Team,
             };
             GMMessage gmMessage = new GMMessage()
             {
-                Id = GMMessageID.BegForInfoForwarded,
-                PlayerId = begPayload.AskedPlayerID,
+                Id = GMMessageId.BegForInfoForwarded,
+                PlayerId = begPayload.AskedPlayerId,
                 Payload = payload.Serialize(),
             };
 
-            legalKnowledgeReplies.Add((begPayload.AskedPlayerID, playerMessage.PlayerID));
+            legalKnowledgeReplies.Add((begPayload.AskedPlayerId, playerMessage.PlayerId));
             await socketClient.SendAsync(gmMessage, cancellationToken);
         }
 
@@ -539,20 +539,20 @@ namespace GameMaster.Models
             }
 
             GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
-            if (legalKnowledgeReplies.Contains((playerMessage.PlayerID, payload.RespondToID)))
+            if (legalKnowledgeReplies.Contains((playerMessage.PlayerId, payload.RespondToId)))
             {
-                legalKnowledgeReplies.Remove((playerMessage.PlayerID, payload.RespondToID));
+                legalKnowledgeReplies.Remove((playerMessage.PlayerId, payload.RespondToId));
                 GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload()
                 {
-                    AnsweringID = playerMessage.PlayerID,
+                    AnsweringId = playerMessage.PlayerId,
                     Distances = payload.Distances,
                     RedTeamGoalAreaInformations = payload.RedTeamGoalAreaInformations,
                     BlueTeamGoalAreaInformations = payload.BlueTeamGoalAreaInformations,
                 };
                 GMMessage answer = new GMMessage()
                 {
-                    Id = GMMessageID.GiveInfoForwarded,
-                    PlayerId = payload.RespondToID,
+                    Id = GMMessageId.GiveInfoForwarded,
+                    PlayerId = payload.RespondToId,
                     Payload = answerPayload.Serialize(),
                 };
                 await socketClient.SendAsync(answer, cancellationToken);
@@ -571,7 +571,7 @@ namespace GameMaster.Models
             List<GMMessage> messages = new List<GMMessage>();
             foreach (var p in players)
             {
-               messages.Add(new GMMessage(GMMessageID.EndGame, p.Key, payload));
+               messages.Add(new GMMessage(GMMessageId.EndGame, p.Key, payload));
             }
             await socketClient.SendToAllAsync(messages, cancellationToken);
             logger.Information("Sent endGame to all.");
