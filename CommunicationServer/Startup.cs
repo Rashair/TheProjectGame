@@ -64,7 +64,6 @@ namespace CommunicationServer
 
             // For console override;
             Configuration.Bind(conf);
-
             services.AddSingleton(conf);
 
             services.AddSingleton<ServiceShareContainer>();

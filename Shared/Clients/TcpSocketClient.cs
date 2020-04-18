@@ -123,13 +123,16 @@ namespace Shared.Clients
 
         public async Task SendAsync(S message, CancellationToken cancellationToken)
         {
+            logger.Information("Trying to send");
             if (!cancellationToken.IsCancellationRequested && IsOpen)
             {
+                logger.Information("Is open");
                 string serialized = JsonConvert.SerializeObject(message);
                 byte[] buffer = Encoding.UTF8.GetBytes(serialized);
                 byte[] length = buffer.Length.ToLittleEndian();
                 await stream.WriteAsync(length, 0, 2, cancellationToken);
                 await stream.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
+                logger.Information("Wrote");
             }
         }
     }

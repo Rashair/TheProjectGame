@@ -49,6 +49,7 @@ namespace GameMaster.Services
             (bool receivedMessage, PlayerMessage message) = await client.ReceiveAsync(stoppingToken);
             while (!stoppingToken.IsCancellationRequested && receivedMessage)
             {
+                logger.Information($"Got message: {message}");
                 bool sended = await queue.SendAsync(message, stoppingToken);
                 if (!sended)
                 {

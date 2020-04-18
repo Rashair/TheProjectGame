@@ -34,7 +34,16 @@ namespace CommunicationServer.Services
         public override async Task OnMessageAsync(TcpSocketClient<GMMessage, PlayerMessage> client, GMMessage message,
             CancellationToken cancellationToken)
         {
-            await queue.SendAsync(message, cancellationToken);
+            logger.Information($"Got message: {message}");
+            try
+            {
+                bool sent = await queue.SendAsync(message, cancellationToken);
+                logger.Information($"Send message: {sent}");
+            }
+            catch (Exception e)
+            {
+                logger.Information(e, "Send exception");
+            }
         }
 
         public override void OnConnect(TcpSocketClient<GMMessage, PlayerMessage> client)
@@ -66,7 +75,7 @@ namespace CommunicationServer.Services
                 return;
             }
 
-            logger.Information("Gm connected");
+            logger.Information("GM connected");
 
             // Singleton initialization
             container.GMClient = gmClient;

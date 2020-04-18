@@ -15,16 +15,17 @@ namespace CommunicationServer.Services
     public class CommunicationService : BackgroundService
     {
         private readonly ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager;
-        private readonly ISocketClient<GMMessage, PlayerMessage> gmClient;
+        private readonly ServiceShareContainer container;
         private readonly BufferBlock<Message> queue;
         private readonly ILogger logger;
+        private ISocketClient<GMMessage, PlayerMessage> gmClient;
 
         public CommunicationService(ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager,
-            ServiceShareContainer container, BufferBlock<Message> queue, ILogger log) 
+            ServiceShareContainer container, BufferBlock<Message> queue, ILogger log)
         {
             this.manager = manager;
-            this.gmClient = container.GMClient;
             this.queue = queue;
+            this.container = container;
             this.logger = log.ForContext<CommunicationService>();
         }
 
@@ -32,21 +33,34 @@ namespace CommunicationServer.Services
         {
             await Task.Yield();
             logger.Information("Started CommunicationService");
+            gmClient = container.GMClient;
+    
             while (!stoppingToken.IsCancellationRequested)
             {
-                Message message = await queue.ReceiveAsync(stoppingToken);
-                switch (message)
+                Message message = null;
+                try
                 {
-                    case GMMessage gm:
-                        await manager.SendMessageAsync(gm.PlayerId, gm, stoppingToken);
-                        break;
+                    logger.Information($"Waiting for message");
+                    message = await queue.ReceiveAsync(stoppingToken);
+                    logger.Information($"Got message: {message}");
 
-                    case PlayerMessage pm:
-                        await gmClient.SendAsync(pm, stoppingToken);
-                        break;
+                    switch (message)
+                    {
+                        case GMMessage gm:
+                            await manager.SendMessageAsync(gm.PlayerId, gm, stoppingToken);
+                            break;
 
-                    default:
-                        throw new Exception("Unknown message type");
+                        case PlayerMessage pm:
+                            await gmClient.SendAsync(pm, stoppingToken);
+                            break;
+
+                        default:
+                            throw new Exception("Unknown message type");
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.Information(e, "Exception in receive");
                 }
             }
         }
