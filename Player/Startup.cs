@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Player.Models;
 using Player.Services;
 using Serilog;
 using Serilog.Events;
 using Shared.Clients;
-using Shared.Enums;
 using Shared.Messages;
 
 using static System.Environment;
@@ -62,12 +62,11 @@ namespace Player
 
             // For console override;
             Configuration.Bind(conf);
-
-            var logger = GetLogger(conf.TeamID);
-            services.AddSingleton<ILogger>(logger);
-            logger.Information($"Team: {conf.TeamID}, strategy: {conf.Strategy}");
-
             services.AddSingleton(conf);
+
+            // Add logger if not already exists in services (for int. tests)
+            var logger = GetLogger(conf.TeamID);
+            services.TryAddSingleton<ILogger>(logger);
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, TcpSocketClient<GMMessage, PlayerMessage>>();
             services.AddSingleton<BufferBlock<GMMessage>>();

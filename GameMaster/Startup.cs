@@ -5,7 +5,6 @@ using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Managers;
 using GameMaster.Models;
-using GameMaster.Models.Messages;
 using GameMaster.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
 using Serilog.Events;
 using Shared.Messages;
@@ -64,7 +64,7 @@ namespace GameMaster
                 configuration.RootPath = "ClientApp/build";
             });
 
-            services.AddSingleton<ILogger>(GetLogger());
+            services.TryAddSingleton<ILogger>(GetLogger());
 
             // TODO: Restore if visualisation will be added
             // services.AddSingleton<TcpSocketManager<BackendMessage>>();

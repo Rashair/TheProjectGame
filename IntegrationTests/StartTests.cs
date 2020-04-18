@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Core;
 using Shared.Enums;
+using TestsShared;
 using Xunit;
 
 namespace IntegrationTests
@@ -32,10 +32,12 @@ namespace IntegrationTests
             for (int i = 0; i < playersCount; ++i)
             {
                 webHostsRed[i] = Player.Program.CreateWebHostBuilder(argsRed).
-                                     UseSerilog((Logger)null, true).
+                                     ConfigureServices(serv =>
+                                        serv.AddSingleton<ILogger>(MockGenerator.Get<ILogger>())).
                                      Build();
                 webHostsBlue[i] = Player.Program.CreateWebHostBuilder(argsBlue).
-                                    UseSerilog((Logger)null, true).
+                                    ConfigureServices(serv =>
+                                        serv.AddSingleton<ILogger>(MockGenerator.Get<ILogger>())).
                                     Build();
 
                 hosts.Add(webHostsBlue[i]);
@@ -69,6 +71,8 @@ namespace IntegrationTests
             string url = "http://127.0.0.1:5000";
             string[] args = new string[] { $"urls={url}" };
             var webhost = Utilities.CreateWebHost(typeof(GameMaster.Startup), args).
+                ConfigureServices(serv =>
+                   serv.AddSingleton<ILogger>(MockGenerator.Get<ILogger>())).
                 Build();
             hosts.Add(webhost);
 
@@ -98,7 +102,8 @@ namespace IntegrationTests
             var source = new CancellationTokenSource();
             string[] args = new string[] { "urls=https://127.0.0.1:0" };
             var webhost = CommunicationServer.Program.CreateWebHostBuilder(args).
-                ConfigureLogging((ILoggingBuilder logging) => logging.ClearProviders()).
+                ConfigureServices(serv =>
+                    serv.AddSingleton<ILogger>(MockGenerator.Get<ILogger>())).
                 Build();
             hosts.Add(webhost);
 
