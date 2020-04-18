@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 using Newtonsoft.Json;
-using Player.Clients;
 using Player.Models.Strategies;
 using Player.Models.Strategies.Utils;
 using Serilog;
+using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
@@ -33,14 +33,15 @@ namespace Player.Models
         private Team? winner;
         private int discovered;
 
-        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, PlayerMessage> client)
+        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, 
+            PlayerMessage> client, ILogger logger)
         {
             this.conf = conf;
-            this.Team = conf.TeamID == "red" ? Team.Red : Team.Blue;
             this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
             this.queue = queue;
             this.client = client;
-            this.logger = Log.ForContext<Player>();
+            this.logger = logger.ForContext<Player>();
+            this.Team = conf.TeamID == "red" ? Team.Red : Team.Blue;
             this.Position = (-1, -1);
         }
 
@@ -80,25 +81,19 @@ namespace Player.Models
 
         public int GoalAreaSize { get; private set; }
 
-        internal async Task Work(CancellationToken cancellationToken)
+        internal async Task Start(CancellationToken cancellationToken)
         {
-            while (!client.IsOpen)
-            {
-                await Task.Delay(500);
-            }
-
-            await JoinTheGame(cancellationToken);
             bool startGame = false;
-
             while (!cancellationToken.IsCancellationRequested && !startGame)
             {
                 startGame = await AcceptMessage(cancellationToken);
             }
 
-            await Start(cancellationToken);
+            logger.Information("Starting game");
+            await Work(cancellationToken);
         }
 
-        internal async Task JoinTheGame(CancellationToken cancellationToken)
+        public async Task JoinTheGame(CancellationToken cancellationToken)
         {
             JoinGamePayload payload = new JoinGamePayload()
             {
@@ -113,7 +108,7 @@ namespace Player.Models
             logger.Information("Sent JoinTheGame message");
         }
 
-        internal async Task Start(CancellationToken cancellationToken)
+        internal async Task Work(CancellationToken cancellationToken)
         {
             working = true;
             while (working && !cancellationToken.IsCancellationRequested)
@@ -126,7 +121,7 @@ namespace Player.Models
             await client.CloseAsync(cancellationToken);
         }
 
-        internal void Stop()
+        internal void StopWorking()
         {
             working = false;
             logger.Warning($"Stopped player: {Team}");
@@ -268,7 +263,10 @@ namespace Player.Models
             await Communicate(message, cancellationToken);
         }
 
-        public async Task<bool> AcceptMessage(CancellationToken cancellationToken) // returns true if StartGameMessage was accepted
+        /// <summary>
+        /// Returns true if StartGameMessage was accepted
+        /// </summary>
+        public async Task<bool> AcceptMessage(CancellationToken cancellationToken)
         {
             var cancellationTimespan = TimeSpan.FromMinutes(2);
             GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
@@ -311,7 +309,7 @@ namespace Player.Models
                 case GMMessageID.EndGame:
                     EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
                     winner = payloadEnd.Winner;
-                    Stop();
+                    StopWorking();
                     break;
                 case GMMessageID.StartGame:
                     StartGamePayload payloadStart = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
@@ -362,7 +360,7 @@ namespace Player.Models
                     id = payloadJoin.PlayerID;
                     if (!payloadJoin.Accepted)
                     {
-                        Stop();
+                        StopWorking();
                     }
                     break;
                 case GMMessageID.MoveAnswer:

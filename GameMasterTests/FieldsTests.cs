@@ -6,36 +6,42 @@ using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using Moq;
+using Serilog;
 using Shared.Messages;
+using TestsShared;
 using Xunit;
 
 namespace GameMaster.Tests
 {
     public class FieldsTests
     {
+        private readonly ILogger logger = MockGenerator.Get<ILogger>();
+
         public class MoveHereTestData : IEnumerable<object[]>
         {
+            private readonly ILogger logger = MockGenerator.Get<ILogger>();
+
             public IEnumerator<object[]> GetEnumerator()
             {
                 var conf = Mock.Of<GameConfiguration>();
-                var socketManager = Mock.Of<WebSocketManager<GMMessage>>();
+                var socketManager = new Mock<TcpSocketManager<GMMessage>>(logger).Object;
                 yield return new object[]
                 {
                     new List<GMPlayer>
                     {
-                        new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red),
-                        new GMPlayer(2, conf, socketManager, Shared.Enums.Team.Red),
+                        new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red, logger),
+                        new GMPlayer(2, conf, socketManager, Shared.Enums.Team.Red, logger),
                     },
                     false,
                 };
                 yield return new object[]
                 {
-                    new List<GMPlayer> { new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red) },
+                    new List<GMPlayer> { new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red, logger) },
                     true,
                 };
                 yield return new object[]
                 {
-                    new List<GMPlayer> { null, new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red) },
+                    new List<GMPlayer> { null, new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red, logger) },
                     true,
                 };
                 yield return new object[] { new List<GMPlayer> { null }, false };
@@ -101,8 +107,8 @@ namespace GameMaster.Tests
         {
             // Arrange
             var conf = Mock.Of<GameConfiguration>();
-            var socketManager = Mock.Of<WebSocketManager<GMMessage>>();
-            GMPlayer gmPlayer = new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red);
+            var socketManager = new Mock<TcpSocketManager<GMMessage>>(logger).Object;
+            GMPlayer gmPlayer = new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red, logger);
             TaskField taskField = new TaskField(2, 2);
             for (int i = 0; i < numPut; i++)
             {

@@ -10,6 +10,8 @@ namespace GameMaster.Managers
         private readonly ConcurrentDictionary<int, TSocket> sockets = new ConcurrentDictionary<int, TSocket>();
         private int guid = 1;
 
+        protected abstract bool IsOpen(TSocket socket);
+
         protected abstract bool IsSame(TSocket a, TSocket b);
 
         protected abstract Task CloseSocketAsync(TSocket socket, CancellationToken cancellationToken);
@@ -35,6 +37,7 @@ namespace GameMaster.Managers
         {
             if (cancellationToken.IsCancellationRequested)
                 return false;
+
             bool removed = sockets.TryRemove(id, out TSocket socket);
             if (removed)
                 await CloseSocketAsync(socket, cancellationToken);
@@ -49,6 +52,11 @@ namespace GameMaster.Managers
         public async Task SendMessageToAllAsync(TMessage message, CancellationToken cancellationToken)
         {
             await Task.WhenAll(from p in sockets select SendMessageAsync(p.Value, message, cancellationToken));
+        }
+
+        public bool IsAnyOpen()
+        {
+           return sockets.Any(s => IsOpen(s.Value));
         }
 
         private int CreateSocketId()

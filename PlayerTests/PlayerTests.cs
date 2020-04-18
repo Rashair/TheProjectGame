@@ -3,8 +3,9 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 using Newtonsoft.Json;
-using Player.Clients;
 using Player.Models;
+using Serilog;
+using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
@@ -16,6 +17,8 @@ namespace Player.Tests
 {
     public class PlayerTests
     {
+        private readonly ILogger logger = MockGenerator.Get<ILogger>();
+
         [Fact]
         public async Task TestAcceptMessageDiscoverAccept()
         {
@@ -35,11 +38,11 @@ namespace Player.Tests
             GMMessage messageStart = CreateStartMessage();
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post<GMMessage>(messageStart);
-            input.Post<GMMessage>(messageDiscover);
+            input.Post(messageStart);
+            input.Post(messageDiscover);
 
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
-            var player = new Player.Models.Player(configuration, input, new WebSocketClient<GMMessage, PlayerMessage>());
+            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);
@@ -64,7 +67,7 @@ namespace Player.Tests
             input.Post(messageBeg);
 
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
-            var player = new Player.Models.Player(configuration, input, new WebSocketClient<GMMessage, PlayerMessage>());
+            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);
@@ -88,11 +91,12 @@ namespace Player.Tests
             GMMessage startMessage = CreateStartMessage();
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post<GMMessage>(startMessage);
-            input.Post<GMMessage>(messageCheck);
+            input.Post(startMessage);
+            input.Post(messageCheck);
 
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
-            var player = new Player.Models.Player(configuration, input, new WebSocketClient<GMMessage, PlayerMessage>());
+            var player = new Models.Player(configuration, input,
+                new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
             bool expectedResult = true;
@@ -117,12 +121,12 @@ namespace Player.Tests
             GMMessage startMessage = CreateStartMessage();
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post<GMMessage>(startMessage);
-            input.Post<GMMessage>(pickMessage);
-            input.Post<GMMessage>(destructionMessage);
+            input.Post(startMessage);
+            input.Post(pickMessage);
+            input.Post(destructionMessage);
 
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
-            var player = new Player.Models.Player(configuration, input, new WebSocketClient<GMMessage, PlayerMessage>());
+            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
             bool expectedHasPieceValue = false;
@@ -175,10 +179,10 @@ namespace Player.Tests
             GMMessage startMessage = new GMMessage(GMMessageID.StartGame, startGamePayload);
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post<GMMessage>(startMessage);
+            input.Post(startMessage);
 
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
-            var player = new Player.Models.Player(configuration, input, new WebSocketClient<GMMessage, PlayerMessage>());
+            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
             bool expectedisLeader = true;
@@ -250,7 +254,7 @@ namespace Player.Tests
             input.Post<GMMessage>(moveAnswerMessage);
 
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
-            var player = new Player.Models.Player(configuration, input, new WebSocketClient<GMMessage, PlayerMessage>());
+            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
             (int, int) expectedPosition = (newPosition.Y, newPosition.X);
@@ -273,11 +277,11 @@ namespace Player.Tests
             GMMessage startMessage = CreateStartMessage();
 
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post<GMMessage>(startMessage);
-            input.Post<GMMessage>(pickAnswerMessage);
+            input.Post(startMessage);
+            input.Post(pickAnswerMessage);
 
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
-            var player = new Player.Models.Player(configuration, input, new WebSocketClient<GMMessage, PlayerMessage>());
+            var player = new Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
             bool expectedHasPieceValue = true;
@@ -310,7 +314,8 @@ namespace Player.Tests
             input.Post<GMMessage>(endGameMessage);
 
             PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = "red", Strategy = 3 };
-            var player = new Player.Models.Player(configuration, input, new WebSocketClient<GMMessage, PlayerMessage>());
+            var player = new Models.Player(configuration, input,
+                new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
             Team expectedWinner = Team.Red;
