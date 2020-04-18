@@ -31,6 +31,7 @@ namespace CommunicationServer.Services
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await Task.Yield();
+            logger.Information("Started CommunicationService");
             while (!stoppingToken.IsCancellationRequested)
             {
                 Message message = await queue.ReceiveAsync(stoppingToken);
