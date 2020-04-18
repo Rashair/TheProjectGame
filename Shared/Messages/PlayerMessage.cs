@@ -4,7 +4,7 @@ namespace Shared.Messages
 {
     public class PlayerMessage : Message
     {
-        public PlayerMessageID MessageId { get; set; }
+        public PlayerMessageId MessageId { get; set; }
 
         public int PlayerId { get; set; }
 

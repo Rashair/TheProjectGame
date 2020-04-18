@@ -5,7 +5,7 @@ namespace Shared.Messages
 {
     public class GMMessage : Message
     {
-        public GMMessageID Id { get; set; }
+        public GMMessageId Id { get; set; }
 
         public int PlayerId { get; set; }
 
@@ -15,10 +15,10 @@ namespace Shared.Messages
         {
         }
 
-        public GMMessage(GMMessageID id, int playerID, Payload payload)
+        public GMMessage(GMMessageId id, int playerId, Payload payload)
         {
             Id = id;
-            PlayerId = playerID;
+            PlayerId = playerId;
             Payload = payload.Serialize();
         }
     }

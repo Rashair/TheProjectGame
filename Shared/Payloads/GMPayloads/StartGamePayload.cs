@@ -7,13 +7,13 @@ namespace Shared.Payloads
 {
     public class StartGamePayload : Payload
     {
-        public int PlayerID { get; set; }
+        public int PlayerId { get; set; }
 
-        public int[] AlliesIDs { get; set; }
+        public int[] AlliesIds { get; set; }
 
-        public int LeaderID { get; set; }
+        public int LeaderId { get; set; }
 
-        public int[] EnemiesIDs { get; set; }
+        public int[] EnemiesIds { get; set; }
 
         [JsonProperty("teamId")]
         public Team TeamId { get; set; }

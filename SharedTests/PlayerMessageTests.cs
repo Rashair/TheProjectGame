@@ -14,12 +14,12 @@ namespace Shared.Tests
         public void TestPlayerMessageDeserialization()
         {
             // Arrange
-            Dictionary<int, PlayerMessageID> playerMessages = GetPlayerMessageMapping();
+            Dictionary<int, PlayerMessageId> playerMessages = GetPlayerMessageMapping();
 
             // Act
             foreach (var msg in playerMessages)
             {
-                var jsonString = "{\"messageID\":" + msg.Key + ",\"PlayerID\":0,\"Payload\":\"{}\"}";
+                var jsonString = "{\"messageId\":" + msg.Key + ",\"PlayerId\":0,\"Payload\":\"{}\"}";
                 var deserializedObject = JsonConvert.DeserializeObject<PlayerMessage>(jsonString);
 
                 // Assert
@@ -31,7 +31,7 @@ namespace Shared.Tests
         public void TestPlayerMessageSerialization()
         {
             // Arrange
-            Dictionary<int, PlayerMessageID> playerMessages = GetPlayerMessageMapping();
+            Dictionary<int, PlayerMessageId> playerMessages = GetPlayerMessageMapping();
 
             // Act
             foreach (var msg in playerMessages)
@@ -42,7 +42,7 @@ namespace Shared.Tests
                     Payload = new EmptyAnswerPayload().Serialize(),
                 };
 
-                var expectedJsonString = "{\"MessageID\":" + msg.Key + ",\"PlayerID\":0,\"Payload\":\"{}\"}";
+                var expectedJsonString = "{\"MessageId\":" + msg.Key + ",\"PlayerId\":0,\"Payload\":\"{}\"}";
                 var serializedObject = JsonConvert.SerializeObject(obj);
 
                 // Assert
@@ -50,20 +50,20 @@ namespace Shared.Tests
             }
         }
 
-        private Dictionary<int, PlayerMessageID> GetPlayerMessageMapping()
+        private Dictionary<int, PlayerMessageId> GetPlayerMessageMapping()
         {
-            return new Dictionary<int, PlayerMessageID>()
+            return new Dictionary<int, PlayerMessageId>()
             {
-                { 0, PlayerMessageID.Unknown },
-                { 1, PlayerMessageID.CheckPiece },
-                { 2, PlayerMessageID.PieceDestruction },
-                { 3, PlayerMessageID.Discover },
-                { 4, PlayerMessageID.GiveInfo },
-                { 5, PlayerMessageID.BegForInfo },
-                { 6, PlayerMessageID.JoinTheGame },
-                { 7, PlayerMessageID.Move },
-                { 8, PlayerMessageID.Pick },
-                { 9, PlayerMessageID.Put },
+                { 0, PlayerMessageId.Unknown },
+                { 1, PlayerMessageId.CheckPiece },
+                { 2, PlayerMessageId.PieceDestruction },
+                { 3, PlayerMessageId.Discover },
+                { 4, PlayerMessageId.GiveInfo },
+                { 5, PlayerMessageId.BegForInfo },
+                { 6, PlayerMessageId.JoinTheGame },
+                { 7, PlayerMessageId.Move },
+                { 8, PlayerMessageId.Pick },
+                { 9, PlayerMessageId.Put },
             };
         }
     }
