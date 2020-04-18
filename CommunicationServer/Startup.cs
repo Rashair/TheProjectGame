@@ -34,6 +34,7 @@ namespace CommunicationServer
                path: path,
                rollOnFileSizeLimit: true,
                outputTemplate: LoggerTemplate)
+              .WriteTo.Console(outputTemplate: LoggerTemplate)
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
