@@ -10,5 +10,7 @@ namespace CommunicationServer.Models
         public int PortAgentow { get; set; }
 
         public int PortGM { get; set; }
+
+        public string ListenerIP { get; set; }
     }
 }
