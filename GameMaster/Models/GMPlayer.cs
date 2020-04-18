@@ -224,21 +224,11 @@ namespace GameMaster.Models
         {
             MoveAnswerPayload payload = new MoveAnswerPayload()
             {
-                ClosestPiece = DiscoverSpecifiedField(gm),
+                ClosestPiece = gm.FindClosestPiece(Position),
                 CurrentPosition = Position.GetPositionObject(),
                 MadeMove = madeMove,
             };
             return new GMMessage(GMMessageID.MoveAnswer, payload);
-        }
-
-        private int DiscoverSpecifiedField(GM gm)
-        {
-            if (Position.ContainsPieces() && position.CanPick())
-            {
-                return 0;
-            }
-
-            return gm.FindClosestPiece(Position);
         }
 
         private GMMessage UnknownErrorMessage()
@@ -271,15 +261,15 @@ namespace GameMaster.Models
             var discovered = gm.Discover(Position);
             DiscoveryAnswerPayload payload = new DiscoveryAnswerPayload()
             {
-                DistanceNW = discovered.ContainsKey(Direction.NW) ? discovered[Direction.NW] : -1,
-                DistanceN = discovered.ContainsKey(Direction.N) ? discovered[Direction.N] : -1,
-                DistanceNE = discovered.ContainsKey(Direction.NE) ? discovered[Direction.NE] : -1,
-                DistanceW = discovered.ContainsKey(Direction.W) ? discovered[Direction.W] : -1,
+                DistanceNW = discovered[Direction.NW],
+                DistanceN = discovered[Direction.N],
+                DistanceNE = discovered[Direction.NE],
+                DistanceW = discovered[Direction.W],
                 DistanceFromCurrent = discovered[Direction.FromCurrent],
-                DistanceE = discovered.ContainsKey(Direction.E) ? discovered[Direction.E] : -1,
-                DistanceSW = discovered.ContainsKey(Direction.SW) ? discovered[Direction.SW] : -1,
-                DistanceS = discovered.ContainsKey(Direction.S) ? discovered[Direction.S] : -1,
-                DistanceSE = discovered.ContainsKey(Direction.SE) ? discovered[Direction.SE] : -1,
+                DistanceE = discovered[Direction.E],
+                DistanceSW = discovered[Direction.SW],
+                DistanceS = discovered[Direction.S],
+                DistanceSE = discovered[Direction.SE],
             };
             return new GMMessage(GMMessageID.DiscoverAnswer, payload);
         }
