@@ -34,16 +34,8 @@ namespace CommunicationServer.Services
         public override async Task OnMessageAsync(TcpSocketClient<GMMessage, PlayerMessage> client, GMMessage message,
             CancellationToken cancellationToken)
         {
-            logger.Information($"Got message: {message}");
-            try
-            {
-                bool sent = await queue.SendAsync(message, cancellationToken);
-                logger.Information($"Send message: {sent}");
-            }
-            catch (Exception e)
-            {
-                logger.Information(e, "Send exception");
-            }
+            bool sent = await queue.SendAsync(message, cancellationToken);
+            logger.Information($"Send message: {sent}");
         }
 
         public override void OnConnect(TcpSocketClient<GMMessage, PlayerMessage> client)
@@ -60,6 +52,7 @@ namespace CommunicationServer.Services
         public override async Task OnExceptionAsync(TcpSocketClient<GMMessage, PlayerMessage> client, Exception e,
             CancellationToken cancellationToken)
         {
+            logger.Warning($"IsOpen: {client.IsOpen}");
             await Task.CompletedTask;
         }
 

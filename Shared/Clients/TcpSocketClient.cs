@@ -61,6 +61,7 @@ namespace Shared.Clients
             {
                 return (false, default);
             }
+
             byte[] lengthEndian = new byte[2];
             int countRead = await stream.ReadAsync(lengthEndian, 0, 2, cancellationToken);
             if (cancellationToken.IsCancellationRequested || (countRead == 0) || (countRead == 1))

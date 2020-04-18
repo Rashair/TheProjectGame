@@ -62,6 +62,7 @@ namespace CommunicationServer.Services
         public override async Task OnExceptionAsync(TcpSocketClient<PlayerMessage, GMMessage> client, Exception e,
             CancellationToken cancellationToken)
         {
+            logger.Warning($"IsOpen: {client.IsOpen}");
             await Task.CompletedTask;
         }
 
