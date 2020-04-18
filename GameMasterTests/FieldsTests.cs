@@ -74,7 +74,7 @@ namespace GameMaster.Tests
             {
                 yield return new object[] { new List<AbstractPiece> { new NormalPiece(), new ShamPiece() }, false };
                 yield return new object[] { new List<AbstractPiece> { new NormalPiece() }, true };
-                yield return new object[] { new List<AbstractPiece> { new ShamPiece() }, true };
+                yield return new object[] { new List<AbstractPiece> { new ShamPiece() }, false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -91,7 +91,7 @@ namespace GameMaster.Tests
             // Act
             foreach (AbstractPiece p in pieces)
             {
-                result = goalField.Put(p);
+                result = goalField.Put(p).Item1;
             }
 
             // Assert

@@ -148,7 +148,7 @@ namespace GameMaster.Models
                 }
                 else
                 {
-                    (goal, removed) = Holding.PutOnField(Position);
+                    (goal, removed) = Holding.Put(Position);
                     message = PutAnswerMessage(goal);
                     Holding = null;
                 }
