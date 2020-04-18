@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Managers;
 using GameMaster.Models;
@@ -15,18 +16,28 @@ namespace GameMaster.Services
     public abstract class TcpListenerService : WaitForInitService
     {
         private readonly GameConfiguration conf;
+        private readonly BufferBlock<PlayerMessage> queue;
         protected readonly ISocketManager<TcpClient, GMMessage> manager;
 
         public TcpListenerService(GM gameMaster, GameConfiguration conf,
-           ISocketManager<TcpClient, GMMessage> manager, ILogger logger)
-            : base(gameMaster, logger)
+           ISocketManager<TcpClient, GMMessage> manager, BufferBlock<PlayerMessage> queue, 
+           ILogger log)
+            : base(gameMaster, log.ForContext<TcpListenerService>())
         {
             this.conf = conf;
             this.manager = manager;
+            this.queue = queue;
         }
 
-        protected abstract Task OnMessageAsync(TcpClient socket, object message,
-            CancellationToken cancellationToken);
+        protected virtual async Task OnMessageAsync(TcpClient socket, PlayerMessage message,
+            CancellationToken cancellationToken)
+        {
+            var playerMessage = message;
+
+            // TODO: To be changed later.
+            playerMessage.PlayerID = manager.GetId(socket);
+            await queue.SendAsync(playerMessage, cancellationToken);
+        }
 
         protected virtual void OnConnected(TcpClient socket)
         {
