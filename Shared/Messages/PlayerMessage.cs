@@ -2,11 +2,11 @@ using Shared.Enums;
 
 namespace Shared.Messages
 {
-    public class PlayerMessage
+    public class PlayerMessage : Message
     {
-        public PlayerMessageID MessageID { get; set; }
+        public PlayerMessageID MessageId { get; set; }
 
-        public int PlayerID { get; set; }
+        public int PlayerId { get; set; }
 
         public string Payload { get; set; }
     }
