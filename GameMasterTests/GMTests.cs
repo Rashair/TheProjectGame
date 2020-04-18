@@ -255,20 +255,14 @@ namespace GameMaster.Tests
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
 
-            // TODO
-           // var sockets = manager.GetValue<SocketManager<TcpClient, GMMessage>,
-               // ConcurrentDictionary<int, TcpClient>>("sockets");
             for (int idRed = 0; idRed < conf.NumberOfPlayersPerTeam; ++idRed)
             {
                 var player = new GMPlayer(idRed, conf, client, Team.Red, logger);
                 players.Add(idRed, player);
                
-                // sockets.TryAdd(idRed, Mock.Of<TcpClient>());
                 int idBlue = idRed + conf.NumberOfPlayersPerTeam;
                 player = new GMPlayer(idBlue, conf, client, Team.Blue, logger);
                 players.Add(idBlue, player);
-
-               // sockets.TryAdd(idBlue, Mock.Of<TcpClient>());
             }
             gameMaster.Invoke("InitGame");
 
