@@ -202,6 +202,7 @@ namespace Player.Models
             }
             else
             {
+                // TODO: different algorithm - whole list is shifted, maybe from end?
                 response.RespondToID = WaitingPlayers[0];
                 WaitingPlayers.RemoveAt(0);
             }
@@ -228,7 +229,7 @@ namespace Player.Models
             }
             message.Payload = response.Serialize();
             await Communicate(message, cancellationToken);
-            penaltyTime = int.Parse(PenaltiesTimes.InformationExchange);
+            penaltyTime = PenaltiesTimes.Response;
         }
 
         public async Task RequestsResponse(CancellationToken cancellationToken, int respondToID, bool isFromLeader = false)
@@ -239,6 +240,7 @@ namespace Player.Models
             }
             else
             {
+                // TODO: They are always in waiting, fix this!
                 WaitingPlayers.Add(respondToID);
             }
         }
@@ -278,14 +280,12 @@ namespace Player.Models
                 case GMMessageID.CheckAnswer:
                     CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
                     IsHeldPieceSham = payloadCheck.Sham;
-                    penaltyTime = int.Parse(PenaltiesTimes.CheckForSham);
+                    penaltyTime = PenaltiesTimes.CheckPiece;
                     break;
                 case GMMessageID.DestructionAnswer:
                     HasPiece = false;
                     IsHeldPieceSham = null;
-
-                    // TODO: switch to conf
-                    penaltyTime = 100;
+                    penaltyTime = PenaltiesTimes.DestroyPiece;
                     break;
                 case GMMessageID.DiscoverAnswer:
                     DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
@@ -306,7 +306,7 @@ namespace Player.Models
                         Board[Position.y + 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNE;
                     if (Position.y > 0 && Position.x > 0)
                         Board[Position.y - 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSW;
-                    penaltyTime = int.Parse(PenaltiesTimes.Discovery);
+                    penaltyTime = PenaltiesTimes.Discover;
                     break;
                 case GMMessageID.EndGame:
                     EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
@@ -372,14 +372,12 @@ namespace Player.Models
                         Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
                         Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece;
                     }
-                    penaltyTime = int.Parse(PenaltiesTimes.Move);
+                    penaltyTime = PenaltiesTimes.Move;
                     break;
                 case GMMessageID.PickAnswer:
                     HasPiece = true;
-
-                    // TODO: Add if this value will be in configuration
                     Board[Position.y, Position.x].DistToPiece = int.MaxValue;
-                    penaltyTime = 100;
+                    penaltyTime = PenaltiesTimes.PickPiece;
                     break;
                 case GMMessageID.PutAnswer:
                     HasPiece = false;
@@ -392,7 +390,7 @@ namespace Player.Models
                         ++discovered;
                     }
                     Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredNotGoal;
-                    penaltyTime = int.Parse(PenaltiesTimes.PutPiece);
+                    penaltyTime = PenaltiesTimes.PutPiece;
                     break;
                 case GMMessageID.GiveInfoForwarded:
                     GiveInfoForwardedPayload payloadGive = JsonConvert.DeserializeObject<GiveInfoForwardedPayload>(message.Payload);
@@ -414,6 +412,7 @@ namespace Player.Models
                             }
                         }
                     }
+                    penaltyTime = PenaltiesTimes.Response;
                     break;
                 case GMMessageID.NotWaitedError:
                     NotWaitedErrorPayload errorPayload = JsonConvert.DeserializeObject<NotWaitedErrorPayload>(message.Payload);
@@ -424,18 +423,16 @@ namespace Player.Models
                     }
                     break;
                 case GMMessageID.PickError:
-                    // TODO: from config
-                    penaltyTime = 100;
+                    penaltyTime = PenaltiesTimes.PickPiece;
                     break;
                 case GMMessageID.PutError:
-                    penaltyTime = int.Parse(PenaltiesTimes.PutPiece);
+                    penaltyTime = PenaltiesTimes.PutPiece;
                     break;
                 case GMMessageID.UnknownError:
                     penaltyTime = 50;
                     break;
             }
 
-            await Task.Delay(20);
             return false;
         }
 

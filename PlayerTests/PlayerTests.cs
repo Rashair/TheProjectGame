@@ -151,7 +151,7 @@ namespace Player.Tests
             NumberOfPlayers numberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 };
             int numberOfPieces = 2;
             int numberOfGoals = 2;
-            Penalties penalties = new Penalties { Move = "0", CheckForSham = "0", Discovery = "0", DestroyPiece = "0", PutPiece = "0", InformationExchange = "0" };
+            Penalties penalties = new Penalties();
             float shanProbability = 0.5f;
             Position position = new Position { X = 1, Y = 1 };
 
@@ -209,12 +209,7 @@ namespace Player.Tests
             Assert.Equal(expectedisLeader, isLeaderResult);
             Assert.Equal(teamId, teamResult);
             Assert.Equal(expectedBoardSize, boardSizeResult);
-            Assert.True(penalties.CheckForSham == penaltiesResult.CheckForSham
-                && penalties.DestroyPiece == penaltiesResult.DestroyPiece
-                && penalties.Discovery == penaltiesResult.DestroyPiece
-                && penalties.InformationExchange == penaltiesResult.InformationExchange
-                && penalties.Move == penaltiesResult.Move
-                && penalties.PutPiece == penaltiesResult.PutPiece);
+            Assert.True(penalties.AreAllPropertiesTheSame(penaltiesResult));
             Assert.Equal(expectedPosition, positionResult);
             Assert.Equal(enemiesId, enemiesResult);
             Assert.Equal(goalAreaSize, goalAreaSizeResult);
@@ -337,7 +332,7 @@ namespace Player.Tests
                 NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
                 NumberOfPieces = 2,
                 NumberOfGoals = 2,
-                Penalties = new Penalties { Move = "0", CheckForSham = "0", Discovery = "0", DestroyPiece = "0", PutPiece = "0", InformationExchange = "0" },
+                Penalties = new Penalties(),
                 ShamPieceProbability = 0.5f,
                 Position = new Position { X = 1, Y = 1 },
             };

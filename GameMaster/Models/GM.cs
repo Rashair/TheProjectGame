@@ -269,12 +269,14 @@ namespace GameMaster.Models
                 payload.NumberOfGoals = conf.NumberOfGoals;
                 payload.Penalties = new Penalties
                 {
-                    Move = conf.MovePenalty.ToString(),
-                    InformationExchange = conf.AskPenalty.ToString(),
-                    Discovery = conf.DiscoverPenalty.ToString(),
-                    PutPiece = conf.PutPenalty.ToString(),
-                    CheckForSham = conf.CheckPenalty.ToString(),
-                    DestroyPiece = conf.DestroyPenalty.ToString(),
+                    Move = conf.MovePenalty,
+                    Ask = conf.AskPenalty,
+                    Response = conf.ResponsePenalty,
+                    Discover = conf.DiscoverPenalty,
+                    PickPiece = conf.PickPenalty,
+                    CheckPiece = conf.CheckPenalty,
+                    DestroyPiece = conf.DestroyPenalty,
+                    PutPiece = conf.PutPenalty,
                 };
                 payload.ShamPieceProbability = conf.ShamPieceProbability;
                 payload.Position = new Position
