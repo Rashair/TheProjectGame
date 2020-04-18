@@ -71,15 +71,12 @@ namespace Player.Services
                 return;
             }
 
-            while (!stoppingToken.IsCancellationRequested && client.IsOpen)
+            while (!stoppingToken.IsCancellationRequested && receivedMessage)
             {
-                if (receivedMessage)
+                bool sended = await queue.SendAsync(message, stoppingToken);
+                if (!sended)
                 {
-                    bool sended = await queue.SendAsync(message, stoppingToken);
-                    if (!sended)
-                    {
-                        logger.Warning($"SocketService| GMMessage id: {message.Id} has been lost");
-                    }
+                    logger.Warning($"SocketService| GMMessage id: {message.Id} has been lost");
                 }
                 (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
             }
