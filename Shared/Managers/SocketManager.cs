@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GameMaster.Managers
+namespace Shared.Managers
 {
     public abstract class SocketManager<TSocket, TMessage> : ISocketManager<TSocket, TMessage>
     {

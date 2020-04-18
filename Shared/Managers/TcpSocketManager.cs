@@ -1,63 +1,57 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Newtonsoft.Json;
 using Serilog;
-using Shared;
+using Shared.Clients;
 
-namespace GameMaster.Managers
+namespace Shared.Managers
 {
-    public class TcpSocketManager<TMessage> : SocketManager<TcpClient, TMessage>
+    public class TcpSocketManager<R, S> : SocketManager<TcpSocketClient<R, S>, S>
     {
         private readonly ILogger logger;
 
         public TcpSocketManager(ILogger log)
         {
-            this.logger = log.ForContext<TcpSocketManager<TMessage>>();
+            this.logger = log.ForContext<TcpSocketManager<R, S>>();
         }
 
-        protected override bool IsOpen(TcpClient socket)
+        protected override bool IsOpen(TcpSocketClient<R, S> socket)
         {
-            return socket.Connected;
+            return socket.IsOpen;
         }
 
-        protected override bool IsSame(TcpClient a, TcpClient b)
+        protected override bool IsSame(TcpSocketClient<R, S> a, TcpSocketClient<R, S> b)
         {
-            return a == b;
+            return ((TcpClient)a.GetSocket()) == ((TcpClient)b.GetSocket());
         }
 
-        protected override Task CloseSocketAsync(TcpClient socket, CancellationToken cancellationToken)
+        protected override async Task CloseSocketAsync(TcpSocketClient<R, S> socket,
+            CancellationToken cancellationToken)
         {
-            socket.Close();
             logger.Information("Closing socket");
-            return Task.CompletedTask;
+            await socket.CloseAsync(cancellationToken);
         }
 
-        protected override async Task SendMessageAsync(TcpClient socket, TMessage message, CancellationToken cancellationToken)
+        protected override async Task SendMessageAsync(TcpSocketClient<R, S> socket, S message,
+            CancellationToken cancellationToken)
         {
-            if (!cancellationToken.IsCancellationRequested && socket.Connected)
+            if (!cancellationToken.IsCancellationRequested && socket.IsOpen)
             {
                 try
                 {
-                    var stream = socket.GetStream();
-
-                    string serialized = JsonConvert.SerializeObject(message);
-                    byte[] buffer = Encoding.UTF8.GetBytes(serialized);
-                    var length = buffer.Length.ToLittleEndian();
-                    await stream.WriteAsync(length, cancellationToken);
-                    await stream.WriteAsync(buffer, cancellationToken);
+                    await socket.SendAsync(message, cancellationToken);
                 }
                 catch (Exception e)
                 {
                     logger.Error($"Failed to send message: {e}");
+                    throw;
                 }
             }
             else
             {
-                logger.Information($"Connection state: {socket.Connected}");
+                logger.Information($"Connection state: {socket.IsOpen}");
             }
         }
     }
