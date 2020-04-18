@@ -163,7 +163,7 @@ namespace GameMaster.Models
                 case PlayerMessageId.Pick:
                     await player.PickAsync(cancellationToken);
                     break;
-                case PlayerMessageID.Put:
+                case PlayerMessageId.Put:
                     (bool? point, bool removed) = await player.PutAsync(cancellationToken);
                     if (point == true)
                     {

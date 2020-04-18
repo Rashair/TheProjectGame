@@ -179,8 +179,8 @@ namespace IntegrationTests
 
             for (int i = 0; i < Conf?.NumberOfPlayersPerTeam; ++i)
             {
-                redPlayersHosts[i].Dispose();
-                bluePlayersHosts[i].Dispose();
+                redPlayersHosts?[i].Dispose();
+                bluePlayersHosts?[i].Dispose();
             }
         }
     }

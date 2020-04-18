@@ -14,7 +14,7 @@ namespace GameMaster.Models.Fields
             return false;
         }
 
-        public override (bool?, bool) Put(AbstractPiece piece)
+        public override (bool? goal, bool removed) Put(AbstractPiece piece)
         {
             if (piece.CheckForSham() == false)
             {

@@ -91,7 +91,7 @@ namespace GameMaster.Tests
             // Act
             foreach (AbstractPiece p in pieces)
             {
-                result = goalField.Put(p).Item1;
+                result = goalField.Put(p).goal;
             }
 
             // Assert

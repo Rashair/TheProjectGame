@@ -321,7 +321,7 @@ namespace GameMaster.Tests
             lastSended = null;
             (goal, removed) = await player.PutAsync(CancellationToken.None);
             Assert.False(goal == true || removed);
-            Assert.True(lastSended.Id == GMMessageID.PutError);
+            Assert.True(lastSended.Id == GMMessageId.PutError);
             var payload = JsonConvert.DeserializeObject<PutErrorPayload>(lastSended.Payload);
             Assert.True(payload.ErrorSubtype == PutError.AgentNotHolding);
         }
