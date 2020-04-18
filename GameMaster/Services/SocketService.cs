@@ -57,6 +57,7 @@ namespace GameMaster.Services
                 }
                 (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
             }
+            await client.CloseAsync(stoppingToken);
         }
     }
 }
