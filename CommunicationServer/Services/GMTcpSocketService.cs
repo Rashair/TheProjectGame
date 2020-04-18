@@ -57,7 +57,7 @@ namespace CommunicationServer.Services
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             // Block another services untill GM connects, start sync section
-            TcpSocketClient<GMMessage, PlayerMessage> gmClient = ConnectGM(conf.ListenerIP, conf.PortGM, stoppingToken);
+            TcpSocketClient<GMMessage, PlayerMessage> gmClient = ConnectGM(conf.ListenerIP, conf.GMPort, stoppingToken);
             if (gmClient is null)
             {
                 return;
