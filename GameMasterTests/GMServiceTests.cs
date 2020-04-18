@@ -1,9 +1,7 @@
-﻿using System.Net.Sockets;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Services;
 using GameMaster.Tests.Mocks;
@@ -11,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using Serilog;
+using Shared.Clients;
 using Shared.Messages;
 using TestsShared;
 using Xunit;
@@ -27,7 +26,7 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             services.AddSingleton<GameConfiguration>(conf);
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
-            services.AddSingleton<ISocketManager<TcpClient, GMMessage>, TcpSocketManager<GMMessage>>();
+            services.AddSingleton<ISocketClient<PlayerMessage, GMMessage>, TcpSocketClient<PlayerMessage, GMMessage>>();
             int messagesNum = 10;
             var queue = new BufferBlock<PlayerMessage>();
             for (int i = 0; i < messagesNum; ++i)
@@ -69,7 +68,7 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
             services.AddSingleton<GameConfiguration>(conf);
-            services.AddSingleton<ISocketManager<TcpClient, GMMessage>, TcpSocketManager<GMMessage>>();
+            services.AddSingleton<ISocketClient<PlayerMessage, GMMessage>, TcpSocketClient<PlayerMessage, GMMessage>>();
             int messagesNum = 10;
             var queue = new BufferBlock<PlayerMessage>();
             for (int i = 0; i < messagesNum; ++i)
