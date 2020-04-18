@@ -84,6 +84,7 @@ namespace GameMaster
             services.AddSingleton(conf);
 
             services.AddSingleton<GM>();
+            services.AddHostedService<SocketService>();
             services.AddHostedService<GMService>();
             services.AddHostedService<TcpListenerService>();
         }
