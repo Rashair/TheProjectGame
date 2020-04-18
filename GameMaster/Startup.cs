@@ -1,11 +1,8 @@
 using System;
 using System.IO;
-using System.Net.Sockets;
 using System.Threading.Tasks.Dataflow;
 
-using GameMaster.Managers;
 using GameMaster.Models;
-using GameMaster.Models.Messages;
 using GameMaster.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -67,7 +64,6 @@ namespace GameMaster
 
             services.AddSingleton<ILogger>(GetLogger());
 
-            services.AddSingleton<TcpSocketManager<BackendMessage>>();
             services.AddSingleton<ISocketClient<PlayerMessage, GMMessage>, TcpSocketClient<PlayerMessage, GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
@@ -87,7 +83,6 @@ namespace GameMaster
             services.AddSingleton<GM>();
             services.AddHostedService<SocketService>();
             services.AddHostedService<GMService>();
-            services.AddHostedService<TcpListenerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
