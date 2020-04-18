@@ -168,7 +168,14 @@ namespace GameMaster.Tests
                         $"Incorect value for distance: {discoveryActionResult[neighbours[k].dir]} != {neighbours[k].dist}");
                 }
             }
-            Assert.Equal(neighbours.Count, discoveryActionResult.Count);
+
+            int discoveredFields = 0;
+            foreach (var distance in discoveryActionResult)
+            {
+                if (distance.Value >= 0)
+                    ++discoveredFields;
+            }
+            Assert.Equal(neighbours.Count, discoveredFields);
         }
 
         public int ManhattanDistance(AbstractField f1, AbstractField f2)
@@ -276,6 +283,32 @@ namespace GameMaster.Tests
             Assert.True(gameMaster.WasGameStarted);
 
             // TODO create mock of websocket and check if GM sends messages
+        }
+
+        [Fact]
+        public void TestDiscoverShouldReturnNegativeNumbers()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration();
+            var queue = new BufferBlock<PlayerMessage>();
+            var lifetime = Mock.Of<IApplicationLifetime>();
+            var manager = new WebSocketManager<GMMessage>();
+            var gameMaster = new GM(lifetime, conf, queue, manager);
+            gameMaster.Invoke("InitGame");
+
+            // Act
+            var distances = gameMaster.Invoke<GM, Dictionary<Direction, int>>("Discover", new TaskField(0, 5));
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
+
+            int expectedResult = -1;
+            int resultS = distances[Direction.S];
+            int resultSE = distances[Direction.SE];
+            int resultSW = distances[Direction.SW];
+
+            // Assert
+            Assert.Equal(expectedResult, resultS);
+            Assert.Equal(expectedResult, resultSE);
+            Assert.Equal(expectedResult, resultSW);
         }
     }
 }

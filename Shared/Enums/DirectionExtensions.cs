@@ -27,11 +27,11 @@ namespace Shared.Enums
             switch (dir)
             {
                 case Direction.NW:
-                    return (center.y - 1, center.x - 1);
+                    return (center.y + 1, center.x - 1);
                 case Direction.N:
-                    return (center.y - 1, center.x);
+                    return (center.y + 1, center.x);
                 case Direction.NE:
-                    return (center.y - 1, center.x + 1);
+                    return (center.y + 1, center.x + 1);
                 case Direction.W:
                     return (center.y, center.x - 1);
                 case Direction.FromCurrent:
@@ -39,11 +39,11 @@ namespace Shared.Enums
                 case Direction.E:
                     return (center.y, center.x + 1);
                 case Direction.SW:
-                    return (center.y + 1, center.x - 1);
+                    return (center.y - 1, center.x - 1);
                 case Direction.S:
-                    return (center.y + 1, center.x);
+                    return (center.y - 1, center.x);
                 case Direction.SE:
-                    return (center.y + 1, center.x + 1);
+                    return (center.y - 1, center.x + 1);
 
                 default:
                     return (0, 0);
