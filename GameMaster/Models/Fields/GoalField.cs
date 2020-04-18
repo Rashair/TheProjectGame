@@ -14,27 +14,23 @@ namespace GameMaster.Models.Fields
             return false;
         }
 
-        public override (bool, bool) Put(AbstractPiece piece)
+        public override (bool?, bool) Put(AbstractPiece piece)
         {
             if (piece.CheckForSham() == false)
             {
+                if (this.ContainsPieces() == false)
                 {
-                    if (this.ContainsPieces() == false)
-                    {
-                        this.Pieces.Add(piece);
-
-                        return (true, true);
-                    }
-                    else
-                    {
-                        return (false, true);
-                    }
+                    this.Pieces.Add(piece);
+                    return (true, true);
+                }
+                else
+                {
+                    return (false, true);
                 }
             }
             else
             {
-                Pieces.Add(piece);
-                return (false, true);
+                return (null, true);
             }
         }
 

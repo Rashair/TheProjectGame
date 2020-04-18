@@ -23,7 +23,7 @@ namespace GameMaster.Models.Fields
             return false;
         }
 
-        public override (bool goal, bool removed) Put(AbstractPiece piece)
+        public override (bool? goal, bool removed) Put(AbstractPiece piece)
         {
             if (piece.CheckForSham() == false)
             {
@@ -33,7 +33,7 @@ namespace GameMaster.Models.Fields
             else
             {
                 Pieces.Add(piece);
-                return (false, false);
+                return (null, false);
             }
         }
 

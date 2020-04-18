@@ -28,7 +28,7 @@ namespace GameMaster.Models.Fields
         // originally returned void
         public abstract bool PickUp(GMPlayer player);
 
-        public abstract (bool goal, bool removed) Put(AbstractPiece piece);
+        public abstract (bool? goal, bool removed) Put(AbstractPiece piece);
 
         // TODO
         public abstract bool CanPick();

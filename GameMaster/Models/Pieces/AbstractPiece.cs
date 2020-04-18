@@ -6,7 +6,7 @@ namespace GameMaster.Models.Pieces
     {
         public abstract bool CheckForSham();
 
-        public (bool goal, bool removed) Put(AbstractField abstractField)
+        public (bool? goal, bool removed) Put(AbstractField abstractField)
         {
             return abstractField.Put(this);
         }
