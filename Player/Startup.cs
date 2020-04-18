@@ -35,7 +35,7 @@ namespace Player
             // TODO: add logpath path to appsettings and pass it to ConfigureLogger()
             string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "Player");
             int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
-            string fileName = $"pl-{DateTime.Now:HH-MM-ss}-{processId:000000}.log";
+            string fileName = $"pl-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
             return new LoggerConfiguration()
                .Enrich.FromLogContext()
