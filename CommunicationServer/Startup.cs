@@ -1,14 +1,16 @@
 ﻿using System;
 using System.IO;
 
-using static System.Environment;
-
+using CommunicationServer.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
+
+using static System.Environment;
 
 namespace CommunicationServer
 {
@@ -17,8 +19,11 @@ namespace CommunicationServer
         public const string LoggerTemplate =
             "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
 
-        public Startup()
+        public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration)
         {
+            Configuration = configuration;
         }
 
         private ILogger GetLogger()
@@ -44,6 +49,14 @@ namespace CommunicationServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ILogger>(GetLogger());
+            ServerConfigurations conf = new ServerConfigurations();
+
+            Configuration.Bind("DefaultCommunicationServerConfig", conf);
+
+            // For console override;
+            Configuration.Bind(conf);
+
+            services.AddSingleton(conf);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
