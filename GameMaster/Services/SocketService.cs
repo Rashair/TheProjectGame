@@ -46,18 +46,17 @@ namespace GameMaster.Services
                 return;
             }
 
-            while (!stoppingToken.IsCancellationRequested && client.IsOpen)
+            (bool receivedMessage, PlayerMessage message) = await client.ReceiveAsync(stoppingToken);
+            while (!stoppingToken.IsCancellationRequested && receivedMessage)
             {
-                (bool receivedMessage, PlayerMessage message) = await client.ReceiveAsync(stoppingToken);
-                if (receivedMessage)
+                bool sended = await queue.SendAsync(message, stoppingToken);
+                if (!sended)
                 {
-                    bool sended = await queue.SendAsync(message, stoppingToken);
-                    if (!sended)
-                    {
-                        logger.Warning($"SocketService| PlayerMessage id: {message.MessageID} has been lost");
-                    }
+                    logger.Warning($"SocketService| PlayerMessage id: {message.MessageId} has been lost");
                 }
+                (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
             }
+            await client.CloseAsync(stoppingToken);
         }
     }
 }

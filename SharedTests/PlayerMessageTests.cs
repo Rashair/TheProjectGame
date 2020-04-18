@@ -23,7 +23,7 @@ namespace Shared.Tests
                 var deserializedObject = JsonConvert.DeserializeObject<PlayerMessage>(jsonString);
 
                 // Assert
-                Assert.Equal(msg.Value, deserializedObject.MessageID);
+                Assert.Equal(msg.Value, deserializedObject.MessageId);
             }
         }
 
@@ -38,7 +38,7 @@ namespace Shared.Tests
             {
                 var obj = new PlayerMessage
                 {
-                    MessageID = msg.Value,
+                    MessageId = msg.Value,
                     Payload = new EmptyAnswerPayload().Serialize(),
                 };
 

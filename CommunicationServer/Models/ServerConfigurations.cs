@@ -7,9 +7,9 @@ namespace CommunicationServer.Models
 {
     public class ServerConfigurations
     {
-        public int PortAgentow { get; set; }
+        public int PlayerPort { get; set; }
 
-        public int PortGM { get; set; }
+        public int GMPort { get; set; }
 
         public string ListenerIP { get; set; }
     }
