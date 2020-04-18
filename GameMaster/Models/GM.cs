@@ -163,9 +163,9 @@ namespace GameMaster.Models
                 case PlayerMessageId.Pick:
                     await player.PickAsync(cancellationToken);
                     break;
-                case PlayerMessageId.Put:
-                    (bool point, bool removed) = await player.PutAsync(cancellationToken);
-                    if (point)
+                case PlayerMessageID.Put:
+                    (bool? point, bool removed) = await player.PutAsync(cancellationToken);
+                    if (point == true)
                     {
                         int y = player.GetPosition()[0];
                         if (y < conf.GoalAreaHeight)

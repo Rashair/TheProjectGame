@@ -100,8 +100,8 @@ namespace GameMaster.Tests
             int y = 4;
             NormalPiece piece = new NormalPiece();
             Mock<GoalField> field = new Mock<GoalField>(x, y);
-            field.Setup(m => m.Put(piece)).Returns(true);
-            Assert.True(piece.Put(field.Object));
+            field.Setup(m => m.Put(piece)).Returns((true, true));
+            Assert.True(piece.Put(field.Object).goal);
         }
 
         [Fact]
@@ -111,8 +111,8 @@ namespace GameMaster.Tests
             int y = 4;
             ShamPiece piece = new ShamPiece();
             Mock<NonGoalField> field = new Mock<NonGoalField>(x, y);
-            field.Setup(m => m.Put(piece)).Returns(false);
-            Assert.False(piece.Put(field.Object));
+            field.Setup(m => m.Put(piece)).Returns((false, true));
+            Assert.False(piece.Put(field.Object).goal);
         }
 
         public class DiscoverTestData : IEnumerable<object[]>

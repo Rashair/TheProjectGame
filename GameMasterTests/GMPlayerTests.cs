@@ -312,16 +312,16 @@ namespace GameMaster.Tests
             Assert.True(field.MoveHere(player));
 
             lastSended = null;
-            (bool goal, bool removed) = await player.PutAsync(CancellationToken.None);
-            Assert.True(goal && removed);
+            (bool? goal, bool removed) = await player.PutAsync(CancellationToken.None);
+            Assert.True(goal == true && removed);
             Assert.True(player.Holding is null);
             Assert.True(lastSended.Id == GMMessageId.PutAnswer);
 
             await Task.Delay(conf.PutPenalty * 2);
             lastSended = null;
             (goal, removed) = await player.PutAsync(CancellationToken.None);
-            Assert.False(goal || removed);
-            Assert.True(lastSended.Id == GMMessageId.PutError);
+            Assert.False(goal == true || removed);
+            Assert.True(lastSended.Id == GMMessageID.PutError);
             var payload = JsonConvert.DeserializeObject<PutErrorPayload>(lastSended.Payload);
             Assert.True(payload.ErrorSubtype == PutError.AgentNotHolding);
         }
