@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -201,14 +201,14 @@ namespace Player.Models
                 WaitingPlayers.RemoveAt(0);
             }
 
-            response.Distances = new int[BoardSize.x, BoardSize.y];
-            response.RedTeamGoalAreaInformations = new GoalInfo[BoardSize.x, BoardSize.y];
-            response.BlueTeamGoalAreaInformations = new GoalInfo[BoardSize.x, BoardSize.y];
+            response.Distances = new int[BoardSize.y, BoardSize.x];
+            response.RedTeamGoalAreaInformations = new GoalInfo[BoardSize.y, BoardSize.x];
+            response.BlueTeamGoalAreaInformations = new GoalInfo[BoardSize.y, BoardSize.x];
 
             for (int i = 0; i < Board.Length; ++i)
             {
-                int row = i / BoardSize.y;
-                int col = i % BoardSize.y;
+                int row = i / BoardSize.x;
+                int col = i % BoardSize.x;
                 response.Distances[row, col] = Board[row, col].DistToPiece;
                 if (Team == Team.Red)
                 {
@@ -288,14 +288,22 @@ namespace Player.Models
                 case GMMessageID.DiscoverAnswer:
                     DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
                     Board[Position.y, Position.x].DistToPiece = payloadDiscover.DistanceFromCurrent;
-                    Board[Position.y + 1, Position.x].DistToPiece = payloadDiscover.DistanceE;
-                    Board[Position.y - 1, Position.x].DistToPiece = payloadDiscover.DistanceW;
-                    Board[Position.y, Position.x + 1].DistToPiece = payloadDiscover.DistanceN;
-                    Board[Position.y, Position.x - 1].DistToPiece = payloadDiscover.DistanceS;
-                    Board[Position.y + 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSE;
-                    Board[Position.y - 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNW;
-                    Board[Position.y + 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNE;
-                    Board[Position.y - 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSW;
+                    if (Position.y + 1 < BoardSize.y) 
+                        Board[Position.y + 1, Position.x].DistToPiece = payloadDiscover.DistanceN;
+                    if (Position.y > 0) 
+                        Board[Position.y - 1, Position.x].DistToPiece = payloadDiscover.DistanceS;
+                    if (Position.x + 1 < BoardSize.x) 
+                        Board[Position.y, Position.x + 1].DistToPiece = payloadDiscover.DistanceE;
+                    if (Position.x > 0)
+                        Board[Position.y, Position.x - 1].DistToPiece = payloadDiscover.DistanceW;
+                    if (Position.y + 1 < BoardSize.y && Position.x > 0)
+                        Board[Position.y + 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceNW;
+                    if (Position.y > 0 && Position.x + 1 < BoardSize.x)
+                        Board[Position.y - 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceSE;
+                    if (Position.y + 1 < BoardSize.y && Position.x + 1 < BoardSize.x) 
+                        Board[Position.y + 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNE;
+                    if (Position.y > 0 && Position.x > 0)
+                        Board[Position.y - 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSW;
                     penaltyTime = int.Parse(PenaltiesTimes.Discovery);
                     break;
                 case GMMessageID.EndGame:
