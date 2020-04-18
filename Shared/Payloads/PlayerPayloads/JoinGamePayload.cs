@@ -1,8 +1,7 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Shared.Enums;
 
-namespace Shared.Payloads
+namespace Shared.Payloads.PlayerPayloads
 {
     public class JoinGamePayload : Payload
     {

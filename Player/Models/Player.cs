@@ -13,6 +13,8 @@ using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
 using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
+using Shared.Payloads.PlayerPayloads;
 using Shared.Senders;
 
 namespace Player.Models
@@ -22,7 +24,6 @@ namespace Player.Models
         private readonly BufferBlock<GMMessage> queue;
         private readonly ISocketClient<GMMessage, PlayerMessage> client;
         private readonly ILogger logger;
-        private long moveCounter = 0;
 
         private int id;
         private ISender sender;
@@ -33,7 +34,7 @@ namespace Player.Models
         private Team? winner;
         private int discovered;
 
-        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, 
+        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage,
             PlayerMessage> client, ILogger logger)
         {
             this.conf = conf;
@@ -272,7 +273,8 @@ namespace Player.Models
         {
             var cancellationTimespan = TimeSpan.FromMinutes(2);
             GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
-            logger.Information($"|{message.Id} | {message.Payload} | HasPiece: {HasPiece} | {discovered} ");
+            logger.Information($"|{message.Id} | {message.Payload} | HasPiece: {HasPiece} | Discovered goal-fields: " +
+                $"{discovered} ");
             switch (message.Id)
             {
                 case GMMessageID.CheckAnswer:
@@ -288,11 +290,11 @@ namespace Player.Models
                 case GMMessageID.DiscoverAnswer:
                     DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
                     Board[Position.y, Position.x].DistToPiece = payloadDiscover.DistanceFromCurrent;
-                    if (Position.y + 1 < BoardSize.y) 
+                    if (Position.y + 1 < BoardSize.y)
                         Board[Position.y + 1, Position.x].DistToPiece = payloadDiscover.DistanceN;
-                    if (Position.y > 0) 
+                    if (Position.y > 0)
                         Board[Position.y - 1, Position.x].DistToPiece = payloadDiscover.DistanceS;
-                    if (Position.x + 1 < BoardSize.x) 
+                    if (Position.x + 1 < BoardSize.x)
                         Board[Position.y, Position.x + 1].DistToPiece = payloadDiscover.DistanceE;
                     if (Position.x > 0)
                         Board[Position.y, Position.x - 1].DistToPiece = payloadDiscover.DistanceW;
@@ -300,7 +302,7 @@ namespace Player.Models
                         Board[Position.y + 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceNW;
                     if (Position.y > 0 && Position.x + 1 < BoardSize.x)
                         Board[Position.y - 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceSE;
-                    if (Position.y + 1 < BoardSize.y && Position.x + 1 < BoardSize.x) 
+                    if (Position.y + 1 < BoardSize.y && Position.x + 1 < BoardSize.x)
                         Board[Position.y + 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNE;
                     if (Position.y > 0 && Position.x > 0)
                         Board[Position.y - 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSW;
@@ -381,13 +383,18 @@ namespace Player.Models
                     HasPiece = false;
                     IsHeldPieceSham = null;
 
-                    // TODO: info about discovered goal !!!
-                    var payload = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
-                    if (Board[Position.y, Position.x].GoalInfo == GoalInfo.IDK)
+                    var payload = JsonConvert.DeserializeObject<PutAnswerPayload>(message.Payload);
+                    if (payload.WasGoal.HasValue)
                     {
-                        ++discovered;
+                        bool goal = payload.WasGoal.Value;
+                        if (Board[Position.y, Position.x].GoalInfo == GoalInfo.IDK)
+                        {
+                            ++discovered;
+                        }
+                        Board[Position.y, Position.x].GoalInfo = goal ?
+                            GoalInfo.DiscoveredGoal : GoalInfo.DiscoveredNotGoal;
                     }
-                    Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredNotGoal;
+
                     penaltyTime = PenaltiesTimes.PutPiece;
                     break;
                 case GMMessageID.GiveInfoForwarded:

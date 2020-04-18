@@ -9,7 +9,7 @@ namespace GameMaster.Models.Pieces
             return false;
         }
 
-        public override (bool, bool) PutOnField(AbstractField abstractField)
+        public override (bool?, bool) PutOnField(AbstractField abstractField)
         {
             return abstractField.PutNormal(this);
         }

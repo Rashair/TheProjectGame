@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Shared.Enums;
-using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
+using Shared.Payloads.PlayerPayloads;
 using Xunit;
 
 namespace Shared.Tests

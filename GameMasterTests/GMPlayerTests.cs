@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 using Serilog;
 using Shared.Enums;
 using Shared.Messages;
-using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
 using TestsShared;
 using Xunit;
 
@@ -265,15 +265,15 @@ namespace GameMaster.Tests
             Assert.True(field.MoveHere(player));
 
             lastSended = null;
-            (bool goal, bool removed) = await player.PutAsync(CancellationToken.None);
-            Assert.True(goal && removed);
+            (bool? goal, bool removed) = await player.PutAsync(CancellationToken.None);
+            Assert.True(goal.Value && removed);
             Assert.True(player.Holding is null);
             Assert.True(lastSended.Id == GMMessageID.PutAnswer);
 
             await Task.Delay(conf.PutPenalty * 2);
             lastSended = null;
             (goal, removed) = await player.PutAsync(CancellationToken.None);
-            Assert.False(goal || removed);
+            Assert.False(goal.Value || removed);
             Assert.True(lastSended.Id == GMMessageID.PutError);
             var payload = JsonConvert.DeserializeObject<PutErrorPayload>(lastSended.Payload);
             Assert.True(payload.ErrorSubtype == PutError.AgentNotHolding);

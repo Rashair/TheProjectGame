@@ -10,6 +10,7 @@ using Serilog;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
 
 namespace GameMaster.Models
 {
@@ -135,10 +136,10 @@ namespace GameMaster.Models
         /// <returns>
         /// Task<(bool goal, bool removed)>
         /// </returns>
-        public async Task<(bool, bool)> PutAsync(CancellationToken cancellationToken)
+        public async Task<(bool?, bool)> PutAsync(CancellationToken cancellationToken)
         {
             bool isUnlocked = await TryLockAsync(conf.PutPenalty, cancellationToken);
-            (bool goal, bool removed) = (false, false);
+            (bool? goal, bool removed) = (false, false);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 GMMessage message;
@@ -283,10 +284,13 @@ namespace GameMaster.Models
             return new GMMessage(GMMessageID.PutError, payload);
         }
 
-        private GMMessage PutAnswerMessage(bool goal)
+        private GMMessage PutAnswerMessage(bool? goal)
         {
             // TODO Issue 119
-            EmptyAnswerPayload payload = new EmptyAnswerPayload();
+            PutAnswerPayload payload = new PutAnswerPayload()
+            {
+                WasGoal = goal
+            };
             return new GMMessage(GMMessageID.PutAnswer, payload);
         }
 

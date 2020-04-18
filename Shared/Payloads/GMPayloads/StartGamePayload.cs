@@ -3,7 +3,7 @@ using Newtonsoft.Json.Converters;
 using Shared.Enums;
 using Shared.Models;
 
-namespace Shared.Payloads
+namespace Shared.Payloads.GMPayloads
 {
     public class StartGamePayload : Payload
     {

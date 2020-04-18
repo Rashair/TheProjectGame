@@ -15,7 +15,8 @@ using Serilog;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
-using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
+using Shared.Payloads.PlayerPayloads;
 
 namespace GameMaster.Models
 {
@@ -166,8 +167,8 @@ namespace GameMaster.Models
                     await player.PickAsync(cancellationToken);
                     break;
                 case PlayerMessageID.Put:
-                    (bool point, bool removed) = await player.PutAsync(cancellationToken);
-                    if (point)
+                    (bool? point, bool removed) = await player.PutAsync(cancellationToken);
+                    if (point == true)
                     {
                         int y = player.GetPosition()[0];
                         string teamStr;

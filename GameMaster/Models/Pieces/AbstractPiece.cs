@@ -12,6 +12,6 @@ namespace GameMaster.Models.Pieces
         }
 
         // TODO Temporary fix Put()
-        public abstract (bool goal, bool removed) PutOnField(AbstractField abstractField);
+        public abstract (bool? goal, bool removed) PutOnField(AbstractField abstractField);
     }
 }

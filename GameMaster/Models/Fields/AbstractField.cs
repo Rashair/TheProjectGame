@@ -26,10 +26,10 @@ namespace GameMaster.Models.Fields
         }
 
         // TODO Temporary fix Put()
-        public abstract (bool goal, bool removed) PutNormal(AbstractPiece piece);
+        public abstract (bool? goal, bool removed) PutNormal(AbstractPiece piece);
 
         // TODO Temporary fix Put()
-        public abstract (bool goal, bool removed) PutFake(AbstractPiece piece);
+        public abstract (bool? goal, bool removed) PutFake(AbstractPiece piece);
 
         // originally returned void
         public abstract bool PickUp(GMPlayer player);

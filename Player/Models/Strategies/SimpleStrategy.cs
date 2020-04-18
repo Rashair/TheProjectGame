@@ -46,8 +46,7 @@ namespace Player.Models.Strategies
             }
             else
             {
-                if (player.IsHeldPieceSham == null 
-                    && player.PenaltiesTimes.CheckPiece < player.PenaltiesTimes.PutPiece / 2)
+                if (player.IsHeldPieceSham == null)
                 {
                     await player.CheckPiece(cancellationToken);
                     return;

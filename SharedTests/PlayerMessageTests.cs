@@ -3,7 +3,7 @@
 using Newtonsoft.Json;
 using Shared.Enums;
 using Shared.Messages;
-using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
 using Xunit;
 
 namespace Shared.Tests

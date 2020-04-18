@@ -31,16 +31,16 @@ namespace GameMaster.Models.Fields
             return true;
         }
 
-        public override (bool, bool) PutNormal(AbstractPiece piece)
+        public override (bool?, bool) PutNormal(AbstractPiece piece)
         {
             bool goal = Put(piece);
             return (goal, true);
         }
 
-        public override (bool goal, bool removed) PutFake(AbstractPiece piece)
+        public override (bool? goal, bool removed) PutFake(AbstractPiece piece)
         {
             PutSham(piece);
-            return (false, true);
+            return (null, true);
         }
 
         public override bool CanPick()
