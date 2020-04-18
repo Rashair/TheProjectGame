@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -116,6 +118,11 @@ namespace Shared.Clients
             }
 
             return length;
+        }
+
+        public async Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken)
+        {
+            await Task.WhenAll(from message in messages select SendAsync(message, cancellationToken));
         }
 
         public async Task SendAsync(S message, CancellationToken cancellationToken)

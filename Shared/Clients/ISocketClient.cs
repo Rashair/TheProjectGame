@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,5 +23,7 @@ namespace Shared.Clients
         Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken);
 
         Task SendAsync(S message, CancellationToken cancellationToken);
+
+        Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken);
     }
 }

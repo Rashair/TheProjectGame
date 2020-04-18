@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -108,6 +109,11 @@ namespace Player.Tests
 
             public async Task SendAsync(S message, CancellationToken cancellationToken)
             {
+            }
+
+            public Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
             }
         }
 
