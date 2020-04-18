@@ -20,5 +20,12 @@ namespace Shared.Messages
             Id = id;
             Payload = payload.Serialize();
         }
+
+        public GMMessage(GMMessageID id, int playerId, Payload payload)
+        {
+            Id = id;
+            PlayerId = playerId;
+            Payload = payload.Serialize();
+        }
     }
 }
