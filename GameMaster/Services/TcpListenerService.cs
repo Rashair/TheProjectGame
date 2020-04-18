@@ -13,8 +13,9 @@ using Shared.Messages;
 
 namespace GameMaster.Services
 {
-    public abstract class TcpListenerService : WaitForInitService
+    public class TcpListenerService : WaitForInitService
     {
+        private readonly ILogger log;
         private readonly GameConfiguration conf;
         private readonly BufferBlock<PlayerMessage> queue;
         protected readonly ISocketManager<TcpClient, GMMessage> manager;
@@ -24,6 +25,7 @@ namespace GameMaster.Services
            ILogger log)
             : base(gameMaster, log.ForContext<TcpListenerService>())
         {
+            this.log = log;
             this.conf = conf;
             this.manager = manager;
             this.queue = queue;
@@ -80,7 +82,7 @@ namespace GameMaster.Services
                     OnConnected(client);
 
                     // TODO - improve handling messages
-                    HandleMessages(new TcpSocketClient<PlayerMessage, GMMessage>(client, logger), cancellationToken).
+                    HandleMessages(new TcpSocketClient<PlayerMessage, GMMessage>(client, log), cancellationToken).
                         ConfigureAwait(false);
                 }
                 else
