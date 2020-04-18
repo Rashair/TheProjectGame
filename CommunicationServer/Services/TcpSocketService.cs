@@ -55,7 +55,7 @@ namespace CommunicationServer.Services
             {
                 logger.Error($"Error reading message: {e}");
                 await OnExceptionAsync(client, e, cancellationToken);
-                if (true)
+                if (raise)
                 {
                     throw;
                 }
