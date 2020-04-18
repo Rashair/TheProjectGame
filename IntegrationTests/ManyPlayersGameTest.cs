@@ -23,7 +23,7 @@ namespace IntegrationTests
                 Width = 10,
                 GoalAreaHeight = 4,
                 NumberOfGoals = 5,
-                NumberOfPiecesOnBoard = 5,
+                NumberOfPiecesOnBoard = 8,
                 NumberOfPlayersPerTeam = 10,
                 ShamPieceProbability = 0.3f,
             };
