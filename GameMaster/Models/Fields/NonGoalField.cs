@@ -14,28 +14,18 @@ namespace GameMaster.Models.Fields
             return false;
         }
 
-        public override bool Put(AbstractPiece piece)
+        public override (bool? goal, bool removed) Put(AbstractPiece piece)
         {
-            Pieces.Add(piece);
-            return false;
-        }
-
-        public override bool PutSham(AbstractPiece piece)
-        {
-            Pieces.Add(piece);
-            return true;
-        }
-
-        public override (bool, bool) PutNormal(AbstractPiece piece)
-        {
-            Put(piece);
-            return (false, true);
-        }
-
-        public override (bool goal, bool removed) PutFake(AbstractPiece piece)
-        {
-            PutSham(piece);
-            return (false, true);
+            if (piece.CheckForSham() == false)
+            {
+                Pieces.Add(piece);
+                return (false, true);
+            }
+            else
+            {
+                Pieces.Add(piece);
+                return (null, true);
+            }
         }
 
         public override bool CanPick()
