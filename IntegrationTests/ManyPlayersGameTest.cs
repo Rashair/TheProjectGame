@@ -24,7 +24,7 @@ namespace IntegrationTests
                 GoalAreaHeight = 4,
                 NumberOfGoals = 5,
                 NumberOfPiecesOnBoard = 5,
-                NumberOfPlayersPerTeam = 9,
+                NumberOfPlayersPerTeam = 10,
                 ShamPieceProbability = 0.3f,
             };
 
@@ -32,7 +32,7 @@ namespace IntegrationTests
             this.positionsCheckTime = 6000;
         }
 
-        [Fact(Timeout = 5 * 60 * 1000)]
+        [Fact(Timeout = 6 * 60 * 1000)]
         public override async void RunGameWithConfiguration()
         {
             await RunGame();
