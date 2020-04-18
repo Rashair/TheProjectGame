@@ -72,9 +72,8 @@ namespace GameMaster.Models
                 return;
             }
 
+            // logger.Information($"|{message.MessageId} | {message.Payload} | | {player?.Team}");
             players.TryGetValue(message.PlayerId, out GMPlayer player);
-
-            logger.Information($"|{message.MessageId} | {message.Payload} | | {player?.Team}");
             switch (message.MessageId)
             {
                 case PlayerMessageId.CheckPiece:

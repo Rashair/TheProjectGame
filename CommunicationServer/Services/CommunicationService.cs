@@ -34,33 +34,22 @@ namespace CommunicationServer.Services
             await Task.Yield();
             logger.Information("Started CommunicationService");
             gmClient = container.GMClient;
-    
+
             while (!stoppingToken.IsCancellationRequested)
             {
-                Message message = null;
-                try
+                Message message = await queue.ReceiveAsync(stoppingToken);
+                switch (message)
                 {
-                    logger.Information($"Waiting for message");
-                    message = await queue.ReceiveAsync(stoppingToken);
-                    logger.Information($"Got message: {message}");
+                    case GMMessage gm:
+                        await manager.SendMessageAsync(gm.PlayerId, gm, stoppingToken);
+                        break;
 
-                    switch (message)
-                    {
-                        case GMMessage gm:
-                            await manager.SendMessageAsync(gm.PlayerId, gm, stoppingToken);
-                            break;
+                    case PlayerMessage pm:
+                        await gmClient.SendAsync(pm, stoppingToken);
+                        break;
 
-                        case PlayerMessage pm:
-                            await gmClient.SendAsync(pm, stoppingToken);
-                            break;
-
-                        default:
-                            throw new Exception("Unknown message type");
-                    }
-                }
-                catch (Exception e)
-                {
-                    logger.Information(e, "Exception in receive");
+                    default:
+                        throw new Exception("Unknown message type");
                 }
             }
         }
