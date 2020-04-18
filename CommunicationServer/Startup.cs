@@ -54,7 +54,9 @@ namespace CommunicationServer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkId=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ILogger>(GetLogger());
+            var logger = GetLogger();
+            services.AddSingleton<ILogger>(logger);
+            logger.Information("Running CS");
 
             ServerConfigurations conf = new ServerConfigurations();
 

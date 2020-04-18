@@ -81,9 +81,9 @@ namespace CommunicationServer.Services
                 {
                     try
                     {
-                        Task<TcpClient> acceptTaks = gmListener.AcceptTcpClientAsync();
-                        acceptTaks.Wait(cancellationToken);
-                        TcpClient gm = acceptTaks.Result;
+                        Task<TcpClient> acceptTask = gmListener.AcceptTcpClientAsync();
+                        TcpClient gm = acceptTask.Result;
+
                         return new TcpSocketClient<GMMessage, PlayerMessage>(gm, log);
                     }
                     catch (OperationCanceledException)
@@ -94,6 +94,7 @@ namespace CommunicationServer.Services
                 }
                 Thread.Sleep(Wait);
             }
+
             return null;
         }
     }
