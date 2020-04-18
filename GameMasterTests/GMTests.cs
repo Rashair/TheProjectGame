@@ -168,7 +168,14 @@ namespace GameMaster.Tests
                         $"Incorect value for distance: {discoveryActionResult[neighbours[k].dir]} != {neighbours[k].dist}");
                 }
             }
-            Assert.Equal(neighbours.Count, discoveryActionResult.Count);
+
+            int discoveredFields = 0;
+            foreach (var distance in discoveryActionResult)
+            {
+                if (distance.Value >= 0)
+                    ++discoveredFields;
+            }
+            Assert.Equal(neighbours.Count, discoveredFields);
         }
 
         public int ManhattanDistance(AbstractField f1, AbstractField f2)
