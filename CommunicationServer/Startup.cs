@@ -4,7 +4,6 @@ using System.Threading.Tasks.Dataflow;
 
 using CommunicationServer.Models;
 using CommunicationServer.Services;
-using GameMaster.Managers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 using Shared.Clients;
+using Shared.Managers;
 using Shared.Messages;
 
 using static System.Environment;

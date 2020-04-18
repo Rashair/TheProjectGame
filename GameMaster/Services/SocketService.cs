@@ -12,7 +12,7 @@ using Shared.Messages;
 
 namespace GameMaster.Services
 {
-    public class SocketService : BackgroundService
+    public class SocketService : BackgroundService // TODO WaitForInitService
     {
         private const int ConnectRetries = 60;
         private const int RetryIntervalMs = 1000;
@@ -47,17 +47,15 @@ namespace GameMaster.Services
                 return;
             }
 
-            while (!stoppingToken.IsCancellationRequested && client.IsOpen)
+            (bool receivedMessage, PlayerMessage message) = await client.ReceiveAsync(stoppingToken);
+            while (!stoppingToken.IsCancellationRequested && receivedMessage)
             {
-                (bool receivedMessage, PlayerMessage message) = await client.ReceiveAsync(stoppingToken);
-                if (receivedMessage)
+                bool sended = await queue.SendAsync(message, stoppingToken);
+                if (!sended)
                 {
-                    bool sended = await queue.SendAsync(message, stoppingToken);
-                    if (!sended)
-                    {
-                        logger.Warning($"SocketService| PlayerMessage id: {message.MessageID} has been lost");
-                    }
+                    logger.Warning($"SocketService| PlayerMessage id: {message.MessageID} has been lost");
                 }
+                (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
             }
         }
     }

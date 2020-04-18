@@ -16,14 +16,16 @@ namespace CommunicationServer.Services
     {
         private readonly BufferBlock<Message> queue;
         private readonly ServiceShareContainer container;
+        private readonly ServerConfigurations conf;
         private readonly IApplicationLifetime lifetime;
 
         public GMTcpSocketService(BufferBlock<Message> queue, ServiceShareContainer container,
-            IApplicationLifetime lifetime, ILogger logger)
+            ServerConfigurations conf, IApplicationLifetime lifetime, ILogger logger)
             : base(logger)
         {
             this.queue = queue;
             this.container = container;
+            this.conf = conf;
             this.lifetime = lifetime;
         }
 
@@ -52,9 +54,8 @@ namespace CommunicationServer.Services
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // TODO From config
             // Block another services untill GM connects, start sync section
-            TcpSocketClient<GMMessage, PlayerMessage> gmClient = ConnectGM("127.0.0.1", 3000, stoppingToken);
+            TcpSocketClient<GMMessage, PlayerMessage> gmClient = ConnectGM(conf.ListenerIP, conf.PortGM, stoppingToken);
             if (gmClient is null)
             {
                 return;

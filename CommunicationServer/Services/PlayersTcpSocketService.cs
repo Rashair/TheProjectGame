@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
+using CommunicationServer.Models;
 using Serilog;
 using Shared.Clients;
 using Shared.Managers;
@@ -17,13 +18,15 @@ namespace CommunicationServer.Services
     {
         private readonly ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager;
         private readonly BufferBlock<Message> queue;
+        private readonly ServerConfigurations conf;
 
         public PlayersTcpSocketService(ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager,
-            BufferBlock<Message> queue, ILogger logger)
+            BufferBlock<Message> queue, ServerConfigurations conf, ILogger logger)
             : base(logger)
         {
             this.manager = manager;
             this.queue = queue;
+            this.conf = conf;
         }
 
         public override async Task OnMessageAsync(TcpSocketClient<PlayerMessage, GMMessage> client,
@@ -63,9 +66,7 @@ namespace CommunicationServer.Services
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await Task.Yield();
-
-            // TODO form Config
-            TcpListener listener = StartListener("127.0.0.1", 3015);
+            TcpListener listener = StartListener(conf.ListenerIP, conf.PortAgentow);
             List<ConfiguredTaskAwaitable> tasks = new List<ConfiguredTaskAwaitable>();
             while (!stoppingToken.IsCancellationRequested)
             {
