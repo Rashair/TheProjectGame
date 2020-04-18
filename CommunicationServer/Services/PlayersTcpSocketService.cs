@@ -68,6 +68,7 @@ namespace CommunicationServer.Services
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await Task.Yield();
+            logger.Information("Started PlayersTcpSocketService");
             TcpListener listener = StartListener(conf.ListenerIP, conf.PlayerPort);
             List<ConfiguredTaskAwaitable> tasks = new List<ConfiguredTaskAwaitable>();
             while (!stoppingToken.IsCancellationRequested)
