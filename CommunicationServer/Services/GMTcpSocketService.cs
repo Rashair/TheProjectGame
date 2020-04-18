@@ -18,15 +18,17 @@ namespace CommunicationServer.Services
         private readonly ServiceShareContainer container;
         private readonly ServerConfigurations conf;
         private readonly IApplicationLifetime lifetime;
+        protected readonly ILogger log;
 
         public GMTcpSocketService(BufferBlock<Message> queue, ServiceShareContainer container,
-            ServerConfigurations conf, IApplicationLifetime lifetime, ILogger logger)
-            : base(logger)
+            ServerConfigurations conf, IApplicationLifetime lifetime, ILogger log)
+            : base(log.ForContext<GMTcpSocketService>())
         {
             this.queue = queue;
             this.container = container;
             this.conf = conf;
             this.lifetime = lifetime;
+            this.log = log;
         }
 
         public override async Task OnMessageAsync(TcpSocketClient<GMMessage, PlayerMessage> client, GMMessage message,
@@ -82,7 +84,7 @@ namespace CommunicationServer.Services
                         Task<TcpClient> acceptTaks = gmListener.AcceptTcpClientAsync();
                         acceptTaks.Wait(cancellationToken);
                         TcpClient gm = acceptTaks.Result;
-                        return new TcpSocketClient<GMMessage, PlayerMessage>(gm, logger);
+                        return new TcpSocketClient<GMMessage, PlayerMessage>(gm, log);
                     }
                     catch (OperationCanceledException)
                     {

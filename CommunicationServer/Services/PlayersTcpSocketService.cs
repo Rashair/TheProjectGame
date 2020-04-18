@@ -19,14 +19,16 @@ namespace CommunicationServer.Services
         private readonly ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager;
         private readonly BufferBlock<Message> queue;
         private readonly ServerConfigurations conf;
+        protected readonly ILogger log;
 
         public PlayersTcpSocketService(ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager,
-            BufferBlock<Message> queue, ServerConfigurations conf, ILogger logger)
-            : base(logger)
+            BufferBlock<Message> queue, ServerConfigurations conf, ILogger log)
+            : base(log.ForContext<PlayersTcpSocketService>())
         {
             this.manager = manager;
             this.queue = queue;
             this.conf = conf;
+            this.log = log;
         }
 
         public override async Task OnMessageAsync(TcpSocketClient<PlayerMessage, GMMessage> client,
@@ -73,7 +75,7 @@ namespace CommunicationServer.Services
                 if (listener.Pending())
                 {
                     TcpClient socket = await listener.AcceptTcpClientAsync();
-                    var client = new TcpSocketClient<PlayerMessage, GMMessage>(socket, logger);
+                    var client = new TcpSocketClient<PlayerMessage, GMMessage>(socket, log);
                     var handlerTask = ClientHandler(client, false, stoppingToken).ConfigureAwait(false);
                     tasks.Add(handlerTask);
                 }

@@ -20,12 +20,12 @@ namespace CommunicationServer.Services
         private readonly ILogger logger;
 
         public CommunicationService(ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager,
-            ServiceShareContainer container, BufferBlock<Message> queue, ILogger logger) 
+            ServiceShareContainer container, BufferBlock<Message> queue, ILogger log) 
         {
             this.manager = manager;
             this.gmClient = container.GMClient;
             this.queue = queue;
-            this.logger = logger.ForContext<CommunicationService>();
+            this.logger = log.ForContext<CommunicationService>();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
