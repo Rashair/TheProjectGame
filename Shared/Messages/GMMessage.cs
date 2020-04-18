@@ -7,6 +7,8 @@ namespace Shared.Messages
     {
         public GMMessageID Id { get; set; }
 
+        public int PlayerId { get; set; }
+
         public string Payload { get; set; }
 
         public GMMessage()
