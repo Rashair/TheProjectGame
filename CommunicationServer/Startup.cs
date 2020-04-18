@@ -1,7 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks.Dataflow;
 
 using CommunicationServer.Models;
+using CommunicationServer.Services;
+using GameMaster.Managers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +12,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
+using Shared.Clients;
+using Shared.Messages;
 
 using static System.Environment;
 
@@ -49,6 +54,7 @@ namespace CommunicationServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ILogger>(GetLogger());
+
             ServerConfigurations conf = new ServerConfigurations();
 
             Configuration.Bind("DefaultCommunicationServerConfig", conf);
@@ -57,6 +63,16 @@ namespace CommunicationServer
             Configuration.Bind(conf);
 
             services.AddSingleton(conf);
+
+            services.AddSingleton<ServiceShareContainer>();
+            services.AddSingleton<ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage>,
+                TcpSocketManager<PlayerMessage, GMMessage>>();
+            services.AddSingleton<BufferBlock<Message>>();
+
+            // Order matters, GMTcpSocketService must be first
+            services.AddHostedService<GMTcpSocketService>();
+            services.AddHostedService<PlayersTcpSocketService>();
+            services.AddHostedService<CommunicationService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
