@@ -437,7 +437,11 @@ namespace GameMaster.Models
             int[] distances = new int[neighbourCoordinates.Length];
             for (int i = 0; i < distances.Length; i++)
             {
-                distances[i] = int.MaxValue;
+                var (dir, y, x) = neighbourCoordinates[i];
+                if (y >= 0 && y < conf.Height && x >= 0 && x < conf.Width)
+                    distances[i] = int.MaxValue;
+                else
+                    distances[i] = -1;
             }
 
             int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
@@ -445,7 +449,7 @@ namespace GameMaster.Models
             {
                 for (int j = 0; j < board[i].Length; j++)
                 {
-                    if (board[i][j].ContainsPieces())
+                    if (board[i][j].ContainsPieces() && board[i][j].CanPick())
                     {
                         for (int k = 0; k < distances.Length; k++)
                         {
@@ -460,13 +464,29 @@ namespace GameMaster.Models
             Dictionary<Direction, int> discoveryResult = new Dictionary<Direction, int>();
             for (int i = 0; i < distances.Length; i++)
             {
-                var (dir, y, x) = neighbourCoordinates[i];
-                if (y >= 0 && y < conf.Height && x >= 0 && x < conf.Width)
-                {
-                    discoveryResult.Add(dir, distances[i]);
-                }
+                discoveryResult.Add(neighbourCoordinates[i].dir, distances[i]);
             }
             return discoveryResult;
+        }
+
+        internal int FindClosestPiece(AbstractField field)
+        {
+            int[] center = field.GetPosition();
+            int distance = int.MaxValue;
+            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
+            for (int i = conf.GoalAreaHeight; i < secondGoalAreaStart; i++)
+            {
+                for (int j = 0; j < board[i].Length; j++)
+                {
+                    if (board[i][j].ContainsPieces() && board[i][j].CanPick())
+                    {
+                            int manhattanDistance = Math.Abs(center[0] - i) + Math.Abs(center[1] - j);
+                            if (manhattanDistance < distance)
+                                distance = manhattanDistance;
+                    }
+                }
+            }
+            return distance;
         }
 
         private void GeneratePiece()
