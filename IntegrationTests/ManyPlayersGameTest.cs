@@ -7,7 +7,7 @@ namespace IntegrationTests
     {
         public ManyPlayersGameTest()
         {
-            this.conf = new GameConfiguration
+            Conf = new GameConfiguration
             {
                 CsIP = "127.0.0.1",
                 CsPort = 5003,
@@ -28,8 +28,8 @@ namespace IntegrationTests
                 ShamPieceProbability = 0.3f,
             };
 
-            this.positionNotChangedCount = 5;
-            this.positionsCheckTime = 6000;
+            PositionNotChangedCount = 5;
+            PositionsCheckTime = 6000;
         }
 
         [Fact(Timeout = 10 * 60 * 1000)]

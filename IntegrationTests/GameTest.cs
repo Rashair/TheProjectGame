@@ -8,9 +8,6 @@ using System.Threading.Tasks;
 using GameMaster.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Serilog;
-using Serilog.Core;
 using Shared.Enums;
 using TestsShared;
 using Xunit;
@@ -20,50 +17,55 @@ namespace IntegrationTests
     public abstract class GameTest : IDisposable
     {
         protected readonly CancellationTokenSource tokenSource;
-
-        protected GameConfiguration conf;
-        protected int positionsCheckTime = 5000;
-        protected int positionNotChangedCount = 3;
-
         protected IWebHost gmHost;
         protected IWebHost[] redPlayersHosts;
         protected IWebHost[] bluePlayersHosts;
 
+        protected GameConfiguration Conf { get; set; }
+
+        protected int PositionsCheckTime { get; set; }
+
+        protected int PositionNotChangedCount { get; set; }
+
         public GameTest()
         {
             tokenSource = new CancellationTokenSource();
+            PositionsCheckTime = 5000;
+            PositionNotChangedCount = 3;
         }
 
         public HttpClient Client { get; set; }
 
         protected async Task StartGame()
         {
+            Assert.NotNull(Conf);
+
             await Task.Run(async () =>
             {
                 // Arrange
                 // TODO: Switch to CS
-                string gmUrl = $"http://{conf.CsIP}:{conf.CsPort}";
+                // +100 is important - GM cannot start on the same port as CS
+                string gmUrl = $"http://{Conf.CsIP}:{Conf.CsPort + 100}";
                 string[] args = new string[] { $"urls={gmUrl}" };
                 gmHost = Utilities.CreateWebHost(typeof(GameMaster.Startup), args).Build();
 
                 string[] argsRed = CreatePlayerConfig(Team.Red);
                 string[] argsBlue = CreatePlayerConfig(Team.Blue);
-                int playersCount = conf.NumberOfPlayersPerTeam;
+                int playersCount = Conf.NumberOfPlayersPerTeam;
                 redPlayersHosts = new IWebHost[playersCount];
                 bluePlayersHosts = new IWebHost[playersCount];
                 for (int i = 0; i < playersCount; ++i)
                 {
                     redPlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsRed).
-                                    UseSerilog((Logger)null, true).
                                     Build();
                     bluePlayersHosts[i] = Utilities.CreateWebHost(typeof(Player.Startup), argsBlue).
-                                    UseSerilog((Logger)null, true).
                                     Build();
                 }
 
                 // Act
                 await gmHost.StartAsync(tokenSource.Token);
                 await Task.Yield();
+
                 for (int i = 0; i < playersCount; ++i)
                 {
                     await redPlayersHosts[i].StartAsync(tokenSource.Token);
@@ -74,7 +76,7 @@ namespace IntegrationTests
                 {
                     BaseAddress = new Uri(gmUrl),
                 };
-                var responseConf = await Client.PostAsJsonAsync("api/Configuration", conf);
+                var responseConf = await Client.PostAsJsonAsync("api/Configuration", Conf);
                 var responseInit = await Client.PostAsync("api/InitGame", null);
 
                 // Assert
@@ -86,25 +88,36 @@ namespace IntegrationTests
 
             var gameMaster = gmHost.Services.GetService<GM>();
             Assert.True(gameMaster.WasGameInitialized, "Game should be initialized");
-            Assert.True(gameMaster.WasGameStarted, "Game should be started");
+
+            var (success, errorMessage) = await Shared.Helpers.Retry(() =>
+            {
+                return Task.FromResult(gameMaster.WasGameStarted);
+            }, Conf.NumberOfPlayersPerTeam, 3000, tokenSource.Token);
+            Assert.True(success, "Game should be started");
 
             await Task.Delay(1000);
 
             var playerRed = redPlayersHosts[0].Services.GetService<Player.Models.Player>();
             Assert.True(playerRed.Team == Team.Red, "Player should have team passed with conf");
             Assert.True(playerRed.Position.y >= 0, "Player should have position set.");
-            Assert.True(playerRed.Position.y < conf.Height - conf.GoalAreaHeight, "Player should not be present on enemy team field");
+            Assert.True(playerRed.Position.y < Conf.Height - Conf.GoalAreaHeight, "Player should not be present on enemy team field");
 
             var playerBlue = bluePlayersHosts[0].Services.GetService<Player.Models.Player>();
             Assert.True(playerBlue.Team == Team.Blue, "Player should have team passed with conf");
             Assert.True(playerBlue.Position.y >= 0, "Player should have position set.");
-            Assert.True(playerBlue.Position.y >= conf.GoalAreaHeight, "Player should not be present on enemy team field");
+            Assert.True(playerBlue.Position.y >= Conf.GoalAreaHeight, "Player should not be present on enemy team field");
         }
 
         // TODO: Add strategy here, when we will have second strategy :) 
         protected string[] CreatePlayerConfig(Team team)
         {
-            return new[] { $"TeamID={team.ToString().ToLower()}", "urls=http://127.0.0.1:0", $"CsIP={conf.CsIP}", $"CsPort={conf.CsPort}" };
+            return new[]
+            {
+                $"TeamID={team.ToString().ToLower()}",
+                "urls=http://127.0.0.1:0",
+                $"CsIP={Conf.CsIP}",
+                $"CsPort={Conf.CsPort}"
+            };
         }
 
         public async Task RunGame()
@@ -121,7 +134,7 @@ namespace IntegrationTests
 
             while (teamRed[0].GetValue<Player.Models.Player, bool>("working"))
             {
-                await Task.Delay(positionsCheckTime);
+                await Task.Delay(PositionsCheckTime);
                 AssertPositionsChange(teamRed, teamRedPositions, positionsCounterRed);
                 AssertPositionsChange(teamBlue, teamBluePositions, positionsCounterBlue);
             }
@@ -136,6 +149,8 @@ namespace IntegrationTests
             var bluePoints = gm.GetValue<GM, int>("blueTeamPoints");
             var expectedWinner = redPoints > bluePoints ? Team.Red : Team.Blue;
             Assert.True(winner == expectedWinner, "GM and players should have same winner");
+
+            tokenSource.Cancel();
         }
 
         public abstract void RunGameWithConfiguration();
@@ -147,7 +162,7 @@ namespace IntegrationTests
                 if (team[i].Position == teamPositions[i])
                 {
                     ++positionsCounter[i];
-                    Assert.False(positionsCounter[i] > positionNotChangedCount, "Player should not be stuck on one position");
+                    Assert.False(positionsCounter[i] > PositionNotChangedCount, "Player should not be stuck on one position");
                 }
                 else
                 {
@@ -162,13 +177,11 @@ namespace IntegrationTests
             Client?.Dispose();
             gmHost?.Dispose();
 
-            for (int i = 0; i < conf?.NumberOfPlayersPerTeam; ++i)
+            for (int i = 0; i < Conf?.NumberOfPlayersPerTeam; ++i)
             {
                 redPlayersHosts[i].Dispose();
                 bluePlayersHosts[i].Dispose();
             }
-
-            tokenSource.Cancel();
         }
     }
 }

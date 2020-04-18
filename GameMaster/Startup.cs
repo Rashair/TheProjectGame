@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Net.WebSockets;
+using System.Net.Sockets;
 using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Managers;
@@ -31,15 +31,15 @@ namespace GameMaster
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            ConfigureLogger();
         }
 
-        private void ConfigureLogger()
+        private ILogger GetLogger()
         {
-            string folderName = "TheProjectGameLogs";
-            string fileName = $"Main_{DateTime.Today:dd_MM_yyyy}.log";
+            string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "GameMaster");
+            int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
+            string fileName = $"gm-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
-            Log.Logger = new LoggerConfiguration()
+            return new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
                path: path,
@@ -64,8 +64,11 @@ namespace GameMaster
                 configuration.RootPath = "ClientApp/build";
             });
 
-            services.AddSingleton<WebSocketManager<BackendMessage>>();
-            services.AddSingleton<ISocketManager<WebSocket, GMMessage>, WebSocketManager<GMMessage>>();
+            services.AddSingleton<ILogger>(GetLogger());
+
+            // TODO: Restore if visualisation will be added
+            // services.AddSingleton<TcpSocketManager<BackendMessage>>();
+            services.AddSingleton<ISocketManager<TcpClient, GMMessage>, TcpSocketManager<GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
             GameConfiguration conf;
@@ -83,6 +86,7 @@ namespace GameMaster
 
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
+            services.AddHostedService<TcpListenerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -101,7 +105,6 @@ namespace GameMaster
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
-            app.UseWebSockets();
 
             app.UseMvc(routes =>
             {

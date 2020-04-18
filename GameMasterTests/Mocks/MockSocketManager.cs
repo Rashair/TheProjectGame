@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Net.WebSockets;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,7 +8,7 @@ using Shared.Messages;
 
 namespace GameMaster.Tests.Mocks
 {
-    public class MockSocketManager : ISocketManager<WebSocket, GMMessage>
+    public class MockSocketManager : ISocketManager<TcpClient, GMMessage>
     {
         private readonly Send send;
 
@@ -19,11 +19,11 @@ namespace GameMaster.Tests.Mocks
             this.send = send;
         }
 
-        public bool AddSocket(WebSocket socket) => default;
+        public bool AddSocket(TcpClient socket) => default;
 
-        public int GetId(WebSocket socket) => default;
+        public int GetId(TcpClient socket) => default;
 
-        public WebSocket GetSocketById(int id) => default;
+        public TcpClient GetSocketById(int id) => default;
 
         public Task<bool> RemoveSocketAsync(int id, CancellationToken cancellationToken)
             => default;
@@ -36,5 +36,10 @@ namespace GameMaster.Tests.Mocks
 
         public Task SendMessageToAllAsync(GMMessage message, CancellationToken cancellationToken)
             => default;
+
+        public bool IsAnyOpen()
+        {
+            return true;
+        }
     }
 }

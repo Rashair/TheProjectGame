@@ -1,4 +1,4 @@
-﻿using System.Net.WebSockets;
+﻿using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -9,9 +9,8 @@ using GameMaster.Services;
 using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Moq;
-
+using Serilog;
 using Shared.Messages;
 using TestsShared;
 using Xunit;
@@ -20,7 +19,7 @@ namespace GameMaster.Tests
 {
     public class GMServiceTests
     {
-        [Fact(Timeout = 3500)]
+        [Fact(Timeout = 4000)]
         public async Task TestExecuteAsyncShouldWaitForStartAndReadMessages()
         {
             // Arrange
@@ -28,7 +27,7 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             services.AddSingleton<GameConfiguration>(conf);
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
-            services.AddSingleton<ISocketManager<WebSocket, GMMessage>, WebSocketManager<GMMessage>>();
+            services.AddSingleton<ISocketManager<TcpClient, GMMessage>, TcpSocketManager<GMMessage>>();
             int messagesNum = 10;
             var queue = new BufferBlock<PlayerMessage>();
             for (int i = 0; i < messagesNum; ++i)
@@ -53,7 +52,7 @@ namespace GameMaster.Tests
 
                 gameMaster.Invoke("InitGame");
 
-                await Task.Delay(hostedService.WaitForStartDelay + 500);
+                await Task.Delay(hostedService.WaitForInitDelay + 500);
                 await hostedService.StopAsync(CancellationToken.None);
             });
 
@@ -66,10 +65,11 @@ namespace GameMaster.Tests
         {
             // Arrange
             IServiceCollection services = new ServiceCollection();
+            AddLogging(services);
             var conf = new MockGameConfiguration();
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
             services.AddSingleton<GameConfiguration>(conf);
-            services.AddSingleton<ISocketManager<WebSocket, GMMessage>, WebSocketManager<GMMessage>>();
+            services.AddSingleton<ISocketManager<TcpClient, GMMessage>, TcpSocketManager<GMMessage>>();
             int messagesNum = 10;
             var queue = new BufferBlock<PlayerMessage>();
             for (int i = 0; i < messagesNum; ++i)
@@ -101,7 +101,7 @@ namespace GameMaster.Tests
 
         private void AddLogging(IServiceCollection services)
         {
-            services.AddSingleton<ILogger<GM>, MockLogger<GM>>();
+            services.AddSingleton(MockGenerator.Get<ILogger>());
         }
     }
 }

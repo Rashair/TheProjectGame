@@ -7,7 +7,7 @@ namespace IntegrationTests
     {
         public ManyShamsGameTest()
         {
-            this.conf = new GameConfiguration
+            Conf = new GameConfiguration
             {
                 CsIP = "127.0.0.1",
                 CsPort = 5002,
@@ -28,8 +28,8 @@ namespace IntegrationTests
                 ShamPieceProbability = 0.8f,
             };
 
-            this.positionNotChangedCount = 3;
-            this.positionsCheckTime = 6000;
+            PositionNotChangedCount = 3;
+            PositionsCheckTime = 6000;
         }
 
         [Fact(Timeout = 8 * 60 * 1000)]

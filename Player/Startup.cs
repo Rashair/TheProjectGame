@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Player.Clients;
 using Player.Models;
 using Player.Services;
 using Serilog;
 using Serilog.Events;
+using Shared.Clients;
 using Shared.Messages;
 
 using static System.Environment;
@@ -28,17 +28,16 @@ namespace Player
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-
-            // TODO: add logpath path to appsettings and pass it to ConfigureLogger()
-            ConfigureLogger();
         }
 
-        private void ConfigureLogger()
+        private ILogger GetLogger()
         {
-            string folderName = "TheProjectGameLogs";
-            string fileName = $"Player_{DateTime.Today:dd_MM_yyyy}.log";
+            // TODO: add logpath path to appsettings and pass it to ConfigureLogger()
+            string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "Player");
+            int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
+            string fileName = $"pl-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
-            Log.Logger = new LoggerConfiguration()
+            return new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
                path: path,
@@ -56,6 +55,8 @@ namespace Player
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<ILogger>(GetLogger());
+
             PlayerConfiguration conf = new PlayerConfiguration();
             Configuration.Bind("DefaultPlayerConfig", conf);
 
@@ -65,10 +66,11 @@ namespace Player
 
             services.AddSingleton(conf);
 
-            services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, WebSocketClient<GMMessage, PlayerMessage>>();
+            services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, TcpSocketClient<GMMessage, PlayerMessage>>();
             services.AddSingleton<BufferBlock<GMMessage>>();
             services.AddSingleton<Models.Player>();
 
+            services.AddSingleton<SynchronizationContext>();
             services.AddHostedService<SocketService>();
             services.AddHostedService<PlayerService>();
         }
@@ -80,8 +82,6 @@ namespace Player
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseWebSockets();
 
             app.Run(async (context) =>
             {

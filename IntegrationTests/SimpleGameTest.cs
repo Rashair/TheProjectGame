@@ -7,29 +7,29 @@ namespace IntegrationTests
     {
         public SimpleGameTest()
         {
-            this.conf = new GameConfiguration
+            Conf = new GameConfiguration
             {
                 CsIP = "127.0.0.1",
                 CsPort = 5001,
-                AskPenalty = 1000,
-                PutPenalty = 750,
-                CheckPenalty = 400,
-                MovePenalty = 300,
+                MovePenalty = 200,
+                AskPenalty = 10000,
+                PutPenalty = 500,
+                CheckPenalty = 750,
                 DestroyPenalty = 100,
                 PickPenalty = 100,
-                DiscoverPenalty = 1500,
-                ResponsePenalty = 600,
+                DiscoverPenalty = 3000,
+                ResponsePenalty = 5000,
                 Height = 12,
-                Width = 6,
-                GoalAreaHeight = 3,
-                NumberOfGoals = 4,
+                Width = 4,
+                GoalAreaHeight = 4,
+                NumberOfGoals = 2,
                 NumberOfPiecesOnBoard = 6,
-                NumberOfPlayersPerTeam = 3,
-                ShamPieceProbability = 0.2f,
+                NumberOfPlayersPerTeam = 4,
+                ShamPieceProbability = 0.3f,
             };
 
-            this.positionNotChangedCount = 4;
-            this.positionsCheckTime = 5000;
+            PositionNotChangedCount = 4;
+            PositionsCheckTime = 5000;
         }
 
         [Fact(Timeout = 4 * 60 * 1000)]

@@ -16,5 +16,7 @@ namespace GameMaster.Managers
         Task SendMessageAsync(int id, TMessage message, CancellationToken cancellationToken);
 
         Task SendMessageToAllAsync(TMessage message, CancellationToken cancellationToken);
+
+        bool IsAnyOpen();
     }
 }

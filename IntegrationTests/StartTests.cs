@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,8 +15,10 @@ using Xunit;
 
 namespace IntegrationTests
 {
-    public class StartTests
+    public class StartTests : IDisposable
     {
+        private readonly List<IWebHost> hosts = new List<IWebHost>(20);
+
         [Fact]
         public async void PlayersStart()
         {
@@ -33,6 +37,9 @@ namespace IntegrationTests
                 webHostsBlue[i] = Player.Program.CreateWebHostBuilder(argsBlue).
                                     UseSerilog((Logger)null, true).
                                     Build();
+
+                hosts.Add(webHostsBlue[i]);
+                hosts.Add(webHostsRed[i]);
             }
 
             // Act
@@ -45,11 +52,11 @@ namespace IntegrationTests
             source.Cancel();
 
             // Assert
-            var playerRed = webHostsRed[0].Services.GetService<Player.Models.Player>();
+            var playerRed = webHostsRed.Last().Services.GetService<Player.Models.Player>();
             Assert.False(playerRed == null, "Player should not be null");
             Assert.True(playerRed.Team == Team.Red, "Player should get color provided via args");
 
-            var playerBlue = webHostsBlue[0].Services.GetService<Player.Models.Player>();
+            var playerBlue = webHostsBlue.Last().Services.GetService<Player.Models.Player>();
             Assert.False(playerBlue == null, "Player should not be null");
             Assert.True(playerBlue.Team == Team.Blue, "Player should get color provided via args");
         }
@@ -61,10 +68,9 @@ namespace IntegrationTests
             var source = new CancellationTokenSource();
             string url = "http://127.0.0.1:5000";
             string[] args = new string[] { $"urls={url}" };
-            var webhost = GameMaster.Program.
-                CreateWebHostBuilder(args).
-                ConfigureLogging((ILoggingBuilder logging) => logging.ClearProviders()).
+            var webhost = Utilities.CreateWebHost(typeof(GameMaster.Startup), args).
                 Build();
+            hosts.Add(webhost);
 
             // Act
             await webhost.StartAsync(source.Token);
@@ -94,6 +100,7 @@ namespace IntegrationTests
             var webhost = CommunicationServer.Program.CreateWebHostBuilder(args).
                 ConfigureLogging((ILoggingBuilder logging) => logging.ClearProviders()).
                 Build();
+            hosts.Add(webhost);
 
             // Act
             await webhost.StartAsync(source.Token);
@@ -102,6 +109,14 @@ namespace IntegrationTests
 
             // Assert
             // TODO: ...
+        }
+
+        public void Dispose()
+        {
+            for (int i = 0; i < hosts.Count; ++i)
+            {
+                hosts[i].Dispose();
+            }
         }
     }
 }

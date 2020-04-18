@@ -1,4 +1,4 @@
-﻿using System.IO;
+﻿using System;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -19,9 +19,10 @@ namespace GameMaster.Controllers
         private readonly GameConfiguration gameConfiguration;
         private readonly GM gameMaster;
 
-        public GameController(IConfiguration configuration, GameConfiguration gameConfiguration, GM gameMaster)
+        public GameController(IConfiguration configuration, GameConfiguration gameConfiguration, GM gameMaster,
+            ILogger log)
         {
-            this.logger = Log.ForContext<GameController>();
+            this.logger = log.ForContext<GameController>();
             this.configuration = configuration;
             this.gameConfiguration = gameConfiguration;
             this.gameMaster = gameMaster;
@@ -47,12 +48,16 @@ namespace GameMaster.Controllers
             }
 
             gameConfiguration.Update(conf);
+
             string gameConfigString = JsonConvert.SerializeObject(conf);
             string path = configuration.GetValue<string>("GameConfigPath");
-
-            using (StreamWriter file = new StreamWriter(path))
+            try
             {
-                await file.WriteAsync(gameConfigString);
+                await System.IO.File.WriteAllTextAsync(path, gameConfigString);
+            }
+            catch (Exception e)
+            {
+                logger.Warning($"Error writing to file: {e}");
             }
 
             return Created("/configuration", conf);

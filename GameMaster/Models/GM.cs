@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.WebSockets;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -21,11 +21,12 @@ namespace GameMaster.Models
 {
     public class GM
     {
+        private readonly ILogger log;
         private readonly ILogger logger;
         private readonly IApplicationLifetime lifetime;
         private readonly GameConfiguration conf;
         private readonly BufferBlock<PlayerMessage> queue;
-        private readonly ISocketManager<WebSocket, GMMessage> socketManager;
+        private readonly ISocketManager<TcpClient, GMMessage> socketManager;
 
         private readonly Random rand;
         private readonly HashSet<(int recipient, int sender)> legalKnowledgeReplies;
@@ -42,9 +43,11 @@ namespace GameMaster.Models
         public int TaskAreaEnd { get => conf.Height - conf.GoalAreaHeight; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
-            BufferBlock<PlayerMessage> queue, ISocketManager<WebSocket, GMMessage> socketManager)
+            BufferBlock<PlayerMessage> queue, ISocketManager<TcpClient, GMMessage> socketManager,
+            ILogger log)
         {
-            this.logger = Log.ForContext<GM>();
+            this.log = log;
+            this.logger = log.ForContext<GM>();
             this.lifetime = lifetime;
             this.conf = conf;
             this.queue = queue;
@@ -195,7 +198,8 @@ namespace GameMaster.Models
                 return false;
             }
 
-            var player = new GMPlayer(key, conf, socketManager, team)
+            // TODO: isLeader flag!
+            var player = new GMPlayer(key, conf, socketManager, team, log)
             {
                 SocketID = key,
             };
@@ -411,7 +415,7 @@ namespace GameMaster.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
-            TimeSpan cancellationTimespan = TimeSpan.FromMinutes(1);
+            TimeSpan cancellationTimespan = TimeSpan.FromMinutes(2);
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
@@ -426,7 +430,15 @@ namespace GameMaster.Models
                 }
                 catch (TimeoutException e)
                 {
-                    // logger.Warning($"Message retrieve was cancelled: {e.Message}");
+                    logger.Warning($"Message retrieve was cancelled: {e.Message}");
+
+                    // TODO: change it with switch to SocketClient
+                    if (!socketManager.IsAnyOpen())
+                    {
+                        logger.Error("No open connection. Exiting.");
+                        lifetime.StopApplication();
+                        break;
+                    }
                 }
             }
         }

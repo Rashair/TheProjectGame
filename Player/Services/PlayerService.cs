@@ -9,35 +9,45 @@ namespace Player.Services
 {
     public class PlayerService : BackgroundService
     {
-        private readonly ILogger logger;
-        private readonly IApplicationLifetime lifetime;
         private readonly Models.Player player;
+        private readonly IApplicationLifetime lifetime;
+        private readonly ILogger logger;
+        private readonly SynchronizationContext synchronizationContext;
 
-        public PlayerService(Models.Player player, IApplicationLifetime lifetime)
+        public PlayerService(Models.Player player, IApplicationLifetime lifetime, 
+            ILogger logger, SynchronizationContext synchronizationContext)
         {
             this.player = player;
-            this.logger = Log.ForContext<PlayerService>();
+            this.logger = logger.ForContext<PlayerService>();
             this.lifetime = lifetime;
+            this.synchronizationContext = synchronizationContext;
         }
 
         protected async override Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            if (!cancellationToken.IsCancellationRequested)
-            {
-                await Task.Run(async () =>
-                {
-                    try
-                    {
-                        await player.Work(cancellationToken);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.Information(e.Message);
-                    }
-                });
+            // Inital count = 0, so it will wait until socket service connects
+            await synchronizationContext.SemaphoreSlim.WaitAsync(cancellationToken);
 
-                lifetime.StopApplication();
-            }
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    logger.Information("Player service working");
+                    await player.JoinTheGame(cancellationToken);
+
+                    // Now socketService can proceed with reading message
+                    synchronizationContext.SemaphoreSlim.Release();
+                    await Task.Delay(100);
+
+                    await player.Start(cancellationToken);
+                }
+                catch (Exception e)
+                {
+                    logger.Error($"Error running service: {e}");
+                }
+            }, cancellationToken);
+
+            lifetime.StopApplication();
         }
     }
 }
