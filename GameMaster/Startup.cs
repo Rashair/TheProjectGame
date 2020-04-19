@@ -2,9 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks.Dataflow;
 
-using GameMaster.Managers;
 using GameMaster.Models;
-using GameMaster.Models.Messages;
 using GameMaster.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
+using Shared.Clients;
 using Shared.Messages;
 
 using static System.Environment;
@@ -22,25 +21,34 @@ namespace GameMaster
 {
     public class Startup
     {
+        public const string LoggerTemplate =
+            "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
+
+        public IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
         {
-            var template = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
-            Log.Logger = new LoggerConfiguration()
+            Configuration = configuration;
+        }
+
+        private ILogger GetLogger()
+        {
+            string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "GameMaster");
+            int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
+            string fileName = $"gm-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
+            string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
+            return new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
-               path: GetFolderPath(SpecialFolder.MyDocuments)
-               + "\\TheProjectGameLogs\\Main_" + DateTime.Today.ToString("dd_MM_yyyy") + ".txt",
+               path: path,
                rollOnFileSizeLimit: true,
-               outputTemplate: template)
-               .WriteTo.Console(outputTemplate: template)
+               outputTemplate: LoggerTemplate)
+               .WriteTo.Console(outputTemplate: LoggerTemplate)
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
                .CreateLogger();
-            Configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -53,8 +61,9 @@ namespace GameMaster
                 configuration.RootPath = "ClientApp/build";
             });
 
-            services.AddSingleton<WebSocketManager<BackendMessage>>();
-            services.AddSingleton<WebSocketManager<GMMessage>>();
+            services.AddSingleton<ILogger>(GetLogger());
+
+            services.AddSingleton<ISocketClient<PlayerMessage, GMMessage>, TcpSocketClient<PlayerMessage, GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
             GameConfiguration conf;
@@ -71,6 +80,7 @@ namespace GameMaster
             services.AddSingleton(conf);
 
             services.AddSingleton<GM>();
+            services.AddHostedService<SocketService>();
             services.AddHostedService<GMService>();
         }
 
@@ -90,7 +100,6 @@ namespace GameMaster
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
-            app.UseWebSockets();
 
             app.UseMvc(routes =>
             {

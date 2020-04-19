@@ -1,6 +1,6 @@
 ﻿namespace Shared.Enums
 {
-    public enum PlayerMessageID
+    public enum PlayerMessageId
     {
         Unknown,
         CheckPiece,

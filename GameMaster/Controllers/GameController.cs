@@ -1,4 +1,4 @@
-﻿using System.IO;
+﻿using System;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -14,14 +14,15 @@ namespace GameMaster.Controllers
     [Route("/api")]
     public class GameController : ControllerBase
     {
-        private ILogger logger;
+        private readonly ILogger logger;
         private readonly IConfiguration configuration;
         private readonly GameConfiguration gameConfiguration;
         private readonly GM gameMaster;
 
-        public GameController(IConfiguration configuration, GameConfiguration gameConfiguration, GM gameMaster)
+        public GameController(IConfiguration configuration, GameConfiguration gameConfiguration, GM gameMaster,
+            ILogger log)
         {
-            this.logger = Log.ForContext<GameController>();
+            this.logger = log.ForContext<GameController>();
             this.configuration = configuration;
             this.gameConfiguration = gameConfiguration;
             this.gameMaster = gameMaster;
@@ -31,7 +32,7 @@ namespace GameMaster.Controllers
         [Route("[action]")]
         public ActionResult<GameConfiguration> Configuration()
         {
-            return Ok(gameConfiguration);
+            return gameConfiguration;
         }
 
         [HttpPost]
@@ -47,12 +48,16 @@ namespace GameMaster.Controllers
             }
 
             gameConfiguration.Update(conf);
+
             string gameConfigString = JsonConvert.SerializeObject(conf);
             string path = configuration.GetValue<string>("GameConfigPath");
-
-            using (StreamWriter file = new StreamWriter(path))
+            try
             {
-                await file.WriteAsync(gameConfigString);
+                await System.IO.File.WriteAllTextAsync(path, gameConfigString);
+            }
+            catch (Exception e)
+            {
+                logger.Warning($"Error writing to file: {e}");
             }
 
             return Created("/configuration", conf);
@@ -77,7 +82,7 @@ namespace GameMaster.Controllers
         [Route("[action]")]
         public ActionResult<bool> WasGameStarted()
         {
-            return Ok(gameMaster.WasGameStarted);
+            return gameMaster.WasGameStarted;
         }
     }
 }

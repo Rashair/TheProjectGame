@@ -67,7 +67,7 @@ namespace Player.Models.Strategies
                     {
                         if (y < player.GoalAreaSize)
                         {
-                            if (player.Board[y, x].GoalInfo == GoalInfo.IDK)
+                            if (player.Board[y, x].GoalInfo == GoalInfo.IdK)
                             {
                                 await player.Put(cancellationToken);
                             }
@@ -111,7 +111,7 @@ namespace Player.Models.Strategies
                         int beginning = player.BoardSize.y - player.GoalAreaSize;
                         if (y >= beginning)
                         {
-                            if (player.Board[y, x].GoalInfo == GoalInfo.IDK)
+                            if (player.Board[y, x].GoalInfo == GoalInfo.IdK)
                             {
                                 await player.Put(cancellationToken);
                             }

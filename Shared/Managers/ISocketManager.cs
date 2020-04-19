@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace GameMaster.Managers
+namespace Shared.Managers
 {
     public interface ISocketManager<TSocket, TMessage>
     {
@@ -16,5 +16,7 @@ namespace GameMaster.Managers
         Task SendMessageAsync(int id, TMessage message, CancellationToken cancellationToken);
 
         Task SendMessageToAllAsync(TMessage message, CancellationToken cancellationToken);
+
+        bool IsAnyOpen();
     }
 }

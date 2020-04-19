@@ -1,31 +1,30 @@
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Net.WebSockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Moq;
+using Serilog;
+using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
+using TestsShared;
 using Xunit;
-
-using static GameMaster.Tests.Helpers.ReflectionHelpers;
 
 namespace GameMaster.Tests
 {
     public class GMTests
     {
+        private readonly ILogger logger = MockGenerator.Get<ILogger>();
+
         [Theory]
         [InlineData(1)]
         [InlineData(10)]
@@ -37,8 +36,8 @@ namespace GameMaster.Tests
             conf.NumberOfPiecesOnBoard = 0;
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new WebSocketManager<GMMessage>();
-            var gameMaster = new GM(lifetime, conf, queue, manager);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
 
             // Act
@@ -49,7 +48,7 @@ namespace GameMaster.Tests
 
             // Assert
             int pieceCount = 0;
-            var board = gameMaster.GetValue<AbstractField[][]>("board");
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
             for (int i = 0; i < board.Length; ++i)
             {
                 for (int j = 0; j < board[i].Length; ++j)
@@ -101,8 +100,8 @@ namespace GameMaster.Tests
             int y = 4;
             NormalPiece piece = new NormalPiece();
             Mock<GoalField> field = new Mock<GoalField>(x, y);
-            field.Setup(m => m.Put(piece)).Returns(true);
-            Assert.True(piece.Put(field.Object));
+            field.Setup(m => m.Put(piece)).Returns((true, true));
+            Assert.True(piece.Put(field.Object).goal);
         }
 
         [Fact]
@@ -112,8 +111,8 @@ namespace GameMaster.Tests
             int y = 4;
             ShamPiece piece = new ShamPiece();
             Mock<NonGoalField> field = new Mock<NonGoalField>(x, y);
-            field.Setup(m => m.Put(piece)).Returns(false);
-            Assert.False(piece.Put(field.Object));
+            field.Setup(m => m.Put(piece)).Returns((false, true));
+            Assert.False(piece.Put(field.Object).goal);
         }
 
         public class DiscoverTestData : IEnumerable<object[]>
@@ -135,10 +134,9 @@ namespace GameMaster.Tests
         {
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
-            var logger = Mock.Of<ILogger<GM>>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new WebSocketManager<GMMessage>();
-            var gameMaster = new GM(lifetime, conf, queue, manager);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
             for (int i = 0; i < pieceCount; ++i)
             {
@@ -146,10 +144,10 @@ namespace GameMaster.Tests
             }
 
             // Act
-            var discoveryActionResult = gameMaster.Invoke<Dictionary<Direction, int>>("Discover", field);
+            var discoveryActionResult = gameMaster.Invoke<GM, Dictionary<Direction, int>>("Discover", field);
 
             // Assert
-            var board = gameMaster.GetValue<AbstractField[][]>("board");
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
             List<(AbstractField field, int dist, Direction dir)> neighbours = GetNeighbours(field, board, conf.Height, conf.Width);
 
             for (int k = 0; k < neighbours.Count; k++)
@@ -169,7 +167,14 @@ namespace GameMaster.Tests
                         $"Incorect value for distance: {discoveryActionResult[neighbours[k].dir]} != {neighbours[k].dist}");
                 }
             }
-            Assert.Equal(neighbours.Count, discoveryActionResult.Count);
+
+            int discoveredFields = 0;
+            foreach (var distance in discoveryActionResult)
+            {
+                if (distance.Value >= 0)
+                    ++discoveredFields;
+            }
+            Assert.Equal(neighbours.Count, discoveredFields);
         }
 
         public int ManhattanDistance(AbstractField f1, AbstractField f2)
@@ -201,14 +206,14 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new WebSocketManager<GMMessage>();
-            var gameMaster = new GM(lifetime, conf, queue, manager);
-            var players = gameMaster.GetValue<Dictionary<int, GMPlayer>>("players");
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, client, logger);
+            var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
             for (int i = 0; i < conf.NumberOfPlayersPerTeam; ++i)
             {
-                players.Add(i, new GMPlayer(i, conf, manager, Team.Red));
+                players.Add(i, new GMPlayer(i, conf, client, Team.Red, logger));
                 int j = i + conf.NumberOfPlayersPerTeam;
-                players.Add(j, new GMPlayer(j, conf, manager, Team.Blue));
+                players.Add(j, new GMPlayer(j, conf, client, Team.Blue, logger));
             }
             gameMaster.Invoke("InitGame");
 
@@ -246,37 +251,55 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new WebSocketManager<GMMessage>();
-            var gameMaster = new GM(lifetime, conf, queue, manager);
-            var players = gameMaster.GetValue<Dictionary<int, GMPlayer>>("players");
-            var sockets = manager.GetValue<ConcurrentDictionary<int, WebSocket>, SocketManager<WebSocket, GMMessage>>("sockets");
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, client, logger);
+            var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
+
             for (int idRed = 0; idRed < conf.NumberOfPlayersPerTeam; ++idRed)
             {
-                var player = new GMPlayer(idRed, conf, manager, Team.Red)
-                {
-                    SocketID = idRed,
-                };
+                var player = new GMPlayer(idRed, conf, client, Team.Red, logger);
                 players.Add(idRed, player);
-                sockets.TryAdd(idRed, Mock.Of<WebSocket>());
-
+               
                 int idBlue = idRed + conf.NumberOfPlayersPerTeam;
-                player = new GMPlayer(idBlue, conf, manager, Team.Blue)
-                {
-                    SocketID = idBlue,
-                };
+                player = new GMPlayer(idBlue, conf, client, Team.Blue, logger);
                 players.Add(idBlue, player);
-                sockets.TryAdd(idBlue, Mock.Of<WebSocket>());
             }
             gameMaster.Invoke("InitGame");
 
             // Act
-            var task = gameMaster.Invoke<Task>("StartGame", CancellationToken.None);
+            var task = gameMaster.Invoke<GM, Task>("StartGame", CancellationToken.None);
             task.Wait();
 
             // Assert
             Assert.True(gameMaster.WasGameStarted);
 
-            // TODO create mock of websocket and check if GM sends messages
+            // TODO create mock of socket and check if GM sends messages
+        }
+
+        [Fact]
+        public void TestDiscoverShouldReturnNegativeNumbers()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration();
+            var queue = new BufferBlock<PlayerMessage>();
+            var lifetime = Mock.Of<IApplicationLifetime>();
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, client, logger);
+            gameMaster.Invoke("InitGame");
+
+            // Act
+            var distances = gameMaster.Invoke<GM, Dictionary<Direction, int>>("Discover", new TaskField(0, 5));
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
+
+            int expectedResult = -1;
+            int resultS = distances[Direction.S];
+            int resultSE = distances[Direction.SE];
+            int resultSW = distances[Direction.SW];
+
+            // Assert
+            Assert.Equal(expectedResult, resultS);
+            Assert.Equal(expectedResult, resultSE);
+            Assert.Equal(expectedResult, resultSW);
         }
     }
 }

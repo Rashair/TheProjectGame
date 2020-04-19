@@ -8,7 +8,7 @@ namespace Shared.Payloads
     {
         public int[,] Distances { get; set; }
 
-        public int RespondToID { get; set; }
+        public int RespondToId { get; set; }
 
         [JsonProperty("redTeamGoalAreaInformations", ItemConverterType = typeof(StringEnumConverter))]
         public GoalInfo[,] RedTeamGoalAreaInformations { get; set; }

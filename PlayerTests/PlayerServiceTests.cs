@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -6,35 +7,40 @@ using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
-using Player.Clients;
 using Player.Models;
 using Player.Models.Strategies;
 using Player.Services;
+using Serilog;
+using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
 using Shared.Payloads;
+using TestsShared;
 using Xunit;
 
 namespace Player.Tests
 {
     public class PlayerServiceTests
     {
+        private readonly ILogger logger = MockGenerator.Get<ILogger>();
+
         [Fact(Timeout = 2500)]
         [Obsolete]
         public async Task TestExecuteAsyncShouldReadMessages()
         {
             // Arrange
             IServiceCollection services = new ServiceCollection();
+            services.AddSingleton(logger);
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, ClientMock<GMMessage, PlayerMessage>>();
             var queue = new BufferBlock<GMMessage>();
             StartGamePayload payloadStart = new StartGamePayload
             {
-                PlayerID = 1,
-                AlliesIDs = new int[2] { 1, 2 },
-                LeaderID = 1,
-                EnemiesIDs = new int[2] { 3, 4 },
+                PlayerId = 1,
+                AlliesIds = new int[2] { 1, 2 },
+                LeaderId = 1,
+                EnemiesIds = new int[2] { 3, 4 },
                 TeamId = Team.Red,
                 BoardSize = new BoardSize { X = 3, Y = 3 },
                 GoalAreaSize = 1,
@@ -47,7 +53,7 @@ namespace Player.Tests
             };
             GMMessage messageStart = new GMMessage()
             {
-                Id = GMMessageID.StartGame,
+                Id = GMMessageId.StartGame,
                 Payload = payloadStart.Serialize(),
             };
             queue.Post(messageStart);
@@ -56,6 +62,9 @@ namespace Player.Tests
             services.AddSingleton<IStrategy, StrategyMock>();
             services.AddSingleton<Models.Player>();
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
+            var context = new Services.SynchronizationContext();
+            context.SemaphoreSlim.Release();
+            services.AddSingleton(context);
 
             services.AddHostedService<PlayerService>();
             var serviceProvider = services.BuildServiceProvider();
@@ -83,9 +92,14 @@ namespace Player.Tests
                 return Task.CompletedTask;
             }
 
-            public Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
+            public Task ConnectAsync(string host, int port, CancellationToken cancellationToken)
             {
                 return Task.CompletedTask;
+            }
+
+            public object GetSocket()
+            {
+                throw new NotImplementedException();
             }
 
             public Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
@@ -95,6 +109,11 @@ namespace Player.Tests
 
             public async Task SendAsync(S message, CancellationToken cancellationToken)
             {
+            }
+
+            public Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
             }
         }
 

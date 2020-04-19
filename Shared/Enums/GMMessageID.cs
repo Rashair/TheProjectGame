@@ -1,6 +1,6 @@
 ﻿namespace Shared.Enums
 {
-    public enum GMMessageID
+    public enum GMMessageId
     {
         Unknown,
 

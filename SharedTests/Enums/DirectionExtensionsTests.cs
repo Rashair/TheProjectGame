@@ -16,15 +16,15 @@ namespace SharedTests
 
             // Assert
             Assert.Equal(9, result.Length);
-            Assert.Contains((Direction.NW, center.y - 1, center.x - 1), result);
-            Assert.Contains((Direction.N, center.y - 1, center.x), result);
-            Assert.Contains((Direction.NE, center.y - 1, center.x + 1), result);
+            Assert.Contains((Direction.SW, center.y - 1, center.x - 1), result);
+            Assert.Contains((Direction.S, center.y - 1, center.x), result);
+            Assert.Contains((Direction.SE, center.y - 1, center.x + 1), result);
             Assert.Contains((Direction.W, center.y, center.x - 1), result);
             Assert.Contains((Direction.FromCurrent, center.y, center.x), result);
             Assert.Contains((Direction.E, center.y, center.x + 1), result);
-            Assert.Contains((Direction.SW, center.y + 1, center.x - 1), result);
-            Assert.Contains((Direction.S, center.y + 1, center.x), result);
-            Assert.Contains((Direction.SE, center.y + 1, center.x + 1), result);
+            Assert.Contains((Direction.NW, center.y + 1, center.x - 1), result);
+            Assert.Contains((Direction.N, center.y + 1, center.x), result);
+            Assert.Contains((Direction.NE, center.y + 1, center.x + 1), result);
         }
     }
 }

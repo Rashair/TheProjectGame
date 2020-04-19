@@ -9,11 +9,5 @@ namespace GameMaster.Models.Pieces
         {
             return true;
         }
-
-        public override (bool, bool) PutOnField(AbstractField abstractField)
-        {
-            Log.ForContext<ShamPiece>().Information($"Putting sham on {abstractField.GetPosition()}");
-            return abstractField.PutFake(this);
-        }
     }
 }
