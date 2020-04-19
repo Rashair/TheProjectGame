@@ -5,21 +5,21 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
+using CommunicationServer.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Core;
 using Shared.Enums;
+using TestsShared;
 using Xunit;
 
 namespace IntegrationTests
 {
     public class StartTests : IDisposable
     {
-        private readonly List<IWebHost> hosts = new List<IWebHost>(20);
+        private readonly List<IWebHost> hosts = new List<IWebHost>(15);
 
-        [Fact]
+        [Fact(Timeout = 60 * 1000)]
         public async void PlayersStart()
         {
             // Arrange
@@ -31,11 +31,11 @@ namespace IntegrationTests
             IWebHost[] webHostsBlue = new IWebHost[playersCount];
             for (int i = 0; i < playersCount; ++i)
             {
-                webHostsRed[i] = Player.Program.CreateWebHostBuilder(argsRed).
-                                     UseSerilog((Logger)null, true).
+                webHostsRed[i] = Utilities.CreateHostBuilder(typeof(Player.Startup), argsRed).
+                                     ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
                                      Build();
-                webHostsBlue[i] = Player.Program.CreateWebHostBuilder(argsBlue).
-                                    UseSerilog((Logger)null, true).
+                webHostsBlue[i] = Utilities.CreateHostBuilder(typeof(Player.Startup), argsBlue).
+                                    ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
                                     Build();
 
                 hosts.Add(webHostsBlue[i]);
@@ -61,14 +61,15 @@ namespace IntegrationTests
             Assert.True(playerBlue.Team == Team.Blue, "Player should get color provided via args");
         }
 
-        [Fact(Timeout = 2000)]
+        [Fact(Timeout = 2 * 1000)]
         public async void GameMasterStarts()
         {
             // Arrange
             var source = new CancellationTokenSource();
             string url = "http://127.0.0.1:5000";
             string[] args = new string[] { $"urls={url}" };
-            var webhost = Utilities.CreateWebHost(typeof(GameMaster.Startup), args).
+            var webhost = Utilities.CreateHostBuilder(typeof(GameMaster.Startup), args).
+                ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
                 Build();
             hosts.Add(webhost);
 
@@ -91,24 +92,40 @@ namespace IntegrationTests
             Assert.True(gameMaster.WasGameInitialized, "Game should be initialized");
         }
 
-        [Fact(Timeout = 1500)]
+        [Fact(Timeout = 12 * 1000)]
         public async void CommunicationServerStarts()
         {
             // Arrange
             var source = new CancellationTokenSource();
-            string[] args = new string[] { "urls=https://127.0.0.1:0" };
-            var webhost = CommunicationServer.Program.CreateWebHostBuilder(args).
-                ConfigureLogging((ILoggingBuilder logging) => logging.ClearProviders()).
+            var webhost = Utilities.CreateHostBuilder(typeof(CommunicationServer.Startup)).
+                //// ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
+                Build();
+            string gmUrl = "http://127.0.0.1:4000";
+            string[] args = new string[] { $"urls={gmUrl}" };
+            var gmHost = Utilities.CreateHostBuilder(typeof(GameMaster.Startup), args).
+                //// ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
                 Build();
             hosts.Add(webhost);
+            hosts.Add(gmHost);
 
             // Act
-            await webhost.StartAsync(source.Token);
-            await Task.Delay(500);
+            var csThread = new Thread(() =>
+                webhost.StartAsync(source.Token));
+            csThread.Start();
+
+            await gmHost.StartAsync(source.Token);
+            HttpResponseMessage response;
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri($"{gmUrl}");
+                response = await client.PostAsync("api/InitGame", null);
+            }
+            await Task.Delay(1000);
             source.Cancel();
 
             // Assert
-            // TODO: ...
+            var container = webhost.Services.GetService<ServiceShareContainer>();
+            Assert.True(container.GMClient != null, "GMClient should not be null");
         }
 
         public void Dispose()
