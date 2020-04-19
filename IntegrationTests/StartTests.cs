@@ -6,10 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using CommunicationServer.Models;
+using CommunicationServer.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Shared.Clients;
 using Shared.Enums;
+using Shared.Messages;
 using TestsShared;
 using Xunit;
 
@@ -92,27 +95,26 @@ namespace IntegrationTests
             Assert.True(gameMaster.WasGameInitialized, "Game should be initialized");
         }
 
-        [Fact(Timeout = 12 * 1000)]
+        [Fact(Timeout = 15 * 1000)]
         public async void CommunicationServerStarts()
         {
             // Arrange
             var source = new CancellationTokenSource();
             var webhost = Utilities.CreateHostBuilder(typeof(CommunicationServer.Startup)).
-                //// ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
+                ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
                 Build();
             string gmUrl = "http://127.0.0.1:4000";
             string[] args = new string[] { $"urls={gmUrl}" };
             var gmHost = Utilities.CreateHostBuilder(typeof(GameMaster.Startup), args).
-                //// ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
+                ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
                 Build();
             hosts.Add(webhost);
             hosts.Add(gmHost);
 
             // Act
-            var csThread = new Thread(() =>
-                webhost.StartAsync(source.Token));
-            csThread.Start();
-
+            var csThread = new Thread(async (token) =>
+                await webhost.RunAsync((CancellationToken)token));
+            csThread.Start(source.Token);
             await gmHost.StartAsync(source.Token);
             HttpResponseMessage response;
             using (var client = new HttpClient())
@@ -125,7 +127,7 @@ namespace IntegrationTests
 
             // Assert
             var container = webhost.Services.GetService<ServiceShareContainer>();
-            Assert.True(container.GMClient != null, "GMClient should not be null");
+            Assert.True(container.GMClient != null, "GMClient in container should not be null");
         }
 
         public void Dispose()
