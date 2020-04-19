@@ -51,12 +51,14 @@ namespace CommunicationServer.Services
         public override async Task OnDisconnectAsync(TcpSocketClient<PlayerMessage, GMMessage> client,
             CancellationToken cancellationToken)
         {
-            bool result = await manager.RemoveSocketAsync(manager.GetId(client), cancellationToken);
+            int id = manager.GetId(client);
+            bool result = await manager.RemoveSocketAsync(id, cancellationToken);
             if (!result)
             {
                 TcpClient socket = (TcpClient)client.GetSocket();
                 logger.Error($"Failed to remove socket: {socket.Client.RemoteEndPoint}");
             }
+            logger.Information($"Player {id} disconnected");
         }
 
         public override async Task OnExceptionAsync(TcpSocketClient<PlayerMessage, GMMessage> client, Exception e,
@@ -83,13 +85,15 @@ namespace CommunicationServer.Services
                 }
                 else
                 {
-                    await Task.Delay(Wait);
+                    await Task.Delay(Wait, stoppingToken);
                 }
             }
-            for (int i = 0; i < tasks.Count; ++i)
+
+            for (int i = 0; i < tasks.Count && !stoppingToken.IsCancellationRequested; ++i)
             {
                 await tasks[i];
             }
+            logger.Information("Stopping PlayersTcpSocketService");
         }
     }
 }

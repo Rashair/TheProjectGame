@@ -71,7 +71,7 @@ namespace CommunicationServer.Services
             // Singleton initialization
             container.GMClient = gmClient;
 
-            // GM connected, ServiceShareContainer initiated, release another services and start asycn section.
+            // GM connected, ServiceShareContainer initiated, release another services and start asy section.
             await Task.Yield();
             await ClientHandler(gmClient, stoppingToken);
         }
@@ -87,14 +87,15 @@ namespace CommunicationServer.Services
                     try
                     {
                         Task<TcpClient> acceptTask = gmListener.AcceptTcpClientAsync();
+                        acceptTask.Wait(cancellationToken);
                         TcpClient gm = acceptTask.Result;
 
                         return new TcpSocketClient<GMMessage, PlayerMessage>(gm, log);
                     }
                     catch (OperationCanceledException)
                     {
-                        logger.Error("cancellationToken was canceled during GM connection.");
-                        throw;
+                        logger.Error("Operation was canceled during GM connection.");
+                        break;
                     }
                 }
                 Thread.Sleep(Wait);

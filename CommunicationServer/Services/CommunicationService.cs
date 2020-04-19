@@ -48,8 +48,13 @@ namespace CommunicationServer.Services
                         await gmClient.SendAsync(pm, stoppingToken);
                         break;
 
+                    case null when stoppingToken.IsCancellationRequested:
+                        logger.Information("Stopping CommunicationService");
+                        return;
+
                     default:
-                        throw new Exception("Unknown message type");
+                        logger.Warning("Unknown message type. Exiting service");
+                        return;
                 }
             }
         }
