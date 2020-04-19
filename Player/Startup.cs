@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Player.Models;
 using Player.Services;
@@ -55,15 +56,14 @@ namespace Player
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkId=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ILogger>(GetLogger());
+            var logger = GetLogger();
+            services.TryAddSingleton<ILogger>(logger);
 
             PlayerConfiguration conf = new PlayerConfiguration();
             Configuration.Bind("DefaultPlayerConfig", conf);
 
             // For console override;
             Configuration.Bind(conf);
-            Log.Information($"Team: {conf.TeamId}, strategy: {conf.Strategy}");
-
             services.AddSingleton(conf);
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, TcpSocketClient<GMMessage, PlayerMessage>>();
