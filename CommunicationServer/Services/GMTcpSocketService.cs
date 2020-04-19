@@ -18,10 +18,11 @@ namespace CommunicationServer.Services
         private readonly ServiceShareContainer container;
         private readonly ServerConfigurations conf;
         private readonly IApplicationLifetime lifetime;
+        private readonly Shared.ServiceSynchronization sync;
         protected readonly ILogger log;
 
         public GMTcpSocketService(BufferBlock<Message> queue, ServiceShareContainer container,
-            ServerConfigurations conf, IApplicationLifetime lifetime, ILogger log)
+            ServerConfigurations conf, IApplicationLifetime lifetime, ILogger log, Shared.ServiceSynchronization sync)
             : base(log.ForContext<GMTcpSocketService>())
         {
             this.queue = queue;
@@ -29,6 +30,7 @@ namespace CommunicationServer.Services
             this.conf = conf;
             this.lifetime = lifetime;
             this.log = log;
+            this.sync = sync;
         }
 
         public override async Task OnMessageAsync(TcpSocketClient<GMMessage, PlayerMessage> client, GMMessage message,
@@ -60,23 +62,24 @@ namespace CommunicationServer.Services
             logger.Information("Start waiting for gm");
 
             // Block another services untill GM connects, start sync section
-            TcpSocketClient<GMMessage, PlayerMessage> gmClient = ConnectGM(conf.ListenerIP, conf.GMPort, stoppingToken);
+            TcpSocketClient<GMMessage, PlayerMessage> gmClient = await ConnectGM(conf.ListenerIP, conf.GMPort, 
+                stoppingToken);
             if (gmClient == null)
             {
                 return;
             }
 
-            logger.Information("GM connected");
-
             // Singleton initialization
             container.GMClient = gmClient;
+            logger.Information("GM connected");
 
-            // GM connected, ServiceShareContainer initiated, release another services and start asy section.
+            // GM connected, ServiceShareContainer initiated, release another services and start async section.
+            sync.SemaphoreSlim.Release(2);
             await Task.Yield();
             await ClientHandler(gmClient, stoppingToken);
         }
 
-        private TcpSocketClient<GMMessage, PlayerMessage> ConnectGM(string ip, int port,
+        private async Task<TcpSocketClient<GMMessage, PlayerMessage>> ConnectGM(string ip, int port,
             CancellationToken cancellationToken)
         {
             TcpListener gmListener = StartListener(ip, port);
@@ -98,7 +101,7 @@ namespace CommunicationServer.Services
                         break;
                     }
                 }
-                Thread.Sleep(Wait);
+                await Task.Delay(Wait, cancellationToken);
             }
 
             return null;

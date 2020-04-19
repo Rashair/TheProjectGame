@@ -8,6 +8,7 @@ using System.Threading.Tasks.Dataflow;
 
 using CommunicationServer.Models;
 using Serilog;
+using Shared;
 using Shared.Clients;
 using Shared.Managers;
 using Shared.Messages;
@@ -19,16 +20,18 @@ namespace CommunicationServer.Services
         private readonly ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager;
         private readonly BufferBlock<Message> queue;
         private readonly ServerConfigurations conf;
+        private readonly ServiceSynchronization sync;
         protected readonly ILogger log;
 
         public PlayersTcpSocketService(ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager,
-            BufferBlock<Message> queue, ServerConfigurations conf, ILogger log)
+            BufferBlock<Message> queue, ServerConfigurations conf, ILogger log, ServiceSynchronization sync)
             : base(log.ForContext<PlayersTcpSocketService>())
         {
             this.manager = manager;
             this.queue = queue;
             this.conf = conf;
             this.log = log;
+            this.sync = sync;
         }
 
         public override async Task OnMessageAsync(TcpSocketClient<PlayerMessage, GMMessage> client,
@@ -70,7 +73,7 @@ namespace CommunicationServer.Services
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await Task.Yield();
+            await sync.SemaphoreSlim.WaitAsync();
             logger.Information("Started PlayersTcpSocketService");
             TcpListener listener = StartListener(conf.ListenerIP, conf.PlayerPort);
             List<ConfiguredTaskAwaitable> tasks = new List<ConfiguredTaskAwaitable>();

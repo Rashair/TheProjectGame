@@ -65,10 +65,7 @@ namespace IntegrationTests
                 }
 
                 // Act
-                var csThread = new Thread(async (token) =>
-                    await csHost.RunAsync((CancellationToken)token));
-                csThread.Start(tokenSource.Token);
-
+                await csHost.StartAsync(tokenSource.Token);
                 await gmHost.StartAsync(tokenSource.Token);
                 await Task.Yield();
 

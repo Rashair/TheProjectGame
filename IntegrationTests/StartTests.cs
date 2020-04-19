@@ -70,7 +70,7 @@ namespace IntegrationTests
             // Arrange
             var source = new CancellationTokenSource();
             string url = "http://127.0.0.1:5000";
-            string[] args = new string[] { $"urls={url}" };
+            string[] args = new string[] { $"urls={url}", "CsPort=1" };
             var webhost = Utilities.CreateHostBuilder(typeof(GameMaster.Startup), args).
                 ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
                 Build();
@@ -95,26 +95,25 @@ namespace IntegrationTests
             Assert.True(gameMaster.WasGameInitialized, "Game should be initialized");
         }
 
-        [Fact(Timeout = 15 * 1000)]
+        [Fact(Timeout = 30 * 1000)]
         public async void CommunicationServerStarts()
         {
             // Arrange
             var source = new CancellationTokenSource();
-            var webhost = Utilities.CreateHostBuilder(typeof(CommunicationServer.Startup)).
+            string[] csArgs = new string[] { $"urls=http://127.0.0.1:1025", "PlayerPort=2" };
+            var webhost = Utilities.CreateHostBuilder(typeof(CommunicationServer.Startup), csArgs).
                 ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
                 Build();
             string gmUrl = "http://127.0.0.1:4000";
-            string[] args = new string[] { $"urls={gmUrl}" };
-            var gmHost = Utilities.CreateHostBuilder(typeof(GameMaster.Startup), args).
+            string[] gmArgs = new string[] { $"urls={gmUrl}" };
+            var gmHost = Utilities.CreateHostBuilder(typeof(GameMaster.Startup), gmArgs).
                 ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
                 Build();
             hosts.Add(webhost);
             hosts.Add(gmHost);
 
             // Act
-            var csThread = new Thread(async (token) =>
-                await webhost.RunAsync((CancellationToken)token));
-            csThread.Start(source.Token);
+            await webhost.StartAsync(source.Token);
             await gmHost.StartAsync(source.Token);
             HttpResponseMessage response;
             using (var client = new HttpClient())
@@ -122,7 +121,7 @@ namespace IntegrationTests
                 client.BaseAddress = new Uri($"{gmUrl}");
                 response = await client.PostAsync("api/InitGame", null);
             }
-            await Task.Delay(3000);
+            await Task.Delay(4000);
             source.Cancel();
 
             // Assert

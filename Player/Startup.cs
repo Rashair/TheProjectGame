@@ -12,6 +12,7 @@ using Player.Models;
 using Player.Services;
 using Serilog;
 using Serilog.Events;
+using Shared;
 using Shared.Clients;
 using Shared.Messages;
 
@@ -70,7 +71,8 @@ namespace Player
             services.AddSingleton<BufferBlock<GMMessage>>();
             services.AddSingleton<Models.Player>();
 
-            services.AddSingleton<SynchronizationContext>();
+            var sync = new ServiceSynchronization(0, 1);
+            services.AddSingleton(sync);
             services.AddHostedService<SocketService>();
             services.AddHostedService<PlayerService>();
         }

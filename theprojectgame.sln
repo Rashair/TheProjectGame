@@ -31,6 +31,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Player.Dir", "Player.Dir", "{15B1B56B-576C-4F76-9545-3D4BF8BC9CFC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared.Dir", "Shared.Dir", "{9FFC9D17-4224-425C-9860-9EABD57BE363}"
+	ProjectSection(SolutionItems) = preProject
+		Player\Services\SynchronizationContext.cs = Player\Services\SynchronizationContext.cs
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{424C60A1-A2F7-4B0B-B522-390C2125627B}"
 	ProjectSection(SolutionItems) = preProject

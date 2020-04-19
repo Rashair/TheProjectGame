@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -22,18 +21,18 @@ namespace Player.Services
         private readonly BufferBlock<GMMessage> queue;
         private readonly IApplicationLifetime lifetime;
         private readonly ILogger logger;
-        private readonly SynchronizationContext synchronizationContext;
+        private readonly ServiceSynchronization synchronizationContext;
 
         public SocketService(ISocketClient<GMMessage, PlayerMessage> client, PlayerConfiguration conf,
-            BufferBlock<GMMessage> queue, IApplicationLifetime lifetime, ILogger log, 
-            SynchronizationContext synchronizationContext)
+            BufferBlock<GMMessage> queue, IApplicationLifetime lifetime, ILogger log,
+            ServiceSynchronization serviceSync)
         {
             this.client = client;
             this.conf = conf;
             this.queue = queue;
             this.lifetime = lifetime;
             this.logger = log.ForContext<SocketService>();
-            this.synchronizationContext = synchronizationContext;
+            this.synchronizationContext = serviceSync;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

@@ -11,6 +11,7 @@ using Player.Models;
 using Player.Models.Strategies;
 using Player.Services;
 using Serilog;
+using Shared;
 using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
@@ -62,8 +63,7 @@ namespace Player.Tests
             services.AddSingleton<IStrategy, StrategyMock>();
             services.AddSingleton<Models.Player>();
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
-            var context = new Services.SynchronizationContext();
-            context.SemaphoreSlim.Release();
+            var context = new ServiceSynchronization(1, 1);
             services.AddSingleton(context);
 
             services.AddHostedService<PlayerService>();
