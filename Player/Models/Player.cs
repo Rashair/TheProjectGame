@@ -33,7 +33,7 @@ namespace Player.Models
         private Team? winner;
         private int discovered;
 
-        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage, 
+        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage,
             PlayerMessage> client, ILogger logger)
         {
             this.conf = conf;
@@ -89,7 +89,8 @@ namespace Player.Models
                 startGame = await AcceptMessage(cancellationToken);
             }
 
-            logger.Information("Starting game");
+            logger.Information("Player starting game\n" +
+                $"Team: {conf.TeamId}, strategy: {conf.Strategy}".PadLeft(12));
             await Work(cancellationToken);
         }
 
@@ -289,11 +290,11 @@ namespace Player.Models
                 case GMMessageId.DiscoverAnswer:
                     DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
                     Board[Position.y, Position.x].DistToPiece = payloadDiscover.DistanceFromCurrent;
-                    if (Position.y + 1 < BoardSize.y) 
+                    if (Position.y + 1 < BoardSize.y)
                         Board[Position.y + 1, Position.x].DistToPiece = payloadDiscover.DistanceN;
-                    if (Position.y > 0) 
+                    if (Position.y > 0)
                         Board[Position.y - 1, Position.x].DistToPiece = payloadDiscover.DistanceS;
-                    if (Position.x + 1 < BoardSize.x) 
+                    if (Position.x + 1 < BoardSize.x)
                         Board[Position.y, Position.x + 1].DistToPiece = payloadDiscover.DistanceE;
                     if (Position.x > 0)
                         Board[Position.y, Position.x - 1].DistToPiece = payloadDiscover.DistanceW;
@@ -301,7 +302,7 @@ namespace Player.Models
                         Board[Position.y + 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceNW;
                     if (Position.y > 0 && Position.x + 1 < BoardSize.x)
                         Board[Position.y - 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceSE;
-                    if (Position.y + 1 < BoardSize.y && Position.x + 1 < BoardSize.x) 
+                    if (Position.y + 1 < BoardSize.y && Position.x + 1 < BoardSize.x)
                         Board[Position.y + 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNE;
                     if (Position.y > 0 && Position.x > 0)
                         Board[Position.y - 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSW;

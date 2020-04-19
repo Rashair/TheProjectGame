@@ -57,12 +57,11 @@ namespace CommunicationServer.Services
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            logger.Information("Started GMTcpSocketService");
             logger.Information("Start waiting for gm");
 
             // Block another services untill GM connects, start sync section
             TcpSocketClient<GMMessage, PlayerMessage> gmClient = ConnectGM(conf.ListenerIP, conf.GMPort, stoppingToken);
-            if (gmClient is null)
+            if (gmClient == null)
             {
                 return;
             }
@@ -75,7 +74,6 @@ namespace CommunicationServer.Services
             // GM connected, ServiceShareContainer initiated, release another services and start asycn section.
             await Task.Yield();
             await ClientHandler(gmClient, stoppingToken);
-            lifetime.StopApplication();
         }
 
         private TcpSocketClient<GMMessage, PlayerMessage> ConnectGM(string ip, int port,
