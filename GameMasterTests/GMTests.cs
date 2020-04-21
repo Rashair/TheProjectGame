@@ -251,8 +251,8 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>(logger);
-            var gameMaster = new GM(lifetime, conf, queue, manager, logger);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, client, logger);
 
             // Act
             gameMaster.Invoke("InitGame");

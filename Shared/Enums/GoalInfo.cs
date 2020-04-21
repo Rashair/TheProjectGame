@@ -2,7 +2,7 @@
 {
     public enum GoalInfo
     {
-        IdK,
+        IDK,
         DiscoveredNotGoal,
         DiscoveredGoal,
     }

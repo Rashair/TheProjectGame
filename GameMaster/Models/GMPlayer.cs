@@ -288,7 +288,8 @@ namespace GameMaster.Models
             {
                 WasGoal = goal
             };
-            return new GMMessage(GMMessageID.PutAnswer, payload);
+
+            return new GMMessage(GMMessageId.PutAnswer, id, payload);
         }
 
         private GMMessage PickErrorMessage(PickError error)

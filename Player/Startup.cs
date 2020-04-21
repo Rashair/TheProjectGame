@@ -64,7 +64,7 @@ namespace Player
             services.AddSingleton(conf);
 
             // Add logger if not already exists in services (for int. tests)
-            var logger = GetLogger(conf.TeamID);
+            var logger = GetLogger(conf.TeamId);
             services.TryAddSingleton<ILogger>(logger);
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, TcpSocketClient<GMMessage, PlayerMessage>>();

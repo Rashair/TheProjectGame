@@ -30,9 +30,48 @@ namespace GameMaster.Tests
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
         private GMMessage lastSended;
 
-        private ISocketManager<TcpClient, GMMessage> GenerateSocketManager()
+        private class MockSocketClient<R, S> : ISocketClient<R, S>
+        {
+            private readonly Send send;
+
+            public delegate void Send(S message);
+
+            public MockSocketClient(Send send)
+            {
+                this.send = send;
+            }
+
+            public bool IsOpen => throw new NotImplementedException();
+
+            public object GetSocket() => throw new NotImplementedException();
+
+            public Task ConnectAsync(string host, int port, CancellationToken cancellationToken)
+                => throw new NotImplementedException();
+
+            public Task CloseAsync(CancellationToken cancellationToken)
+                => throw new NotImplementedException();
+
+            public Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
+                 => throw new NotImplementedException();
+
+            public async Task SendAsync(S message, CancellationToken cancellationToken)
+            {
+                send(message);
+                await Task.CompletedTask;
+            }
+
+            public Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken)
+                => throw new NotImplementedException();
+        }
+
+        private MockSocketClient<PlayerMessage, GMMessage> GenerateSocketClient()
         {
             return new MockSocketClient<PlayerMessage, GMMessage>((m) => { lastSended = m; });
+        }
+
+        private GameConfiguration GenerateConfiguration()
+        {
+            return new MockGameConfiguration();
         }
 
         private BufferBlock<PlayerMessage> GenerateBuffer()
@@ -48,12 +87,12 @@ namespace GameMaster.Tests
 
         private GMPlayer GenerateGMPlayer(int id = DefaultId, Team team = DefaultTeam, bool isLeader = DefaultIsLeader)
         {
-            return GenerateGMPlayer(new MockGameConfiguration(), GenerateSocketClient(), id, team, isLeader);
+            return GenerateGMPlayer(GenerateConfiguration(), GenerateSocketClient(), id, team, isLeader);
         }
 
         private GM GenerateGM()
         {
-            var conf = new MockGameConfiguration();
+            var conf = GenerateConfiguration();
             var queue = GenerateBuffer();
             var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
             var lifetime = Mock.Of<IApplicationLifetime>();

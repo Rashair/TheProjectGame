@@ -91,7 +91,7 @@ namespace Player.Models
             }
 
             logger.Information("Starting game\n" +
-                $"Team: {conf.TeamID}, strategy: {conf.Strategy}");
+                $"Team: {conf.TeamId}, strategy: {conf.Strategy}");
             await Work(cancellationToken);
         }
 
@@ -200,7 +200,7 @@ namespace Player.Models
             else
             {
                 // TODO: different algorithm - whole list is shifted, maybe from end?
-                response.RespondToID = WaitingPlayers[0];
+                response.RespondToId = WaitingPlayers[0];
                 WaitingPlayers.RemoveAt(0);
             }
 
@@ -216,12 +216,12 @@ namespace Player.Models
                 if (Team == Team.Red)
                 {
                     response.RedTeamGoalAreaInformations[row, col] = Board[row, col].GoalInfo;
-                    response.BlueTeamGoalAreaInformations[row, col] = GoalInfo.IdK;
+                    response.BlueTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
                 }
                 else
                 {
                     response.BlueTeamGoalAreaInformations[row, col] = Board[row, col].GoalInfo;
-                    response.RedTeamGoalAreaInformations[row, col] = GoalInfo.IdK;
+                    response.RedTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
                 }
             }
             message.Payload = response.Serialize();
@@ -238,7 +238,7 @@ namespace Player.Models
             else
             {
                 // TODO: They are always in waiting, fix this!
-                WaitingPlayers.Add(respondToID);
+                WaitingPlayers.Add(respondToId);
             }
         }
 
@@ -337,7 +337,7 @@ namespace Player.Models
                             Board[i, j] = new Field
                             {
                                 DistToPiece = int.MaxValue,
-                                GoalInfo = GoalInfo.IdK,
+                                GoalInfo = GoalInfo.IDK,
                             };
                         }
                     }
@@ -408,11 +408,11 @@ namespace Player.Models
                             {
                                 Board[i, j].DistToPiece = payloadGive.Distances[i, j];
                             }
-                            if (payloadGive.RedTeamGoalAreaInformations[i, j] != GoalInfo.IdK)
+                            if (payloadGive.RedTeamGoalAreaInformations[i, j] != GoalInfo.IDK)
                             {
                                 Board[i, j].GoalInfo = payloadGive.RedTeamGoalAreaInformations[i, j];
                             }
-                            else if (payloadGive.BlueTeamGoalAreaInformations[i, j] != GoalInfo.IdK)
+                            else if (payloadGive.BlueTeamGoalAreaInformations[i, j] != GoalInfo.IDK)
                             {
                                 Board[i, j].GoalInfo = payloadGive.BlueTeamGoalAreaInformations[i, j];
                             }
@@ -428,10 +428,10 @@ namespace Player.Models
                         penaltyTime = toWait;
                     }
                     break;
-                case GMMessageID.PickError:
+                case GMMessageId.PickError:
                     penaltyTime = PenaltiesTimes.PickPiece;
                     break;
-                case GMMessageID.PutError:
+                case GMMessageId.PutError:
                     penaltyTime = PenaltiesTimes.PutPiece;
                     break;
                 case GMMessageId.UnknownError:
