@@ -68,6 +68,7 @@ namespace GameMaster
 
             // TODO: Restore if visualisation will be added
             // services.AddSingleton<TcpSocketManager<BackendMessage>>();
+            services.AddSingleton<ISocketClient<PlayerMessage, GMMessage>, TcpSocketClient<PlayerMessage, GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
             GameConfiguration conf;
