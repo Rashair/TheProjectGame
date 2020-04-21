@@ -15,7 +15,7 @@ namespace Shared.Tests
         public void TestGMMessageDeserialization()
         {
             // Arrange
-            Dictionary<int, GMMessageID> gmMessages = GetGMMessageMapping();
+            Dictionary<int, GMMessageId> gmMessages = GetGMMessageMapping();
 
             // Act
             foreach (var msg in gmMessages)
@@ -32,7 +32,8 @@ namespace Shared.Tests
         public void TestGMMessageSerialization()
         {
             // Arrange
-            Dictionary<int, GMMessageID> gmMessages = GetGMMessageMapping();
+            Dictionary<int, GMMessageId> gmMessages = GetGMMessageMapping();
+            int playerId = 3;
 
             // Act
             foreach (var msg in gmMessages)
@@ -40,10 +41,11 @@ namespace Shared.Tests
                 var obj = new GMMessage
                 {
                     Id = msg.Value,
+                    PlayerId = playerId,
                     Payload = new EmptyAnswerPayload().Serialize(),
                 };
 
-                var expectedJsonString = "{\"Id\":" + msg.Key + ",\"Payload\":\"{}\"}";
+                var expectedJsonString = "{\"Id\":" + msg.Key + ",\"PlayerId\":" + playerId + ",\"Payload\":\"{}\"}";
                 var serializedObject = JsonConvert.SerializeObject(obj);
 
                 // Assert
@@ -51,27 +53,27 @@ namespace Shared.Tests
             }
         }
 
-        private Dictionary<int, GMMessageID> GetGMMessageMapping()
+        private Dictionary<int, GMMessageId> GetGMMessageMapping()
         {
-            return new Dictionary<int, GMMessageID>()
+            return new Dictionary<int, GMMessageId>()
             {
-                { 0, GMMessageID.Unknown },
-                { 101, GMMessageID.CheckAnswer },
-                { 102, GMMessageID.DestructionAnswer },
-                { 103, GMMessageID.DiscoverAnswer },
-                { 104, GMMessageID.EndGame },
-                { 105, GMMessageID.StartGame },
-                { 106, GMMessageID.BegForInfoForwarded },
-                { 107, GMMessageID.JoinTheGameAnswer },
-                { 108, GMMessageID.MoveAnswer },
-                { 109, GMMessageID.PickAnswer },
-                { 110, GMMessageID.PutAnswer },
-                { 111, GMMessageID.GiveInfoForwarded },
-                { 901, GMMessageID.InvalidMoveError },
-                { 902, GMMessageID.PickError },
-                { 903, GMMessageID.PutError },
-                { 904, GMMessageID.NotWaitedError },
-                { 905, GMMessageID.UnknownError },
+                { 0, GMMessageId.Unknown },
+                { 101, GMMessageId.CheckAnswer },
+                { 102, GMMessageId.DestructionAnswer },
+                { 103, GMMessageId.DiscoverAnswer },
+                { 104, GMMessageId.EndGame },
+                { 105, GMMessageId.StartGame },
+                { 106, GMMessageId.BegForInfoForwarded },
+                { 107, GMMessageId.JoinTheGameAnswer },
+                { 108, GMMessageId.MoveAnswer },
+                { 109, GMMessageId.PickAnswer },
+                { 110, GMMessageId.PutAnswer },
+                { 111, GMMessageId.GiveInfoForwarded },
+                { 901, GMMessageId.InvalidMoveError },
+                { 902, GMMessageId.PickError },
+                { 903, GMMessageId.PutError },
+                { 904, GMMessageId.NotWaitedError },
+                { 905, GMMessageId.UnknownError },
             };
         }
     }

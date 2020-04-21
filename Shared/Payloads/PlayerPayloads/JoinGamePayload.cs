@@ -5,7 +5,7 @@ namespace Shared.Payloads.PlayerPayloads
 {
     public class JoinGamePayload : Payload
     {
-        [JsonProperty("teamID")]
-        public Team TeamID { get; set; }
+        [JsonProperty("teamId")]
+        public Team TeamId { get; set; }
     }
 }

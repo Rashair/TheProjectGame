@@ -1,13 +1,19 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks.Dataflow;
 
+using CommunicationServer.Models;
+using CommunicationServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
 using Serilog.Events;
+using Shared.Clients;
+using Shared.Managers;
+using Shared.Messages;
 
 using static System.Environment;
 
@@ -18,8 +24,11 @@ namespace CommunicationServer
         public const string LoggerTemplate =
             "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
 
-        public Startup()
+        public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration)
         {
+            Configuration = configuration;
         }
 
         private ILogger GetLogger()
@@ -34,7 +43,7 @@ namespace CommunicationServer
                path: path,
                rollOnFileSizeLimit: true,
                outputTemplate: LoggerTemplate)
-              .WriteTo.Console(outputTemplate: LoggerTemplate)
+               .WriteTo.Console(outputTemplate: LoggerTemplate)
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
@@ -42,10 +51,30 @@ namespace CommunicationServer
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkId=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.TryAddSingleton<ILogger>(GetLogger());
+            var logger = GetLogger();
+            services.AddSingleton<ILogger>(logger);
+            logger.Information("Running CS");
+
+            ServerConfigurations conf = new ServerConfigurations();
+
+            Configuration.Bind("DefaultCommunicationServerConfig", conf);
+
+            // For console override;
+            Configuration.Bind(conf);
+            services.AddSingleton(conf);
+
+            services.AddSingleton<ServiceShareContainer>();
+            services.AddSingleton<ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage>,
+                TcpSocketManager<PlayerMessage, GMMessage>>();
+            services.AddSingleton<BufferBlock<Message>>();
+
+            // Order matters, GMTcpSocketService must be first
+            services.AddHostedService<GMTcpSocketService>();
+            services.AddHostedService<PlayersTcpSocketService>();
+            services.AddHostedService<CommunicationService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -9,10 +9,5 @@ namespace GameMaster.Models.Pieces
         {
             return true;
         }
-
-        public override (bool?, bool) PutOnField(AbstractField abstractField)
-        {
-            return abstractField.PutFake(this);
-        }
     }
 }

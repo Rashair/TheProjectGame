@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-using GameMaster.Managers;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using Serilog;
+using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Payloads;
@@ -19,7 +18,7 @@ namespace GameMaster.Models
         private readonly ILogger logger;
         private readonly int id;
         private readonly GameConfiguration conf;
-        private readonly ISocketManager<TcpClient, GMMessage> socketManager;
+        private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
         private int messageCorrelationId;
         private DateTime lockedTill;
         private AbstractField position;
@@ -39,19 +38,17 @@ namespace GameMaster.Models
 
         public AbstractPiece Holding { get; set; }
 
-        public int SocketID { get; set; }
-
         public bool IsLeader { get; set; }
 
         public Team Team { get; }
 
-        public GMPlayer(int id, GameConfiguration conf, ISocketManager<TcpClient, GMMessage> socketManager, Team team, 
+        public GMPlayer(int id, GameConfiguration conf, ISocketClient<PlayerMessage, GMMessage> socketClient, Team team, 
             ILogger log, bool isLeader = false)
         {
             logger = log.ForContext<GMPlayer>();
             this.id = id;
             this.conf = conf;
-            this.socketManager = socketManager;
+            this.socketClient = socketClient;
             Team = team;
             IsLeader = isLeader;
             lockedTill = DateTime.Now;
@@ -75,7 +72,7 @@ namespace GameMaster.Models
             {
                 bool moved = field?.MoveHere(this) == true;
                 GMMessage message = MoveAnswerMessage(moved, gm);
-                await socketManager.SendMessageAsync(SocketID, message, cancellationToken);
+                await socketClient.SendAsync(message, cancellationToken);
                 return moved;
             }
             return false;
@@ -98,7 +95,7 @@ namespace GameMaster.Models
                     // TODO Issue 129
                     message = UnknownErrorMessage();
                 }
-                await socketManager.SendMessageAsync(SocketID, message, cancellationToken);
+                await socketClient.SendAsync(message, cancellationToken);
                 return isHolding;
             }
             return false;
@@ -119,7 +116,7 @@ namespace GameMaster.Models
                 {
                     message = CheckAnswerMessage();
                 }
-                await socketManager.SendMessageAsync(SocketID, message, cancellationToken);
+                await socketClient.SendAsync(message, cancellationToken);
             }
         }
 
@@ -129,12 +126,12 @@ namespace GameMaster.Models
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 GMMessage message = DiscoverAnswerMessage(gm);
-                await socketManager.SendMessageAsync(SocketID, message, cancellationToken);
+                await socketClient.SendAsync(message, cancellationToken);
             }
         }
 
         /// <returns>
-        /// Task<(bool goal, bool removed)>
+        /// Task<(bool? goal, bool removed)>
         /// </returns>
         public async Task<(bool?, bool)> PutAsync(CancellationToken cancellationToken)
         {
@@ -149,11 +146,11 @@ namespace GameMaster.Models
                 }
                 else
                 {
-                    (goal, removed) = Holding.PutOnField(Position);
+                    (goal, removed) = Holding.Put(Position);
                     message = PutAnswerMessage(goal);
                     Holding = null;
                 }
-                await socketManager.SendMessageAsync(SocketID, message, cancellationToken);
+                await socketClient.SendAsync(message, cancellationToken);
             }
             return (goal, removed);
         }
@@ -181,7 +178,7 @@ namespace GameMaster.Models
                 {
                     message = PickErrorMessage(PickError.Other);
                 }
-                await socketManager.SendMessageAsync(SocketID, message, cancellationToken);
+                await socketClient.SendAsync(message, cancellationToken);
             }
             return picked;
         }
@@ -205,7 +202,7 @@ namespace GameMaster.Models
                 if (!isUnlocked)
                 {
                     GMMessage message = NotWaitedErrorMessage();
-                    await socketManager.SendMessageAsync(SocketID, message, cancellationToken);
+                    await socketClient.SendAsync(message, cancellationToken);
                 }
                 return isUnlocked;
             }
@@ -218,7 +215,7 @@ namespace GameMaster.Models
             {
                 WaitUntil = lockedTill,
             };
-            return new GMMessage(GMMessageID.NotWaitedError, payload);
+            return new GMMessage(GMMessageId.NotWaitedError, id, payload);
         }
 
         private GMMessage MoveAnswerMessage(bool madeMove, GM gm)
@@ -229,7 +226,7 @@ namespace GameMaster.Models
                 CurrentPosition = Position.GetPositionObject(),
                 MadeMove = madeMove,
             };
-            return new GMMessage(GMMessageID.MoveAnswer, payload);
+            return new GMMessage(GMMessageId.MoveAnswer, id, payload);
         }
 
         private GMMessage UnknownErrorMessage()
@@ -239,13 +236,13 @@ namespace GameMaster.Models
                 HoldingPiece = !(Holding is null),
                 Position = Position.GetPositionObject(),
             };
-            return new GMMessage(GMMessageID.UnknownError, payload);
+            return new GMMessage(GMMessageId.UnknownError, id, payload);
         }
 
         private GMMessage DestructionAnswerMessage()
         {
             EmptyAnswerPayload payload = new EmptyAnswerPayload();
-            return new GMMessage(GMMessageID.DestructionAnswer, payload);
+            return new GMMessage(GMMessageId.DestructionAnswer, id, payload);
         }
 
         private GMMessage CheckAnswerMessage()
@@ -254,7 +251,7 @@ namespace GameMaster.Models
             {
                 Sham = Holding.CheckForSham(),
             };
-            return new GMMessage(GMMessageID.CheckAnswer, payload);
+            return new GMMessage(GMMessageId.CheckAnswer, id, payload);
         }
 
         private GMMessage DiscoverAnswerMessage(GM gm)
@@ -272,7 +269,7 @@ namespace GameMaster.Models
                 DistanceS = discovered[Direction.S],
                 DistanceSE = discovered[Direction.SE],
             };
-            return new GMMessage(GMMessageID.DiscoverAnswer, payload);
+            return new GMMessage(GMMessageId.DiscoverAnswer, id, payload);
         }
 
         private GMMessage PutErrorMessage(PutError error)
@@ -281,7 +278,7 @@ namespace GameMaster.Models
             {
                 ErrorSubtype = error,
             };
-            return new GMMessage(GMMessageID.PutError, payload);
+            return new GMMessage(GMMessageId.PutError, id, payload);
         }
 
         private GMMessage PutAnswerMessage(bool? goal)
@@ -300,13 +297,13 @@ namespace GameMaster.Models
             {
                 ErrorSubtype = error,
             };
-            return new GMMessage(GMMessageID.PickError, payload);
+            return new GMMessage(GMMessageId.PickError, id, payload);
         }
 
         private GMMessage PickAnswerMessage()
         {
             EmptyAnswerPayload payload = new EmptyAnswerPayload();
-            return new GMMessage(GMMessageID.PickAnswer, payload);
+            return new GMMessage(GMMessageId.PickAnswer, id, payload);
         }
     }
 }

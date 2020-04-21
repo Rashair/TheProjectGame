@@ -3,9 +3,11 @@ using Shared.Payloads;
 
 namespace Shared.Messages
 {
-    public class GMMessage
+    public class GMMessage : Message
     {
-        public GMMessageID Id { get; set; }
+        public GMMessageId Id { get; set; }
+
+        public int PlayerId { get; set; }
 
         public string Payload { get; set; }
 
@@ -13,9 +15,10 @@ namespace Shared.Messages
         {
         }
 
-        public GMMessage(GMMessageID id, Payload payload)
+        public GMMessage(GMMessageId id, int playerId, Payload payload)
         {
             Id = id;
+            PlayerId = playerId;
             Payload = payload.Serialize();
         }
     }

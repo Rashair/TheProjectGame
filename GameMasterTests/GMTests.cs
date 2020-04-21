@@ -1,14 +1,11 @@
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
@@ -16,6 +13,7 @@ using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using Serilog;
+using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using TestsShared;
@@ -38,8 +36,8 @@ namespace GameMaster.Tests
             conf.NumberOfPiecesOnBoard = 0;
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>(logger);
-            var gameMaster = new GM(lifetime, conf, queue, manager, logger);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
 
             // Act
@@ -102,8 +100,8 @@ namespace GameMaster.Tests
             int y = 4;
             NormalPiece piece = new NormalPiece();
             Mock<GoalField> field = new Mock<GoalField>(x, y);
-            field.Setup(m => m.Put(piece)).Returns(true);
-            Assert.True(piece.Put(field.Object));
+            field.Setup(m => m.Put(piece)).Returns((true, true));
+            Assert.True(piece.Put(field.Object).goal);
         }
 
         [Fact]
@@ -113,8 +111,8 @@ namespace GameMaster.Tests
             int y = 4;
             ShamPiece piece = new ShamPiece();
             Mock<NonGoalField> field = new Mock<NonGoalField>(x, y);
-            field.Setup(m => m.Put(piece)).Returns(false);
-            Assert.False(piece.Put(field.Object));
+            field.Setup(m => m.Put(piece)).Returns((false, true));
+            Assert.False(piece.Put(field.Object).goal);
         }
 
         public class DiscoverTestData : IEnumerable<object[]>
@@ -137,8 +135,8 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>(logger);
-            var gameMaster = new GM(lifetime, conf, queue, manager, logger);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
             for (int i = 0; i < pieceCount; ++i)
             {
@@ -208,14 +206,14 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>(logger);
-            var gameMaster = new GM(lifetime, conf, queue, manager, logger);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, client, logger);
             var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
             for (int i = 0; i < conf.NumberOfPlayersPerTeam; ++i)
             {
-                players.Add(i, new GMPlayer(i, conf, manager, Team.Red, logger));
+                players.Add(i, new GMPlayer(i, conf, client, Team.Red, logger));
                 int j = i + conf.NumberOfPlayersPerTeam;
-                players.Add(j, new GMPlayer(j, conf, manager, Team.Blue, logger));
+                players.Add(j, new GMPlayer(j, conf, client, Team.Blue, logger));
             }
             gameMaster.Invoke("InitGame");
 
@@ -310,27 +308,18 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>(logger);
-            var gameMaster = new GM(lifetime, conf, queue, manager, logger);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, client, logger);
             var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
-            var sockets = manager.GetValue<SocketManager<TcpClient, GMMessage>,
-                ConcurrentDictionary<int, TcpClient>>("sockets");
+
             for (int idRed = 0; idRed < conf.NumberOfPlayersPerTeam; ++idRed)
             {
-                var player = new GMPlayer(idRed, conf, manager, Team.Red, logger)
-                {
-                    SocketID = idRed,
-                };
+                var player = new GMPlayer(idRed, conf, client, Team.Red, logger);
                 players.Add(idRed, player);
-                sockets.TryAdd(idRed, Mock.Of<TcpClient>());
-
+               
                 int idBlue = idRed + conf.NumberOfPlayersPerTeam;
-                player = new GMPlayer(idBlue, conf, manager, Team.Blue, logger)
-                {
-                    SocketID = idBlue,
-                };
+                player = new GMPlayer(idBlue, conf, client, Team.Blue, logger);
                 players.Add(idBlue, player);
-                sockets.TryAdd(idBlue, Mock.Of<TcpClient>());
             }
             gameMaster.Invoke("InitGame");
 
@@ -351,8 +340,8 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var manager = new TcpSocketManager<GMMessage>(logger);
-            var gameMaster = new GM(lifetime, conf, queue, manager, logger);
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
 
             // Act

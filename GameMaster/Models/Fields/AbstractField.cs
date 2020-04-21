@@ -25,18 +25,10 @@ namespace GameMaster.Models.Fields
             whosHere = null;
         }
 
-        // TODO Temporary fix Put()
-        public abstract (bool? goal, bool removed) PutNormal(AbstractPiece piece);
-
-        // TODO Temporary fix Put()
-        public abstract (bool? goal, bool removed) PutFake(AbstractPiece piece);
-
         // originally returned void
         public abstract bool PickUp(GMPlayer player);
 
-        public abstract bool Put(AbstractPiece piece);
-
-        public abstract bool PutSham(AbstractPiece piece);
+        public abstract (bool? goal, bool removed) Put(AbstractPiece piece);
 
         // TODO
         public abstract bool CanPick();

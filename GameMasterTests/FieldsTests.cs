@@ -1,12 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using Moq;
 using Serilog;
+using Shared.Clients;
 using Shared.Messages;
 using TestsShared;
 using Xunit;
@@ -24,24 +24,24 @@ namespace GameMaster.Tests
             public IEnumerator<object[]> GetEnumerator()
             {
                 var conf = Mock.Of<GameConfiguration>();
-                var socketManager = new Mock<TcpSocketManager<GMMessage>>(logger).Object;
+                var socketClient = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
                 yield return new object[]
                 {
                     new List<GMPlayer>
                     {
-                        new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red, logger),
-                        new GMPlayer(2, conf, socketManager, Shared.Enums.Team.Red, logger),
+                        new GMPlayer(1, conf, socketClient, Shared.Enums.Team.Red, logger),
+                        new GMPlayer(2, conf, socketClient, Shared.Enums.Team.Red, logger),
                     },
                     false,
                 };
                 yield return new object[]
                 {
-                    new List<GMPlayer> { new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red, logger) },
+                    new List<GMPlayer> { new GMPlayer(1, conf, socketClient, Shared.Enums.Team.Red, logger) },
                     true,
                 };
                 yield return new object[]
                 {
-                    new List<GMPlayer> { null, new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red, logger) },
+                    new List<GMPlayer> { null, new GMPlayer(1, conf, socketClient, Shared.Enums.Team.Red, logger) },
                     true,
                 };
                 yield return new object[] { new List<GMPlayer> { null }, false };
@@ -72,9 +72,9 @@ namespace GameMaster.Tests
         {
             public IEnumerator<object[]> GetEnumerator()
             {
-                yield return new object[] { new List<AbstractPiece> { new NormalPiece(), new ShamPiece() }, false };
+                yield return new object[] { new List<AbstractPiece> { new NormalPiece(), new ShamPiece() }, null };
                 yield return new object[] { new List<AbstractPiece> { new NormalPiece() }, true };
-                yield return new object[] { new List<AbstractPiece> { new ShamPiece() }, true };
+                yield return new object[] { new List<AbstractPiece> { new ShamPiece() }, null };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -82,16 +82,16 @@ namespace GameMaster.Tests
 
         [Theory]
         [ClassData(typeof(PutGoalTestData))]
-        public void PutGoalTest(List<AbstractPiece> pieces, bool expected)
+        public void PutGoalTest(List<AbstractPiece> pieces, bool? expected)
         {
             // Arrange
             GoalField goalField = new GoalField(5, 0);
-            bool result = false;
+            bool? result = null;
 
             // Act
             foreach (AbstractPiece p in pieces)
             {
-                result = goalField.Put(p);
+                result = goalField.Put(p).goal;
             }
 
             // Assert
@@ -107,8 +107,8 @@ namespace GameMaster.Tests
         {
             // Arrange
             var conf = Mock.Of<GameConfiguration>();
-            var socketManager = new Mock<TcpSocketManager<GMMessage>>(logger).Object;
-            GMPlayer gmPlayer = new GMPlayer(1, conf, socketManager, Shared.Enums.Team.Red, logger);
+            var socketClient = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            GMPlayer gmPlayer = new GMPlayer(1, conf, socketClient, Shared.Enums.Team.Red, logger);
             TaskField taskField = new TaskField(2, 2);
             for (int i = 0; i < numPut; i++)
             {

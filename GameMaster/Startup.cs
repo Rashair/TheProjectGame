@@ -1,9 +1,7 @@
 using System;
 using System.IO;
-using System.Net.Sockets;
 using System.Threading.Tasks.Dataflow;
 
-using GameMaster.Managers;
 using GameMaster.Models;
 using GameMaster.Services;
 using Microsoft.AspNetCore.Builder;
@@ -15,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
 using Serilog.Events;
+using Shared.Clients;
 using Shared.Messages;
 
 using static System.Environment;
@@ -84,8 +83,8 @@ namespace GameMaster
             services.AddSingleton(conf);
 
             services.AddSingleton<GM>();
+            services.AddHostedService<SocketService>();
             services.AddHostedService<GMService>();
-            services.AddHostedService<TcpListenerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

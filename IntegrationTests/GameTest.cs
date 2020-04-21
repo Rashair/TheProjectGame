@@ -126,7 +126,7 @@ namespace IntegrationTests
         {
             return new[]
             {
-                $"TeamID={team.ToString().ToLower()}",
+                $"TeamId={team.ToString().ToLower()}",
                 "urls=http://127.0.0.1:0",
                 $"CsIP={Conf.CsIP}",
                 $"CsPort={Conf.CsPort}"
@@ -192,8 +192,8 @@ namespace IntegrationTests
 
             for (int i = 0; i < Conf?.NumberOfPlayersPerTeam; ++i)
             {
-                redPlayersHosts[i].Dispose();
-                bluePlayersHosts[i].Dispose();
+                redPlayersHosts?[i].Dispose();
+                bluePlayersHosts?[i].Dispose();
             }
         }
     }

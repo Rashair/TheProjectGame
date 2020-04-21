@@ -42,7 +42,7 @@ namespace Player.Models
             this.queue = queue;
             this.client = client;
             this.logger = logger.ForContext<Player>();
-            this.Team = conf.TeamID == "red" ? Team.Red : Team.Blue;
+            this.Team = conf.TeamId == "red" ? Team.Red : Team.Blue;
             this.Position = (-1, -1);
         }
 
@@ -50,7 +50,7 @@ namespace Player.Models
 
         public Penalties PenaltiesTimes { get; private set; }
 
-        public int[] EnemiesIDs { get; private set; }
+        public int[] EnemiesIds { get; private set; }
 
         public NumberOfPlayers NumberOfPlayers { get; private set; }
 
@@ -99,11 +99,11 @@ namespace Player.Models
         {
             JoinGamePayload payload = new JoinGamePayload()
             {
-                TeamID = Team,
+                TeamId = Team,
             };
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = PlayerMessageID.JoinTheGame,
+                MessageId = PlayerMessageId.JoinTheGame,
                 Payload = payload.Serialize(),
             };
             await Communicate(message, cancellationToken);
@@ -137,8 +137,8 @@ namespace Player.Models
             };
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = PlayerMessageID.Move,
-                PlayerID = id,
+                MessageId = PlayerMessageId.Move,
+                PlayerId = id,
                 Payload = payload.Serialize(),
             };
             await Communicate(message, cancellationToken);
@@ -149,8 +149,8 @@ namespace Player.Models
             EmptyPayload payload = new EmptyPayload();
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = PlayerMessageID.Put,
-                PlayerID = id,
+                MessageId = PlayerMessageId.Put,
+                PlayerId = id,
                 Payload = payload.Serialize(),
             };
             await Communicate(message, cancellationToken);
@@ -160,8 +160,8 @@ namespace Player.Models
         {
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = PlayerMessageID.BegForInfo,
-                PlayerID = id,
+                MessageId = PlayerMessageId.BegForInfo,
+                PlayerId = id,
             };
 
             Random rnd = new Random();
@@ -173,7 +173,7 @@ namespace Player.Models
 
             BegForInfoPayload payload = new BegForInfoPayload()
             {
-                AskedPlayerID = TeamMatesIds[index],
+                AskedPlayerId = TeamMatesIds[index],
             };
 
             message.Payload = payload.Serialize();
@@ -188,14 +188,14 @@ namespace Player.Models
 
             PlayerMessage message = new PlayerMessage()
             {
-                MessageID = PlayerMessageID.GiveInfo,
-                PlayerID = id,
+                MessageId = PlayerMessageId.GiveInfo,
+                PlayerId = id,
             };
 
             GiveInfoPayload response = new GiveInfoPayload();
             if (toLeader)
             {
-                response.RespondToID = LeaderId;
+                response.RespondToId = LeaderId;
             }
             else
             {
@@ -216,12 +216,12 @@ namespace Player.Models
                 if (Team == Team.Red)
                 {
                     response.RedTeamGoalAreaInformations[row, col] = Board[row, col].GoalInfo;
-                    response.BlueTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
+                    response.BlueTeamGoalAreaInformations[row, col] = GoalInfo.IdK;
                 }
                 else
                 {
                     response.BlueTeamGoalAreaInformations[row, col] = Board[row, col].GoalInfo;
-                    response.RedTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
+                    response.RedTeamGoalAreaInformations[row, col] = GoalInfo.IdK;
                 }
             }
             message.Payload = response.Serialize();
@@ -229,7 +229,7 @@ namespace Player.Models
             penaltyTime = PenaltiesTimes.Response;
         }
 
-        public async Task RequestsResponse(CancellationToken cancellationToken, int respondToID, bool isFromLeader = false)
+        public async Task RequestsResponse(CancellationToken cancellationToken, int respondToId, bool isFromLeader = false)
         {
             if (isFromLeader)
             {
@@ -242,12 +242,12 @@ namespace Player.Models
             }
         }
 
-        private PlayerMessage CreateMessage(PlayerMessageID type, Payload payload)
+        private PlayerMessage CreateMessage(PlayerMessageId type, Payload payload)
         {
             return new PlayerMessage()
             {
-                MessageID = type,
-                PlayerID = id,
+                MessageId = type,
+                PlayerId = id,
                 Payload = payload.Serialize(),
             };
         }
@@ -255,14 +255,14 @@ namespace Player.Models
         public async Task CheckPiece(CancellationToken cancellationToken)
         {
             EmptyPayload payload = new EmptyPayload();
-            PlayerMessage message = CreateMessage(PlayerMessageID.CheckPiece, payload);
+            PlayerMessage message = CreateMessage(PlayerMessageId.CheckPiece, payload);
             await Communicate(message, cancellationToken);
         }
 
         public async Task Discover(CancellationToken cancellationToken)
         {
             EmptyPayload payload = new EmptyPayload();
-            PlayerMessage message = CreateMessage(PlayerMessageID.Discover, payload);
+            PlayerMessage message = CreateMessage(PlayerMessageId.Discover, payload);
 
             await Communicate(message, cancellationToken);
         }
@@ -278,17 +278,17 @@ namespace Player.Models
                 $"{discovered} ");
             switch (message.Id)
             {
-                case GMMessageID.CheckAnswer:
+                case GMMessageId.CheckAnswer:
                     CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
                     IsHeldPieceSham = payloadCheck.Sham;
                     penaltyTime = PenaltiesTimes.CheckPiece;
                     break;
-                case GMMessageID.DestructionAnswer:
+                case GMMessageId.DestructionAnswer:
                     HasPiece = false;
                     IsHeldPieceSham = null;
                     penaltyTime = PenaltiesTimes.DestroyPiece;
                     break;
-                case GMMessageID.DiscoverAnswer:
+                case GMMessageId.DiscoverAnswer:
                     DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
                     Board[Position.y, Position.x].DistToPiece = payloadDiscover.DistanceFromCurrent;
                     if (Position.y + 1 < BoardSize.y)
@@ -309,16 +309,16 @@ namespace Player.Models
                         Board[Position.y - 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSW;
                     penaltyTime = PenaltiesTimes.Discover;
                     break;
-                case GMMessageID.EndGame:
+                case GMMessageId.EndGame:
                     EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
                     winner = payloadEnd.Winner;
                     StopWorking();
                     break;
-                case GMMessageID.StartGame:
+                case GMMessageId.StartGame:
                     StartGamePayload payloadStart = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
-                    id = payloadStart.PlayerID;
-                    TeamMatesIds = payloadStart.AlliesIDs;
-                    if (id == payloadStart.LeaderID)
+                    id = payloadStart.PlayerId;
+                    TeamMatesIds = payloadStart.AlliesIds;
+                    if (id == payloadStart.LeaderId)
                     {
                         IsLeader = true;
                     }
@@ -326,7 +326,7 @@ namespace Player.Models
                     {
                         IsLeader = false;
                     }
-                    LeaderId = payloadStart.LeaderID;
+                    LeaderId = payloadStart.LeaderId;
                     Team = payloadStart.TeamId;
                     BoardSize = (payloadStart.BoardSize.Y, payloadStart.BoardSize.X);
                     Board = new Field[payloadStart.BoardSize.Y, payloadStart.BoardSize.X];
@@ -337,13 +337,13 @@ namespace Player.Models
                             Board[i, j] = new Field
                             {
                                 DistToPiece = int.MaxValue,
-                                GoalInfo = GoalInfo.IDK,
+                                GoalInfo = GoalInfo.IdK,
                             };
                         }
                     }
                     PenaltiesTimes = payloadStart.Penalties;
                     Position = (payloadStart.Position.Y, payloadStart.Position.X);
-                    EnemiesIDs = payloadStart.EnemiesIDs;
+                    EnemiesIds = payloadStart.EnemiesIds;
                     GoalAreaSize = payloadStart.GoalAreaSize;
                     NumberOfPlayers = payloadStart.NumberOfPlayers;
                     NumberOfPieces = payloadStart.NumberOfPieces;
@@ -351,22 +351,22 @@ namespace Player.Models
                     ShamPieceProbability = payloadStart.ShamPieceProbability;
                     WaitingPlayers = new List<int>();
                     return true;
-                case GMMessageID.BegForInfoForwarded:
+                case GMMessageId.BegForInfoForwarded:
                     BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
                     if (Team == payloadBeg.TeamId)
                     {
-                        await RequestsResponse(cancellationToken, payloadBeg.AskingID, payloadBeg.Leader);
+                        await RequestsResponse(cancellationToken, payloadBeg.AskingId, payloadBeg.Leader);
                     }
                     break;
-                case GMMessageID.JoinTheGameAnswer:
+                case GMMessageId.JoinTheGameAnswer:
                     JoinAnswerPayload payloadJoin = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.Payload);
-                    id = payloadJoin.PlayerID;
+                    id = payloadJoin.PlayerId;
                     if (!payloadJoin.Accepted)
                     {
                         StopWorking();
                     }
                     break;
-                case GMMessageID.MoveAnswer:
+                case GMMessageId.MoveAnswer:
                     MoveAnswerPayload payloadMove = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
                     if (payloadMove.MadeMove)
                     {
@@ -375,12 +375,12 @@ namespace Player.Models
                     }
                     penaltyTime = PenaltiesTimes.Move;
                     break;
-                case GMMessageID.PickAnswer:
+                case GMMessageId.PickAnswer:
                     HasPiece = true;
                     Board[Position.y, Position.x].DistToPiece = int.MaxValue;
                     penaltyTime = PenaltiesTimes.PickPiece;
                     break;
-                case GMMessageID.PutAnswer:
+                case GMMessageId.PutAnswer:
                     HasPiece = false;
                     IsHeldPieceSham = null;
 
@@ -398,7 +398,7 @@ namespace Player.Models
 
                     penaltyTime = PenaltiesTimes.PutPiece;
                     break;
-                case GMMessageID.GiveInfoForwarded:
+                case GMMessageId.GiveInfoForwarded:
                     GiveInfoForwardedPayload payloadGive = JsonConvert.DeserializeObject<GiveInfoForwardedPayload>(message.Payload);
                     for (int i = 0; i < payloadGive.Distances.GetLength(0); i++)
                     {
@@ -408,11 +408,11 @@ namespace Player.Models
                             {
                                 Board[i, j].DistToPiece = payloadGive.Distances[i, j];
                             }
-                            if (payloadGive.RedTeamGoalAreaInformations[i, j] != GoalInfo.IDK)
+                            if (payloadGive.RedTeamGoalAreaInformations[i, j] != GoalInfo.IdK)
                             {
                                 Board[i, j].GoalInfo = payloadGive.RedTeamGoalAreaInformations[i, j];
                             }
-                            else if (payloadGive.BlueTeamGoalAreaInformations[i, j] != GoalInfo.IDK)
+                            else if (payloadGive.BlueTeamGoalAreaInformations[i, j] != GoalInfo.IdK)
                             {
                                 Board[i, j].GoalInfo = payloadGive.BlueTeamGoalAreaInformations[i, j];
                             }
@@ -420,7 +420,7 @@ namespace Player.Models
                     }
                     penaltyTime = PenaltiesTimes.Response;
                     break;
-                case GMMessageID.NotWaitedError:
+                case GMMessageId.NotWaitedError:
                     NotWaitedErrorPayload errorPayload = JsonConvert.DeserializeObject<NotWaitedErrorPayload>(message.Payload);
                     int toWait = (int)(DateTime.Now - errorPayload.WaitUntil).TotalMilliseconds;
                     if (toWait >= 0)
@@ -434,7 +434,7 @@ namespace Player.Models
                 case GMMessageID.PutError:
                     penaltyTime = PenaltiesTimes.PutPiece;
                     break;
-                case GMMessageID.UnknownError:
+                case GMMessageId.UnknownError:
                     penaltyTime = 50;
                     break;
             }
@@ -447,8 +447,8 @@ namespace Player.Models
             EmptyPayload messagePickPayload = new EmptyPayload();
             PlayerMessage messagePick = new PlayerMessage()
             {
-                MessageID = PlayerMessageID.PieceDestruction,
-                PlayerID = id,
+                MessageId = PlayerMessageId.PieceDestruction,
+                PlayerId = id,
                 Payload = JsonConvert.SerializeObject(messagePickPayload),
             };
             await Communicate(messagePick, cancellationToken);
@@ -459,8 +459,8 @@ namespace Player.Models
             EmptyPayload messagePickPayload = new EmptyPayload();
             PlayerMessage messagePick = new PlayerMessage()
             {
-                MessageID = PlayerMessageID.Pick,
-                PlayerID = id,
+                MessageId = PlayerMessageId.Pick,
+                PlayerId = id,
                 Payload = JsonConvert.SerializeObject(messagePickPayload),
             };
             await Communicate(messagePick, cancellationToken);
