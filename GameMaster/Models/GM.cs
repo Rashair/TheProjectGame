@@ -41,7 +41,7 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; private set; }
 
-        public int TaskAreaEnd { get => conf.Height - conf.GoalAreaHeight; }
+        public int SecondGoalAreaStart { get => conf.Height - conf.GoalAreaHeight; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
             BufferBlock<PlayerMessage> queue, ISocketClient<PlayerMessage, GMMessage> socketClient,
@@ -135,7 +135,7 @@ namespace GameMaster.Models
                     switch (payloadMove.Direction)
                     {
                         case Direction.N:
-                            if (pos[0] + 1 < conf.Height && (player.Team == Team.Blue || pos[0] + 1 < TaskAreaEnd))
+                            if (pos[0] + 1 < conf.Height && (player.Team == Team.Blue || pos[0] + 1 < SecondGoalAreaStart))
                             {
                                 field = board[pos[0] + 1][pos[1]];
                             }
@@ -336,7 +336,7 @@ namespace GameMaster.Models
         {
             if (team == Team.Red)
             {
-                return (0, TaskAreaEnd);
+                return (0, SecondGoalAreaStart);
             }
 
             return (conf.GoalAreaHeight, conf.Height);
@@ -358,14 +358,13 @@ namespace GameMaster.Models
             }
 
             AbstractField TaskFieldGenerator(int y, int x) => new TaskField(y, x);
-            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
-            for (int rowIt = conf.GoalAreaHeight; rowIt < secondGoalAreaStart; ++rowIt)
+            for (int rowIt = conf.GoalAreaHeight; rowIt < SecondGoalAreaStart; ++rowIt)
             {
                 FillBoardRow(rowIt, TaskFieldGenerator);
             }
 
-            GenerateGoalFields(secondGoalAreaStart, conf.Height);
-            for (int rowIt = secondGoalAreaStart; rowIt < conf.Height; ++rowIt)
+            GenerateGoalFields(SecondGoalAreaStart, conf.Height);
+            for (int rowIt = SecondGoalAreaStart; rowIt < conf.Height; ++rowIt)
             {
                 FillBoardRow(rowIt, NonGoalFieldGenerator);
             }
@@ -384,9 +383,9 @@ namespace GameMaster.Models
                     {
                         col = 0;
                         ++row;
-                        if (row == conf.Height)
+                        if (row == end)
                         {
-                            row = 0;
+                            row = beg;
                         }
                     }
                 }
@@ -459,8 +458,7 @@ namespace GameMaster.Models
                     distances[i] = -1;
             }
 
-            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
-            for (int i = conf.GoalAreaHeight; i < secondGoalAreaStart; i++)
+            for (int i = conf.GoalAreaHeight; i < SecondGoalAreaStart; i++)
             {
                 for (int j = 0; j < board[i].Length; j++)
                 {
@@ -488,8 +486,7 @@ namespace GameMaster.Models
         {
             int[] center = field.GetPosition();
             int distance = int.MaxValue;
-            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
-            for (int i = conf.GoalAreaHeight; i < secondGoalAreaStart; i++)
+            for (int i = conf.GoalAreaHeight; i < SecondGoalAreaStart; i++)
             {
                 for (int j = 0; j < board[i].Length; j++)
                 {
@@ -524,7 +521,7 @@ namespace GameMaster.Models
         private (int y, int x) GenerateCoordinatesInTaskArea(Random rand)
         {
             int taskAreaStart = conf.GoalAreaHeight;
-            int yCoord = rand.Next(taskAreaStart, TaskAreaEnd);
+            int yCoord = rand.Next(taskAreaStart, SecondGoalAreaStart);
             int xCoord = rand.Next(0, conf.Width);
 
             return (yCoord, xCoord);

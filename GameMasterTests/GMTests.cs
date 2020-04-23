@@ -260,7 +260,8 @@ namespace GameMaster.Tests
             // Assert
             Assert.True(gameMaster.WasGameInitialized);
 
-            int goalFieldsCount = 0;
+            int redGoalFieldsCount = 0;
+            int blueGoalFieldsCount = 0;
             int taskFieldsCount = 0;
             int piecesCount = 0;
             var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
@@ -268,14 +269,31 @@ namespace GameMaster.Tests
             {
                 for (int j = 0; j < board[i].Length; ++j)
                 {
-                    if (board[i][j] is GoalField)
+                    AbstractField field = board[i][j];
+                    if (field is GoalField)
                     {
-                        ++goalFieldsCount;
+                        if (i < conf.GoalAreaHeight)
+                        {
+                            ++redGoalFieldsCount;
+                        }
+                        else if (i >= gameMaster.SecondGoalAreaStart)
+                        {
+                            ++blueGoalFieldsCount;
+                        }
+                        else
+                        {
+                            Assert.True(false, "Goal field should be on correct position");
+                        }
+
+                        if (field.ContainsPieces())
+                        {
+                            Assert.True(false, "Goal field should not contain any pieces");
+                        }
                     }
-                    else if (board[i][j] is TaskField taskField)
+                    else if (field is TaskField taskField)
                     {
                         ++taskFieldsCount;
-                        if (board[i][j].ContainsPieces())
+                        if (field.ContainsPieces())
                         {
                             piecesCount += GetPieceCount(taskField);
                         }
@@ -283,11 +301,14 @@ namespace GameMaster.Tests
                 }
             }
 
-            int expectedGoalFieldsCount = conf.NumberOfGoals * 2;
-            Assert.True(expectedGoalFieldsCount == goalFieldsCount,
-                $"Number of goal fields should match configuration setting.\n" +
-                $"Have: {goalFieldsCount}\n" +
-                $"Expected: {expectedGoalFieldsCount}");
+            Assert.True(conf.NumberOfGoals == redGoalFieldsCount,
+                $"Number of red goal fields should match configuration setting.\n" +
+                $"Have: {redGoalFieldsCount}\n" +
+                $"Expected: {conf.NumberOfGoals}");
+            Assert.True(conf.NumberOfGoals == blueGoalFieldsCount,
+             $"Number of red goal fields should match configuration setting.\n" +
+             $"Have: {blueGoalFieldsCount}\n" +
+             $"Expected: {conf.NumberOfGoals}");
 
             int expectedTaskFieldsCount = (conf.Height - (2 * conf.GoalAreaHeight)) * conf.Width;
             Assert.True(expectedTaskFieldsCount == taskFieldsCount,
@@ -316,7 +337,7 @@ namespace GameMaster.Tests
             {
                 var player = new GMPlayer(idRed, conf, client, Team.Red, logger);
                 players.Add(idRed, player);
-               
+
                 int idBlue = idRed + conf.NumberOfPlayersPerTeam;
                 player = new GMPlayer(idBlue, conf, client, Team.Blue, logger);
                 players.Add(idBlue, player);
