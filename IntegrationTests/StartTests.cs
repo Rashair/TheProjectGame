@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -21,6 +22,15 @@ namespace IntegrationTests
     public class StartTests : IDisposable
     {
         private readonly List<IWebHost> hosts = new List<IWebHost>(15);
+
+        public StartTests()
+        {
+            var gameConfigPath = "gameConfig.json";
+            if (File.Exists(gameConfigPath))
+            {
+                File.Delete(gameConfigPath);
+            }
+        }
 
         [Fact(Timeout = 60 * 1000)]
         public async void PlayersStart()

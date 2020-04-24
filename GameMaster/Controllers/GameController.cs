@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Net.Mime;
+using System.Text;
 using System.Threading.Tasks;
 
 using GameMaster.Models;
@@ -53,7 +55,11 @@ namespace GameMaster.Controllers
             string path = configuration.GetValue<string>("GameConfigPath");
             try
             {
-                await System.IO.File.WriteAllTextAsync(path, gameConfigString);
+                using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Read, FileShare.None))
+                {
+                    var buffer = Encoding.UTF8.GetBytes(gameConfigString);
+                    await fileStream.WriteAsync(buffer);
+                }
             }
             catch (Exception e)
             {
