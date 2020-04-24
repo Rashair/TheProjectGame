@@ -76,6 +76,7 @@ namespace GameMaster.Tests
                 queue.Post(new PlayerMessage());
             }
             services.AddSingleton(queue);
+            AddLogging(services);
             services.AddSingleton<GM>();
             services.AddHostedService<GMService>();
 

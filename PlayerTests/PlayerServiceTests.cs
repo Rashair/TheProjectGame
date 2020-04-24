@@ -15,7 +15,7 @@ using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
-using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
 using TestsShared;
 using Xunit;
 
@@ -47,7 +47,7 @@ namespace Player.Tests
                 NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
                 NumberOfPieces = 2,
                 NumberOfGoals = 2,
-                Penalties = new Penalties { Move = "0", CheckForSham = "0", Discovery = "0", DestroyPiece = "0", PutPiece = "0", InformationExchange = "0" },
+                Penalties = new Penalties(),
                 ShamPieceProbability = 0.5f,
                 Position = new Position { X = 1, Y = 1 },
             };

@@ -32,7 +32,7 @@ namespace IntegrationTests
             PositionsCheckTime = 5000;
         }
 
-        [Fact(Timeout = 3 * 60 * 1000)]
+        [Fact(Timeout = 4 * 60 * 1000)]
         public override async void RunGameWithConfiguration()
         {
             return;

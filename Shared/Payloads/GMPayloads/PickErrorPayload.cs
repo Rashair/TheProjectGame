@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Converters;
 using Shared.Enums;
 
-namespace Shared.Payloads
+namespace Shared.Payloads.GMPayloads
 {
     public class PickErrorPayload : Payload
     {
