@@ -55,7 +55,7 @@ namespace GameMaster.Controllers
             string path = configuration.GetValue<string>("GameConfigPath");
             try
             {
-                using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Read, FileShare.None))
+                using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     var buffer = Encoding.UTF8.GetBytes(gameConfigString);
                     await fileStream.WriteAsync(buffer);
