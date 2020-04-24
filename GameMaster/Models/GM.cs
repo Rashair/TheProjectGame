@@ -15,7 +15,8 @@ using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
-using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
+using Shared.Payloads.PlayerPayloads;
 
 namespace GameMaster.Models
 {
@@ -28,7 +29,8 @@ namespace GameMaster.Models
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
 
-        private HashSet<(int recipient, int sender)> legalKnowledgeReplies;
+        private readonly Random rand;
+        private readonly HashSet<(int recipient, int sender)> legalKnowledgeReplies;
         private readonly Dictionary<int, GMPlayer> players;
         private AbstractField[][] board;
 
@@ -39,7 +41,7 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; private set; }
 
-        public int TaskAreaEnd { get => conf.Height - conf.GoalAreaHeight; }
+        public int SecondGoalAreaStart { get => conf.Height - conf.GoalAreaHeight; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
             BufferBlock<PlayerMessage> queue, ISocketClient<PlayerMessage, GMMessage> socketClient,
@@ -54,6 +56,7 @@ namespace GameMaster.Models
 
             players = new Dictionary<int, GMPlayer>();
             legalKnowledgeReplies = new HashSet<(int, int)>();
+            rand = new Random();
         }
 
         public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
@@ -132,7 +135,7 @@ namespace GameMaster.Models
                     switch (payloadMove.Direction)
                     {
                         case Direction.N:
-                            if (pos[0] + 1 < conf.Height && (player.Team == Team.Blue || pos[0] + 1 < TaskAreaEnd))
+                            if (pos[0] + 1 < conf.Height && (player.Team == Team.Blue || pos[0] + 1 < SecondGoalAreaStart))
                             {
                                 field = board[pos[0] + 1][pos[1]];
                             }
@@ -168,17 +171,19 @@ namespace GameMaster.Models
                     if (point == true)
                     {
                         int y = player.GetPosition()[0];
+                        string teamStr;
                         if (y < conf.GoalAreaHeight)
                         {
-                            logger.Information("RED TEAM POINT !!!");
+                            teamStr = "RED";
                             redTeamPoints++;
                         }
                         else
                         {
-                            logger.Information("BLUE TEAM POINT !!!");
+                            teamStr = "BLUE";
                             blueTeamPoints++;
                         }
-                        logger.Information($"by {player.Team}");
+                        logger.Information($"{teamStr} TEAM POINT !!!\n" +
+                            $"    by {player.Team}");
                         logger.Information($"RED: {redTeamPoints} | BLUE: {blueTeamPoints}");
                     }
                     if (removed)
@@ -268,12 +273,14 @@ namespace GameMaster.Models
                 payload.NumberOfGoals = conf.NumberOfGoals;
                 payload.Penalties = new Penalties
                 {
-                    Move = conf.MovePenalty.ToString(),
-                    InformationExchange = conf.AskPenalty.ToString(),
-                    Discovery = conf.DiscoverPenalty.ToString(),
-                    PutPiece = conf.PutPenalty.ToString(),
-                    CheckForSham = conf.CheckPenalty.ToString(),
-                    DestroyPiece = conf.DestroyPenalty.ToString(),
+                    Move = conf.MovePenalty,
+                    Ask = conf.AskPenalty,
+                    Response = conf.ResponsePenalty,
+                    Discover = conf.DiscoverPenalty,
+                    PickPiece = conf.PickPenalty,
+                    CheckPiece = conf.CheckPenalty,
+                    DestroyPiece = conf.DestroyPenalty,
+                    PutPiece = conf.PutPenalty,
                 };
                 payload.ShamPieceProbability = conf.ShamPieceProbability;
                 payload.Position = new Position
@@ -329,7 +336,7 @@ namespace GameMaster.Models
         {
             if (team == Team.Red)
             {
-                return (0, TaskAreaEnd);
+                return (0, SecondGoalAreaStart);
             }
 
             return (conf.GoalAreaHeight, conf.Height);
@@ -343,32 +350,46 @@ namespace GameMaster.Models
                 board[i] = new AbstractField[conf.Width];
             }
 
-            int goalFields = 0;
-            AbstractField NonGoalOrGoalFieldGenerator(int y, int x)
-            {
-                if (goalFields < conf.NumberOfGoals)
-                {
-                    ++goalFields;
-                    return new GoalField(y, x);
-                }
-                return new NonGoalField(y, x);
-            }
+            GenerateGoalFields(0, conf.GoalAreaHeight);
+            AbstractField NonGoalFieldGenerator(int y, int x) => new NonGoalField(y, x);
             for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
             {
-                FillBoardRow(rowIt, NonGoalOrGoalFieldGenerator);
+                FillBoardRow(rowIt, NonGoalFieldGenerator);
             }
 
-            Func<int, int, AbstractField> taskFieldGenerator = (int y, int x) => new TaskField(y, x);
-            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
-            for (int rowIt = conf.GoalAreaHeight; rowIt < secondGoalAreaStart; ++rowIt)
+            AbstractField TaskFieldGenerator(int y, int x) => new TaskField(y, x);
+            for (int rowIt = conf.GoalAreaHeight; rowIt < SecondGoalAreaStart; ++rowIt)
             {
-                FillBoardRow(rowIt, taskFieldGenerator);
+                FillBoardRow(rowIt, TaskFieldGenerator);
             }
 
-            goalFields = 0;
-            for (int rowIt = secondGoalAreaStart; rowIt < conf.Height; ++rowIt)
+            GenerateGoalFields(SecondGoalAreaStart, conf.Height);
+            for (int rowIt = SecondGoalAreaStart; rowIt < conf.Height; ++rowIt)
             {
-                FillBoardRow(rowIt, NonGoalOrGoalFieldGenerator);
+                FillBoardRow(rowIt, NonGoalFieldGenerator);
+            }
+        }
+
+        private void GenerateGoalFields(int beg, int end)
+        {
+            for (int i = 0; i < conf.NumberOfGoals; ++i)
+            {
+                int row = rand.Next(beg, end);
+                int col = rand.Next(conf.Width);
+                while (board[row][col] != null)
+                {
+                    ++col;
+                    if (col == conf.Width)
+                    {
+                        col = 0;
+                        ++row;
+                        if (row == end)
+                        {
+                            row = beg;
+                        }
+                    }
+                }
+                board[row][col] = new GoalField(row, col);
             }
         }
 
@@ -376,7 +397,11 @@ namespace GameMaster.Models
         {
             for (int col = 0; col < board[row].Length; ++col)
             {
-                board[row][col] = getField(row, col);
+                // Goal-field generation
+                if (board[row][col] == null)
+                {
+                    board[row][col] = getField(row, col);
+                }
             }
         }
 
@@ -433,8 +458,7 @@ namespace GameMaster.Models
                     distances[i] = -1;
             }
 
-            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
-            for (int i = conf.GoalAreaHeight; i < secondGoalAreaStart; i++)
+            for (int i = conf.GoalAreaHeight; i < SecondGoalAreaStart; i++)
             {
                 for (int j = 0; j < board[i].Length; j++)
                 {
@@ -462,8 +486,7 @@ namespace GameMaster.Models
         {
             int[] center = field.GetPosition();
             int distance = int.MaxValue;
-            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
-            for (int i = conf.GoalAreaHeight; i < secondGoalAreaStart; i++)
+            for (int i = conf.GoalAreaHeight; i < SecondGoalAreaStart; i++)
             {
                 for (int j = 0; j < board[i].Length; j++)
                 {
@@ -480,7 +503,6 @@ namespace GameMaster.Models
 
         private void GeneratePiece()
         {
-            var rand = new Random();
             bool isSham = rand.Next(0, 101) < conf.ShamPieceProbability * 100;
             AbstractPiece piece;
             if (isSham)
@@ -499,7 +521,7 @@ namespace GameMaster.Models
         private (int y, int x) GenerateCoordinatesInTaskArea(Random rand)
         {
             int taskAreaStart = conf.GoalAreaHeight;
-            int yCoord = rand.Next(taskAreaStart, TaskAreaEnd);
+            int yCoord = rand.Next(taskAreaStart, SecondGoalAreaStart);
             int xCoord = rand.Next(0, conf.Width);
 
             return (yCoord, xCoord);

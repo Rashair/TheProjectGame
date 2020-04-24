@@ -15,13 +15,13 @@ using Serilog;
 using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
-using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
 using TestsShared;
 using Xunit;
 
 namespace GameMaster.Tests
 {
-    public class GMPlayerTests
+    public partial class GMPlayerTests
     {
         private const int DefaultId = 15;
         private const Team DefaultTeam = Team.Blue;
@@ -71,15 +71,7 @@ namespace GameMaster.Tests
 
         private GameConfiguration GenerateConfiguration()
         {
-            return new GameConfiguration
-            {
-                AskPenalty = 100,
-                CheckPenalty = 100,
-                DiscoverPenalty = 100,
-                ResponsePenalty = 100,
-                PutPenalty = 100,
-                MovePenalty = 100,
-            };
+            return new MockGameConfiguration();
         }
 
         private BufferBlock<PlayerMessage> GenerateBuffer()
@@ -100,7 +92,7 @@ namespace GameMaster.Tests
 
         private GM GenerateGM()
         {
-            var conf = new MockGameConfiguration();
+            var conf = GenerateConfiguration();
             var queue = GenerateBuffer();
             var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
             var lifetime = Mock.Of<IApplicationLifetime>();

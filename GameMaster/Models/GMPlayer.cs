@@ -9,6 +9,7 @@ using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
 
 namespace GameMaster.Models
 {
@@ -283,7 +284,11 @@ namespace GameMaster.Models
         private GMMessage PutAnswerMessage(bool? goal)
         {
             // TODO Issue 119
-            EmptyAnswerPayload payload = new EmptyAnswerPayload();
+            PutAnswerPayload payload = new PutAnswerPayload()
+            {
+                WasGoal = goal
+            };
+
             return new GMMessage(GMMessageId.PutAnswer, id, payload);
         }
 

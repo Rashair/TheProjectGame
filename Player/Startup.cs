@@ -32,12 +32,13 @@ namespace Player
             Configuration = configuration;
         }
 
-        private ILogger GetLogger()
+        private ILogger GetLogger(string team)
         {
             // TODO: add logpath path to appsettings and pass it to ConfigureLogger()
             string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "Player");
             int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
-            string fileName = $"pl-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
+            string teamId = team.ToString().Substring(0, 3);
+            string fileName = $"{teamId}-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
             return new LoggerConfiguration()
                .Enrich.FromLogContext()
@@ -46,7 +47,6 @@ namespace Player
                rollOnFileSizeLimit: true,
                outputTemplate: LoggerTemplate)
                 .WriteTo.Console(outputTemplate: LoggerTemplate)
-                .WriteTo.Debug(outputTemplate: LoggerTemplate)
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)

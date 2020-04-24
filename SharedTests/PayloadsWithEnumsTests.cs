@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Shared.Enums;
-using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
+using Shared.Payloads.PlayerPayloads;
 using Xunit;
 
 namespace Shared.Tests
@@ -85,13 +84,13 @@ namespace Shared.Tests
             GoalInfo[,] expectedBlueTeamGoalAreaInformations = new GoalInfo[x, y];
 
             // Act
-            expectedRedTeamGoalAreaInformations[0, 0] = GoalInfo.IdK;
-            expectedRedTeamGoalAreaInformations[0, 1] = GoalInfo.IdK;
+            expectedRedTeamGoalAreaInformations[0, 0] = GoalInfo.IDK;
+            expectedRedTeamGoalAreaInformations[0, 1] = GoalInfo.IDK;
             expectedRedTeamGoalAreaInformations[1, 0] = GoalInfo.DiscoveredNotGoal;
             expectedRedTeamGoalAreaInformations[1, 1] = GoalInfo.DiscoveredGoal;
 
-            expectedBlueTeamGoalAreaInformations[0, 0] = GoalInfo.IdK;
-            expectedBlueTeamGoalAreaInformations[0, 1] = GoalInfo.IdK;
+            expectedBlueTeamGoalAreaInformations[0, 0] = GoalInfo.IDK;
+            expectedBlueTeamGoalAreaInformations[0, 1] = GoalInfo.IDK;
             expectedBlueTeamGoalAreaInformations[1, 0] = GoalInfo.DiscoveredNotGoal;
             expectedBlueTeamGoalAreaInformations[1, 1] = GoalInfo.DiscoveredGoal;
             var deserializedObject = JsonConvert.DeserializeObject<GiveInfoForwardedPayload>(jsonString);
@@ -117,20 +116,20 @@ namespace Shared.Tests
             payload.Distances[0, 1] = 2;
             payload.Distances[1, 1] = 1;
 
-            payload.RedTeamGoalAreaInformations[0, 0] = GoalInfo.IdK;
-            payload.RedTeamGoalAreaInformations[0, 1] = GoalInfo.IdK;
+            payload.RedTeamGoalAreaInformations[0, 0] = GoalInfo.IDK;
+            payload.RedTeamGoalAreaInformations[0, 1] = GoalInfo.IDK;
             payload.RedTeamGoalAreaInformations[1, 0] = GoalInfo.DiscoveredNotGoal;
             payload.RedTeamGoalAreaInformations[1, 1] = GoalInfo.DiscoveredGoal;
 
-            payload.BlueTeamGoalAreaInformations[0, 0] = GoalInfo.IdK;
-            payload.BlueTeamGoalAreaInformations[0, 1] = GoalInfo.IdK;
+            payload.BlueTeamGoalAreaInformations[0, 0] = GoalInfo.IDK;
+            payload.BlueTeamGoalAreaInformations[0, 1] = GoalInfo.IDK;
             payload.BlueTeamGoalAreaInformations[1, 0] = GoalInfo.DiscoveredNotGoal;
             payload.BlueTeamGoalAreaInformations[1, 1] = GoalInfo.DiscoveredGoal;
 
             // Act
             var expectedJsonString = "{\"AnsweringId\":1,\"Distances\":[[1,2],[0,1]]," +
-                "\"redTeamGoalAreaInformations\":[[\"IdK\",\"IdK\"],[\"DiscoveredNotGoal\",\"DiscoveredGoal\"]]," +
-                "\"blueTeamGoalAreaInformations\":[[\"IdK\",\"IdK\"],[\"DiscoveredNotGoal\",\"DiscoveredGoal\"]]}";
+                "\"redTeamGoalAreaInformations\":[[\"IDK\",\"IDK\"],[\"DiscoveredNotGoal\",\"DiscoveredGoal\"]]," +
+                "\"blueTeamGoalAreaInformations\":[[\"IDK\",\"IDK\"],[\"DiscoveredNotGoal\",\"DiscoveredGoal\"]]}";
             var serializedPayload = payload.Serialize();
 
             // Assert
@@ -149,13 +148,13 @@ namespace Shared.Tests
             GoalInfo[,] expectedBlueTeamGoalAreaInformations = new GoalInfo[x, y];
 
             // Act
-            expectedRedTeamGoalAreaInformations[0, 0] = GoalInfo.IdK;
-            expectedRedTeamGoalAreaInformations[0, 1] = GoalInfo.IdK;
+            expectedRedTeamGoalAreaInformations[0, 0] = GoalInfo.IDK;
+            expectedRedTeamGoalAreaInformations[0, 1] = GoalInfo.IDK;
             expectedRedTeamGoalAreaInformations[1, 0] = GoalInfo.DiscoveredNotGoal;
             expectedRedTeamGoalAreaInformations[1, 1] = GoalInfo.DiscoveredGoal;
 
-            expectedBlueTeamGoalAreaInformations[0, 0] = GoalInfo.IdK;
-            expectedBlueTeamGoalAreaInformations[0, 1] = GoalInfo.IdK;
+            expectedBlueTeamGoalAreaInformations[0, 0] = GoalInfo.IDK;
+            expectedBlueTeamGoalAreaInformations[0, 1] = GoalInfo.IDK;
             expectedBlueTeamGoalAreaInformations[1, 0] = GoalInfo.DiscoveredNotGoal;
             expectedBlueTeamGoalAreaInformations[1, 1] = GoalInfo.DiscoveredGoal;
             var deserializedObject = JsonConvert.DeserializeObject<GiveInfoPayload>(jsonString);
@@ -181,20 +180,20 @@ namespace Shared.Tests
             payload.Distances[0, 1] = 2;
             payload.Distances[1, 1] = 1;
 
-            payload.RedTeamGoalAreaInformations[0, 0] = GoalInfo.IdK;
-            payload.RedTeamGoalAreaInformations[0, 1] = GoalInfo.IdK;
+            payload.RedTeamGoalAreaInformations[0, 0] = GoalInfo.IDK;
+            payload.RedTeamGoalAreaInformations[0, 1] = GoalInfo.IDK;
             payload.RedTeamGoalAreaInformations[1, 0] = GoalInfo.DiscoveredNotGoal;
             payload.RedTeamGoalAreaInformations[1, 1] = GoalInfo.DiscoveredGoal;
 
-            payload.BlueTeamGoalAreaInformations[0, 0] = GoalInfo.IdK;
-            payload.BlueTeamGoalAreaInformations[0, 1] = GoalInfo.IdK;
+            payload.BlueTeamGoalAreaInformations[0, 0] = GoalInfo.IDK;
+            payload.BlueTeamGoalAreaInformations[0, 1] = GoalInfo.IDK;
             payload.BlueTeamGoalAreaInformations[1, 0] = GoalInfo.DiscoveredNotGoal;
             payload.BlueTeamGoalAreaInformations[1, 1] = GoalInfo.DiscoveredGoal;
 
             // Act
             var expectedJsonString = "{\"Distances\":[[1,2],[0,1]],\"RespondToId\":1," +
-                "\"redTeamGoalAreaInformations\":[[\"IdK\",\"IdK\"],[\"DiscoveredNotGoal\",\"DiscoveredGoal\"]]," +
-                "\"blueTeamGoalAreaInformations\":[[\"IdK\",\"IdK\"],[\"DiscoveredNotGoal\",\"DiscoveredGoal\"]]}";
+                "\"redTeamGoalAreaInformations\":[[\"IDK\",\"IDK\"],[\"DiscoveredNotGoal\",\"DiscoveredGoal\"]]," +
+                "\"blueTeamGoalAreaInformations\":[[\"IDK\",\"IDK\"],[\"DiscoveredNotGoal\",\"DiscoveredGoal\"]]}";
             var serializedPayload = payload.Serialize();
 
             // Assert

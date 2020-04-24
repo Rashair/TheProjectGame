@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net.Sockets;
 using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Models;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
 using Serilog.Events;
 using Shared.Clients;
+using Shared.Managers;
 using Shared.Messages;
 
 using static System.Environment;
@@ -64,6 +66,8 @@ namespace GameMaster
 
             services.TryAddSingleton<ILogger>(GetLogger());
 
+            // TODO: Restore if visualisation will be added
+            // services.AddSingleton<TcpSocketManager<BackendMessage>>();
             services.AddSingleton<ISocketClient<PlayerMessage, GMMessage>, TcpSocketClient<PlayerMessage, GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
