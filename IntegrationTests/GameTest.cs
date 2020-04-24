@@ -61,8 +61,8 @@ namespace IntegrationTests
                 bluePlayersHosts = new IWebHost[playersCount];
                 for (int i = 0; i < playersCount; ++i)
                 {
-                    var builderRed = Utilities.CreateWebHost(typeof(Player.Startup), argsRed);
-                    var builderBlue = Utilities.CreateWebHost(typeof(Player.Startup), argsBlue);
+                    var builderRed = Utilities.CreateHostBuilder(typeof(Player.Startup), redArgs);
+                    var builderBlue = Utilities.CreateHostBuilder(typeof(Player.Startup), blueArgs);
                     if (!ShouldLogPlayers)
                     {
                         builderRed.ConfigureServices(serv =>

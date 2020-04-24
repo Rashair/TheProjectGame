@@ -57,15 +57,16 @@ namespace Player
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkId=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            var logger = GetLogger();
-            services.TryAddSingleton<ILogger>(logger);
-
             PlayerConfiguration conf = new PlayerConfiguration();
             Configuration.Bind("DefaultPlayerConfig", conf);
 
             // For console override;
             Configuration.Bind(conf);
             services.AddSingleton(conf);
+
+            // 'Try' for tests override
+            var logger = GetLogger(conf.TeamId);
+            services.TryAddSingleton<ILogger>(logger);
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, TcpSocketClient<GMMessage, PlayerMessage>>();
             services.AddSingleton<BufferBlock<GMMessage>>();
