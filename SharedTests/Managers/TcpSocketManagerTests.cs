@@ -10,7 +10,7 @@ using Shared.Messages;
 using TestsShared;
 using Xunit;
 
-namespace Shared.Tests
+namespace Shared.Tests.Managers
 {
     public class TcpSocketManagerTests
     {
@@ -24,7 +24,7 @@ namespace Shared.Tests
         }
 
         [Fact]
-        public void IsOpenTest()
+        public void IsOpen_Test()
         {
             // Arrange
             var clientMock = new Mock<ISocketClient<PlayerMessage, GMMessage>>() { DefaultValue = DefaultValue.Mock };
@@ -37,7 +37,7 @@ namespace Shared.Tests
         }
 
         [Fact]
-        public void IsSameTest()
+        public void IsSame_Test()
         {
             // Arrange
             var tcpClient = new TcpClient();
@@ -57,7 +57,7 @@ namespace Shared.Tests
         }
 
         [Fact]
-        public void CloseSocketAsyncTest()
+        public void CloseSocketAsync_Test()
         {
             // Arrange
             var clientMock = new Mock<ISocketClient<PlayerMessage, GMMessage>>() { DefaultValue = DefaultValue.Mock };

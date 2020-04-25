@@ -8,7 +8,7 @@ namespace Shared.Managers
     public abstract class SocketManager<TSocket, TMessage> : ISocketManager<TSocket, TMessage>
     {
         private readonly ConcurrentDictionary<int, TSocket> sockets = new ConcurrentDictionary<int, TSocket>();
-        private int guid = 1;
+        private int guid = 0;
 
         protected abstract bool IsOpen(TSocket socket);
 
