@@ -44,8 +44,9 @@ namespace Shared.Managers
                 return false;
 
             bool removed = sockets.TryRemove(id, out TSocket socket);
-            if (removed)
+            if (removed && IsOpen(socket))
                 await CloseSocketAsync(socket, cancellationToken);
+
             return removed;
         }
 
