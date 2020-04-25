@@ -60,11 +60,6 @@ namespace Shared.Managers
             await Task.WhenAll(from p in sockets select SendMessageAsync(p.Value, message, cancellationToken));
         }
 
-        public bool IsAnyOpen()
-        {
-           return sockets.Any(s => IsOpen(s.Value));
-        }
-
         private int CreateSocketId()
         {
             return Interlocked.Increment(ref guid);
