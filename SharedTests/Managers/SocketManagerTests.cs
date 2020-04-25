@@ -78,6 +78,42 @@ namespace Shared.Tests.Managers
 
             // Assert
             Assert.True(removed, "Socket should be removed");
+            var socket = socketManager.GetSocketById(id);
+            Assert.Null(socket);
+        }
+
+        [Fact]
+        public async void SendMessageAsync_WithOpenClient_ShouldSendMessage_Test()
+        {
+            // Arrange
+            var clientMock = new Mock<ISocketClient<PlayerMessage, GMMessage>>();
+            clientMock.Setup(c => c.IsOpen).Returns(true);
+            var token = CancellationToken.None;
+            var message = new GMMessage();
+            int id = socketManager.AddSocket(clientMock.Object);
+
+            // Act
+            await socketManager.SendMessageAsync(id, message, token);
+
+            // Assert
+            clientMock.Verify(c => c.SendAsync(message, token), Times.Once(), "Client sendAsync should be invoked");
+        }
+
+        [Fact]
+        public async void SendMessageAsync_WithClosedClient_ShouldNotSendMessage_Test()
+        {
+            // Arrange
+            var clientMock = new Mock<ISocketClient<PlayerMessage, GMMessage>>();
+            clientMock.Setup(c => c.IsOpen).Returns(false);
+            var token = CancellationToken.None;
+            var message = new GMMessage();
+            int id = socketManager.AddSocket(clientMock.Object);
+
+            // Act
+            await socketManager.SendMessageAsync(id, message, token);
+
+            // Assert
+            clientMock.Verify(c => c.SendAsync(message, token), Times.Never(), "Client sendAsync should not be invoked");
         }
     }
 }
