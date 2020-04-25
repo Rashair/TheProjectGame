@@ -67,7 +67,7 @@ namespace CommunicationServer
             services.AddSingleton(conf);
 
             services.AddSingleton<ServiceShareContainer>();
-            services.AddSingleton<ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage>,
+            services.AddSingleton<ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage>,
                 TcpSocketManager<PlayerMessage, GMMessage>>();
             services.AddSingleton<BufferBlock<Message>>();
 
