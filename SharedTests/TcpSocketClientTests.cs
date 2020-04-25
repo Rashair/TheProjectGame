@@ -91,7 +91,7 @@ namespace Shared.Tests
         }
 
         [Fact]
-        public async void SendMessageAsync_Test()
+        public async void SendAsync_Test()
         {
             // Arrange
             var stream = new MemoryStream(100);
@@ -125,6 +125,32 @@ namespace Shared.Tests
 
             var msgString = Encoding.UTF8.GetString(buffer, 0, readLength);
             Assert.Equal(serializedMessage, msgString);
+        }
+
+        [Fact]
+        public async void ReceiveAsync_Test()
+        {
+            // Arrange
+            var stream = new MemoryStream(100);
+            tcpClientMock.Setup(s => s.Connected).Returns(true);
+            tcpClientMock.Setup(s => s.GetStream()).Returns(stream);
+            var socketClient = new TcpSocketClient<GMMessage, GMMessage>(tcpClient, logger);
+            string host = "";
+            int port = 0;
+            var token = CancellationToken.None;
+            await socketClient.ConnectAsync(host, port, token);
+
+            var sentMessage = new GMMessage(Enums.GMMessageId.Unknown, 1, new EmptyAnswerPayload());
+            await socketClient.SendAsync(sentMessage, token);
+            stream.Seek(0, SeekOrigin.Begin);
+
+            // Act
+            (bool wasReceived, GMMessage message) = await socketClient.ReceiveAsync(token);
+
+            // Assert
+            Assert.True(wasReceived, "Should receive message");
+            Assert.True(message.AreAllPropertiesTheSame(sentMessage),
+                "Received message should be the same as sent");
         }
     }
 }

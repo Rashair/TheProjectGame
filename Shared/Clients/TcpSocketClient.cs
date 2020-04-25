@@ -54,7 +54,7 @@ namespace Shared.Clients
             logger.Information($"Connected to {host}:{port}");
         }
 
-        public async Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
+        public async Task<(bool wasReceived, R message)> ReceiveAsync(CancellationToken cancellationToken)
         {
             if (!IsOpen || cancellationToken.IsCancellationRequested)
             {
