@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -114,6 +115,33 @@ namespace Shared.Tests.Managers
 
             // Assert
             clientMock.Verify(c => c.SendAsync(message, token), Times.Never(), "Client sendAsync should not be invoked");
+        }
+
+        [Fact]
+        public async void SendMessageToAllAsync_Test()
+        {
+            // Arrange
+            int clientsNum = 10;
+            var clientMocks = new List<Mock<ISocketClient<PlayerMessage, GMMessage>>>();
+            for (int i = 0; i < clientsNum; ++i)
+            {
+                var mock = new Mock<ISocketClient<PlayerMessage, GMMessage>>();
+                mock.Setup(c => c.IsOpen).Returns(true);
+                clientMocks.Add(mock);
+                int id = socketManager.AddSocket(mock.Object);
+                Assert.True(id > 0, "Socket should be added");
+            }
+            var token = CancellationToken.None;
+            var message = new GMMessage();
+
+            // Act
+            await socketManager.SendMessageToAllAsync(message, token);
+
+            // Assert
+            for (int i = 0; i < clientsNum; ++i)
+            {
+                clientMocks[i].Verify(c => c.SendAsync(message, token), Times.Once(), "Client sendAsync should be invoked");
+            }
         }
     }
 }

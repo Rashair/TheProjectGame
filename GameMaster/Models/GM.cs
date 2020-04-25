@@ -432,7 +432,6 @@ namespace GameMaster.Models
                 {
                     logger.Warning($"Message retrieve was cancelled: {e.Message}");
 
-                    // TODO: change it with switch to SocketClient
                     if (!socketClient.IsOpen)
                     {
                         logger.Error("No open connection. Exiting.");
