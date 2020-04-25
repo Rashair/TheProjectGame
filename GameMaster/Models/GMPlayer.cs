@@ -19,7 +19,7 @@ namespace GameMaster.Models
         private readonly int id;
         private readonly GameConfiguration conf;
         private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
-        private int messageCorrelationId;
+        private int messageCorrelationId; // TODO: add it to message
         private DateTime lockedTill;
         private AbstractField position;
 
