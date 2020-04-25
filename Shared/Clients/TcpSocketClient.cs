@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,22 +14,22 @@ namespace Shared.Clients
     public class TcpSocketClient<R, S> : ISocketClient<R, S>
     {
         private readonly ILogger logger;
-        private readonly TcpClient client;
-        private NetworkStream stream;
+        private readonly ITcpClient client;
+        private Stream stream;
         private bool isOpen;
 
         public TcpSocketClient(ILogger log)
         {
             this.logger = log.ForContext<TcpSocketClient<R, S>>();
-            this.client = new TcpClient();
+            this.client = new TcpClientWrapper();
         }
 
-        public TcpSocketClient(TcpClient tcpClient, ILogger log)
+        public TcpSocketClient(ITcpClient tcpClient, ILogger log)
         {
             logger = log.ForContext<TcpSocketClient<R, S>>();
             client = tcpClient;
-            stream = tcpClient.GetStream();
-            isOpen = tcpClient.Connected;
+            stream = client.GetStream();
+            isOpen = client.Connected;
         }
 
         public bool IsOpen => isOpen && client.Connected;
@@ -42,7 +42,6 @@ namespace Shared.Clients
         public Task CloseAsync(CancellationToken cancellationToken)
         {
             isOpen = false;
-            stream.Close();
             client.Close();
             return Task.CompletedTask;
         }
