@@ -9,7 +9,8 @@ namespace Shared.Managers
 
         TSocket GetSocketById(int id);
 
-        bool AddSocket(TSocket socket);
+        /// <summary>On succes returns id (id > 0) of the socket, on failure -1.</summary>
+        int AddSocket(TSocket socket);
 
         Task<bool> RemoveSocketAsync(int id, CancellationToken cancellationToken);
 

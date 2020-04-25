@@ -31,26 +31,53 @@ namespace Shared.Tests.Managers
             var client = new Mock<ISocketClient<PlayerMessage, GMMessage>>() { DefaultValue = DefaultValue.Mock };
 
             // Act
-            bool result = socketManager.AddSocket(client.Object);
+            int result = socketManager.AddSocket(client.Object);
 
             // Assert
-            Assert.True(result, "Socket should be added");
+            Assert.True(result > 0, "Socket should be added");
         }
 
         [Fact]
         public void GetId_Test()
         {
             // Arrange
-            int startId = socketManager.GetValue<SocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage>, 
-                int>("guid");
             var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
-            socketManager.AddSocket(client);
+            int createdId = socketManager.AddSocket(client);
 
             // Act
             int id = socketManager.GetId(client);
 
             // Assert
-            Assert.Equal(startId + 1, id);
+            Assert.Equal(createdId, id);
+        }
+
+        [Fact]
+        public void GetSocketById_Test()
+        {
+            // Arrange
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            int id = socketManager.AddSocket(client);
+
+            // Act
+            var socket = socketManager.GetSocketById(id);
+
+            // Assert
+            Assert.True(client == socket, "Returned socket should be the same object which was added");
+        }
+
+        [Fact]
+        public async void RemoveSocketAsync_Test()
+        {
+            // Arrange
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var token = CancellationToken.None;
+            int id = socketManager.AddSocket(client);
+
+            // Act
+            bool removed = await socketManager.RemoveSocketAsync(id, token);
+
+            // Assert
+            Assert.True(removed, "Socket should be removed");
         }
     }
 }

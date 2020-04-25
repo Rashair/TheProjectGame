@@ -43,8 +43,8 @@ namespace CommunicationServer.Services
 
         public override void OnConnect(TcpSocketClient<PlayerMessage, GMMessage> client)
         {
-            bool result = manager.AddSocket(client);
-            if (!result)
+            int id = manager.AddSocket(client);
+            if (id == -1)
             {
                 TcpClient socket = (TcpClient)client.GetSocket();
                 logger.Error($"Failed to add socket: {socket.Client.RemoteEndPoint}");

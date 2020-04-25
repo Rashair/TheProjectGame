@@ -28,9 +28,12 @@ namespace Shared.Managers
             return sockets.FirstOrDefault(p => p.Key == id).Value;
         }
 
-        public bool AddSocket(TSocket socket)
+        public int AddSocket(TSocket socket)
         {
-            return sockets.TryAdd(CreateSocketId(), socket);
+            int id = CreateSocketId();
+            bool result = sockets.TryAdd(id, socket);
+
+            return result ? id : -1;
         }
 
         public async Task<bool> RemoveSocketAsync(int id, CancellationToken cancellationToken)
