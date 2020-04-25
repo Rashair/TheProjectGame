@@ -5,6 +5,7 @@ namespace Shared.Managers
 {
     public interface ISocketManager<TSocket, TMessage>
     {
+        /// <summary>If socket is found returns id (id > 0) of the socket, otherwise -1.</summary>
         int GetId(TSocket socket);
 
         TSocket GetSocketById(int id);

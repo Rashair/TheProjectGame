@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 namespace Shared.Managers
 {
     public abstract class SocketManager<TSocket, TMessage> : ISocketManager<TSocket, TMessage>
+        where TSocket : class
     {
         private readonly ConcurrentDictionary<int, TSocket> sockets = new ConcurrentDictionary<int, TSocket>();
         private int guid = 0;
@@ -20,7 +21,8 @@ namespace Shared.Managers
 
         public int GetId(TSocket socket)
         {
-            return sockets.FirstOrDefault(p => IsSame(p.Value, socket)).Key;
+            var pair = sockets.FirstOrDefault(p => IsSame(p.Value, socket));
+            return pair.Value != null ? pair.Key : -1;
         }
 
         public TSocket GetSocketById(int id)
