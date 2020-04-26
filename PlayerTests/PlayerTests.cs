@@ -371,6 +371,52 @@ namespace Player.Tests
             Assert.Equal(expectedWinner, realWinner);
         }
 
+        [Fact]
+        public async Task TestAcceptMessageBegForInfoForwardedShouldSendInfo()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
+            {
+                AskingId = 2,
+                Leader = true,
+                TeamId = Team.Red,
+            };
+            GMMessage beg4Info = new GMMessage(GMMessageId.BegForInfoForwarded, 1, payload);
+            input.Post(beg4Info);
+            await player.AcceptMessage(CancellationToken.None);
+            Assert.True(lastSended.MessageId == PlayerMessageId.GiveInfo);
+        }
+
+        [Fact]
+        public async Task TestAcceptMessageJoinTheGameShouldEndGame()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            JoinAnswerPayload payload = new JoinAnswerPayload()
+            {
+                Accepted = false,
+                PlayerId = 1,
+            };
+            GMMessage messageStart = new GMMessage(GMMessageId.JoinTheGameAnswer, 1, payload);
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            bool expected = false;
+            bool actual = player.GetValue<Player.Models.Player, bool>("working");
+            Assert.Equal(expected, actual);
+        }
+
         public GMMessage CreateStartMessage()
         {
             StartGamePayload payloadStart = new StartGamePayload
