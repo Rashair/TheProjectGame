@@ -15,14 +15,14 @@ namespace CommunicationServer.Services
 {
     public class CommunicationService : BackgroundService
     {
-        private readonly ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager;
+        private readonly ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage> manager;
         private readonly ServiceShareContainer container;
         private readonly BufferBlock<Message> queue;
         private readonly ILogger logger;
         private readonly ServiceSynchronization sync;
         private ISocketClient<GMMessage, PlayerMessage> gmClient;
 
-        public CommunicationService(ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager,
+        public CommunicationService(ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage> manager,
             ServiceShareContainer container, BufferBlock<Message> queue, ILogger log, ServiceSynchronization sync)
         {
             this.manager = manager;

@@ -61,9 +61,7 @@ namespace CommunicationServer
 
             ServerConfigurations conf = new ServerConfigurations();
             Configuration.Bind("DefaultCommunicationServerConfig", conf);
-
-            // For console override;
-            Configuration.Bind(conf);
+            Configuration.Bind(conf);  // For console override;
             services.AddSingleton(conf);
 
             services.AddSingleton<ServiceShareContainer>();

@@ -17,13 +17,13 @@ namespace CommunicationServer.Services
 {
     public class PlayersTcpSocketService : TcpSocketService<PlayerMessage, GMMessage>
     {
-        private readonly ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager;
+        private readonly ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage> manager;
         private readonly BufferBlock<Message> queue;
         private readonly ServerConfigurations conf;
         private readonly ServiceSynchronization sync;
         protected readonly ILogger log;
 
-        public PlayersTcpSocketService(ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager,
+        public PlayersTcpSocketService(ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage> manager,
             BufferBlock<Message> queue, ServerConfigurations conf, ILogger log, ServiceSynchronization sync)
             : base(log.ForContext<PlayersTcpSocketService>())
         {
