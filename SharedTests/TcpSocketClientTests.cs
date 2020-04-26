@@ -6,6 +6,7 @@ using Moq;
 using Newtonsoft.Json;
 using Serilog;
 using Shared.Clients;
+using Shared.Enums;
 using Shared.Messages;
 using Shared.Payloads.GMPayloads;
 using TestsShared;
@@ -103,7 +104,7 @@ namespace Shared.Tests
             var token = CancellationToken.None;
             await socketClient.ConnectAsync(host, port, token);
 
-            var message = new GMMessage(Enums.GMMessageId.Unknown, 1, new EmptyAnswerPayload());
+            var message = new GMMessage(GMMessageId.Unknown, 1, new EmptyAnswerPayload());
 
             // Act
             await socketClient.SendAsync(message, token);
@@ -140,7 +141,7 @@ namespace Shared.Tests
             var token = CancellationToken.None;
             await socketClient.ConnectAsync(host, port, token);
 
-            var sentMessage = new GMMessage(Enums.GMMessageId.Unknown, 1, new EmptyAnswerPayload());
+            var sentMessage = new GMMessage(GMMessageId.Unknown, 1, new EmptyAnswerPayload());
             await socketClient.SendAsync(sentMessage, token);
             stream.Seek(0, SeekOrigin.Begin);
 
