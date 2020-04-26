@@ -30,7 +30,6 @@ namespace Shared.Managers
         protected override async Task CloseSocketAsync(TcpSocketClient<R, S> socket,
             CancellationToken cancellationToken)
         {
-            logger.Information("Closing socket");
             await socket.CloseAsync(cancellationToken);
         }
 

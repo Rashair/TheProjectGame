@@ -90,8 +90,8 @@ namespace Player.Models
                 startGame = await AcceptMessage(cancellationToken);
             }
 
-            logger.Information("Starting game\n" +
-                $"Team: {conf.TeamId}, strategy: {conf.Strategy}");
+            logger.Information("Player starting game\n" +
+                $"Team: {conf.TeamId}, strategy: {conf.Strategy}".PadLeft(12));
             await Work(cancellationToken);
         }
 

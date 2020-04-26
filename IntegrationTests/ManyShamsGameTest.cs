@@ -25,17 +25,16 @@ namespace IntegrationTests
                 NumberOfGoals = 6,
                 NumberOfPiecesOnBoard = 12,
                 NumberOfPlayersPerTeam = 4,
-                ShamPieceProbability = 0.8f,
+                ShamPieceProbability = 0.75f,
             };
 
-            PositionNotChangedCount = 3;
+            PositionNotChangedCount = 4;
             PositionsCheckTime = 6000;
         }
 
         [Fact(Timeout = 8 * 60 * 1000)]
         public override async void RunGameWithConfiguration()
         {
-            return;
             await RunGame();
         }
     }

@@ -13,8 +13,12 @@ namespace CommunicationServer.Services
     public abstract class TcpSocketService<R, S> : BackgroundService
     {
         protected const int Wait = 50;
-
         protected readonly ILogger logger;
+
+        public TcpSocketService(ILogger logger)
+        {
+            this.logger = logger;
+        }
 
         public abstract Task OnMessageAsync(TcpSocketClient<R, S> client, R message,
             CancellationToken cancellationToken);
@@ -25,11 +29,6 @@ namespace CommunicationServer.Services
 
         public abstract Task OnExceptionAsync(TcpSocketClient<R, S> client, Exception e,
             CancellationToken cancellationToken);
-
-        public TcpSocketService(ILogger logger)
-        {
-            this.logger = logger;
-        }
 
         public async Task ClientHandler(TcpSocketClient<R, S> client, CancellationToken cancellationToken)
         {

@@ -18,7 +18,7 @@
     "CommunicationServer": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:4123;http://localhost:4124",
+      "applicationUrl": "https://localhost:0;http://localhost:0",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

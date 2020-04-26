@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using Shared;
 
 namespace Player.Services
 {
@@ -12,15 +13,15 @@ namespace Player.Services
         private readonly Models.Player player;
         private readonly IApplicationLifetime lifetime;
         private readonly ILogger logger;
-        private readonly SynchronizationContext synchronizationContext;
+        private readonly ServiceSynchronization synchronizationContext;
 
         public PlayerService(Models.Player player, IApplicationLifetime lifetime, 
-            ILogger logger, SynchronizationContext synchronizationContext)
+            ILogger logger, ServiceSynchronization serviceSync)
         {
             this.player = player;
             this.logger = logger.ForContext<PlayerService>();
             this.lifetime = lifetime;
-            this.synchronizationContext = synchronizationContext;
+            this.synchronizationContext = serviceSync;
         }
 
         protected async override Task ExecuteAsync(CancellationToken cancellationToken)

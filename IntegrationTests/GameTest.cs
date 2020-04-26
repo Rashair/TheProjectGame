@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using GameMaster.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Player.Models;
 using Serilog;
 using Shared.Enums;
 using TestsShared;
@@ -18,6 +19,7 @@ namespace IntegrationTests
     public abstract class GameTest : IDisposable
     {
         protected readonly CancellationTokenSource tokenSource;
+        protected IWebHost csHost;
         protected IWebHost gmHost;
         protected IWebHost[] redPlayersHosts;
         protected IWebHost[] bluePlayersHosts;
@@ -49,21 +51,18 @@ namespace IntegrationTests
             await Task.Run(async () =>
             {
                 // Arrange
-                // TODO: Switch to CS
-                // +100 is important - GM cannot start on the same port as CS
-                string gmUrl = $"http://{Conf.CsIP}:{Conf.CsPort + 100}";
-                string[] args = new string[] { $"urls={gmUrl}" };
-                gmHost = Utilities.CreateWebHost(typeof(GameMaster.Startup), args).Build();
+                string gmUrl = $"http://127.0.0.1:{Conf.CsPort + 500}";
+                var (csArgs, gmArgs, redArgs, blueArgs) = CreateConfigurations(gmUrl);
 
-                string[] argsRed = CreatePlayerConfig(Team.Red);
-                string[] argsBlue = CreatePlayerConfig(Team.Blue);
+                csHost = Utilities.CreateHostBuilder(typeof(CommunicationServer.Startup), csArgs).Build();
+                gmHost = Utilities.CreateHostBuilder(typeof(GameMaster.Startup), gmArgs).Build();
                 int playersCount = Conf.NumberOfPlayersPerTeam;
                 redPlayersHosts = new IWebHost[playersCount];
                 bluePlayersHosts = new IWebHost[playersCount];
                 for (int i = 0; i < playersCount; ++i)
                 {
-                    var builderRed = Utilities.CreateWebHost(typeof(Player.Startup), argsRed);
-                    var builderBlue = Utilities.CreateWebHost(typeof(Player.Startup), argsBlue);
+                    var builderRed = Utilities.CreateHostBuilder(typeof(Player.Startup), redArgs);
+                    var builderBlue = Utilities.CreateHostBuilder(typeof(Player.Startup), blueArgs);
                     if (!ShouldLogPlayers)
                     {
                         builderRed.ConfigureServices(serv =>
@@ -76,6 +75,7 @@ namespace IntegrationTests
                 }
 
                 // Act
+                await csHost.StartAsync(tokenSource.Token);
                 await gmHost.StartAsync(tokenSource.Token);
                 await Task.Yield();
 
@@ -121,15 +121,37 @@ namespace IntegrationTests
             Assert.True(playerBlue.Position.y >= Conf.GoalAreaHeight, "Player should not be present on enemy team field");
         }
 
+        protected (string[] csArgs, string[] gmArgs, string[] redArgs, string[] blueArgs) CreateConfigurations(
+            string gmUrl)
+        {
+            int playerPort = Conf.CsPort + 1000;
+            var csArgs = new string[]
+            {
+                "urls=http://127.0.0.1:0",
+                $"GMPort={Conf.CsPort}",
+                $"PlayerPort={playerPort}",
+                $"ListenerIP={Conf.CsIP}"
+            };
+            var gmArgs = new string[]
+            {
+                $"urls={gmUrl}",
+            };
+
+            var redArgs = CreatePlayerConfig(Team.Red, playerPort);
+            var blueArgs = CreatePlayerConfig(Team.Blue, playerPort);
+
+            return (csArgs, gmArgs, redArgs, blueArgs);
+        }
+
         // TODO: Add strategy here, when we will have second strategy :) 
-        protected string[] CreatePlayerConfig(Team team)
+        private string[] CreatePlayerConfig(Team team, int port)
         {
             return new[]
             {
                 $"TeamId={team.ToString().ToLower()}",
                 "urls=http://127.0.0.1:0",
                 $"CsIP={Conf.CsIP}",
-                $"CsPort={Conf.CsPort}"
+                $"CsPort={port}"
             };
         }
 
@@ -188,6 +210,7 @@ namespace IntegrationTests
         public void Dispose()
         {
             Client?.Dispose();
+            csHost?.Dispose();
             gmHost?.Dispose();
 
             for (int i = 0; i < Conf?.NumberOfPlayersPerTeam; ++i)

@@ -11,8 +11,9 @@ namespace IntegrationTests
 {
     public static class Utilities
     {
-        public static IWebHostBuilder CreateWebHost(Type startupType, string[] args = null)
+        public static IWebHostBuilder CreateHostBuilder(Type startupType, string[] args = null)
         {
+            args = args ?? new string[] { };
             var projectDir = GetProjectPath("", startupType.GetTypeInfo().Assembly);
             return WebHost.CreateDefaultBuilder(args)
                 .UseContentRoot(projectDir)

@@ -8,6 +8,7 @@ using System.Threading.Tasks.Dataflow;
 
 using CommunicationServer.Models;
 using Serilog;
+using Shared;
 using Shared.Clients;
 using Shared.Managers;
 using Shared.Messages;
@@ -19,16 +20,18 @@ namespace CommunicationServer.Services
         private readonly ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager;
         private readonly BufferBlock<Message> queue;
         private readonly ServerConfigurations conf;
+        private readonly ServiceSynchronization sync;
         protected readonly ILogger log;
 
         public PlayersTcpSocketService(ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager,
-            BufferBlock<Message> queue, ServerConfigurations conf, ILogger log)
+            BufferBlock<Message> queue, ServerConfigurations conf, ILogger log, ServiceSynchronization sync)
             : base(log.ForContext<PlayersTcpSocketService>())
         {
             this.manager = manager;
             this.queue = queue;
             this.conf = conf;
             this.log = log;
+            this.sync = sync;
         }
 
         public override async Task OnMessageAsync(TcpSocketClient<PlayerMessage, GMMessage> client,
@@ -51,24 +54,26 @@ namespace CommunicationServer.Services
         public override async Task OnDisconnectAsync(TcpSocketClient<PlayerMessage, GMMessage> client,
             CancellationToken cancellationToken)
         {
-            bool result = await manager.RemoveSocketAsync(manager.GetId(client), cancellationToken);
+            int id = manager.GetId(client);
+            bool result = await manager.RemoveSocketAsync(id, cancellationToken);
             if (!result)
             {
                 TcpClient socket = (TcpClient)client.GetSocket();
                 logger.Error($"Failed to remove socket: {socket.Client.RemoteEndPoint}");
             }
+            logger.Information($"Player {id} disconnected");
         }
 
         public override async Task OnExceptionAsync(TcpSocketClient<PlayerMessage, GMMessage> client, Exception e,
             CancellationToken cancellationToken)
         {
-            logger.Warning($"IsOpen: {client.IsOpen}");
+            logger.Warning(e, $"IsOpen: {client.IsOpen}");
             await Task.CompletedTask;
         }
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await Task.Yield();
+            await sync.SemaphoreSlim.WaitAsync();
             logger.Information("Started PlayersTcpSocketService");
             TcpListener listener = StartListener(conf.ListenerIP, conf.PlayerPort);
             List<ConfiguredTaskAwaitable> tasks = new List<ConfiguredTaskAwaitable>();
@@ -83,13 +88,15 @@ namespace CommunicationServer.Services
                 }
                 else
                 {
-                    await Task.Delay(Wait);
+                    await Task.Delay(Wait, stoppingToken);
                 }
             }
-            for (int i = 0; i < tasks.Count; ++i)
+
+            for (int i = 0; i < tasks.Count && !stoppingToken.IsCancellationRequested; ++i)
             {
                 await tasks[i];
             }
+            logger.Information("Stopping PlayersTcpSocketService");
         }
     }
 }
