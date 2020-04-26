@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -19,6 +21,51 @@ namespace Player.Tests
     {
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
         private readonly int playerId = 1;
+        private PlayerMessage lastSended;
+
+        private class MockSocketClient<R, S> : ISocketClient<R, S>
+        {
+            private readonly Send send;
+
+            public delegate void Send(S message);
+
+            public MockSocketClient(Send send)
+            {
+                this.send = send;
+            }
+
+            public bool IsOpen => throw new NotImplementedException();
+
+            public object GetSocket() => throw new NotImplementedException();
+
+            public Task ConnectAsync(string host, int port, CancellationToken cancellationToken)
+                => throw new NotImplementedException();
+
+            public Task CloseAsync(CancellationToken cancellationToken)
+                => throw new NotImplementedException();
+
+            public Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
+                 => throw new NotImplementedException();
+
+            public async Task SendAsync(S message, CancellationToken cancellationToken)
+            {
+                send(message);
+                await Task.CompletedTask;
+            }
+
+            public Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken)
+                => throw new NotImplementedException();
+        }
+
+        private MockSocketClient<GMMessage, PlayerMessage> GenerateSocketClient()
+        {
+            return new MockSocketClient<GMMessage, PlayerMessage>((m) => { lastSended = m; });
+        }
+
+        private PlayerConfiguration GenerateSampleConfiguration()
+        {
+            return new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
+        }
 
         [Fact]
         public async Task TestAcceptMessageDiscoverAccept()
@@ -42,7 +89,7 @@ namespace Player.Tests
             input.Post(messageStart);
             input.Post(messageDiscover);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
             var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             await player.AcceptMessage(CancellationToken.None);
@@ -67,7 +114,7 @@ namespace Player.Tests
             input.Post(messageStart);
             input.Post(messageBeg);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
             var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             await player.AcceptMessage(CancellationToken.None);
@@ -95,7 +142,7 @@ namespace Player.Tests
             input.Post(startMessage);
             input.Post(messageCheck);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
             var player = new Models.Player(configuration, input,
                 new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
@@ -126,7 +173,7 @@ namespace Player.Tests
             input.Post(pickMessage);
             input.Post(destructionMessage);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
             var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
@@ -182,7 +229,7 @@ namespace Player.Tests
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             input.Post(startMessage);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
             var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
@@ -249,7 +296,7 @@ namespace Player.Tests
             input.Post<GMMessage>(startMessage);
             input.Post<GMMessage>(moveAnswerMessage);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
             var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
@@ -276,7 +323,7 @@ namespace Player.Tests
             input.Post(startMessage);
             input.Post(pickAnswerMessage);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
             var player = new Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
@@ -309,7 +356,7 @@ namespace Player.Tests
             input.Post<GMMessage>(startMessage);
             input.Post<GMMessage>(endGameMessage);
 
-            PlayerConfiguration configuration = new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
             var player = new Models.Player(configuration, input,
                 new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
@@ -344,6 +391,159 @@ namespace Player.Tests
             };
 
             return new GMMessage(GMMessageId.StartGame, playerId, payloadStart);
+        }
+
+        [Fact]
+        public async Task TestJoinTheGameReturnsAppropriateMessage()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            await player.JoinTheGame(CancellationToken.None);
+            Assert.True(lastSended.MessageId == PlayerMessageId.JoinTheGame);
+        }
+
+        [Fact]
+        public async Task TestMoveReturnsAppropriateMessage()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            await player.Move(Direction.N, CancellationToken.None);
+            Assert.True(lastSended.MessageId == PlayerMessageId.Move);
+        }
+
+        [Fact]
+        public async Task TestPutReturnsAppropriateMessage()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            await player.Put(CancellationToken.None);
+            Assert.True(lastSended.MessageId == PlayerMessageId.Put);
+        }
+
+        [Fact]
+        public async Task TestBegForInfoReturnsAppropriateMessage()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            await player.BegForInfo(CancellationToken.None);
+            Assert.True(lastSended.MessageId == PlayerMessageId.BegForInfo);
+        }
+
+        [Fact]
+        public async Task TestGiveInfoReturnsAppropriateMessage()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
+            {
+                AskingId = 2,
+                Leader = false,
+                TeamId = Team.Red,
+            };
+            GMMessage beg4Info = new GMMessage(GMMessageId.BegForInfoForwarded, 1, payload);
+            input.Post(beg4Info);
+            await player.AcceptMessage(CancellationToken.None);
+            await player.GiveInfo(CancellationToken.None);
+            Assert.True(lastSended.MessageId == PlayerMessageId.GiveInfo);
+        }
+
+        [Fact]
+        public async Task TestCheckPieceReturnsAppropriateMessage()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            await player.CheckPiece(CancellationToken.None);
+            Assert.True(lastSended.MessageId == PlayerMessageId.CheckPiece);
+        }
+
+        [Fact]
+        public async Task TestDiscoverReturnsAppropriateMessage()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            await player.Discover(CancellationToken.None);
+            Assert.True(lastSended.MessageId == PlayerMessageId.Discover);
+        }
+
+        [Fact]
+        public async Task TestDestroyPieceReturnsAppropriateMessage()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            await player.DestroyPiece(CancellationToken.None);
+            Assert.True(lastSended.MessageId == PlayerMessageId.PieceDestruction);
+        }
+
+        [Fact]
+        public async Task TestPickReturnsAppropriateMessage()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            await player.Pick(CancellationToken.None);
+            Assert.True(lastSended.MessageId == PlayerMessageId.Pick);
         }
     }
 }
