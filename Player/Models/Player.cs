@@ -15,7 +15,6 @@ using Shared.Models;
 using Shared.Payloads;
 using Shared.Payloads.GMPayloads;
 using Shared.Payloads.PlayerPayloads;
-using Shared.Senders;
 
 namespace Player.Models
 {
@@ -26,7 +25,6 @@ namespace Player.Models
         private readonly ILogger logger;
 
         private int id;
-        private ISender sender;
         private int penaltyTime;
         private IStrategy strategy;
         private bool working;

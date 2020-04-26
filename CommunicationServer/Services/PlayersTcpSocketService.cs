@@ -17,13 +17,13 @@ namespace CommunicationServer.Services
 {
     public class PlayersTcpSocketService : TcpSocketService<PlayerMessage, GMMessage>
     {
-        private readonly ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager;
+        private readonly ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage> manager;
         private readonly BufferBlock<Message> queue;
         private readonly ServerConfigurations conf;
         private readonly ServiceSynchronization sync;
         protected readonly ILogger log;
 
-        public PlayersTcpSocketService(ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage> manager,
+        public PlayersTcpSocketService(ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage> manager,
             BufferBlock<Message> queue, ServerConfigurations conf, ILogger log, ServiceSynchronization sync)
             : base(log.ForContext<PlayersTcpSocketService>())
         {
@@ -43,8 +43,8 @@ namespace CommunicationServer.Services
 
         public override void OnConnect(TcpSocketClient<PlayerMessage, GMMessage> client)
         {
-            bool result = manager.AddSocket(client);
-            if (!result)
+            int id = manager.AddSocket(client);
+            if (id == -1)
             {
                 TcpClient socket = (TcpClient)client.GetSocket();
                 logger.Error($"Failed to add socket: {socket.Client.RemoteEndPoint}");

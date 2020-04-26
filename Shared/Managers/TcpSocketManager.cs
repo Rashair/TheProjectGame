@@ -8,7 +8,7 @@ using Shared.Clients;
 
 namespace Shared.Managers
 {
-    public class TcpSocketManager<R, S> : SocketManager<TcpSocketClient<R, S>, S>
+    public class TcpSocketManager<R, S> : SocketManager<ISocketClient<R, S>, S>
     {
         private readonly ILogger logger;
 
@@ -17,23 +17,23 @@ namespace Shared.Managers
             this.logger = log.ForContext<TcpSocketManager<R, S>>();
         }
 
-        protected override bool IsOpen(TcpSocketClient<R, S> socket)
+        protected override bool IsOpen(ISocketClient<R, S> socket)
         {
             return socket.IsOpen;
         }
 
-        protected override bool IsSame(TcpSocketClient<R, S> a, TcpSocketClient<R, S> b)
+        protected override bool IsSame(ISocketClient<R, S> a, ISocketClient<R, S> b)
         {
             return ((TcpClient)a.GetSocket()) == ((TcpClient)b.GetSocket());
         }
 
-        protected override async Task CloseSocketAsync(TcpSocketClient<R, S> socket,
+        protected override async Task CloseSocketAsync(ISocketClient<R, S> socket,
             CancellationToken cancellationToken)
         {
             await socket.CloseAsync(cancellationToken);
         }
 
-        protected override async Task SendMessageAsync(TcpSocketClient<R, S> socket, S message,
+        protected override async Task SendMessageAsync(ISocketClient<R, S> socket, S message,
             CancellationToken cancellationToken)
         {
             if (!cancellationToken.IsCancellationRequested && socket.IsOpen)

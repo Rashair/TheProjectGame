@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 namespace Shared.Managers
 {
     public abstract class SocketManager<TSocket, TMessage> : ISocketManager<TSocket, TMessage>
+        where TSocket : class
     {
         private readonly ConcurrentDictionary<int, TSocket> sockets = new ConcurrentDictionary<int, TSocket>();
-        private int guid = 1;
+        private int guid = 0;
 
         protected abstract bool IsOpen(TSocket socket);
 
@@ -20,7 +21,8 @@ namespace Shared.Managers
 
         public int GetId(TSocket socket)
         {
-            return sockets.FirstOrDefault(p => IsSame(p.Value, socket)).Key;
+            var pair = sockets.FirstOrDefault(p => IsSame(p.Value, socket));
+            return pair.Value != null ? pair.Key : -1;
         }
 
         public TSocket GetSocketById(int id)
@@ -28,9 +30,12 @@ namespace Shared.Managers
             return sockets.FirstOrDefault(p => p.Key == id).Value;
         }
 
-        public bool AddSocket(TSocket socket)
+        public int AddSocket(TSocket socket)
         {
-            return sockets.TryAdd(CreateSocketId(), socket);
+            int id = CreateSocketId();
+            bool result = sockets.TryAdd(id, socket);
+
+            return result ? id : -1;
         }
 
         public async Task<bool> RemoveSocketAsync(int id, CancellationToken cancellationToken)
@@ -39,8 +44,9 @@ namespace Shared.Managers
                 return false;
 
             bool removed = sockets.TryRemove(id, out TSocket socket);
-            if (removed)
+            if (removed && IsOpen(socket))
                 await CloseSocketAsync(socket, cancellationToken);
+
             return removed;
         }
 
@@ -52,11 +58,6 @@ namespace Shared.Managers
         public async Task SendMessageToAllAsync(TMessage message, CancellationToken cancellationToken)
         {
             await Task.WhenAll(from p in sockets select SendMessageAsync(p.Value, message, cancellationToken));
-        }
-
-        public bool IsAnyOpen()
-        {
-           return sockets.Any(s => IsOpen(s.Value));
         }
 
         private int CreateSocketId()

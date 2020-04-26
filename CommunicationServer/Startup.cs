@@ -61,13 +61,11 @@ namespace CommunicationServer
 
             ServerConfigurations conf = new ServerConfigurations();
             Configuration.Bind("DefaultCommunicationServerConfig", conf);
-
-            // For console override;
-            Configuration.Bind(conf);
+            Configuration.Bind(conf);  // For console override;
             services.AddSingleton(conf);
 
             services.AddSingleton<ServiceShareContainer>();
-            services.AddSingleton<ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage>,
+            services.AddSingleton<ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage>,
                 TcpSocketManager<PlayerMessage, GMMessage>>();
             services.AddSingleton<BufferBlock<Message>>();
 
