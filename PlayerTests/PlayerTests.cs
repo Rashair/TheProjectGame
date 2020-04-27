@@ -376,11 +376,13 @@ namespace Player.Tests
         [Fact]
         public async Task TestAcceptMessageBegForInfoForwardedShouldSendInfo()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             GMMessage messageStart = CreateStartMessage();
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
@@ -394,17 +396,21 @@ namespace Player.Tests
             GMMessage beg4Info = new GMMessage(GMMessageId.BegForInfoForwarded, 1, payload);
             input.Post(beg4Info);
             await player.AcceptMessage(CancellationToken.None);
+
+            // Assert
             Assert.True(lastSended.MessageId == PlayerMessageId.GiveInfo);
         }
 
         [Fact]
         public async Task TestAcceptMessageJoinTheGameShouldEndGame()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             JoinAnswerPayload payload = new JoinAnswerPayload()
             {
                 Accepted = false,
@@ -416,17 +422,21 @@ namespace Player.Tests
 
             bool expected = false;
             bool actual = player.GetValue<Player.Models.Player, bool>("working");
+
+            // Assert
             Assert.Equal(expected, actual);
         }
 
         [Fact]
         public async Task TestAcceptMessagePutAnswerShouldMarkFields()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             GMMessage messageStart = CreateStartMessage();
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
@@ -441,17 +451,21 @@ namespace Player.Tests
 
             GoalInfo expectedGoalInfo = GoalInfo.DiscoveredGoal;
             GoalInfo actualGoalInfo = player.Board[playerPosition.Y, playerPosition.X].GoalInfo;
+
+            // Assert
             Assert.Equal(expectedGoalInfo, actualGoalInfo);
         }
 
         [Fact]
         public async Task TestAcceptMessagePutAnswerShouldChangeHasPieceValue()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             GMMessage messageStart = CreateStartMessage();
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
@@ -469,17 +483,21 @@ namespace Player.Tests
             await player.AcceptMessage(CancellationToken.None);
 
             bool hasPiece = player.HasPiece;
+
+            // Assert
             Assert.False(hasPiece);
         }
 
         [Fact]
         public async Task TestAcceptMessageGiveInfoForwardedShouldChangeBoardInfo()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             GMMessage messageStart = CreateStartMessage();
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
@@ -512,6 +530,8 @@ namespace Player.Tests
             int actualDist1 = player.Board[2, 2].DistToPiece;
             int expectedDist2 = 7;
             int actualDist2 = player.Board[1, 1].DistToPiece;
+
+            // Assert
             Assert.Equal(expectedGoalInfo, actualGoalInfo);
             Assert.Equal(expectedDist1, actualDist1);
             Assert.Equal(expectedDist2, actualDist2);
@@ -542,75 +562,89 @@ namespace Player.Tests
         [Fact]
         public async Task TestJoinTheGameReturnsAppropriateMessage()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             GMMessage messageStart = CreateStartMessage();
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
-
             await player.JoinTheGame(CancellationToken.None);
+
+            // Assert
             Assert.True(lastSended.MessageId == PlayerMessageId.JoinTheGame);
         }
 
         [Fact]
         public async Task TestMoveReturnsAppropriateMessage()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             GMMessage messageStart = CreateStartMessage();
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
-
             await player.Move(Direction.N, CancellationToken.None);
+
+            // Assert
             Assert.True(lastSended.MessageId == PlayerMessageId.Move);
         }
 
         [Fact]
         public async Task TestPutReturnsAppropriateMessage()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             GMMessage messageStart = CreateStartMessage();
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
-
             await player.Put(CancellationToken.None);
+
+            // Assert
             Assert.True(lastSended.MessageId == PlayerMessageId.Put);
         }
 
         [Fact]
         public async Task TestBegForInfoReturnsAppropriateMessage()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             GMMessage messageStart = CreateStartMessage();
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
-
             await player.BegForInfo(CancellationToken.None);
+
+            // Assert
             Assert.True(lastSended.MessageId == PlayerMessageId.BegForInfo);
         }
 
         [Fact]
         public async Task TestGiveInfoReturnsAppropriateMessage()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             GMMessage messageStart = CreateStartMessage();
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
@@ -625,70 +659,84 @@ namespace Player.Tests
             input.Post(beg4Info);
             await player.AcceptMessage(CancellationToken.None);
             await player.GiveInfo(CancellationToken.None);
+
+            // Assert
             Assert.True(lastSended.MessageId == PlayerMessageId.GiveInfo);
         }
 
         [Fact]
         public async Task TestCheckPieceReturnsAppropriateMessage()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             GMMessage messageStart = CreateStartMessage();
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
-
             await player.CheckPiece(CancellationToken.None);
+
+            // Assert
             Assert.True(lastSended.MessageId == PlayerMessageId.CheckPiece);
         }
 
         [Fact]
         public async Task TestDiscoverReturnsAppropriateMessage()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             GMMessage messageStart = CreateStartMessage();
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
-
             await player.Discover(CancellationToken.None);
+
+            // Assert
             Assert.True(lastSended.MessageId == PlayerMessageId.Discover);
         }
 
         [Fact]
         public async Task TestDestroyPieceReturnsAppropriateMessage()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             GMMessage messageStart = CreateStartMessage();
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
-
             await player.DestroyPiece(CancellationToken.None);
+
+            // Assert
             Assert.True(lastSended.MessageId == PlayerMessageId.PieceDestruction);
         }
 
         [Fact]
         public async Task TestPickReturnsAppropriateMessage()
         {
+            // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
             MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
+            // Act
             GMMessage messageStart = CreateStartMessage();
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
-
             await player.Pick(CancellationToken.None);
+
+            // Assert
             Assert.True(lastSended.MessageId == PlayerMessageId.Pick);
         }
     }
