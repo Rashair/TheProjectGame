@@ -22,6 +22,8 @@ namespace Player.Tests
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
         private readonly int playerId = 1;
         private PlayerMessage lastSended;
+        private Position playerPosition = new Position { X = 1, Y = 1 };
+        private BoardSize playerBoardSize = new BoardSize { X = 3, Y = 3 };
 
         private class MockSocketClient<R, S> : ISocketClient<R, S>
         {
@@ -408,13 +410,111 @@ namespace Player.Tests
                 Accepted = false,
                 PlayerId = 1,
             };
-            GMMessage messageStart = new GMMessage(GMMessageId.JoinTheGameAnswer, 1, payload);
+            GMMessage messageStart = new GMMessage(GMMessageId.JoinTheGameAnswer, playerId, payload);
             input.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
             bool expected = false;
             bool actual = player.GetValue<Player.Models.Player, bool>("working");
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public async Task TestAcceptMessagePutAnswerShouldMarkFields()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            PutAnswerPayload payload = new PutAnswerPayload()
+            {
+                WasGoal = true,
+            };
+            GMMessage putAnswer = new GMMessage(GMMessageId.PutAnswer, playerId, payload);
+            input.Post(putAnswer);
+            await player.AcceptMessage(CancellationToken.None);
+
+            GoalInfo expectedGoalInfo = GoalInfo.DiscoveredGoal;
+            GoalInfo actualGoalInfo = player.Board[playerPosition.Y, playerPosition.X].GoalInfo;
+            Assert.Equal(expectedGoalInfo, actualGoalInfo);
+        }
+
+        [Fact]
+        public async Task TestAcceptMessagePutAnswerShouldChangeHasPieceValue()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            GMMessage pickMessage = new GMMessage(GMMessageId.PickAnswer, playerId, new EmptyAnswerPayload());
+            input.Post(pickMessage);
+            await player.AcceptMessage(CancellationToken.None);
+
+            PutAnswerPayload payload = new PutAnswerPayload()
+            {
+                WasGoal = true,
+            };
+            GMMessage putAnswer = new GMMessage(GMMessageId.PutAnswer, playerId, payload);
+            input.Post(putAnswer);
+            await player.AcceptMessage(CancellationToken.None);
+
+            bool hasPiece = player.HasPiece;
+            Assert.False(hasPiece);
+        }
+
+        [Fact]
+        public async Task TestAcceptMessageGiveInfoForwardedShouldChangeBoardInfo()
+        {
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            int[,] distBoard = new int[playerBoardSize.Y, playerBoardSize.X];
+            GoalInfo[,] infoBoard = new GoalInfo[playerBoardSize.Y, playerBoardSize.X];
+            for (int i = 0; i < playerBoardSize.Y; i++)
+            {
+                for (int j = 0; j < playerBoardSize.X; j++)
+                {
+                    distBoard[i, j] = 7;
+                    infoBoard[i, j] = GoalInfo.IDK;
+                }
+            }
+            distBoard[2, 2] = 0;
+            infoBoard[1, 2] = GoalInfo.DiscoveredGoal;
+            GiveInfoForwardedPayload payload = new GiveInfoForwardedPayload()
+            {
+                Distances = distBoard,
+                RedTeamGoalAreaInformations = infoBoard,
+                BlueTeamGoalAreaInformations = infoBoard,
+            };
+            GMMessage giveFwInfoMessage = new GMMessage(GMMessageId.GiveInfoForwarded, playerId, payload);
+            input.Post(giveFwInfoMessage);
+            await player.AcceptMessage(CancellationToken.None);
+
+            GoalInfo expectedGoalInfo = GoalInfo.DiscoveredGoal;
+            GoalInfo actualGoalInfo = player.Board[1, 2].GoalInfo;
+            int expectedDist1 = 0;
+            int actualDist1 = player.Board[2, 2].DistToPiece;
+            int expectedDist2 = 7;
+            int actualDist2 = player.Board[1, 1].DistToPiece;
+            Assert.Equal(expectedGoalInfo, actualGoalInfo);
+            Assert.Equal(expectedDist1, actualDist1);
+            Assert.Equal(expectedDist2, actualDist2);
         }
 
         public GMMessage CreateStartMessage()
@@ -426,14 +526,14 @@ namespace Player.Tests
                 LeaderId = 1,
                 EnemiesIds = new int[2] { 3, 4 },
                 TeamId = Team.Red,
-                BoardSize = new BoardSize { X = 3, Y = 3 },
+                BoardSize = playerBoardSize,
                 GoalAreaSize = 1,
                 NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
                 NumberOfPieces = 2,
                 NumberOfGoals = 2,
                 Penalties = new Penalties(),
                 ShamPieceProbability = 0.5f,
-                Position = new Position { X = 1, Y = 1 },
+                Position = playerPosition,
             };
 
             return new GMMessage(GMMessageId.StartGame, playerId, payloadStart);
@@ -521,7 +621,7 @@ namespace Player.Tests
                 Leader = false,
                 TeamId = Team.Red,
             };
-            GMMessage beg4Info = new GMMessage(GMMessageId.BegForInfoForwarded, 1, payload);
+            GMMessage beg4Info = new GMMessage(GMMessageId.BegForInfoForwarded, playerId, payload);
             input.Post(beg4Info);
             await player.AcceptMessage(CancellationToken.None);
             await player.GiveInfo(CancellationToken.None);
