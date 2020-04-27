@@ -537,6 +537,56 @@ namespace Player.Tests
             Assert.Equal(expectedDist2, actualDist2);
         }
 
+        [Fact]
+        public async Task TestAcceptMessagePutErrorShouldExtendPenaltyTime()
+        {
+            // Arrange
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            // Act
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            GMMessage errorMessage = new GMMessage(GMMessageId.PutError, playerId, new PutErrorPayload());
+            input.Post(errorMessage);
+            await player.AcceptMessage(CancellationToken.None);
+
+            int expectedPenaltyTime = player.PenaltiesTimes.PutPiece;
+            int actualPenaltyTime = player.GetValue<Player.Models.Player, int>("penaltyTime");
+            
+            // Assert
+            Assert.Equal(expectedPenaltyTime, actualPenaltyTime);
+        }
+
+        [Fact]
+        public async Task TestAcceptMessagePickErrorShouldExtendPenaltyTime()
+        {
+            // Arrange
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            var player = new Models.Player(configuration, input, client, logger);
+
+            // Act
+            GMMessage messageStart = CreateStartMessage();
+            input.Post(messageStart);
+            await player.AcceptMessage(CancellationToken.None);
+
+            GMMessage errorMessage = new GMMessage(GMMessageId.PickError, playerId, new PutErrorPayload());
+            input.Post(errorMessage);
+            await player.AcceptMessage(CancellationToken.None);
+
+            int expectedPenaltyTime = player.PenaltiesTimes.PickPiece;
+            int actualPenaltyTime = player.GetValue<Player.Models.Player, int>("penaltyTime");
+
+            // Assert
+            Assert.Equal(expectedPenaltyTime, actualPenaltyTime);
+        }
+
         public GMMessage CreateStartMessage()
         {
             StartGamePayload payloadStart = new StartGamePayload
