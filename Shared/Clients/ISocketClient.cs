@@ -9,7 +9,7 @@ namespace Shared.Clients
     {
         bool IsOpen { get; }
 
-        object GetSocket();
+        IClient GetSocket();
 
         Task ConnectAsync(string host, int port, CancellationToken cancellationToken);
 

@@ -106,6 +106,8 @@ namespace IntegrationTests
             {
                 return Task.FromResult(gameMaster.WasGameStarted);
             }, Conf.NumberOfPlayersPerTeam, 3000, tokenSource.Token);
+            Assert.Equal(Conf.NumberOfPlayersPerTeam, gameMaster.Invoke<GM, int>("GetPlayersCount", Team.Red));
+            Assert.Equal(Conf.NumberOfPlayersPerTeam, gameMaster.Invoke<GM, int>("GetPlayersCount", Team.Blue));
             Assert.True(success, "Game should be started");
 
             await Task.Delay(1000);

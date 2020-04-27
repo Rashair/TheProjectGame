@@ -17,13 +17,13 @@ namespace Shared.Tests
     public class TcpSocketClientTests
     {
         private readonly ILogger logger;
-        private readonly Mock<ITcpClient> tcpClientMock;
-        private readonly ITcpClient tcpClient;
+        private readonly Mock<IClient> tcpClientMock;
+        private readonly IClient tcpClient;
 
         public TcpSocketClientTests()
         {
             logger = MockGenerator.Get<ILogger>();
-            tcpClientMock = new Mock<ITcpClient>() { DefaultValue = DefaultValue.Mock };
+            tcpClientMock = new Mock<IClient>() { DefaultValue = DefaultValue.Mock };
             tcpClient = tcpClientMock.Object;
         }
 

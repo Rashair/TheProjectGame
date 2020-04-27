@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Shared.Clients
 {
-    public interface ITcpClient
+    public interface IClient
     {
         bool Connected { get; }
 

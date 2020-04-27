@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Shared.Clients
 {
-    public class TcpClientWrapper : ITcpClient
+    public class TcpClientWrapper : IClient
     {
         private readonly TcpClient tcpClient;
 

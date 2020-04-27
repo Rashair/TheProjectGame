@@ -14,7 +14,7 @@ namespace Shared.Clients
     public class TcpSocketClient<R, S> : ISocketClient<R, S>
     {
         private readonly ILogger logger;
-        private readonly ITcpClient client;
+        private readonly IClient client;
         private Stream stream;
         private bool isOpen;
 
@@ -24,7 +24,7 @@ namespace Shared.Clients
             this.client = new TcpClientWrapper();
         }
 
-        public TcpSocketClient(ITcpClient tcpClient, ILogger log)
+        public TcpSocketClient(IClient tcpClient, ILogger log)
         {
             logger = log.ForContext<TcpSocketClient<R, S>>();
             client = tcpClient;
@@ -34,7 +34,7 @@ namespace Shared.Clients
 
         public bool IsOpen => isOpen && client.Connected;
 
-        public object GetSocket()
+        public IClient GetSocket()
         {
             return client;
         }

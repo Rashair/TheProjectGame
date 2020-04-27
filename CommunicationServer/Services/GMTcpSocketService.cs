@@ -91,7 +91,7 @@ namespace CommunicationServer.Services
                     {
                         Task<TcpClient> acceptTask = gmListener.AcceptTcpClientAsync();
                         acceptTask.Wait(cancellationToken);
-                        ITcpClient client = new TcpClientWrapper(acceptTask.Result);
+                        IClient client = new TcpClientWrapper(acceptTask.Result);
 
                         return new TcpSocketClient<GMMessage, PlayerMessage>(client, log);
                     }

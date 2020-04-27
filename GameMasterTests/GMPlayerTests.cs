@@ -29,44 +29,13 @@ namespace GameMaster.Tests
 
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
         private GMMessage lastSended;
-
-        private class MockSocketClient<R, S> : ISocketClient<R, S>
+    
+        private ISocketClient<PlayerMessage, GMMessage> GenerateSocketClient()
         {
-            private readonly Send send;
-
-            public delegate void Send(S message);
-
-            public MockSocketClient(Send send)
-            {
-                this.send = send;
-            }
-
-            public bool IsOpen => throw new NotImplementedException();
-
-            public object GetSocket() => throw new NotImplementedException();
-
-            public Task ConnectAsync(string host, int port, CancellationToken cancellationToken)
-                => throw new NotImplementedException();
-
-            public Task CloseAsync(CancellationToken cancellationToken)
-                => throw new NotImplementedException();
-
-            public Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
-                 => throw new NotImplementedException();
-
-            public async Task SendAsync(S message, CancellationToken cancellationToken)
-            {
-                send(message);
-                await Task.CompletedTask;
-            }
-
-            public Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken)
-                => throw new NotImplementedException();
-        }
-
-        private MockSocketClient<PlayerMessage, GMMessage> GenerateSocketClient()
-        {
-            return new MockSocketClient<PlayerMessage, GMMessage>((m) => { lastSended = m; });
+            var mock = new Mock<ISocketClient<PlayerMessage, GMMessage>>();
+            mock.Setup(c => c.SendAsync(It.IsAny<GMMessage>(), It.IsAny<CancellationToken>())).
+                Callback<GMMessage, CancellationToken>((m, c) => lastSended = m);
+            return mock.Object;
         }
 
         private GameConfiguration GenerateConfiguration()
