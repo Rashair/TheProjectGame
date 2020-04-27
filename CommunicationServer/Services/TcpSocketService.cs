@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -51,6 +52,10 @@ namespace CommunicationServer.Services
                     await OnMessageAsync(client, message, cancellationToken);
                     (result, message) = await client.ReceiveAsync(cancellationToken);
                 }
+            }
+            catch (IOException e)
+            {
+                logger.Warning("Connection stream closed");
             }
             catch (Exception e)
             {
