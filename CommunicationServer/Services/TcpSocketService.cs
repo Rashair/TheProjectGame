@@ -39,8 +39,8 @@ namespace CommunicationServer.Services
 
         public async Task ClientLoopAsync(TcpSocketClient<R, S> client, CancellationToken cancellationToken)
         {
-            var socket = (TcpClient)client.GetSocket();
-            logger.Information($"Started handling messages for {socket.Client.RemoteEndPoint}");
+            IClient socket = client.GetSocket();
+            logger.Information($"Started handling messages for {socket.Endpoint}");
             try
             {
                 (bool result, R message) = await client.ReceiveAsync(cancellationToken);
@@ -56,7 +56,7 @@ namespace CommunicationServer.Services
                 await OnExceptionAsync(client, e, cancellationToken);
             }
 
-            logger.Information($"Finished handling messages for {socket.Client.RemoteEndPoint}");
+            logger.Information($"Finished handling messages for {socket.Endpoint}");
         }
 
         public TcpListener StartListener(string ip, int port)

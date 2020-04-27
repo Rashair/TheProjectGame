@@ -97,7 +97,7 @@ namespace Shared.Tests
             // Arrange
             var stream = new MemoryStream(100);
             tcpClientMock.Setup(s => s.Connected).Returns(true);
-            tcpClientMock.Setup(s => s.GetStream()).Returns(stream);
+            tcpClientMock.Setup(s => s.GetStream).Returns(stream);
             var socketClient = new TcpSocketClient<PlayerMessage, GMMessage>(tcpClient, logger);
             string host = "";
             int port = 0;
@@ -134,7 +134,7 @@ namespace Shared.Tests
             // Arrange
             var stream = new MemoryStream(100);
             tcpClientMock.Setup(s => s.Connected).Returns(true);
-            tcpClientMock.Setup(s => s.GetStream()).Returns(stream);
+            tcpClientMock.Setup(s => s.GetStream).Returns(stream);
             var socketClient = new TcpSocketClient<GMMessage, GMMessage>(tcpClient, logger);
             string host = "";
             int port = 0;

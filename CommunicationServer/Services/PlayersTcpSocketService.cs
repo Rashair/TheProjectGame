@@ -46,8 +46,8 @@ namespace CommunicationServer.Services
             int id = manager.AddSocket(client);
             if (id == -1)
             {
-                TcpClient socket = (TcpClient)client.GetSocket();
-                logger.Error($"Failed to add socket: {socket.Client.RemoteEndPoint}");
+                IClient socket = client.GetSocket();
+                logger.Error($"Failed to add socket: {socket.Endpoint}");
             }
         }
 
@@ -58,8 +58,8 @@ namespace CommunicationServer.Services
             bool result = await manager.RemoveSocketAsync(id, cancellationToken);
             if (!result)
             {
-                TcpClient socket = (TcpClient)client.GetSocket();
-                logger.Error($"Failed to remove socket: {socket.Client.RemoteEndPoint}");
+                IClient socket = client.GetSocket();
+                logger.Error($"Failed to remove socket: {socket.Endpoint}");
             }
             logger.Information($"Player {id} disconnected");
         }
@@ -81,9 +81,10 @@ namespace CommunicationServer.Services
             {
                 if (listener.Pending())
                 {
-                    IClient tcpClient = new TcpClientWrapper(await listener.AcceptTcpClientAsync());
-                    var client = new TcpSocketClient<PlayerMessage, GMMessage>(tcpClient, log);
-                    var handlerTask = ClientHandler(client, stoppingToken).ConfigureAwait(false);
+                    var acceptedClient = await listener.AcceptTcpClientAsync();
+                    IClient tcpClient = new TcpClientWrapper(acceptedClient);
+                    var socketClient = new TcpSocketClient<PlayerMessage, GMMessage>(tcpClient, log);
+                    var handlerTask = ClientHandler(socketClient, stoppingToken).ConfigureAwait(false);
                     tasks.Add(handlerTask);
                 }
                 else

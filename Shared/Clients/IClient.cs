@@ -7,7 +7,9 @@ namespace Shared.Clients
     {
         bool Connected { get; }
 
-        Stream GetStream();
+        string Endpoint { get; }
+
+        Stream GetStream { get; }
 
         Task ConnectAsync(string host, int port);
 

@@ -20,10 +20,9 @@ namespace Shared.Clients
 
         public bool Connected => tcpClient.Connected;
 
-        public Stream GetStream()
-        {
-            return tcpClient.GetStream();
-        }
+        public string Endpoint => tcpClient.Client.RemoteEndPoint.ToString();
+
+        public Stream GetStream => tcpClient.GetStream();
 
         public async Task ConnectAsync(string host, int port)
         {

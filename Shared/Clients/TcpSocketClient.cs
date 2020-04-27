@@ -28,7 +28,7 @@ namespace Shared.Clients
         {
             logger = log.ForContext<TcpSocketClient<R, S>>();
             client = tcpClient;
-            stream = client.GetStream();
+            stream = client.GetStream;
             isOpen = client.Connected;
         }
 
@@ -49,7 +49,7 @@ namespace Shared.Clients
         public async Task ConnectAsync(string host, int port, CancellationToken cancellationToken)
         {
             await client.ConnectAsync(host, port);
-            stream = client.GetStream();
+            stream = client.GetStream;
             isOpen = true;
             logger.Information($"Connected to {host}:{port}");
         }
