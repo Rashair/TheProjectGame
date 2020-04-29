@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
+using Moq;
 using Newtonsoft.Json;
 using Player.Models;
 using Serilog;
@@ -25,43 +24,12 @@ namespace Player.Tests
         private Position playerPosition = new Position { X = 1, Y = 1 };
         private BoardSize playerBoardSize = new BoardSize { X = 3, Y = 3 };
 
-        private class MockSocketClient<R, S> : ISocketClient<R, S>
+        private ISocketClient<GMMessage, PlayerMessage> GenerateSocketClient()
         {
-            private readonly Send send;
-
-            public delegate void Send(S message);
-
-            public MockSocketClient(Send send)
-            {
-                this.send = send;
-            }
-
-            public bool IsOpen => throw new NotImplementedException();
-
-            public object GetSocket() => throw new NotImplementedException();
-
-            public Task ConnectAsync(string host, int port, CancellationToken cancellationToken)
-                => throw new NotImplementedException();
-
-            public Task CloseAsync(CancellationToken cancellationToken)
-                => throw new NotImplementedException();
-
-            public Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
-                 => throw new NotImplementedException();
-
-            public async Task SendAsync(S message, CancellationToken cancellationToken)
-            {
-                send(message);
-                await Task.CompletedTask;
-            }
-
-            public Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken)
-                => throw new NotImplementedException();
-        }
-
-        private MockSocketClient<GMMessage, PlayerMessage> GenerateSocketClient()
-        {
-            return new MockSocketClient<GMMessage, PlayerMessage>((m) => { lastSended = m; });
+            var mock = new Mock<ISocketClient<GMMessage, PlayerMessage>>();
+            mock.Setup(c => c.SendAsync(It.IsAny<PlayerMessage>(), It.IsAny<CancellationToken>())).
+                Callback<PlayerMessage, CancellationToken>((m, c) => lastSended = m);
+            return mock.Object;
         }
 
         private PlayerConfiguration GenerateSampleConfiguration()
@@ -379,7 +347,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -407,7 +375,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -433,7 +401,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -462,7 +430,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -494,7 +462,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -543,7 +511,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -568,7 +536,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -615,7 +583,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -634,7 +602,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -653,7 +621,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -672,7 +640,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -691,7 +659,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -720,7 +688,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -739,7 +707,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -758,7 +726,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
@@ -777,7 +745,7 @@ namespace Player.Tests
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
             BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            MockSocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
+            ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, input, client, logger);
 
             // Act
