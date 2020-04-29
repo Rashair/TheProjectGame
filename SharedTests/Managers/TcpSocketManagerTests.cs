@@ -40,7 +40,7 @@ namespace Shared.Tests.Managers
         public void IsSame_Test()
         {
             // Arrange
-            var tcpClient = new TcpClient();
+            var tcpClient = new TcpClientWrapper();
             var clientMock1 = new Mock<ISocketClient<PlayerMessage, GMMessage>>() { DefaultValue = DefaultValue.Mock };
             clientMock1.Setup(c => c.GetSocket()).Returns(tcpClient);
             var clientMock2 = new Mock<ISocketClient<PlayerMessage, GMMessage>>() { DefaultValue = DefaultValue.Mock };

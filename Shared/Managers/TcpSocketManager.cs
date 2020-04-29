@@ -24,7 +24,7 @@ namespace Shared.Managers
 
         protected override bool IsSame(ISocketClient<R, S> a, ISocketClient<R, S> b)
         {
-            return ((TcpClient)a.GetSocket()) == ((TcpClient)b.GetSocket());
+            return a.GetSocket() == b.GetSocket();
         }
 
         protected override async Task CloseSocketAsync(ISocketClient<R, S> socket,

@@ -75,8 +75,8 @@ namespace GameMaster.Models
                 return;
             }
 
-            // logger.Information($"|{message.MessageId} | {message.Payload} | | {player?.Team}");
             players.TryGetValue(message.PlayerId, out GMPlayer player);
+            logger.Information($"|{message.MessageId} | {message.Payload} | | {player?.Team}");
             switch (message.MessageId)
             {
                 case PlayerMessageId.CheckPiece:
@@ -91,8 +91,6 @@ namespace GameMaster.Models
                     break;
                 case PlayerMessageId.Discover:
                     await player.DiscoverAsync(this, cancellationToken);
-
-                    // TODO: send response here
                     break;
                 case PlayerMessageId.GiveInfo:
                     await ForwardKnowledgeReply(message, cancellationToken);

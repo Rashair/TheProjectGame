@@ -24,7 +24,7 @@ namespace GameMaster.Services
                 }
                 catch (Exception e)
                 {
-                    logger.Error($"{e.Message}");
+                    logger.Error(e, "GameMaster.Work stopped");
                 }
             });
         }
