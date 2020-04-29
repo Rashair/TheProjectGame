@@ -315,29 +315,29 @@ namespace Player.Tests
         public async Task TestAcceptMessageEndGameShouldSetWinnerField()
         {
             // Arrange
+            PlayerConfiguration configuration = GenerateSampleConfiguration();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
+            var player = new Models.Player(configuration, inputBuffer,
+                new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
+
+            GMMessage startMessage = CreateStartMessage();
+            inputBuffer.Post<GMMessage>(startMessage); 
+            await player.AcceptMessage(CancellationToken.None);
+
             var endGamePayload = new EndGamePayload()
             {
                 Winner = Team.Red,
             };
             GMMessage endGameMessage = new GMMessage(GMMessageId.EndGame, playerId, endGamePayload);
-            GMMessage startMessage = CreateStartMessage();
-
-            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
-            inputBuffer.Post<GMMessage>(startMessage);
             inputBuffer.Post<GMMessage>(endGameMessage);
 
-            PlayerConfiguration configuration = GenerateSampleConfiguration();
-            var player = new Models.Player(configuration, inputBuffer,
-                new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
-
             // Act
-            Team expectedWinner = Team.Red;
-
             await player.AcceptMessage(CancellationToken.None);
-            await player.AcceptMessage(CancellationToken.None);
-            var realWinner = player.GetValue<Player.Models.Player, Team>("winner");
 
             // Assert
+            Team expectedWinner = Team.Red;
+            var realWinner = player.GetValue<Player.Models.Player, Team>("winner");
+
             Assert.Equal(expectedWinner, realWinner);
         }
 
@@ -350,7 +350,6 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
@@ -362,6 +361,8 @@ namespace Player.Tests
                 TeamId = Team.Red,
             };
             GMMessage beg4Info = new GMMessage(GMMessageId.BegForInfoForwarded, 1, payload);
+
+            // Act
             inputBuffer.Post(beg4Info);
             await player.AcceptMessage(CancellationToken.None);
 
@@ -378,13 +379,14 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             JoinAnswerPayload payload = new JoinAnswerPayload()
             {
                 Accepted = false,
                 PlayerId = 1,
             };
             GMMessage messageStart = new GMMessage(GMMessageId.JoinTheGameAnswer, playerId, payload);
+
+            // Act
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
@@ -404,7 +406,6 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
@@ -414,13 +415,15 @@ namespace Player.Tests
                 WasGoal = true,
             };
             GMMessage putAnswer = new GMMessage(GMMessageId.PutAnswer, playerId, payload);
+
+            // Act
             inputBuffer.Post(putAnswer);
             await player.AcceptMessage(CancellationToken.None);
 
+            // Assert
             GoalInfo expectedGoalInfo = GoalInfo.DiscoveredGoal;
             GoalInfo actualGoalInfo = player.Board[playerPosition.Y, playerPosition.X].GoalInfo;
 
-            // Assert
             Assert.Equal(expectedGoalInfo, actualGoalInfo);
         }
 
@@ -433,7 +436,6 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
@@ -447,12 +449,14 @@ namespace Player.Tests
                 WasGoal = true,
             };
             GMMessage putAnswer = new GMMessage(GMMessageId.PutAnswer, playerId, payload);
+
+            // Act
             inputBuffer.Post(putAnswer);
             await player.AcceptMessage(CancellationToken.None);
 
+            // Assert
             bool hasPiece = player.HasPiece;
 
-            // Assert
             Assert.False(hasPiece);
         }
 
@@ -465,7 +469,6 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
@@ -489,9 +492,12 @@ namespace Player.Tests
                 BlueTeamGoalAreaInformations = infoBoard,
             };
             GMMessage giveFwInfoMessage = new GMMessage(GMMessageId.GiveInfoForwarded, playerId, payload);
+
+            // Act
             inputBuffer.Post(giveFwInfoMessage);
             await player.AcceptMessage(CancellationToken.None);
 
+            // Assert
             GoalInfo expectedGoalInfo = GoalInfo.DiscoveredGoal;
             GoalInfo actualGoalInfo = player.Board[1, 2].GoalInfo;
             int expectedDist1 = 0;
@@ -499,7 +505,6 @@ namespace Player.Tests
             int expectedDist2 = 7;
             int actualDist2 = player.Board[1, 1].DistToPiece;
 
-            // Assert
             Assert.Equal(expectedGoalInfo, actualGoalInfo);
             Assert.Equal(expectedDist1, actualDist1);
             Assert.Equal(expectedDist2, actualDist2);
@@ -514,19 +519,20 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
             GMMessage errorMessage = new GMMessage(GMMessageId.PutError, playerId, new PutErrorPayload());
+
+            // Act
             inputBuffer.Post(errorMessage);
             await player.AcceptMessage(CancellationToken.None);
 
+            // Assert
             int expectedPenaltyTime = player.PenaltiesTimes.PutPiece;
             int actualPenaltyTime = player.GetValue<Player.Models.Player, int>("penaltyTime");
-            
-            // Assert
+
             Assert.Equal(expectedPenaltyTime, actualPenaltyTime);
         }
 
@@ -539,19 +545,20 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
             GMMessage errorMessage = new GMMessage(GMMessageId.PickError, playerId, new PutErrorPayload());
+
+            // Act
             inputBuffer.Post(errorMessage);
             await player.AcceptMessage(CancellationToken.None);
 
+            // Assert
             int expectedPenaltyTime = player.PenaltiesTimes.PickPiece;
             int actualPenaltyTime = player.GetValue<Player.Models.Player, int>("penaltyTime");
 
-            // Assert
             Assert.Equal(expectedPenaltyTime, actualPenaltyTime);
         }
 
@@ -586,10 +593,11 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
+
+            // Act
             await player.JoinTheGame(CancellationToken.None);
 
             // Assert
@@ -605,10 +613,11 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
+
+            // Act
             await player.Move(Direction.N, CancellationToken.None);
 
             // Assert
@@ -624,10 +633,11 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
+
+            // Act
             await player.Put(CancellationToken.None);
 
             // Assert
@@ -643,10 +653,11 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
+
+            // Act
             await player.BegForInfo(CancellationToken.None);
 
             // Assert
@@ -662,7 +673,6 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
@@ -676,6 +686,8 @@ namespace Player.Tests
             GMMessage beg4Info = new GMMessage(GMMessageId.BegForInfoForwarded, playerId, payload);
             inputBuffer.Post(beg4Info);
             await player.AcceptMessage(CancellationToken.None);
+
+            // Act
             await player.GiveInfo(CancellationToken.None);
 
             // Assert
@@ -691,10 +703,11 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
+
+            // Act
             await player.CheckPiece(CancellationToken.None);
 
             // Assert
@@ -710,10 +723,11 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
+
+            // Act
             await player.Discover(CancellationToken.None);
 
             // Assert
@@ -729,10 +743,11 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
+
+            // Act
             await player.DestroyPiece(CancellationToken.None);
 
             // Assert
@@ -748,10 +763,11 @@ namespace Player.Tests
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
             var player = new Models.Player(configuration, inputBuffer, client, logger);
 
-            // Act
             GMMessage messageStart = CreateStartMessage();
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
+
+            // Act
             await player.Pick(CancellationToken.None);
 
             // Assert
