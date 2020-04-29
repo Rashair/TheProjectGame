@@ -23,6 +23,11 @@ namespace Player.Tests
         private PlayerMessage lastSended;
         private Position playerPosition = new Position { X = 1, Y = 1 };
         private BoardSize playerBoardSize = new BoardSize { X = 3, Y = 3 };
+        private int randomDistance1 = 7;
+        private int randomDistance2 = 0;
+        private Position randomPosition0 = new Position { X = 1, Y = 1 };
+        private Position randomPosition1 = new Position { X = 2, Y = 2 };
+        private Position randomPosition2 = new Position { X = 2, Y = 1 };
 
         private ISocketClient<GMMessage, PlayerMessage> GenerateSocketClient()
         {
@@ -479,12 +484,12 @@ namespace Player.Tests
             {
                 for (int j = 0; j < playerBoardSize.X; j++)
                 {
-                    distBoard[i, j] = 7;
+                    distBoard[i, j] = randomDistance1;
                     infoBoard[i, j] = GoalInfo.IDK;
                 }
             }
-            distBoard[2, 2] = 0;
-            infoBoard[1, 2] = GoalInfo.DiscoveredGoal;
+            distBoard[randomPosition1.Y, randomPosition1.X] = randomDistance2;
+            infoBoard[randomPosition2.Y, randomPosition2.X] = GoalInfo.DiscoveredGoal;
             GiveInfoForwardedPayload payload = new GiveInfoForwardedPayload()
             {
                 Distances = distBoard,
@@ -499,11 +504,11 @@ namespace Player.Tests
 
             // Assert
             GoalInfo expectedGoalInfo = GoalInfo.DiscoveredGoal;
-            GoalInfo actualGoalInfo = player.Board[1, 2].GoalInfo;
-            int expectedDist1 = 0;
-            int actualDist1 = player.Board[2, 2].DistToPiece;
-            int expectedDist2 = 7;
-            int actualDist2 = player.Board[1, 1].DistToPiece;
+            GoalInfo actualGoalInfo = player.Board[randomPosition2.Y, randomPosition2.X].GoalInfo;
+            int expectedDist1 = randomDistance2;
+            int actualDist1 = player.Board[randomPosition1.Y, randomPosition1.X].DistToPiece;
+            int expectedDist2 = randomDistance1;
+            int actualDist2 = player.Board[randomPosition0.Y, randomPosition0.X].DistToPiece;
 
             Assert.Equal(expectedGoalInfo, actualGoalInfo);
             Assert.Equal(expectedDist1, actualDist1);
