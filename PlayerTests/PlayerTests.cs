@@ -55,12 +55,12 @@ namespace Player.Tests
             GMMessage messageDiscover = new GMMessage(GMMessageId.DiscoverAnswer, playerId, payloadDiscover);
             GMMessage messageStart = CreateStartMessage();
 
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post(messageStart);
-            input.Post(messageDiscover);
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
+            inputBuffer.Post(messageStart);
+            inputBuffer.Post(messageDiscover);
 
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
+            var player = new Player.Models.Player(configuration, inputBuffer, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);
@@ -80,12 +80,12 @@ namespace Player.Tests
             GMMessage messageBeg = new GMMessage(GMMessageId.BegForInfoForwarded, playerId, payloadBeg);
             GMMessage messageStart = CreateStartMessage();
 
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post(messageStart);
-            input.Post(messageBeg);
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
+            inputBuffer.Post(messageStart);
+            inputBuffer.Post(messageBeg);
 
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
+            var player = new Player.Models.Player(configuration, inputBuffer, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             await player.AcceptMessage(CancellationToken.None);
             await player.AcceptMessage(CancellationToken.None);
@@ -108,12 +108,12 @@ namespace Player.Tests
             };
             GMMessage startMessage = CreateStartMessage();
 
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post(startMessage);
-            input.Post(messageCheck);
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
+            inputBuffer.Post(startMessage);
+            inputBuffer.Post(messageCheck);
 
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            var player = new Models.Player(configuration, input,
+            var player = new Models.Player(configuration, inputBuffer,
                 new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
@@ -138,13 +138,13 @@ namespace Player.Tests
             GMMessage pickMessage = new GMMessage(GMMessageId.PickAnswer, playerId, pickPayload);
             GMMessage startMessage = CreateStartMessage();
 
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post(startMessage);
-            input.Post(pickMessage);
-            input.Post(destructionMessage);
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
+            inputBuffer.Post(startMessage);
+            inputBuffer.Post(pickMessage);
+            inputBuffer.Post(destructionMessage);
 
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
+            var player = new Player.Models.Player(configuration, inputBuffer, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
             bool expectedHasPieceValue = false;
@@ -196,11 +196,11 @@ namespace Player.Tests
             };
             GMMessage startMessage = new GMMessage(GMMessageId.StartGame, playerId, startGamePayload);
 
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post(startMessage);
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
+            inputBuffer.Post(startMessage);
 
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
+            var player = new Player.Models.Player(configuration, inputBuffer, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
             bool expectedisLeader = true;
@@ -262,12 +262,12 @@ namespace Player.Tests
             GMMessage moveAnswerMessage = new GMMessage(GMMessageId.MoveAnswer, playerId, moveAnswerPayload);
             GMMessage startMessage = CreateStartMessage();
 
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post<GMMessage>(startMessage);
-            input.Post<GMMessage>(moveAnswerMessage);
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
+            inputBuffer.Post<GMMessage>(startMessage);
+            inputBuffer.Post<GMMessage>(moveAnswerMessage);
 
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            var player = new Player.Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
+            var player = new Player.Models.Player(configuration, inputBuffer, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
             (int, int) expectedPosition = (newPosition.Y, newPosition.X);
@@ -289,12 +289,12 @@ namespace Player.Tests
             GMMessage pickAnswerMessage = new GMMessage(GMMessageId.PickAnswer, playerId, pickPayload);
             GMMessage startMessage = CreateStartMessage();
 
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post(startMessage);
-            input.Post(pickAnswerMessage);
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
+            inputBuffer.Post(startMessage);
+            inputBuffer.Post(pickAnswerMessage);
 
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            var player = new Models.Player(configuration, input, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
+            var player = new Models.Player(configuration, inputBuffer, new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
             bool expectedHasPieceValue = true;
@@ -322,12 +322,12 @@ namespace Player.Tests
             GMMessage endGameMessage = new GMMessage(GMMessageId.EndGame, playerId, endGamePayload);
             GMMessage startMessage = CreateStartMessage();
 
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
-            input.Post<GMMessage>(startMessage);
-            input.Post<GMMessage>(endGameMessage);
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
+            inputBuffer.Post<GMMessage>(startMessage);
+            inputBuffer.Post<GMMessage>(endGameMessage);
 
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            var player = new Models.Player(configuration, input,
+            var player = new Models.Player(configuration, inputBuffer,
                 new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             // Act
@@ -346,13 +346,13 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
             BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
@@ -362,7 +362,7 @@ namespace Player.Tests
                 TeamId = Team.Red,
             };
             GMMessage beg4Info = new GMMessage(GMMessageId.BegForInfoForwarded, 1, payload);
-            input.Post(beg4Info);
+            inputBuffer.Post(beg4Info);
             await player.AcceptMessage(CancellationToken.None);
 
             // Assert
@@ -374,9 +374,9 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             JoinAnswerPayload payload = new JoinAnswerPayload()
@@ -385,13 +385,13 @@ namespace Player.Tests
                 PlayerId = 1,
             };
             GMMessage messageStart = new GMMessage(GMMessageId.JoinTheGameAnswer, playerId, payload);
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
+            // Assert
             bool expected = false;
             bool actual = player.GetValue<Player.Models.Player, bool>("working");
 
-            // Assert
             Assert.Equal(expected, actual);
         }
 
@@ -400,13 +400,13 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
             PutAnswerPayload payload = new PutAnswerPayload()
@@ -414,7 +414,7 @@ namespace Player.Tests
                 WasGoal = true,
             };
             GMMessage putAnswer = new GMMessage(GMMessageId.PutAnswer, playerId, payload);
-            input.Post(putAnswer);
+            inputBuffer.Post(putAnswer);
             await player.AcceptMessage(CancellationToken.None);
 
             GoalInfo expectedGoalInfo = GoalInfo.DiscoveredGoal;
@@ -429,17 +429,17 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
             GMMessage pickMessage = new GMMessage(GMMessageId.PickAnswer, playerId, new EmptyAnswerPayload());
-            input.Post(pickMessage);
+            inputBuffer.Post(pickMessage);
             await player.AcceptMessage(CancellationToken.None);
 
             PutAnswerPayload payload = new PutAnswerPayload()
@@ -447,7 +447,7 @@ namespace Player.Tests
                 WasGoal = true,
             };
             GMMessage putAnswer = new GMMessage(GMMessageId.PutAnswer, playerId, payload);
-            input.Post(putAnswer);
+            inputBuffer.Post(putAnswer);
             await player.AcceptMessage(CancellationToken.None);
 
             bool hasPiece = player.HasPiece;
@@ -461,13 +461,13 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
             int[,] distBoard = new int[playerBoardSize.Y, playerBoardSize.X];
@@ -489,7 +489,7 @@ namespace Player.Tests
                 BlueTeamGoalAreaInformations = infoBoard,
             };
             GMMessage giveFwInfoMessage = new GMMessage(GMMessageId.GiveInfoForwarded, playerId, payload);
-            input.Post(giveFwInfoMessage);
+            inputBuffer.Post(giveFwInfoMessage);
             await player.AcceptMessage(CancellationToken.None);
 
             GoalInfo expectedGoalInfo = GoalInfo.DiscoveredGoal;
@@ -510,17 +510,17 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
             GMMessage errorMessage = new GMMessage(GMMessageId.PutError, playerId, new PutErrorPayload());
-            input.Post(errorMessage);
+            inputBuffer.Post(errorMessage);
             await player.AcceptMessage(CancellationToken.None);
 
             int expectedPenaltyTime = player.PenaltiesTimes.PutPiece;
@@ -535,17 +535,17 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
             GMMessage errorMessage = new GMMessage(GMMessageId.PickError, playerId, new PutErrorPayload());
-            input.Post(errorMessage);
+            inputBuffer.Post(errorMessage);
             await player.AcceptMessage(CancellationToken.None);
 
             int expectedPenaltyTime = player.PenaltiesTimes.PickPiece;
@@ -582,13 +582,13 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
             await player.JoinTheGame(CancellationToken.None);
 
@@ -601,13 +601,13 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
             await player.Move(Direction.N, CancellationToken.None);
 
@@ -620,13 +620,13 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
             await player.Put(CancellationToken.None);
 
@@ -639,13 +639,13 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
             await player.BegForInfo(CancellationToken.None);
 
@@ -658,13 +658,13 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
             BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
@@ -674,7 +674,7 @@ namespace Player.Tests
                 TeamId = Team.Red,
             };
             GMMessage beg4Info = new GMMessage(GMMessageId.BegForInfoForwarded, playerId, payload);
-            input.Post(beg4Info);
+            inputBuffer.Post(beg4Info);
             await player.AcceptMessage(CancellationToken.None);
             await player.GiveInfo(CancellationToken.None);
 
@@ -687,13 +687,13 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
             await player.CheckPiece(CancellationToken.None);
 
@@ -706,13 +706,13 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
             await player.Discover(CancellationToken.None);
 
@@ -725,13 +725,13 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
             await player.DestroyPiece(CancellationToken.None);
 
@@ -744,13 +744,13 @@ namespace Player.Tests
         {
             // Arrange
             PlayerConfiguration configuration = GenerateSampleConfiguration();
-            BufferBlock<GMMessage> input = new BufferBlock<GMMessage>();
+            BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             ISocketClient<GMMessage, PlayerMessage> client = GenerateSocketClient();
-            var player = new Models.Player(configuration, input, client, logger);
+            var player = new Models.Player(configuration, inputBuffer, client, logger);
 
             // Act
             GMMessage messageStart = CreateStartMessage();
-            input.Post(messageStart);
+            inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
             await player.Pick(CancellationToken.None);
 
