@@ -30,7 +30,7 @@ namespace IntegrationTests.GameTests
             };
 
             TestConf.PositionNotChangedThreshold = 5;
-            TestConf.PositionsCheckInterval = 6000;
+            TestConf.CheckInterval = 6000;
         }
 
         [Fact(Timeout = 10 * 60 * 1000)]

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using GameMaster.Models;
+using GameMaster.Models.Fields;
 using Shared.Enums;
 using TestsShared;
 using Xunit;
@@ -34,15 +35,28 @@ namespace IntegrationTests.GameTests.Abstractions
             var teamBluePositions = teamBlue.Select(player => player.Position).ToList();
             var positionsCounterBlue = new int[teamBluePositions.Count];
 
+            var oneRowBoard = gameMaster.GetValue<GM, AbstractField[][]>("board").SelectMany(row => row);
+            var piecesPositions = oneRowBoard.Where(field => field.ContainsPieces()).ToList();
+
             while (!gameMaster.WasGameFinished)
             {
-                var timeNow = DateTime.Now;
+                await Task.Delay(conf.CheckInterval);
 
-                int waitTimeLeft = conf.PositionsCheckInterval - (int)(timeNow - DateTime.Now).TotalMilliseconds;
-                await Task.Delay(waitTimeLeft);
+                AssertNewPiecesAreGenerated(oneRowBoard, ref piecesPositions);
                 AssertPositionsChange(teamRed, teamRedPositions, positionsCounterRed);
                 AssertPositionsChange(teamBlue, teamBluePositions, positionsCounterBlue);
             }
+        }
+
+        private void AssertNewPiecesAreGenerated(IEnumerable<AbstractField> board, ref List<AbstractField> oldPiecesPositions)
+        {
+            var newPiecesPositions = board.Where(field => field.ContainsPieces()).ToList();
+
+            bool anyNewPieces = oldPiecesPositions.Any(pos =>
+                newPiecesPositions.Any(newPos => !newPos.Equals(pos) || newPos.PiecesCount != pos.PiecesCount));
+            Assert.True(anyNewPieces, "GM should generate some new pieces");
+
+            oldPiecesPositions = newPiecesPositions;
         }
 
         private void AssertPositionsChange(List<Player.Models.Player> team, List<(int y, int x)> teamPositions, int[] positionsCounter)

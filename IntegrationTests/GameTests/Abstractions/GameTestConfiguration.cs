@@ -2,7 +2,7 @@
 {
     public class GameTestConfiguration
     {
-        public int PositionsCheckInterval { get; set; }
+        public int CheckInterval { get; set; }
 
         public int PositionNotChangedThreshold { get; set; }
     }

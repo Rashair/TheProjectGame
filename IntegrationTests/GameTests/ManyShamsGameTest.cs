@@ -29,7 +29,7 @@ namespace IntegrationTests.GameTests
                 ShamPieceProbability = 0.75f,
             };
 
-            TestConf.PositionsCheckInterval = 6000;
+            TestConf.CheckInterval = 6000;
         }
 
         [Fact(Timeout = 8 * 60 * 1000)]

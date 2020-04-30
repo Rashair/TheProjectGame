@@ -37,7 +37,7 @@ namespace IntegrationTests.GameTests.Abstractions
             tokenSource = new CancellationTokenSource();
             TestConf = new GameTestConfiguration
             {
-                PositionsCheckInterval = 5000,
+                CheckInterval = 5000,
                 PositionNotChangedThreshold = 4
             };
 
