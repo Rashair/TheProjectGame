@@ -19,7 +19,7 @@ namespace IntegrationTests
                 .UseContentRoot(projectDir)
                 .UseConfiguration(new ConfigurationBuilder()
                     .SetBasePath(projectDir)
-                    .AddJsonFile("appsettings.json")
+                    .AddJsonFile("appsettings.json", false, false)
                     .AddCommandLine(args)
                     .Build())
                 .UseSerilog()
