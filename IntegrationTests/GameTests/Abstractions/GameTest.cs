@@ -14,7 +14,7 @@ using Shared.Enums;
 using TestsShared;
 using Xunit;
 
-namespace IntegrationTests
+namespace IntegrationTests.GameTests.Abstractions
 {
     public abstract class GameTest : IDisposable
     {
@@ -62,7 +62,10 @@ namespace IntegrationTests
 
             while (!gm.WasGameFinished)
             {
-                await Task.Delay(PositionsCheckTime);
+                var timeNow = DateTime.Now;
+
+                int waitTimeLeft = PositionsCheckTime - (int)(timeNow - DateTime.Now).TotalMilliseconds;
+                await Task.Delay(waitTimeLeft);
                 AssertPositionsChange(teamRed, teamRedPositions, positionsCounterRed);
                 AssertPositionsChange(teamBlue, teamBluePositions, positionsCounterBlue);
             }

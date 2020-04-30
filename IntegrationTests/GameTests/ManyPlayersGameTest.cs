@@ -1,7 +1,8 @@
 ﻿using GameMaster.Models;
+using IntegrationTests.GameTests.Abstractions;
 using Xunit;
 
-namespace IntegrationTests
+namespace IntegrationTests.GameTests
 {
     public class ManyPlayersGameTest : GameTest
     {

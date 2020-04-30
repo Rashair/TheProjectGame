@@ -1,4 +1,5 @@
 ﻿using GameMaster.Models;
+using IntegrationTests.GameTests.Abstractions;
 using Xunit;
 
 namespace IntegrationTests
