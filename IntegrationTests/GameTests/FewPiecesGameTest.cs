@@ -21,15 +21,16 @@ namespace IntegrationTests.GameTests
                 DiscoverPenalty = 3000,
                 ResponsePenalty = 5000,
                 Height = 12,
-                Width = 4,
+                Width = 5,
                 GoalAreaHeight = 3,
                 NumberOfGoals = 4,
-                NumberOfPiecesOnBoard = 2,
-                NumberOfPlayersPerTeam = 7,
+                NumberOfPiecesOnBoard = 3,
+                NumberOfPlayersPerTeam = 8,
                 ShamPieceProbability = 0.3f,
             };
 
-            TestConf.NoNewPiecesThreshold = 6;
+            TestConf.NoNewPiecesThreshold = 8;
+            TestConf.CheckInterval = 6000;
         }
 
         [Fact(Timeout = 6 * 60 * 1000)]
