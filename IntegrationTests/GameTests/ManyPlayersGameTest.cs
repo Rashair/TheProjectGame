@@ -29,7 +29,7 @@ namespace IntegrationTests.GameTests
                 ShamPieceProbability = 0.2f,
             };
 
-            TestConf.PositionNotChangedThreshold = 5;
+            TestConf.PositionNotChangedThreshold = 4;
             TestConf.CheckInterval = 6000;
         }
 
