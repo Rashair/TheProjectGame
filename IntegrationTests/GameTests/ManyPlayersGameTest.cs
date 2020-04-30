@@ -29,14 +29,14 @@ namespace IntegrationTests.GameTests
                 ShamPieceProbability = 0.3f,
             };
 
-            PositionNotChangedCount = 5;
-            PositionsCheckTime = 6000;
+            TestConf.PositionNotChangedThreshold = 5;
+            TestConf.PositionsCheckInterval = 6000;
         }
 
         [Fact(Timeout = 10 * 60 * 1000)]
-        public override async void RunGameWithConfiguration()
+        public override void RunGameWithConfiguration()
         {
-            await RunGame();
+            RunGame();
         }
     }
 }

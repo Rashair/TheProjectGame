@@ -2,7 +2,7 @@
 using IntegrationTests.GameTests.Abstractions;
 using Xunit;
 
-namespace IntegrationTests
+namespace IntegrationTests.GameTests
 {
     public class SimpleGameTest : GameTest
     {
@@ -23,20 +23,17 @@ namespace IntegrationTests
                 Height = 12,
                 Width = 4,
                 GoalAreaHeight = 4,
-                NumberOfGoals = 2,
+                NumberOfGoals = 4,
                 NumberOfPiecesOnBoard = 6,
                 NumberOfPlayersPerTeam = 4,
                 ShamPieceProbability = 0.3f,
             };
-
-            PositionNotChangedCount = 4;
-            PositionsCheckTime = 5000;
         }
 
         [Fact(Timeout = 4 * 60 * 1000)]
-        public override async void RunGameWithConfiguration()
+        public override void RunGameWithConfiguration()
         {
-            await RunGame();
+            RunGame();
         }
     }
 }
