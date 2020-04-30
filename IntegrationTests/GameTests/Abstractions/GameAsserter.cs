@@ -80,7 +80,6 @@ namespace IntegrationTests.GameTests.Abstractions
             ref int noPiecePickedCount, ref List<AbstractField> oldPiecesPositions)
         {
             var newPiecesPositions = board.Where(field => field.ContainsPieces()).ToList();
-
             bool anyNewPieces = oldPiecesPositions.Any(pos =>
             {
                 var newPos = newPiecesPositions.FirstOrDefault(p => pos == p);
@@ -92,8 +91,11 @@ namespace IntegrationTests.GameTests.Abstractions
                 ++noPiecePickedCount;
                 Assert.False(noPiecePickedCount > testConf.NoNewPiecesThreshold, "GM should generate some new pieces");
             }
-          
-            oldPiecesPositions = newPiecesPositions;
+            else
+            {
+                noPiecePickedCount = 0;
+                oldPiecesPositions = newPiecesPositions;
+            }
         }
 
         private void AssertPositionsChange(List<Player.Models.Player> team, List<(int y, int x)> teamPositions, int[] positionsCounter)
