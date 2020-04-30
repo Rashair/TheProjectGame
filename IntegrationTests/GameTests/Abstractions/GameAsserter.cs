@@ -64,25 +64,35 @@ namespace IntegrationTests.GameTests.Abstractions
 
             var oneRowBoard = gameMaster.GetValue<GM, AbstractField[][]>("board").SelectMany(row => row);
             var piecesPositions = oneRowBoard.Where(field => field.ContainsPieces()).ToList();
+            int noPiecePickedCount = 0;
 
             while (!gameMaster.WasGameFinished)
             {
                 await Task.Delay(testConf.CheckInterval);
 
-                AssertNewPiecesAreGenerated(oneRowBoard, ref piecesPositions);
+                AssertNewPiecesAreGenerated(oneRowBoard, ref noPiecePickedCount, ref piecesPositions);
                 AssertPositionsChange(teamRed, teamRedPositions, positionsCounterRed);
                 AssertPositionsChange(teamBlue, teamBluePositions, positionsCounterBlue);
             }
         }
 
-        private void AssertNewPiecesAreGenerated(IEnumerable<AbstractField> board, ref List<AbstractField> oldPiecesPositions)
+        private void AssertNewPiecesAreGenerated(IEnumerable<AbstractField> board, 
+            ref int noPiecePickedCount, ref List<AbstractField> oldPiecesPositions)
         {
             var newPiecesPositions = board.Where(field => field.ContainsPieces()).ToList();
 
             bool anyNewPieces = oldPiecesPositions.Any(pos =>
-                newPiecesPositions.Any(newPos => !newPos.Equals(pos) || newPos.PiecesCount != pos.PiecesCount));
-            Assert.True(anyNewPieces, "GM should generate some new pieces");
+            {
+                var newPos = newPiecesPositions.FirstOrDefault(p => pos == p);
+                return newPos == null || newPos.PiecesCount != pos.PiecesCount;
+            });
 
+            if (!anyNewPieces)
+            {
+                ++noPiecePickedCount;
+                Assert.False(noPiecePickedCount > testConf.NoNewPiecesThreshold, "GM should generate some new pieces");
+            }
+          
             oldPiecesPositions = newPiecesPositions;
         }
 

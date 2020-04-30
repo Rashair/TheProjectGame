@@ -5,5 +5,7 @@
         public int CheckInterval { get; set; }
 
         public int PositionNotChangedThreshold { get; set; }
+
+        public int NoNewPiecesThreshold { get; set; }
     }
 }

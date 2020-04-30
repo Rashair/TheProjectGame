@@ -55,17 +55,5 @@ namespace GameMaster.Models.Fields
         {
             return new int[2] { y, x };
         }
-
-        public override bool Equals(object obj)
-        {
-            return obj is AbstractField field &&
-                   y == field.y &&
-                   x == field.x;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(y, x);
-        }
     }
 }
