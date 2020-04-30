@@ -4,34 +4,32 @@ using Xunit;
 
 namespace IntegrationTests.GameTests
 {
-    public class NarrowBoardGameTest : GameTest
+    public class SmallNumberOfPiecesGameTest : GameTest
     {
-        public NarrowBoardGameTest()
+        public SmallNumberOfPiecesGameTest()
         {
             Conf = new GameConfiguration
             {
                 CsIP = "127.0.0.1",
-                CsPort = 5004,
+                CsPort = 5001,
                 MovePenalty = 200,
                 AskPenalty = 10000,
-                PutPenalty = 400,
-                CheckPenalty = 500,
+                PutPenalty = 500,
+                CheckPenalty = 750,
                 DestroyPenalty = 100,
                 PickPenalty = 100,
                 DiscoverPenalty = 3000,
                 ResponsePenalty = 5000,
-                Height = 16,
-                Width = 3,
-                GoalAreaHeight = 3,
-                NumberOfGoals = 6,
-                NumberOfPiecesOnBoard = 4,
+                Height = 12,
+                Width = 6,
+                GoalAreaHeight = 4,
+                NumberOfGoals = 5,
+                NumberOfPiecesOnBoard = 2,
                 NumberOfPlayersPerTeam = 6,
-                ShamPieceProbability = 0.4f,
+                ShamPieceProbability = 0.3f,
             };
 
-            TestConf.PositionNotChangedThreshold = 4;
-            TestConf.NoNewPiecesThreshold = 4;
-            TestConf.CheckInterval = 4000;
+            TestConf.NoNewPiecesThreshold = 2;
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]
