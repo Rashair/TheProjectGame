@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using GameMaster.Models.Pieces;
 using Shared.Models;
@@ -13,6 +14,8 @@ namespace GameMaster.Models.Fields
 
         protected HashSet<AbstractPiece> Pieces { get; set; }
 
+        public int PiecesCount => Pieces.Count;
+
         public AbstractField(int y, int x)
         {
             this.y = y;
@@ -23,14 +26,13 @@ namespace GameMaster.Models.Fields
         public void Leave(GMPlayer player)
         {
             whosHere = null;
+            player.Position = null;
         }
 
-        // originally returned void
         public abstract bool PickUp(GMPlayer player);
 
         public abstract (bool? goal, bool removed) Put(AbstractPiece piece);
 
-        // TODO
         public abstract bool CanPick();
 
         public bool MoveHere(GMPlayer player)
@@ -55,13 +57,16 @@ namespace GameMaster.Models.Fields
             return new int[2] { y, x };
         }
 
-        public Position GetPositionObject()
+        public override bool Equals(object obj)
         {
-            return new Position()
-            {
-                X = x,
-                Y = y,
-            };
+            return obj is AbstractField field &&
+                   y == field.y &&
+                   x == field.x;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(y, x);
         }
     }
 }

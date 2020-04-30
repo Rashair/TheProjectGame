@@ -223,7 +223,7 @@ namespace GameMaster.Models
             MoveAnswerPayload payload = new MoveAnswerPayload()
             {
                 ClosestPiece = gm.FindClosestPiece(Position),
-                CurrentPosition = Position.GetPositionObject(),
+                CurrentPosition = Position.GetPosition(),
                 MadeMove = madeMove,
             };
             return new GMMessage(GMMessageId.MoveAnswer, id, payload);
@@ -234,7 +234,7 @@ namespace GameMaster.Models
             UnknownErrorPayload payload = new UnknownErrorPayload()
             {
                 HoldingPiece = !(Holding is null),
-                Position = Position.GetPositionObject(),
+                Position = Position.GetPosition(),
             };
             return new GMMessage(GMMessageId.UnknownError, id, payload);
         }
