@@ -513,11 +513,11 @@ namespace GameMaster.Models
                 piece = new NormalPiece();
             }
 
-            (int y, int x) = GenerateCoordinatesInTaskArea(rand);
+            (int y, int x) = GenerateCoordinatesInTaskArea();
             board[y][x].Put(piece);
         }
 
-        private (int y, int x) GenerateCoordinatesInTaskArea(Random rand)
+        private (int y, int x) GenerateCoordinatesInTaskArea()
         {
             int taskAreaStart = conf.GoalAreaHeight;
             int yCoord = rand.Next(taskAreaStart, SecondGoalAreaStart);
