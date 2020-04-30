@@ -60,9 +60,9 @@ namespace IntegrationTests.GameTests.Abstractions
             var gameAsserter = new GameAsserter(TestConf, teamRed, teamBlue, gm);
 
             await StartGame();
-            gameAsserter.CheckStart().Wait();
+            await gameAsserter.CheckStart();
 
-            gameAsserter.CheckRuntime().Wait();
+            await gameAsserter.CheckRuntime();
 
             gameAsserter.CheckEnd();
         }
