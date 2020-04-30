@@ -47,48 +47,32 @@ namespace IntegrationTests.GameTests.Abstractions
 
         public abstract void RunGameWithConfiguration();
 
-        public void RunGame()
+        protected void RunGame()
         {
-            StartGame().Wait();
+            Assert.NotNull(Conf);
+
+            Task.Run(InitGame).Wait();
 
             var gm = gmHost.Services.GetService<GM>();
             var teamRed = redPlayersHosts.Select(host => host.Services.GetService<Player.Models.Player>()).ToList();
             var teamBlue = bluePlayersHosts.Select(host => host.Services.GetService<Player.Models.Player>()).ToList();
             var gameAsserter = new GameAsserter(TestConf, teamRed, teamBlue, gm);
 
+            StartGame(gameAsserter).Wait();
+            gameAsserter.CheckStart().Wait();
+
             gameAsserter.CheckRuntime().Wait();
 
             gameAsserter.CheckEnd();
-
-            tokenSource.Cancel();
         }
 
-        protected async Task StartGame()
+        private async Task StartGame(GameAsserter gameAsserter)
         {
-            Assert.NotNull(Conf);
+            var responseConf = await Client.PostAsJsonAsync("api/Configuration", Conf);
+            var responseInit = await Client.PostAsync("api/InitGame", null);
 
-            await Task.Run(InitGame);
-
-            var gameMaster = gmHost.Services.GetService<GM>();
-            Assert.True(gameMaster.WasGameInitialized, "Game should be initialized");
-
-            var (success, errorMessage) = await Shared.Helpers.Retry(() =>
-            {
-                return Task.FromResult(gameMaster.WasGameStarted);
-            }, Conf.NumberOfPlayersPerTeam, 3000, tokenSource.Token);
-            Assert.Equal(Conf.NumberOfPlayersPerTeam, gameMaster.Invoke<GM, int>("GetPlayersCount", Team.Red));
-            Assert.Equal(Conf.NumberOfPlayersPerTeam, gameMaster.Invoke<GM, int>("GetPlayersCount", Team.Blue));
-            Assert.True(success, "Game should be started");
-
-            var playerRed = redPlayersHosts[0].Services.GetService<Player.Models.Player>();
-            Assert.True(playerRed.Team == Team.Red, "Player should have team passed with conf");
-            Assert.True(playerRed.Position.y >= 0, "Player should have position set.");
-            Assert.True(playerRed.Position.y < Conf.Height - Conf.GoalAreaHeight, "Player should not be present on enemy team field");
-
-            var playerBlue = bluePlayersHosts[0].Services.GetService<Player.Models.Player>();
-            Assert.True(playerBlue.Team == Team.Blue, "Player should have team passed with conf");
-            Assert.True(playerBlue.Position.y >= 0, "Player should have position set.");
-            Assert.True(playerBlue.Position.y >= Conf.GoalAreaHeight, "Player should not be present on enemy team field");
+            Assert.Equal(System.Net.HttpStatusCode.Created, responseConf.StatusCode);
+            Assert.Equal(System.Net.HttpStatusCode.OK, responseInit.StatusCode);
         }
 
         private async Task InitGame()
@@ -131,15 +115,12 @@ namespace IntegrationTests.GameTests.Abstractions
             {
                 BaseAddress = new Uri(gmUrl),
             };
-            var responseConf = await Client.PostAsJsonAsync("api/Configuration", Conf);
-            var responseInit = await Client.PostAsync("api/InitGame", null);
-
-            Assert.Equal(System.Net.HttpStatusCode.Created, responseConf.StatusCode);
-            Assert.Equal(System.Net.HttpStatusCode.OK, responseInit.StatusCode);
         }
 
         public void Dispose()
         {
+            tokenSource.Cancel();
+
             Client?.Dispose();
             csHost?.Dispose();
             gmHost?.Dispose();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using GameMaster.Models;
@@ -11,20 +12,46 @@ using Xunit;
 
 namespace IntegrationTests.GameTests.Abstractions
 {
-    internal class GameAsserter
+    public class GameAsserter
     {
-        private readonly GameTestConfiguration conf;
+        private readonly GameTestConfiguration testConf;
         private readonly GM gameMaster;
         private readonly List<Player.Models.Player> teamRed;
         private readonly List<Player.Models.Player> teamBlue;
 
-        public GameAsserter(GameTestConfiguration conf, List<Player.Models.Player> teamRed, List<Player.Models.Player> teamBlue,
-            GM gameMaster)
+        public GameAsserter(GameTestConfiguration testConf,
+            List<Player.Models.Player> teamRed, List<Player.Models.Player> teamBlue, GM gameMaster)
         {
-            this.conf = conf;
+            this.testConf = testConf;
             this.gameMaster = gameMaster;
             this.teamRed = teamRed;
             this.teamBlue = teamBlue;
+        }
+
+        public async Task CheckStart()
+        {
+            Assert.True(gameMaster.WasGameInitialized, "Game should be initialized");
+
+            var conf = gameMaster.GetValue<GM, GameConfiguration>("conf");
+            var (success, errorMessage) = await Shared.Helpers.Retry(() =>
+            {
+                return Task.FromResult(gameMaster.WasGameStarted);
+            }, conf.NumberOfPlayersPerTeam, 3000, CancellationToken.None);
+            Assert.Equal(conf.NumberOfPlayersPerTeam, gameMaster.Invoke<GM, int>("GetPlayersCount", Team.Red));
+            Assert.Equal(conf.NumberOfPlayersPerTeam, gameMaster.Invoke<GM, int>("GetPlayersCount", Team.Blue));
+            Assert.True(success, "Game should be started");
+
+            Assert.True(teamRed.Any(p => p.IsLeader), "Team red should have leader");
+            var playerRed = teamRed[0];
+            Assert.True(playerRed.Team == Team.Red, "Player should have team passed with conf");
+            Assert.True(playerRed.Position.y >= 0, "Player should have position set.");
+            Assert.True(playerRed.Position.y < conf.Height - conf.GoalAreaHeight, "Player should not be present on enemy team field");
+
+            Assert.True(teamBlue.Any(p => p.IsLeader), "Team blue should have leader");
+            var playerBlue = teamBlue[0];
+            Assert.True(playerBlue.Team == Team.Blue, "Player should have team passed with conf");
+            Assert.True(playerBlue.Position.y >= 0, "Player should have position set.");
+            Assert.True(playerBlue.Position.y >= conf.GoalAreaHeight, "Player should not be present on enemy team field");
         }
 
         public async Task CheckRuntime()
@@ -40,7 +67,7 @@ namespace IntegrationTests.GameTests.Abstractions
 
             while (!gameMaster.WasGameFinished)
             {
-                await Task.Delay(conf.CheckInterval);
+                await Task.Delay(testConf.CheckInterval);
 
                 AssertNewPiecesAreGenerated(oneRowBoard, ref piecesPositions);
                 AssertPositionsChange(teamRed, teamRedPositions, positionsCounterRed);
@@ -66,7 +93,7 @@ namespace IntegrationTests.GameTests.Abstractions
                 if (team[i].Position == teamPositions[i])
                 {
                     ++positionsCounter[i];
-                    Assert.False(positionsCounter[i] > conf.PositionNotChangedThreshold, "Player should not be stuck on one position");
+                    Assert.False(positionsCounter[i] > testConf.PositionNotChangedThreshold, "Player should not be stuck on one position");
                 }
                 else
                 {
