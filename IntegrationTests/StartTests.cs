@@ -7,13 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using CommunicationServer.Models;
-using CommunicationServer.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using Shared.Clients;
 using Shared.Enums;
-using Shared.Messages;
 using TestsShared;
 using Xunit;
 

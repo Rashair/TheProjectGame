@@ -32,6 +32,8 @@ namespace IntegrationTests
 
         public bool ShouldLogPlayers { get; }
 
+        public HttpClient Client { get; set; }
+
         public GameTest()
         {
             tokenSource = new CancellationTokenSource();
@@ -42,7 +44,41 @@ namespace IntegrationTests
             ShouldLogPlayers = env != null ? bool.Parse(env) : true;
         }
 
-        public HttpClient Client { get; set; }
+        public abstract void RunGameWithConfiguration();
+
+        public async Task RunGame()
+        {
+            await StartGame();
+
+            var teamRed = redPlayersHosts.Select(host => host.Services.GetService<Player.Models.Player>()).ToList();
+            var teamRedPositions = teamRed.Select(player => player.Position).ToList();
+            int[] positionsCounterRed = new int[teamRedPositions.Count];
+
+            var teamBlue = redPlayersHosts.Select(host => host.Services.GetService<Player.Models.Player>()).ToList();
+            var teamBluePositions = teamBlue.Select(player => player.Position).ToList();
+            int[] positionsCounterBlue = new int[teamBluePositions.Count];
+
+            var gm = gmHost.Services.GetService<GM>();
+
+            while (!gm.WasGameFinished)
+            {
+                await Task.Delay(PositionsCheckTime);
+                AssertPositionsChange(teamRed, teamRedPositions, positionsCounterRed);
+                AssertPositionsChange(teamBlue, teamBluePositions, positionsCounterBlue);
+            }
+
+            var winner = teamRed[0].GetValue<Player.Models.Player, Team?>("winner");
+            Assert.False(winner == null, "Winner should not be null");
+            Assert.True(winner == teamBlue[0].GetValue<Player.Models.Player, Team?>("winner"),
+                "Players should have same winner saved");
+            
+            var redPoints = gm.GetValue<GM, int>("redTeamPoints");
+            var bluePoints = gm.GetValue<GM, int>("blueTeamPoints");
+            var expectedWinner = redPoints > bluePoints ? Team.Red : Team.Blue;
+            Assert.True(winner == expectedWinner, "GM and players should have same winner");
+
+            tokenSource.Cancel();
+        }
 
         protected async Task StartGame()
         {
@@ -156,41 +192,6 @@ namespace IntegrationTests
                 $"CsPort={port}"
             };
         }
-
-        public async Task RunGame()
-        {
-            await StartGame();
-
-            var teamRed = redPlayersHosts.Select(host => host.Services.GetService<Player.Models.Player>()).ToList();
-            var teamRedPositions = teamRed.Select(player => player.Position).ToList();
-            int[] positionsCounterRed = new int[teamRedPositions.Count];
-
-            var teamBlue = redPlayersHosts.Select(host => host.Services.GetService<Player.Models.Player>()).ToList();
-            var teamBluePositions = teamBlue.Select(player => player.Position).ToList();
-            int[] positionsCounterBlue = new int[teamBluePositions.Count];
-
-            while (teamRed[0].GetValue<Player.Models.Player, bool>("working"))
-            {
-                await Task.Delay(PositionsCheckTime);
-                AssertPositionsChange(teamRed, teamRedPositions, positionsCounterRed);
-                AssertPositionsChange(teamBlue, teamBluePositions, positionsCounterBlue);
-            }
-
-            var winner = teamRed[0].GetValue<Player.Models.Player, Team?>("winner");
-            Assert.False(winner == null, "Winner should not be null");
-            Assert.True(winner == teamBlue[0].GetValue<Player.Models.Player, Team?>("winner"),
-                "Players should have same winner saved");
-
-            var gm = gmHost.Services.GetService<GM>();
-            var redPoints = gm.GetValue<GM, int>("redTeamPoints");
-            var bluePoints = gm.GetValue<GM, int>("blueTeamPoints");
-            var expectedWinner = redPoints > bluePoints ? Team.Red : Team.Blue;
-            Assert.True(winner == expectedWinner, "GM and players should have same winner");
-
-            tokenSource.Cancel();
-        }
-
-        public abstract void RunGameWithConfiguration();
 
         private void AssertPositionsChange(List<Player.Models.Player> team, List<(int y, int x)> teamPositions, int[] positionsCounter)
         {
