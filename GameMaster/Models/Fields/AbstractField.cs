@@ -26,7 +26,6 @@ namespace GameMaster.Models.Fields
         public void Leave(GMPlayer player)
         {
             whosHere = null;
-            player.Position = null;
         }
 
         public abstract bool PickUp(GMPlayer player);
