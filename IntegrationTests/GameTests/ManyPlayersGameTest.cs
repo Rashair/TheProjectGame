@@ -22,14 +22,13 @@ namespace IntegrationTests.GameTests
                 ResponsePenalty = 1500,
                 Height = 20,
                 Width = 20,
-                GoalAreaHeight = 4,
+                GoalAreaHeight = 3,
                 NumberOfGoals = 6,
                 NumberOfPiecesOnBoard = 20,
                 NumberOfPlayersPerTeam = 16,
                 ShamPieceProbability = 0.2f,
             };
 
-            TestConf.PositionNotChangedThreshold = 4;
             TestConf.CheckInterval = 6000;
         }
 

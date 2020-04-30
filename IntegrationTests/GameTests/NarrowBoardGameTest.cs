@@ -28,9 +28,6 @@ namespace IntegrationTests.GameTests
                 NumberOfPlayersPerTeam = 6,
                 ShamPieceProbability = 0.4f,
             };
-
-            TestConf.PositionNotChangedThreshold = 4;
-            TestConf.NoNewPiecesThreshold = 4;
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]

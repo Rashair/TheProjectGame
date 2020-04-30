@@ -4,9 +4,9 @@ using Xunit;
 
 namespace IntegrationTests.GameTests
 {
-    public class SmallNumberOfPiecesGameTest : GameTest
+    public class FewPiecesGameTest : GameTest
     {
-        public SmallNumberOfPiecesGameTest()
+        public FewPiecesGameTest()
         {
             Conf = new GameConfiguration
             {
