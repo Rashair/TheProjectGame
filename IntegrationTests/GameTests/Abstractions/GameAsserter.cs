@@ -84,8 +84,8 @@ namespace IntegrationTests.GameTests.Abstractions
             var newPiecesPositions = board.Where(field => field.ContainsPieces()).ToList();
             bool anyNewPieces = oldPiecesPositions.Any(pos =>
             {
-                var newPos = newPiecesPositions.FirstOrDefault(p => pos == p);
-                return newPos == null || newPos.PiecesCount != pos.PiecesCount;
+                var oldPos = newPiecesPositions.FirstOrDefault(p => pos == p);
+                return oldPos == null || oldPos.PiecesCount != pos.PiecesCount;
             });
 
             if (!anyNewPieces)

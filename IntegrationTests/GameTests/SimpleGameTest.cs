@@ -28,6 +28,8 @@ namespace IntegrationTests.GameTests
                 NumberOfPlayersPerTeam = 4,
                 ShamPieceProbability = 0.3f,
             };
+
+            TestConf.CheckInterval = 4000;
         }
 
         [Fact(Timeout = 4 * 60 * 1000)]

@@ -39,7 +39,7 @@ namespace IntegrationTests.GameTests.Abstractions
             {
                 CheckInterval = 5000,
                 PositionNotChangedThreshold = 4,
-                NoNewPiecesThreshold = 4,
+                NoNewPiecesThreshold = 5,
             };
 
             string env = Environment.GetEnvironmentVariable("PLAYER_LOGGING");
