@@ -48,18 +48,18 @@ namespace IntegrationTests.GameTests.Abstractions
 
         public abstract void RunGameWithConfiguration();
 
-        protected void RunGame()
+        protected async Task RunGame()
         {
             Assert.NotNull(Conf);
 
-            Task.Run(InitGame).Wait();
+            await Task.Run(InitGame);
 
             var gm = gmHost.Services.GetService<GM>();
             var teamRed = redPlayersHosts.Select(host => host.Services.GetService<Player.Models.Player>()).ToList();
             var teamBlue = bluePlayersHosts.Select(host => host.Services.GetService<Player.Models.Player>()).ToList();
             var gameAsserter = new GameAsserter(TestConf, teamRed, teamBlue, gm);
 
-            StartGame(gameAsserter).Wait();
+            await StartGame();
             gameAsserter.CheckStart().Wait();
 
             gameAsserter.CheckRuntime().Wait();
@@ -67,7 +67,7 @@ namespace IntegrationTests.GameTests.Abstractions
             gameAsserter.CheckEnd();
         }
 
-        private async Task StartGame(GameAsserter gameAsserter)
+        private async Task StartGame()
         {
             var responseConf = await Client.PostAsJsonAsync("api/Configuration", Conf);
             var responseInit = await Client.PostAsync("api/InitGame", null);

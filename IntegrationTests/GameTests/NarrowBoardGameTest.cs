@@ -35,9 +35,9 @@ namespace IntegrationTests.GameTests
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]
-        public override void RunGameWithConfiguration()
+        public override async void RunGameWithConfiguration()
         {
-            RunGame();
+            await RunGame();
         }
     }
 }
