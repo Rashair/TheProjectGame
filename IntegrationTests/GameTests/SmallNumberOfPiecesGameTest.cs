@@ -29,7 +29,7 @@ namespace IntegrationTests.GameTests
                 ShamPieceProbability = 0.3f,
             };
 
-            TestConf.NoNewPiecesThreshold = 2;
+            TestConf.NoNewPiecesThreshold = 3;
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]
