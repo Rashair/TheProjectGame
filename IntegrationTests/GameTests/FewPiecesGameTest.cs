@@ -21,18 +21,18 @@ namespace IntegrationTests.GameTests
                 DiscoverPenalty = 3000,
                 ResponsePenalty = 5000,
                 Height = 12,
-                Width = 6,
-                GoalAreaHeight = 4,
-                NumberOfGoals = 5,
+                Width = 4,
+                GoalAreaHeight = 3,
+                NumberOfGoals = 4,
                 NumberOfPiecesOnBoard = 2,
-                NumberOfPlayersPerTeam = 6,
+                NumberOfPlayersPerTeam = 7,
                 ShamPieceProbability = 0.3f,
             };
 
-            TestConf.NoNewPiecesThreshold = 3;
+            TestConf.NoNewPiecesThreshold = 6;
         }
 
-        [Fact(Timeout = 5 * 60 * 1000)]
+        [Fact(Timeout = 6 * 60 * 1000)]
         public override async void RunGameWithConfiguration()
         {
             await RunGame();
