@@ -20,13 +20,13 @@ namespace IntegrationTests.GameTests
                 PickPenalty = 100,
                 DiscoverPenalty = 700,
                 ResponsePenalty = 1500,
-                Height = 16,
-                Width = 12,
+                Height = 20,
+                Width = 20,
                 GoalAreaHeight = 4,
-                NumberOfGoals = 5,
-                NumberOfPiecesOnBoard = 16,
-                NumberOfPlayersPerTeam = 12,
-                ShamPieceProbability = 0.3f,
+                NumberOfGoals = 6,
+                NumberOfPiecesOnBoard = 20,
+                NumberOfPlayersPerTeam = 16,
+                ShamPieceProbability = 0.2f,
             };
 
             TestConf.PositionNotChangedThreshold = 5;
