@@ -21,7 +21,7 @@ namespace IntegrationTests.GameTests
                 DiscoverPenalty = 700,
                 ResponsePenalty = 1500,
                 Height = 20,
-                Width = 20,
+                Width = 18,
                 GoalAreaHeight = 3,
                 NumberOfGoals = 6,
                 NumberOfPiecesOnBoard = 20,
@@ -30,6 +30,7 @@ namespace IntegrationTests.GameTests
             };
 
             TestConf.CheckInterval = 6000;
+            TestConf.PositionNotChangedThreshold = 5;
         }
 
         [Fact(Timeout = 10 * 60 * 1000)]

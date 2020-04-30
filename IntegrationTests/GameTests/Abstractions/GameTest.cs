@@ -64,6 +64,8 @@ namespace IntegrationTests.GameTests.Abstractions
 
             await gameAsserter.CheckRuntime();
 
+            await Task.Delay(2500);
+
             gameAsserter.CheckEnd();
         }
 
