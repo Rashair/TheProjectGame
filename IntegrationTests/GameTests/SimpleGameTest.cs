@@ -32,7 +32,7 @@ namespace IntegrationTests.GameTests
             TestConf.CheckInterval = 4000;
         }
 
-        [Fact(Timeout = 4 * 60 * 1000)]
+        [Fact(Timeout = 8 * 60 * 1000)]
         public override async void RunGameWithConfiguration()
         {
             await RunGame();

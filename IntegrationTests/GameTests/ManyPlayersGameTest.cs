@@ -33,7 +33,7 @@ namespace IntegrationTests.GameTests
             TestConf.PositionNotChangedThreshold = 5;
         }
 
-        [Fact(Timeout = 12 * 60 * 1000)]
+        [Fact(Timeout = 15 * 60 * 1000)]
         public override async void RunGameWithConfiguration()
         {
             await RunGame();
