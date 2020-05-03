@@ -32,8 +32,10 @@ namespace GameMaster.Tests
         public void TestGeneratePieceXTimes(int x)
         {
             // Arrange
-            var conf = new MockGameConfiguration();
-            conf.NumberOfPiecesOnBoard = 0;
+            var conf = new MockGameConfiguration
+            {
+                NumberOfPiecesOnBoard = 0
+            };
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
             var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
@@ -216,9 +218,11 @@ namespace GameMaster.Tests
                 players.Add(j, new GMPlayer(j, conf, client, Team.Blue, logger));
             }
             gameMaster.Invoke("InitGame");
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
+            var initializer = new GMInitializer(conf, board);
 
             // Act
-            gameMaster.Invoke("InitializePlayersPoisitions");
+            initializer.InitializePlayersPoisitions(players);
 
             // Assert
             Assert.All(players.Values, p =>

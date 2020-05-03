@@ -8,8 +8,6 @@ using Serilog;
 using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
-using Shared.Models;
-using Shared.Payloads;
 using Shared.Payloads.GMPayloads;
 
 namespace GameMaster.Models
