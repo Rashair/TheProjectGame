@@ -1,7 +1,8 @@
 ﻿using GameMaster.Models;
+using IntegrationTests.GameTests.Abstractions;
 using Xunit;
 
-namespace IntegrationTests
+namespace IntegrationTests.GameTests
 {
     public class ManyShamsGameTest : GameTest
     {
@@ -28,11 +29,10 @@ namespace IntegrationTests
                 ShamPieceProbability = 0.75f,
             };
 
-            PositionNotChangedCount = 4;
-            PositionsCheckTime = 6000;
+            TestConf.CheckInterval = 6000;
         }
 
-        [Fact(Timeout = 8 * 60 * 1000)]
+        [Fact(Timeout = 15 * 60 * 1000)]
         public override async void RunGameWithConfiguration()
         {
             await RunGame();

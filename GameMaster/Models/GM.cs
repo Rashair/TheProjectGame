@@ -41,6 +41,8 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; private set; }
 
+        public bool WasGameFinished { get; private set; }
+
         public int SecondGoalAreaStart { get => conf.Height - conf.GoalAreaHeight; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
@@ -76,7 +78,8 @@ namespace GameMaster.Models
             }
 
             players.TryGetValue(message.PlayerId, out GMPlayer player);
-            logger.Information($"|{message.MessageId} | {message.Payload} | | {player?.Team}");
+           
+            // logger.Information($"|{message.MessageId} | {message.Payload} | | {player?.Team}");
             switch (message.MessageId)
             {
                 case PlayerMessageId.CheckPiece:
@@ -511,11 +514,11 @@ namespace GameMaster.Models
                 piece = new NormalPiece();
             }
 
-            (int y, int x) = GenerateCoordinatesInTaskArea(rand);
+            (int y, int x) = GenerateCoordinatesInTaskArea();
             board[y][x].Put(piece);
         }
 
-        private (int y, int x) GenerateCoordinatesInTaskArea(Random rand)
+        private (int y, int x) GenerateCoordinatesInTaskArea()
         {
             int taskAreaStart = conf.GoalAreaHeight;
             int yCoord = rand.Next(taskAreaStart, SecondGoalAreaStart);
@@ -593,6 +596,7 @@ namespace GameMaster.Models
             }
             await socketClient.SendToAllAsync(messages, cancellationToken);
             logger.Information("Sent endGame to all.");
+            WasGameFinished = true;
 
             await Task.Delay(4000);
             lifetime.StopApplication();

@@ -15,8 +15,9 @@ namespace GameMaster.Models.Fields
         {
             if (this.ContainsPieces())
             {
-                player.Holding = Pieces.ElementAt(0);
-                Pieces.Remove(Pieces.ElementAt(0));
+                var piece = Pieces.First();
+                player.Holding = piece;
+                Pieces.Remove(piece);
                 return true;
             }
 

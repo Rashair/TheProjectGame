@@ -1,7 +1,8 @@
 ﻿using GameMaster.Models;
+using IntegrationTests.GameTests.Abstractions;
 using Xunit;
 
-namespace IntegrationTests
+namespace IntegrationTests.GameTests
 {
     public class ManyPlayersGameTest : GameTest
     {
@@ -19,20 +20,20 @@ namespace IntegrationTests
                 PickPenalty = 100,
                 DiscoverPenalty = 700,
                 ResponsePenalty = 1500,
-                Height = 16,
-                Width = 12,
-                GoalAreaHeight = 4,
-                NumberOfGoals = 5,
-                NumberOfPiecesOnBoard = 16,
-                NumberOfPlayersPerTeam = 12,
-                ShamPieceProbability = 0.3f,
+                Height = 20,
+                Width = 18,
+                GoalAreaHeight = 3,
+                NumberOfGoals = 6,
+                NumberOfPiecesOnBoard = 20,
+                NumberOfPlayersPerTeam = 16,
+                ShamPieceProbability = 0.2f,
             };
 
-            PositionNotChangedCount = 5;
-            PositionsCheckTime = 6000;
+            TestConf.CheckInterval = 6000;
+            TestConf.PositionNotChangedThreshold = 5;
         }
 
-        [Fact(Timeout = 10 * 60 * 1000)]
+        [Fact(Timeout = 15 * 60 * 1000)]
         public override async void RunGameWithConfiguration()
         {
             await RunGame();
