@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 using GameMaster.Models.Fields;
 using Shared.Enums;
@@ -7,75 +9,41 @@ namespace GameMaster.Models
 {
     public class GMInitializer
     {
-        private readonly GM gm;
+        private readonly GameConfiguration conf;
+        private readonly AbstractField[][] board;
+        private readonly Random rand;
 
-        public GMInitializer(GM gm)
+        public int SecondGoalAreaStart { get => conf.Height - conf.GoalAreaHeight; }
+
+        public GMInitializer(GameConfiguration conf, AbstractField[][] board)
         {
-            this.gm = gm;
-        }
-
-        public void InitializePlayersPoisitions()
-        {
-            var rand = new Random();
-            foreach (var p in gm.Players)
-            {
-                GMPlayer player = p.Value;
-                (int y1, int y2) = GetBoundaries(player.Team);
-                int y = rand.Next(y1, y2);
-                int x = rand.Next(0, gm.Conf.Width);
-
-                AbstractField pos = gm.Board[y][x];
-                while (!pos.MoveHere(player))
-                {
-                    ++x;
-                    if (x == gm.Conf.Width)
-                    {
-                        x = 0;
-                        ++y;
-                        if (y == y2)
-                        {
-                            y = y1;
-                        }
-                    }
-
-                    pos = gm.Board[y][x];
-                }
-            }
-        }
-
-        private (int y1, int y2) GetBoundaries(Team team)
-        {
-            if (team == Team.Red)
-            {
-                return (0, gm.SecondGoalAreaStart);
-            }
-
-            return (gm.Conf.GoalAreaHeight, gm.Conf.Height);
+            this.conf = conf;
+            this.board = board;
+            this.rand = new Random();
         }
 
         public void InitializeBoard()
         {
-            gm.Board = new AbstractField[gm.Conf.Height][];
-            for (int i = 0; i < gm.Board.Length; ++i)
+            for (int i = 0; i < board.Length; ++i)
             {
-                gm.Board[i] = new AbstractField[gm.Conf.Width];
+                board[i] = new AbstractField[conf.Width];
             }
 
-            GenerateGoalFields(0, gm.Conf.GoalAreaHeight);
+            GenerateGoalFields(0, conf.GoalAreaHeight);
             AbstractField NonGoalFieldGenerator(int y, int x) => new NonGoalField(y, x);
-            for (int rowIt = 0; rowIt < gm.Conf.GoalAreaHeight; ++rowIt)
+            for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
             {
                 FillBoardRow(rowIt, NonGoalFieldGenerator);
             }
 
             AbstractField TaskFieldGenerator(int y, int x) => new TaskField(y, x);
-            for (int rowIt = gm.Conf.GoalAreaHeight; rowIt < gm.SecondGoalAreaStart; ++rowIt)
+            for (int rowIt = conf.GoalAreaHeight; rowIt < SecondGoalAreaStart; ++rowIt)
             {
                 FillBoardRow(rowIt, TaskFieldGenerator);
             }
 
-            GenerateGoalFields(gm.SecondGoalAreaStart, gm.Conf.Height);
-            for (int rowIt = gm.SecondGoalAreaStart; rowIt < gm.Conf.Height; ++rowIt)
+            GenerateGoalFields(SecondGoalAreaStart, conf.Height);
+            for (int rowIt = SecondGoalAreaStart; rowIt < conf.Height; ++rowIt)
             {
                 FillBoardRow(rowIt, NonGoalFieldGenerator);
             }
@@ -83,14 +51,14 @@ namespace GameMaster.Models
 
         private void GenerateGoalFields(int beg, int end)
         {
-            for (int i = 0; i < gm.Conf.NumberOfGoals; ++i)
+            for (int i = 0; i < conf.NumberOfGoals; ++i)
             {
-                int row = gm.Rand.Next(beg, end);
-                int col = gm.Rand.Next(gm.Conf.Width);
-                while (gm.Board[row][col] != null)
+                int row = rand.Next(beg, end);
+                int col = rand.Next(conf.Width);
+                while (board[row][col] != null)
                 {
                     ++col;
-                    if (col == gm.Conf.Width)
+                    if (col == conf.Width)
                     {
                         col = 0;
                         ++row;
@@ -100,28 +68,66 @@ namespace GameMaster.Models
                         }
                     }
                 }
-                gm.Board[row][col] = new GoalField(row, col);
+                board[row][col] = new GoalField(row, col);
             }
         }
 
         private void FillBoardRow(int row, Func<int, int, AbstractField> getField)
         {
-            for (int col = 0; col < gm.Board[row].Length; ++col)
+            for (int col = 0; col < board[row].Length; ++col)
             {
                 // Goal-field generation
-                if (gm.Board[row][col] == null)
+                if (board[row][col] == null)
                 {
-                    gm.Board[row][col] = getField(row, col);
+                    board[row][col] = getField(row, col);
                 }
             }
         }
 
-        public void GenerateAllPieces()
+        public void GenerateAllPieces(Action generator)
         {
-            for (int i = 0; i < gm.Conf.NumberOfPiecesOnBoard; ++i)
+            for (int i = 0; i < conf.NumberOfPiecesOnBoard; ++i)
             {
-                gm.GeneratePiece();
+                generator();
             }
+        }
+
+        public void InitializePlayersPoisitions(IEnumerable<KeyValuePair<int, GMPlayer>> players)
+        {
+            foreach (var p in players)
+            {
+                GMPlayer player = p.Value;
+                (int y1, int y2) = GetBoundaries(player.Team);
+                int y = rand.Next(y1, y2);
+                int x = rand.Next(0, conf.Width);
+
+                AbstractField pos = board[y][x];
+                while (!pos.MoveHere(player))
+                {
+                    ++x;
+                    if (x == conf.Width)
+                    {
+                        x = 0;
+                        ++y;
+                        if (y == y2)
+                        {
+                            y = y1;
+                        }
+                    }
+
+                    pos = board[y][x];
+                }
+            }
+        }
+
+        private (int y1, int y2) GetBoundaries(Team team)
+        {
+            if (team == Team.Red)
+            {
+                return (0, SecondGoalAreaStart);
+            }
+
+            return (conf.GoalAreaHeight, conf.Height);
         }
     }
 }

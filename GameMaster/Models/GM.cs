@@ -27,26 +27,22 @@ namespace GameMaster.Models
         private readonly IApplicationLifetime lifetime;
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
-        private readonly GMInitializer gmInitializer;
-
         private readonly HashSet<(int recipient, int sender)> legalKnowledgeReplies;
+        private readonly Dictionary<int, GMPlayer> players;
+        private readonly GameConfiguration conf;
+        private readonly Random rand;
+        private AbstractField[][] board;
 
         private int redTeamPoints;
         private int blueTeamPoints;
-
-        public readonly Dictionary<int, GMPlayer> Players;
-        public readonly GameConfiguration Conf;
-        public readonly Random Rand;
-
-        public AbstractField[][] Board { get; set; }
-
+    
         public bool WasGameInitialized { get; private set; }
 
         public bool WasGameStarted { get; private set; }
 
         public bool WasGameFinished { get; private set; }
 
-        public int SecondGoalAreaStart { get => Conf.Height - Conf.GoalAreaHeight; }
+        public int SecondGoalAreaStart { get => conf.Height - conf.GoalAreaHeight; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
             BufferBlock<PlayerMessage> queue, ISocketClient<PlayerMessage, GMMessage> socketClient,
@@ -55,14 +51,137 @@ namespace GameMaster.Models
             this.log = log;
             this.logger = log.ForContext<GM>();
             this.lifetime = lifetime;
-            this.Conf = conf;
+            this.conf = conf;
             this.queue = queue;
             this.socketClient = socketClient;
 
-            Players = new Dictionary<int, GMPlayer>();
+            players = new Dictionary<int, GMPlayer>();
             legalKnowledgeReplies = new HashSet<(int, int)>();
-            Rand = new Random();
-            gmInitializer = new GMInitializer(this);
+            rand = new Random();
+        }
+
+        internal void InitGame()
+        {
+            board = new AbstractField[conf.Height][];
+            var gmInitializer = new GMInitializer(conf, board);
+            gmInitializer.InitializeBoard();
+            gmInitializer.GenerateAllPieces(GeneratePiece);
+            WasGameInitialized = true;
+            logger.Information("Game was initialized.");
+        }
+
+        internal async Task StartGame(CancellationToken cancellationToken)
+        {
+            var gmInitializer = new GMInitializer(conf, board);
+            gmInitializer.InitializePlayersPoisitions(players);
+
+            int[] teamBlueIds = players.Where(p => p.Value.Team == Team.Blue).Select(p => p.Key).ToArray();
+            int[] teamRedIds = players.Where(p => p.Value.Team == Team.Red).Select(p => p.Key).ToArray();
+            List<Task> sendMessagesTasks = new List<Task>(players.Count);
+
+            // Watch, you can't do anything async in foreach loop
+            foreach (var p in players)
+            {
+                GMPlayer player = p.Value;
+                StartGamePayload payload = null;
+                if (player.Team == Team.Blue)
+                {
+                    payload = new StartGamePayload
+                    {
+                        AlliesIds = teamBlueIds,
+                        LeaderId = teamBlueIds.First(),
+                        EnemiesIds = teamRedIds,
+                        TeamId = Team.Blue,
+                        NumberOfPlayers = new NumberOfPlayers
+                        {
+                            Allies = teamBlueIds.Length,
+                            Enemies = teamRedIds.Length,
+                        },
+                    };
+                }
+                else
+                {
+                    payload = new StartGamePayload
+                    {
+                        AlliesIds = teamRedIds,
+                        LeaderId = teamRedIds.First(),
+                        EnemiesIds = teamBlueIds,
+                        TeamId = Team.Red,
+                        NumberOfPlayers = new NumberOfPlayers
+                        {
+                            Allies = teamBlueIds.Length,
+                            Enemies = teamRedIds.Length,
+                        },
+                    };
+                }
+                payload.PlayerId = p.Key;
+                payload.BoardSize = new BoardSize
+                {
+                    Y = conf.Height,
+                    X = conf.Width,
+                };
+                payload.GoalAreaSize = conf.GoalAreaHeight;
+                payload.NumberOfPieces = conf.NumberOfPiecesOnBoard;
+                payload.NumberOfGoals = conf.NumberOfGoals;
+                payload.Penalties = new Penalties
+                {
+                    Move = conf.MovePenalty,
+                    Ask = conf.AskPenalty,
+                    Response = conf.ResponsePenalty,
+                    Discover = conf.DiscoverPenalty,
+                    PickPiece = conf.PickPenalty,
+                    CheckPiece = conf.CheckPenalty,
+                    DestroyPiece = conf.DestroyPenalty,
+                    PutPiece = conf.PutPenalty,
+                };
+                payload.ShamPieceProbability = conf.ShamPieceProbability;
+                payload.Position = new Position
+                {
+                    Y = player[0],
+                    X = player[1],
+                };
+
+                var message = new GMMessage
+                {
+                    Id = GMMessageId.StartGame,
+                    PlayerId = p.Key,
+                    Payload = payload.Serialize(),
+                };
+
+                sendMessagesTasks.Add(socketClient.SendAsync(message, cancellationToken));
+            }
+
+            await Task.WhenAll(sendMessagesTasks);
+            WasGameStarted = true;
+        }
+
+        internal async Task Work(CancellationToken cancellationToken)
+        {
+            TimeSpan cancellationTimespan = TimeSpan.FromMinutes(2);
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    PlayerMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
+                    await AcceptMessage(message, cancellationToken);
+                    if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
+                    {
+                        await EndGame(cancellationToken);
+                        break;
+                    }
+                }
+                catch (TimeoutException e)
+                {
+                    logger.Warning($"Message retrieve was cancelled: {e.Message}");
+
+                    if (!socketClient.IsOpen)
+                    {
+                        logger.Error("No open connection. Exiting.");
+                        lifetime.StopApplication();
+                        break;
+                    }
+                }
+            }
         }
 
         public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
@@ -81,7 +200,7 @@ namespace GameMaster.Models
                 return;
             }
 
-            Players.TryGetValue(message.PlayerId, out GMPlayer player);
+            players.TryGetValue(message.PlayerId, out GMPlayer player);
            
             // logger.Information($"|{message.MessageId} | {message.Payload} | | {player?.Team}");
             switch (message.MessageId)
@@ -123,8 +242,8 @@ namespace GameMaster.Models
                     };
                     await socketClient.SendAsync(answerJoin, cancellationToken);
 
-                    if (GetPlayersCount(Team.Red) == Conf.NumberOfPlayersPerTeam &&
-                       GetPlayersCount(Team.Blue) == Conf.NumberOfPlayersPerTeam)
+                    if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
+                       GetPlayersCount(Team.Blue) == conf.NumberOfPlayersPerTeam)
                     {
                         await StartGame(cancellationToken);
                         WasGameStarted = true;
@@ -140,27 +259,27 @@ namespace GameMaster.Models
                     switch (payloadMove.Direction)
                     {
                         case Direction.N:
-                            if (pos[0] + 1 < Conf.Height && (player.Team == Team.Blue || pos[0] + 1 < SecondGoalAreaStart))
+                            if (pos[0] + 1 < conf.Height && (player.Team == Team.Blue || pos[0] + 1 < SecondGoalAreaStart))
                             {
-                                field = Board[pos[0] + 1][pos[1]];
+                                field = board[pos[0] + 1][pos[1]];
                             }
                             break;
                         case Direction.S:
-                            if (pos[0] - 1 >= 0 && (player.Team == Team.Red || pos[0] - 1 >= Conf.GoalAreaHeight))
+                            if (pos[0] - 1 >= 0 && (player.Team == Team.Red || pos[0] - 1 >= conf.GoalAreaHeight))
                             {
-                                field = Board[pos[0] - 1][pos[1]];
+                                field = board[pos[0] - 1][pos[1]];
                             }
                             break;
                         case Direction.E:
-                            if (pos[1] + 1 < Conf.Width)
+                            if (pos[1] + 1 < conf.Width)
                             {
-                                field = Board[pos[0]][pos[1] + 1];
+                                field = board[pos[0]][pos[1] + 1];
                             }
                             break;
                         case Direction.W:
                             if (pos[1] - 1 >= 0)
                             {
-                                field = Board[pos[0]][pos[1] - 1];
+                                field = board[pos[0]][pos[1] - 1];
                             }
                             break;
                     }
@@ -177,7 +296,7 @@ namespace GameMaster.Models
                     {
                         int y = player.GetPosition()[0];
                         string teamStr;
-                        if (y < Conf.GoalAreaHeight)
+                        if (y < conf.GoalAreaHeight)
                         {
                             teamStr = "RED";
                             redTeamPoints++;
@@ -201,140 +320,19 @@ namespace GameMaster.Models
 
         private bool TryToAddPlayer(int key, Team team)
         {
-            if (GetPlayersCount(team) == Conf.NumberOfPlayersPerTeam)
+            if (GetPlayersCount(team) == conf.NumberOfPlayersPerTeam)
             {
                 return false;
             }
 
             // TODO: isLeader flag!
-            var player = new GMPlayer(key, Conf, socketClient, team, log);
-            return Players.TryAdd(key, player);
+            var player = new GMPlayer(key, conf, socketClient, team, log);
+            return players.TryAdd(key, player);
         }
 
         private int GetPlayersCount(Team team)
         {
-            return Players.Where(pair => pair.Value.Team == team).Count();
-        }
-
-        internal void InitGame()
-        {
-            gmInitializer.InitializeBoard();
-            gmInitializer.GenerateAllPieces();
-            WasGameInitialized = true;
-            logger.Information("Game was initialized.");
-        }
-
-        internal async Task StartGame(CancellationToken cancellationToken)
-        {
-            gmInitializer.InitializePlayersPoisitions();
-
-            int[] teamBlueIds = Players.Where(p => p.Value.Team == Team.Blue).Select(p => p.Key).ToArray();
-            int[] teamRedIds = Players.Where(p => p.Value.Team == Team.Red).Select(p => p.Key).ToArray();
-            List<Task> sendMessagesTasks = new List<Task>(Players.Count);
-
-            // Watch, you can't do anything async in foreach loop
-            foreach (var p in Players)
-            {
-                GMPlayer player = p.Value;
-                StartGamePayload payload = null;
-                if (player.Team == Team.Blue)
-                {
-                    payload = new StartGamePayload
-                    {
-                        AlliesIds = teamBlueIds,
-                        LeaderId = teamBlueIds.First(),
-                        EnemiesIds = teamRedIds,
-                        TeamId = Team.Blue,
-                        NumberOfPlayers = new NumberOfPlayers
-                        {
-                            Allies = teamBlueIds.Length,
-                            Enemies = teamRedIds.Length,
-                        },
-                    };
-                }
-                else
-                {
-                    payload = new StartGamePayload
-                    {
-                        AlliesIds = teamRedIds,
-                        LeaderId = teamRedIds.First(),
-                        EnemiesIds = teamBlueIds,
-                        TeamId = Team.Red,
-                        NumberOfPlayers = new NumberOfPlayers
-                        {
-                            Allies = teamBlueIds.Length,
-                            Enemies = teamRedIds.Length,
-                        },
-                    };
-                }
-                payload.PlayerId = p.Key;
-                payload.BoardSize = new BoardSize
-                {
-                    Y = Conf.Height,
-                    X = Conf.Width,
-                };
-                payload.GoalAreaSize = Conf.GoalAreaHeight;
-                payload.NumberOfPieces = Conf.NumberOfPiecesOnBoard;
-                payload.NumberOfGoals = Conf.NumberOfGoals;
-                payload.Penalties = new Penalties
-                {
-                    Move = Conf.MovePenalty,
-                    Ask = Conf.AskPenalty,
-                    Response = Conf.ResponsePenalty,
-                    Discover = Conf.DiscoverPenalty,
-                    PickPiece = Conf.PickPenalty,
-                    CheckPiece = Conf.CheckPenalty,
-                    DestroyPiece = Conf.DestroyPenalty,
-                    PutPiece = Conf.PutPenalty,
-                };
-                payload.ShamPieceProbability = Conf.ShamPieceProbability;
-                payload.Position = new Position
-                {
-                    Y = player[0],
-                    X = player[1],
-                };
-
-                var message = new GMMessage
-                {
-                    Id = GMMessageId.StartGame,
-                    PlayerId = p.Key,
-                    Payload = payload.Serialize(),
-                };
-
-                sendMessagesTasks.Add(socketClient.SendAsync(message, cancellationToken));
-            }
-
-            await Task.WhenAll(sendMessagesTasks);
-            WasGameStarted = true;
-        }
-
-        internal async Task Work(CancellationToken cancellationToken)
-        {
-            TimeSpan cancellationTimespan = TimeSpan.FromMinutes(2);
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                try
-                {
-                    PlayerMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
-                    await AcceptMessage(message, cancellationToken);
-                    if (Conf.NumberOfGoals == blueTeamPoints || Conf.NumberOfGoals == redTeamPoints)
-                    {
-                        await EndGame(cancellationToken);
-                        break;
-                    }
-                }
-                catch (TimeoutException e)
-                {
-                    logger.Warning($"Message retrieve was cancelled: {e.Message}");
-
-                    if (!socketClient.IsOpen)
-                    {
-                        logger.Error("No open connection. Exiting.");
-                        lifetime.StopApplication();
-                        break;
-                    }
-                }
-            }
+            return players.Where(pair => pair.Value.Team == team).Count();
         }
 
         internal Dictionary<Direction, int> Discover(AbstractField field)
@@ -346,17 +344,17 @@ namespace GameMaster.Models
             for (int i = 0; i < distances.Length; i++)
             {
                 var (dir, y, x) = neighbourCoordinates[i];
-                if (y >= 0 && y < Conf.Height && x >= 0 && x < Conf.Width)
+                if (y >= 0 && y < conf.Height && x >= 0 && x < conf.Width)
                     distances[i] = int.MaxValue;
                 else
                     distances[i] = -1;
             }
 
-            for (int i = Conf.GoalAreaHeight; i < SecondGoalAreaStart; i++)
+            for (int i = conf.GoalAreaHeight; i < SecondGoalAreaStart; i++)
             {
-                for (int j = 0; j < Board[i].Length; j++)
+                for (int j = 0; j < board[i].Length; j++)
                 {
-                    if (Board[i][j].ContainsPieces() && Board[i][j].CanPick())
+                    if (board[i][j].ContainsPieces() && board[i][j].CanPick())
                     {
                         for (int k = 0; k < distances.Length; k++)
                         {
@@ -380,11 +378,11 @@ namespace GameMaster.Models
         {
             int[] center = field.GetPosition();
             int distance = int.MaxValue;
-            for (int i = Conf.GoalAreaHeight; i < SecondGoalAreaStart; i++)
+            for (int i = conf.GoalAreaHeight; i < SecondGoalAreaStart; i++)
             {
-                for (int j = 0; j < Board[i].Length; j++)
+                for (int j = 0; j < board[i].Length; j++)
                 {
-                    if (Board[i][j].ContainsPieces() && Board[i][j].CanPick())
+                    if (board[i][j].ContainsPieces() && board[i][j].CanPick())
                     {
                             int manhattanDistance = Math.Abs(center[0] - i) + Math.Abs(center[1] - j);
                             if (manhattanDistance < distance)
@@ -397,7 +395,7 @@ namespace GameMaster.Models
 
         public void GeneratePiece()
         {
-            bool isSham = Rand.Next(0, 101) < Conf.ShamPieceProbability * 100;
+            bool isSham = rand.Next(0, 101) < conf.ShamPieceProbability * 100;
             AbstractPiece piece;
             if (isSham)
             {
@@ -409,14 +407,14 @@ namespace GameMaster.Models
             }
 
             (int y, int x) = GenerateCoordinatesInTaskArea();
-            Board[y][x].Put(piece);
+            board[y][x].Put(piece);
         }
 
         private (int y, int x) GenerateCoordinatesInTaskArea()
         {
-            int taskAreaStart = Conf.GoalAreaHeight;
-            int yCoord = Rand.Next(taskAreaStart, SecondGoalAreaStart);
-            int xCoord = Rand.Next(0, Conf.Width);
+            int taskAreaStart = conf.GoalAreaHeight;
+            int yCoord = rand.Next(taskAreaStart, SecondGoalAreaStart);
+            int xCoord = rand.Next(0, conf.Width);
 
             return (yCoord, xCoord);
         }
@@ -432,8 +430,8 @@ namespace GameMaster.Models
             BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
             {
                 AskingId = playerMessage.PlayerId,
-                Leader = Players[playerMessage.PlayerId].IsLeader,
-                TeamId = Players[playerMessage.PlayerId].Team,
+                Leader = players[playerMessage.PlayerId].IsLeader,
+                TeamId = players[playerMessage.PlayerId].Team,
             };
             GMMessage gmMessage = new GMMessage()
             {
@@ -484,7 +482,7 @@ namespace GameMaster.Models
             };
             
             List<GMMessage> messages = new List<GMMessage>();
-            foreach (var p in Players)
+            foreach (var p in players)
             {
                messages.Add(new GMMessage(GMMessageId.EndGame, p.Key, payload));
             }
