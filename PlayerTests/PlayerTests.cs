@@ -21,13 +21,7 @@ namespace Player.Tests
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
         private readonly int playerId = 1;
         private PlayerMessage lastSended;
-        private Position playerPosition = new Position { X = 1, Y = 1 };
         private BoardSize playerBoardSize = new BoardSize { X = 3, Y = 3 };
-        private int randomDistance1 = 7;
-        private int randomDistance2 = 0;
-        private Position randomPosition0 = new Position { X = 1, Y = 1 };
-        private Position randomPosition1 = new Position { X = 2, Y = 2 };
-        private Position randomPosition2 = new Position { X = 2, Y = 1 };
 
         private ISocketClient<GMMessage, PlayerMessage> GenerateSocketClient()
         {
@@ -326,7 +320,7 @@ namespace Player.Tests
                 new TcpSocketClient<GMMessage, PlayerMessage>(logger), logger);
 
             GMMessage startMessage = CreateStartMessage();
-            inputBuffer.Post<GMMessage>(startMessage); 
+            inputBuffer.Post<GMMessage>(startMessage);
             await player.AcceptMessage(CancellationToken.None);
 
             var endGamePayload = new EndGamePayload()
@@ -340,10 +334,8 @@ namespace Player.Tests
             await player.AcceptMessage(CancellationToken.None);
 
             // Assert
-            Team expectedWinner = Team.Red;
             var realWinner = player.GetValue<Player.Models.Player, Team>("winner");
-
-            Assert.Equal(expectedWinner, realWinner);
+            Assert.Equal(Team.Red, realWinner);
         }
 
         [Fact]
@@ -372,7 +364,7 @@ namespace Player.Tests
             await player.AcceptMessage(CancellationToken.None);
 
             // Assert
-            Assert.True(lastSended.MessageId == PlayerMessageId.GiveInfo);
+            Assert.Equal(lastSended.MessageId, PlayerMessageId.GiveInfo);
         }
 
         [Fact]
@@ -396,10 +388,8 @@ namespace Player.Tests
             await player.AcceptMessage(CancellationToken.None);
 
             // Assert
-            bool expected = false;
-            bool actual = player.GetValue<Player.Models.Player, bool>("working");
-
-            Assert.Equal(expected, actual);
+            bool isNowWorking = player.GetValue<Player.Models.Player, bool>("working");
+            Assert.Equal(false, isNowWorking);
         }
 
         [Fact]
@@ -426,10 +416,8 @@ namespace Player.Tests
             await player.AcceptMessage(CancellationToken.None);
 
             // Assert
-            GoalInfo expectedGoalInfo = GoalInfo.DiscoveredGoal;
-            GoalInfo actualGoalInfo = player.Board[playerPosition.Y, playerPosition.X].GoalInfo;
-
-            Assert.Equal(expectedGoalInfo, actualGoalInfo);
+            GoalInfo actualGoalInfo = player.Board[player.Position.y, player.Position.x].GoalInfo;
+            Assert.Equal(GoalInfo.DiscoveredGoal, actualGoalInfo);
         }
 
         [Fact]
@@ -461,7 +449,6 @@ namespace Player.Tests
 
             // Assert
             bool hasPiece = player.HasPiece;
-
             Assert.False(hasPiece);
         }
 
@@ -478,6 +465,12 @@ namespace Player.Tests
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
+            int randomDistance1 = 7;
+            int randomDistance2 = 0;
+            Position randomPosition1 = new Position { X = 1, Y = 1 };
+            Position randomPosition2 = new Position { X = 2, Y = 2 };
+            Position randomPosition3 = new Position { X = 2, Y = 1 };
+
             int[,] distBoard = new int[playerBoardSize.Y, playerBoardSize.X];
             GoalInfo[,] infoBoard = new GoalInfo[playerBoardSize.Y, playerBoardSize.X];
             for (int i = 0; i < playerBoardSize.Y; i++)
@@ -488,8 +481,8 @@ namespace Player.Tests
                     infoBoard[i, j] = GoalInfo.IDK;
                 }
             }
-            distBoard[randomPosition1.Y, randomPosition1.X] = randomDistance2;
-            infoBoard[randomPosition2.Y, randomPosition2.X] = GoalInfo.DiscoveredGoal;
+            distBoard[randomPosition2.Y, randomPosition2.X] = randomDistance2;
+            infoBoard[randomPosition3.Y, randomPosition3.X] = GoalInfo.DiscoveredGoal;
             GiveInfoForwardedPayload payload = new GiveInfoForwardedPayload()
             {
                 Distances = distBoard,
@@ -503,16 +496,14 @@ namespace Player.Tests
             await player.AcceptMessage(CancellationToken.None);
 
             // Assert
-            GoalInfo expectedGoalInfo = GoalInfo.DiscoveredGoal;
-            GoalInfo actualGoalInfo = player.Board[randomPosition2.Y, randomPosition2.X].GoalInfo;
-            int expectedDist1 = randomDistance2;
+            GoalInfo actualGoalInfo = player.Board[randomPosition3.Y, randomPosition3.X].GoalInfo;
+            Assert.Equal(GoalInfo.DiscoveredGoal, actualGoalInfo); 
+            
             int actualDist1 = player.Board[randomPosition1.Y, randomPosition1.X].DistToPiece;
-            int expectedDist2 = randomDistance1;
-            int actualDist2 = player.Board[randomPosition0.Y, randomPosition0.X].DistToPiece;
+            Assert.Equal(randomDistance1, actualDist1);
 
-            Assert.Equal(expectedGoalInfo, actualGoalInfo);
-            Assert.Equal(expectedDist1, actualDist1);
-            Assert.Equal(expectedDist2, actualDist2);
+            int actualDist2 = player.Board[randomPosition2.Y, randomPosition2.X].DistToPiece;
+            Assert.Equal(randomDistance2, actualDist2);
         }
 
         [Fact]
@@ -537,7 +528,6 @@ namespace Player.Tests
             // Assert
             int expectedPenaltyTime = player.PenaltiesTimes.PutPiece;
             int actualPenaltyTime = player.GetValue<Player.Models.Player, int>("penaltyTime");
-
             Assert.Equal(expectedPenaltyTime, actualPenaltyTime);
         }
 
@@ -563,7 +553,6 @@ namespace Player.Tests
             // Assert
             int expectedPenaltyTime = player.PenaltiesTimes.PickPiece;
             int actualPenaltyTime = player.GetValue<Player.Models.Player, int>("penaltyTime");
-
             Assert.Equal(expectedPenaltyTime, actualPenaltyTime);
         }
 
@@ -583,7 +572,7 @@ namespace Player.Tests
                 NumberOfGoals = 2,
                 Penalties = new Penalties(),
                 ShamPieceProbability = 0.5f,
-                Position = playerPosition,
+                Position = new Position { X = 1, Y = 1 },
             };
 
             return new GMMessage(GMMessageId.StartGame, playerId, payloadStart);
@@ -606,7 +595,7 @@ namespace Player.Tests
             await player.JoinTheGame(CancellationToken.None);
 
             // Assert
-            Assert.True(lastSended.MessageId == PlayerMessageId.JoinTheGame);
+            Assert.Equal(lastSended.MessageId, PlayerMessageId.JoinTheGame);
         }
 
         [Fact]
@@ -626,7 +615,7 @@ namespace Player.Tests
             await player.Move(Direction.N, CancellationToken.None);
 
             // Assert
-            Assert.True(lastSended.MessageId == PlayerMessageId.Move);
+            Assert.Equal(lastSended.MessageId, PlayerMessageId.Move);
         }
 
         [Fact]
@@ -646,7 +635,7 @@ namespace Player.Tests
             await player.Put(CancellationToken.None);
 
             // Assert
-            Assert.True(lastSended.MessageId == PlayerMessageId.Put);
+            Assert.Equal(lastSended.MessageId, PlayerMessageId.Put);
         }
 
         [Fact]
@@ -666,7 +655,7 @@ namespace Player.Tests
             await player.BegForInfo(CancellationToken.None);
 
             // Assert
-            Assert.True(lastSended.MessageId == PlayerMessageId.BegForInfo);
+            Assert.Equal(lastSended.MessageId, PlayerMessageId.BegForInfo);
         }
 
         [Fact]
@@ -696,7 +685,7 @@ namespace Player.Tests
             await player.GiveInfo(CancellationToken.None);
 
             // Assert
-            Assert.True(lastSended.MessageId == PlayerMessageId.GiveInfo);
+            Assert.Equal(lastSended.MessageId, PlayerMessageId.GiveInfo);
         }
 
         [Fact]
@@ -716,7 +705,7 @@ namespace Player.Tests
             await player.CheckPiece(CancellationToken.None);
 
             // Assert
-            Assert.True(lastSended.MessageId == PlayerMessageId.CheckPiece);
+            Assert.Equal(lastSended.MessageId, PlayerMessageId.CheckPiece);
         }
 
         [Fact]
@@ -736,7 +725,7 @@ namespace Player.Tests
             await player.Discover(CancellationToken.None);
 
             // Assert
-            Assert.True(lastSended.MessageId == PlayerMessageId.Discover);
+            Assert.Equal(lastSended.MessageId, PlayerMessageId.Discover);
         }
 
         [Fact]
@@ -756,7 +745,7 @@ namespace Player.Tests
             await player.DestroyPiece(CancellationToken.None);
 
             // Assert
-            Assert.True(lastSended.MessageId == PlayerMessageId.PieceDestruction);
+            Assert.Equal(lastSended.MessageId, PlayerMessageId.PieceDestruction);
         }
 
         [Fact]
@@ -776,7 +765,7 @@ namespace Player.Tests
             await player.Pick(CancellationToken.None);
 
             // Assert
-            Assert.True(lastSended.MessageId == PlayerMessageId.Pick);
+            Assert.Equal(lastSended.MessageId, PlayerMessageId.Pick);
         }
     }
 }
