@@ -1,38 +1,36 @@
 ﻿using GameMaster.Models;
+using IntegrationTests.GameTests.Abstractions;
 using Xunit;
 
-namespace IntegrationTests
+namespace IntegrationTests.GameTests
 {
-    public class SimpleGameTest : GameTest
+    public class NarrowBoardGameTest : GameTest
     {
-        public SimpleGameTest()
+        public NarrowBoardGameTest()
         {
             Conf = new GameConfiguration
             {
                 CsIP = "127.0.0.1",
-                CsPort = 5001,
+                CsPort = 5004,
                 MovePenalty = 200,
                 AskPenalty = 10000,
-                PutPenalty = 500,
-                CheckPenalty = 750,
+                PutPenalty = 400,
+                CheckPenalty = 500,
                 DestroyPenalty = 100,
                 PickPenalty = 100,
                 DiscoverPenalty = 3000,
                 ResponsePenalty = 5000,
-                Height = 12,
-                Width = 4,
-                GoalAreaHeight = 4,
-                NumberOfGoals = 2,
+                Height = 16,
+                Width = 3,
+                GoalAreaHeight = 3,
+                NumberOfGoals = 6,
                 NumberOfPiecesOnBoard = 6,
-                NumberOfPlayersPerTeam = 4,
-                ShamPieceProbability = 0.3f,
+                NumberOfPlayersPerTeam = 6,
+                ShamPieceProbability = 0.4f,
             };
-
-            PositionNotChangedCount = 4;
-            PositionsCheckTime = 5000;
         }
 
-        [Fact(Timeout = 4 * 60 * 1000)]
+        [Fact(Timeout = 10 * 60 * 1000)]
         public override async void RunGameWithConfiguration()
         {
             await RunGame();

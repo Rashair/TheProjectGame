@@ -44,6 +44,8 @@ namespace GameMaster.Models
 
         public bool WasGameStarted { get; private set; }
 
+        public bool WasGameFinished { get; private set; }
+
         public int SecondGoalAreaStart { get => Conf.Height - Conf.GoalAreaHeight; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
@@ -80,7 +82,8 @@ namespace GameMaster.Models
             }
 
             Players.TryGetValue(message.PlayerId, out GMPlayer player);
-            logger.Information($"|{message.MessageId} | {message.Payload} | | {player?.Team}");
+           
+            // logger.Information($"|{message.MessageId} | {message.Payload} | | {player?.Team}");
             switch (message.MessageId)
             {
                 case PlayerMessageId.CheckPiece:
@@ -405,15 +408,15 @@ namespace GameMaster.Models
                 piece = new NormalPiece();
             }
 
-            (int y, int x) = GenerateCoordinatesInTaskArea(Rand);
+            (int y, int x) = GenerateCoordinatesInTaskArea();
             Board[y][x].Put(piece);
         }
 
-        private (int y, int x) GenerateCoordinatesInTaskArea(Random rand)
+        private (int y, int x) GenerateCoordinatesInTaskArea()
         {
             int taskAreaStart = Conf.GoalAreaHeight;
-            int yCoord = rand.Next(taskAreaStart, SecondGoalAreaStart);
-            int xCoord = rand.Next(0, Conf.Width);
+            int yCoord = Rand.Next(taskAreaStart, SecondGoalAreaStart);
+            int xCoord = Rand.Next(0, Conf.Width);
 
             return (yCoord, xCoord);
         }
@@ -487,6 +490,7 @@ namespace GameMaster.Models
             }
             await socketClient.SendToAllAsync(messages, cancellationToken);
             logger.Information("Sent endGame to all.");
+            WasGameFinished = true;
 
             await Task.Delay(4000);
             lifetime.StopApplication();

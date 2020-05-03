@@ -18,7 +18,6 @@ namespace GameMaster.Models
         private readonly int id;
         private readonly GameConfiguration conf;
         private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
-        private int messageCorrelationId; // TODO: add it to message
         private DateTime lockedTill;
         private AbstractField position;
 
@@ -41,7 +40,7 @@ namespace GameMaster.Models
 
         public Team Team { get; }
 
-        public GMPlayer(int id, GameConfiguration conf, ISocketClient<PlayerMessage, GMMessage> socketClient, Team team, 
+        public GMPlayer(int id, GameConfiguration conf, ISocketClient<PlayerMessage, GMMessage> socketClient, Team team,
             ILogger log, bool isLeader = false)
         {
             logger = log.ForContext<GMPlayer>();
@@ -222,7 +221,7 @@ namespace GameMaster.Models
             MoveAnswerPayload payload = new MoveAnswerPayload()
             {
                 ClosestPiece = gm.FindClosestPiece(Position),
-                CurrentPosition = Position.GetPositionObject(),
+                CurrentPosition = Position.GetPosition(),
                 MadeMove = madeMove,
             };
             return new GMMessage(GMMessageId.MoveAnswer, id, payload);
@@ -233,7 +232,7 @@ namespace GameMaster.Models
             UnknownErrorPayload payload = new UnknownErrorPayload()
             {
                 HoldingPiece = !(Holding is null),
-                Position = Position.GetPositionObject(),
+                Position = Position.GetPosition(),
             };
             return new GMMessage(GMMessageId.UnknownError, id, payload);
         }
