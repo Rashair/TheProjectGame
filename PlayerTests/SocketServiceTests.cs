@@ -68,7 +68,7 @@ namespace Player.Tests
                 context.SemaphoreSlim.Release();
             });
 
-            Task.WaitAll(new[] { socketTask, syncTask });
+            await Task.WhenAll(new[] { socketTask, syncTask });
 
             // Assert
             Assert.Equal(numberOfMessages, queue.Count);
