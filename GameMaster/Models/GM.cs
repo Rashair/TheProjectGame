@@ -393,7 +393,7 @@ namespace GameMaster.Models
             return distance;
         }
 
-        public void GeneratePiece()
+        private void GeneratePiece()
         {
             bool isSham = rand.Next(0, 101) < conf.ShamPieceProbability * 100;
             AbstractPiece piece;

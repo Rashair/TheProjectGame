@@ -31,7 +31,7 @@ namespace IntegrationTests.GameTests.Abstractions
         {
             Assert.True(gameMaster.WasGameInitialized, "Game should be initialized");
 
-            var conf = gameMaster.Conf;
+            var conf = gameMaster.GetValue<GM, GameConfiguration>("conf");
             var (success, errorMessage) = await Shared.Helpers.Retry(() =>
             {
                 return Task.FromResult(gameMaster.WasGameStarted);
@@ -61,7 +61,7 @@ namespace IntegrationTests.GameTests.Abstractions
             var teamBluePositions = teamBlue.Select(player => player.Position).ToList();
             var positionsCounterBlue = new int[teamBluePositions.Count];
 
-            var oneRowBoard = gameMaster.Board.SelectMany(row => row);
+            var oneRowBoard = gameMaster.GetValue<GM, AbstractField[][]>("board").SelectMany(row => row);
             var piecesPositions = oneRowBoard.Where(field => field.ContainsPieces()).ToList();
             int noPiecePickedCount = 0;
             bool wasCountReseted = false;

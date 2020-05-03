@@ -32,8 +32,10 @@ namespace GameMaster.Tests
         public void TestGeneratePieceXTimes(int x)
         {
             // Arrange
-            var conf = new MockGameConfiguration();
-            conf.NumberOfPiecesOnBoard = 0;
+            var conf = new MockGameConfiguration
+            {
+                NumberOfPiecesOnBoard = 0
+            };
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
             var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
@@ -43,12 +45,12 @@ namespace GameMaster.Tests
             // Act
             for (int i = 0; i < x; ++i)
             {
-                gameMaster.GeneratePiece();
+                gameMaster.Invoke("GeneratePiece");
             }
 
             // Assert
             int pieceCount = 0;
-            var board = gameMaster.Board;
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
             for (int i = 0; i < board.Length; ++i)
             {
                 for (int j = 0; j < board[i].Length; ++j)
@@ -140,14 +142,14 @@ namespace GameMaster.Tests
             gameMaster.Invoke("InitGame");
             for (int i = 0; i < pieceCount; ++i)
             {
-                gameMaster.GeneratePiece();
+                gameMaster.Invoke("GeneratePiece");
             }
 
             // Act
             var discoveryActionResult = gameMaster.Invoke<GM, Dictionary<Direction, int>>("Discover", field);
 
             // Assert
-            var board = gameMaster.Board;
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
             List<(AbstractField field, int dist, Direction dir)> neighbours = GetNeighbours(field, board, conf.Height, conf.Width);
 
             for (int k = 0; k < neighbours.Count; k++)
@@ -208,7 +210,7 @@ namespace GameMaster.Tests
             var lifetime = Mock.Of<IApplicationLifetime>();
             var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
-            var players = gameMaster.Players;
+            var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
             for (int i = 0; i < conf.NumberOfPlayersPerTeam; ++i)
             {
                 players.Add(i, new GMPlayer(i, conf, client, Team.Red, logger));
@@ -216,9 +218,11 @@ namespace GameMaster.Tests
                 players.Add(j, new GMPlayer(j, conf, client, Team.Blue, logger));
             }
             gameMaster.Invoke("InitGame");
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
+            var initializer = new GMInitializer(conf, board);
 
             // Act
-            gameMaster.GetValue<GM, GMInitializer>("gmInitializer").InitializePlayersPoisitions();
+            initializer.InitializePlayersPoisitions(players);
 
             // Assert
             Assert.All(players.Values, p =>
@@ -264,7 +268,7 @@ namespace GameMaster.Tests
             int blueGoalFieldsCount = 0;
             int taskFieldsCount = 0;
             int piecesCount = 0;
-            var board = gameMaster.Board;
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
             for (int i = 0; i < board.Length; ++i)
             {
                 for (int j = 0; j < board[i].Length; ++j)
@@ -331,7 +335,7 @@ namespace GameMaster.Tests
             var lifetime = Mock.Of<IApplicationLifetime>();
             var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
-            var players = gameMaster.Players;
+            var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
 
             for (int idRed = 0; idRed < conf.NumberOfPlayersPerTeam; ++idRed)
             {
@@ -367,7 +371,7 @@ namespace GameMaster.Tests
 
             // Act
             var distances = gameMaster.Invoke<GM, Dictionary<Direction, int>>("Discover", new TaskField(0, 5));
-            var board = gameMaster.Board;
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
 
             int expectedResult = -1;
             int resultS = distances[Direction.S];

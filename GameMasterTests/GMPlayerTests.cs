@@ -67,7 +67,7 @@ namespace GameMaster.Tests
             var lifetime = Mock.Of<IApplicationLifetime>();
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
-            gameMaster.GeneratePiece();
+            gameMaster.Invoke("GeneratePiece");
             return gameMaster;
         }
 
