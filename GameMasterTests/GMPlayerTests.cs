@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -67,7 +66,7 @@ namespace GameMaster.Tests
             var lifetime = Mock.Of<IApplicationLifetime>();
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
-            gameMaster.Invoke("GeneratePiece");
+            gameMaster.GeneratePiece();
             return gameMaster;
         }
 
