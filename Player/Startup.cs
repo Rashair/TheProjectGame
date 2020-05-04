@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Player.Models;
 using Player.Services;
 using Serilog;
 using Serilog.Events;
+using Shared;
 using Shared.Clients;
 using Shared.Messages;
 
@@ -30,12 +32,13 @@ namespace Player
             Configuration = configuration;
         }
 
-        private ILogger GetLogger()
+        private ILogger GetLogger(string team)
         {
             // TODO: add logpath path to appsettings and pass it to ConfigureLogger()
             string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "Player");
             int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
-            string fileName = $"pl-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
+            string teamId = team.ToString().Substring(0, 3);
+            string fileName = $"{teamId}-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
             return new LoggerConfiguration()
                .Enrich.FromLogContext()
@@ -44,7 +47,6 @@ namespace Player
                rollOnFileSizeLimit: true,
                outputTemplate: LoggerTemplate)
                 .WriteTo.Console(outputTemplate: LoggerTemplate)
-                .WriteTo.Debug(outputTemplate: LoggerTemplate)
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
@@ -55,22 +57,23 @@ namespace Player
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkId=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ILogger>(GetLogger());
-
             PlayerConfiguration conf = new PlayerConfiguration();
             Configuration.Bind("DefaultPlayerConfig", conf);
 
             // For console override;
             Configuration.Bind(conf);
-            Log.Information($"Team: {conf.TeamId}, strategy: {conf.Strategy}");
-
             services.AddSingleton(conf);
+
+            // 'Try' for tests override
+            var logger = GetLogger(conf.TeamId);
+            services.TryAddSingleton<ILogger>(logger);
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, TcpSocketClient<GMMessage, PlayerMessage>>();
             services.AddSingleton<BufferBlock<GMMessage>>();
             services.AddSingleton<Models.Player>();
 
-            services.AddSingleton<SynchronizationContext>();
+            var sync = new ServiceSynchronization(0, 1);
+            services.AddSingleton(sync);
             services.AddHostedService<SocketService>();
             services.AddHostedService<PlayerService>();
         }

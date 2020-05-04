@@ -37,4 +37,9 @@
     <ProjectReference Include="..\Shared\Shared.csproj" />
     <ProjectReference Include="..\TestsShared\TestsShared.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="xunit.runner.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

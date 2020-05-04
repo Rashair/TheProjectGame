@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -26,19 +27,52 @@ public static class ReflectionExtensions
         Type typeSource = source.GetType();
 
         // Collect all the valid properties to map
-        var results = from sourceProperty in typeSource.GetProperties()
-                      let destProperty = typeDest.GetProperty(sourceProperty.Name)
-                      where sourceProperty.CanRead
-                      && destProperty != null
-                      && destProperty.GetSetMethod(true) != null && !destProperty.GetSetMethod(true).IsPrivate
-                      && (destProperty.GetSetMethod().Attributes & MethodAttributes.Static) == 0
-                      && destProperty.PropertyType.IsAssignableFrom(sourceProperty.PropertyType)
-                      select new { sourceProperty, destProperty };
+        var results = GetProperties(typeSource, typeDest);
 
         // map the properties.
-        foreach (var props in results)
+        foreach (var (sourceProperty, destProperty) in results)
         {
-            props.destProperty.SetValue(destination, props.sourceProperty.GetValue(source, null), null);
+            destProperty.SetValue(destination, sourceProperty.GetValue(source, null), null);
         }
+    }
+
+    public static bool AreAllPropertiesTheSame(this object source, object destination)
+    {
+        // If any this null throw an exception
+        if (source == null || destination == null)
+        {
+            throw new Exception("Source or/and Destination Objects are null");
+        }
+
+        // Getting the Types of the objects
+        Type typeDest = destination.GetType();
+        Type typeSource = source.GetType();
+
+        // Collect all the valid properties to map
+        var results = GetProperties(typeSource, typeDest);
+
+        // map the properties.
+        foreach (var (sourceProperty, destProperty) in results)
+        {
+            if (!sourceProperty.GetValue(source).Equals(destProperty.GetValue(destination)))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static IEnumerable<(PropertyInfo sourceProperty, PropertyInfo destProperty)> GetProperties(
+        Type source, Type destination)
+    {
+        return from sourceProperty in source.GetProperties()
+                  let destProperty = destination.GetProperty(sourceProperty.Name)
+                  where sourceProperty.CanRead
+                  && destProperty != null
+                  && destProperty.GetSetMethod(true) != null && !destProperty.GetSetMethod(true).IsPrivate
+                  && (destProperty.GetSetMethod().Attributes & MethodAttributes.Static) == 0
+                  && destProperty.PropertyType.IsAssignableFrom(sourceProperty.PropertyType)
+                  select (sourceProperty, destProperty);
     }
 }

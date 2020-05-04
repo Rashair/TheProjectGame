@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,27 +14,27 @@ namespace Shared.Clients
     public class TcpSocketClient<R, S> : ISocketClient<R, S>
     {
         private readonly ILogger logger;
-        private readonly TcpClient client;
-        private NetworkStream stream;
+        private readonly IClient client;
+        private Stream stream;
         private bool isOpen;
 
         public TcpSocketClient(ILogger log)
         {
             this.logger = log.ForContext<TcpSocketClient<R, S>>();
-            this.client = new TcpClient();
+            this.client = new TcpClientWrapper();
         }
 
-        public TcpSocketClient(TcpClient tcpClient, ILogger log)
+        public TcpSocketClient(IClient tcpClient, ILogger log)
         {
             logger = log.ForContext<TcpSocketClient<R, S>>();
             client = tcpClient;
-            stream = tcpClient.GetStream();
-            isOpen = tcpClient.Connected;
+            stream = client.GetStream;
+            isOpen = client.Connected;
         }
 
         public bool IsOpen => isOpen && client.Connected;
 
-        public object GetSocket()
+        public IClient GetSocket()
         {
             return client;
         }
@@ -42,7 +42,6 @@ namespace Shared.Clients
         public Task CloseAsync(CancellationToken cancellationToken)
         {
             isOpen = false;
-            stream.Close();
             client.Close();
             return Task.CompletedTask;
         }
@@ -50,21 +49,21 @@ namespace Shared.Clients
         public async Task ConnectAsync(string host, int port, CancellationToken cancellationToken)
         {
             await client.ConnectAsync(host, port);
-            stream = client.GetStream();
+            stream = client.GetStream;
             isOpen = true;
             logger.Information($"Connected to {host}:{port}");
         }
 
-        public async Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
+        public async Task<(bool wasReceived, R message)> ReceiveAsync(CancellationToken cancellationToken)
         {
-            if (!IsOpen)
+            if (!IsOpen || cancellationToken.IsCancellationRequested)
             {
                 return (false, default);
             }
 
             byte[] lengthEndian = new byte[2];
             int countRead = await stream.ReadAsync(lengthEndian, 0, 2, cancellationToken);
-            if (cancellationToken.IsCancellationRequested || (countRead == 0) || (countRead == 1))
+            if (cancellationToken.IsCancellationRequested || countRead < 2)
             {
                 if (countRead == 0)
                 {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Shared.Payloads
+namespace Shared.Payloads.GMPayloads
 {
     public class NotWaitedErrorPayload : Payload
     {

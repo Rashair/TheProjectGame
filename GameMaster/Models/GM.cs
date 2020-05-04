@@ -15,7 +15,8 @@ using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
-using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
+using Shared.Payloads.PlayerPayloads;
 
 namespace GameMaster.Models
 {
@@ -24,22 +25,24 @@ namespace GameMaster.Models
         private readonly ILogger log;
         private readonly ILogger logger;
         private readonly IApplicationLifetime lifetime;
-        private readonly GameConfiguration conf;
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
-
-        private HashSet<(int recipient, int sender)> legalKnowledgeReplies;
+        private readonly HashSet<(int recipient, int sender)> legalKnowledgeReplies;
         private readonly Dictionary<int, GMPlayer> players;
+        private readonly GameConfiguration conf;
+        private readonly Random rand;
         private AbstractField[][] board;
 
         private int redTeamPoints;
         private int blueTeamPoints;
-
+    
         public bool WasGameInitialized { get; private set; }
 
         public bool WasGameStarted { get; private set; }
 
-        public int TaskAreaEnd { get => conf.Height - conf.GoalAreaHeight; }
+        public bool WasGameFinished { get; private set; }
+
+        public int SecondGoalAreaStart { get => conf.Height - conf.GoalAreaHeight; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
             BufferBlock<PlayerMessage> queue, ISocketClient<PlayerMessage, GMMessage> socketClient,
@@ -54,169 +57,23 @@ namespace GameMaster.Models
 
             players = new Dictionary<int, GMPlayer>();
             legalKnowledgeReplies = new HashSet<(int, int)>();
-        }
-
-        public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
-        {
-            if (!WasGameInitialized)
-            {
-                // TODO: send error message
-                logger.Warning("Game was not initialized yet: GM can't accept messages");
-                return;
-            }
-
-            if (!WasGameStarted && message.MessageId != PlayerMessageId.JoinTheGame)
-            {
-                // TODO: send error message
-                logger.Warning("Game was not started yet: GM can't accept messages other than JoinTheGame");
-                return;
-            }
-
-            // logger.Information($"|{message.MessageId} | {message.Payload} | | {player?.Team}");
-            players.TryGetValue(message.PlayerId, out GMPlayer player);
-            switch (message.MessageId)
-            {
-                case PlayerMessageId.CheckPiece:
-                    await player.CheckHoldingAsync(cancellationToken);
-                    break;
-                case PlayerMessageId.PieceDestruction:
-                    bool destroyed = await player.DestroyHoldingAsync(cancellationToken);
-                    if (destroyed)
-                    {
-                        GeneratePiece();
-                    }
-                    break;
-                case PlayerMessageId.Discover:
-                    await player.DiscoverAsync(this, cancellationToken);
-
-                    // TODO: send response here
-                    break;
-                case PlayerMessageId.GiveInfo:
-                    await ForwardKnowledgeReply(message, cancellationToken);
-                    break;
-                case PlayerMessageId.BegForInfo:
-                    await ForwardKnowledgeQuestion(message, cancellationToken);
-                    break;
-                case PlayerMessageId.JoinTheGame:
-                {
-                    JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
-                    int key = message.PlayerId;
-                    bool accepted = TryToAddPlayer(key, payloadJoin.TeamId);
-                    JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
-                    {
-                        Accepted = accepted,
-                        PlayerId = key,
-                    };
-                    GMMessage answerJoin = new GMMessage()
-                    {
-                        Id = GMMessageId.JoinTheGameAnswer,
-                        PlayerId = key,
-                        Payload = JsonConvert.SerializeObject(answerJoinPayload),
-                    };
-                    await socketClient.SendAsync(answerJoin, cancellationToken);
-
-                    if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
-                       GetPlayersCount(Team.Blue) == conf.NumberOfPlayersPerTeam)
-                    {
-                        await StartGame(cancellationToken);
-                        WasGameStarted = true;
-                        logger.Information("Game was started.");
-                    }
-                    break;
-                }
-                case PlayerMessageId.Move:
-                {
-                    MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
-                    AbstractField field = null;
-                    int[] pos = player.GetPosition();
-                    switch (payloadMove.Direction)
-                    {
-                        case Direction.N:
-                            if (pos[0] + 1 < conf.Height && (player.Team == Team.Blue || pos[0] + 1 < TaskAreaEnd))
-                            {
-                                field = board[pos[0] + 1][pos[1]];
-                            }
-                            break;
-                        case Direction.S:
-                            if (pos[0] - 1 >= 0 && (player.Team == Team.Red || pos[0] - 1 >= conf.GoalAreaHeight))
-                            {
-                                field = board[pos[0] - 1][pos[1]];
-                            }
-                            break;
-                        case Direction.E:
-                            if (pos[1] + 1 < conf.Width)
-                            {
-                                field = board[pos[0]][pos[1] + 1];
-                            }
-                            break;
-                        case Direction.W:
-                            if (pos[1] - 1 >= 0)
-                            {
-                                field = board[pos[0]][pos[1] - 1];
-                            }
-                            break;
-                    }
-                    await player.MoveAsync(field, this, cancellationToken);
-
-                    break;
-                }
-                case PlayerMessageId.Pick:
-                    await player.PickAsync(cancellationToken);
-                    break;
-                case PlayerMessageId.Put:
-                    (bool? point, bool removed) = await player.PutAsync(cancellationToken);
-                    if (point == true)
-                    {
-                        int y = player.GetPosition()[0];
-                        if (y < conf.GoalAreaHeight)
-                        {
-                            logger.Information("RED TEAM POINT !!!");
-                            redTeamPoints++;
-                        }
-                        else
-                        {
-                            logger.Information("BLUE TEAM POINT !!!");
-                            blueTeamPoints++;
-                        }
-                        logger.Information($"by {player.Team}");
-                        logger.Information($"RED: {redTeamPoints} | BLUE: {blueTeamPoints}");
-                    }
-                    if (removed)
-                    {
-                        GeneratePiece();
-                    }
-                    break;
-            }
-        }
-
-        private bool TryToAddPlayer(int key, Team team)
-        {
-            if (GetPlayersCount(team) == conf.NumberOfPlayersPerTeam)
-            {
-                return false;
-            }
-
-            // TODO: isLeader flag!
-            var player = new GMPlayer(key, conf, socketClient, team, log);
-            return players.TryAdd(key, player);
-        }
-
-        private int GetPlayersCount(Team team)
-        {
-            return players.Where(pair => pair.Value.Team == team).Count();
+            rand = new Random();
         }
 
         internal void InitGame()
         {
-            InitializeBoard();
-            GenerateAllPieces();
+            board = new AbstractField[conf.Height][];
+            var gmInitializer = new GMInitializer(conf, board);
+            gmInitializer.InitializeBoard();
+            gmInitializer.GenerateAllPieces(GeneratePiece);
             WasGameInitialized = true;
             logger.Information("Game was initialized.");
         }
 
         internal async Task StartGame(CancellationToken cancellationToken)
         {
-            InitializePlayersPoisitions();
+            var gmInitializer = new GMInitializer(conf, board);
+            gmInitializer.InitializePlayersPoisitions(players);
 
             int[] teamBlueIds = players.Where(p => p.Value.Team == Team.Blue).Select(p => p.Key).ToArray();
             int[] teamRedIds = players.Where(p => p.Value.Team == Team.Red).Select(p => p.Key).ToArray();
@@ -268,12 +125,14 @@ namespace GameMaster.Models
                 payload.NumberOfGoals = conf.NumberOfGoals;
                 payload.Penalties = new Penalties
                 {
-                    Move = conf.MovePenalty.ToString(),
-                    InformationExchange = conf.AskPenalty.ToString(),
-                    Discovery = conf.DiscoverPenalty.ToString(),
-                    PutPiece = conf.PutPenalty.ToString(),
-                    CheckForSham = conf.CheckPenalty.ToString(),
-                    DestroyPiece = conf.DestroyPenalty.ToString(),
+                    Move = conf.MovePenalty,
+                    Ask = conf.AskPenalty,
+                    Response = conf.ResponsePenalty,
+                    Discover = conf.DiscoverPenalty,
+                    PickPiece = conf.PickPenalty,
+                    CheckPiece = conf.CheckPenalty,
+                    DestroyPiece = conf.DestroyPenalty,
+                    PutPiece = conf.PutPenalty,
                 };
                 payload.ShamPieceProbability = conf.ShamPieceProbability;
                 payload.Position = new Position
@@ -296,98 +155,6 @@ namespace GameMaster.Models
             WasGameStarted = true;
         }
 
-        private void InitializePlayersPoisitions()
-        {
-            var rand = new Random();
-            foreach (var p in players)
-            {
-                GMPlayer player = p.Value;
-                (int y1, int y2) = GetBoundaries(player.Team);
-                int y = rand.Next(y1, y2);
-                int x = rand.Next(0, conf.Width);
-
-                AbstractField pos = board[y][x];
-                while (!pos.MoveHere(player))
-                {
-                    ++x;
-                    if (x == conf.Width)
-                    {
-                        x = 0;
-                        ++y;
-                        if (y == y2)
-                        {
-                            y = y1;
-                        }
-                    }
-
-                    pos = board[y][x];
-                }
-            }
-        }
-
-        private (int y1, int y2) GetBoundaries(Team team)
-        {
-            if (team == Team.Red)
-            {
-                return (0, TaskAreaEnd);
-            }
-
-            return (conf.GoalAreaHeight, conf.Height);
-        }
-
-        private void InitializeBoard()
-        {
-            board = new AbstractField[conf.Height][];
-            for (int i = 0; i < board.Length; ++i)
-            {
-                board[i] = new AbstractField[conf.Width];
-            }
-
-            int goalFields = 0;
-            AbstractField NonGoalOrGoalFieldGenerator(int y, int x)
-            {
-                if (goalFields < conf.NumberOfGoals)
-                {
-                    ++goalFields;
-                    return new GoalField(y, x);
-                }
-                return new NonGoalField(y, x);
-            }
-            for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
-            {
-                FillBoardRow(rowIt, NonGoalOrGoalFieldGenerator);
-            }
-
-            Func<int, int, AbstractField> taskFieldGenerator = (int y, int x) => new TaskField(y, x);
-            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
-            for (int rowIt = conf.GoalAreaHeight; rowIt < secondGoalAreaStart; ++rowIt)
-            {
-                FillBoardRow(rowIt, taskFieldGenerator);
-            }
-
-            goalFields = 0;
-            for (int rowIt = secondGoalAreaStart; rowIt < conf.Height; ++rowIt)
-            {
-                FillBoardRow(rowIt, NonGoalOrGoalFieldGenerator);
-            }
-        }
-
-        private void FillBoardRow(int row, Func<int, int, AbstractField> getField)
-        {
-            for (int col = 0; col < board[row].Length; ++col)
-            {
-                board[row][col] = getField(row, col);
-            }
-        }
-
-        private void GenerateAllPieces()
-        {
-            for (int i = 0; i < conf.NumberOfPiecesOnBoard; ++i)
-            {
-                GeneratePiece();
-            }
-        }
-
         internal async Task Work(CancellationToken cancellationToken)
         {
             TimeSpan cancellationTimespan = TimeSpan.FromMinutes(2);
@@ -407,7 +174,6 @@ namespace GameMaster.Models
                 {
                     logger.Warning($"Message retrieve was cancelled: {e.Message}");
 
-                    // TODO: change it with switch to SocketClient
                     if (!socketClient.IsOpen)
                     {
                         logger.Error("No open connection. Exiting.");
@@ -416,6 +182,157 @@ namespace GameMaster.Models
                     }
                 }
             }
+        }
+
+        public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
+        {
+            if (!WasGameInitialized)
+            {
+                // TODO: send error message
+                logger.Warning("Game was not initialized yet: GM can't accept messages");
+                return;
+            }
+
+            if (!WasGameStarted && message.MessageId != PlayerMessageId.JoinTheGame)
+            {
+                // TODO: send error message
+                logger.Warning("Game was not started yet: GM can't accept messages other than JoinTheGame");
+                return;
+            }
+
+            players.TryGetValue(message.PlayerId, out GMPlayer player);
+           
+            // logger.Information($"|{message.MessageId} | {message.Payload} | | {player?.Team}");
+            switch (message.MessageId)
+            {
+                case PlayerMessageId.CheckPiece:
+                    await player.CheckHoldingAsync(cancellationToken);
+                    break;
+                case PlayerMessageId.PieceDestruction:
+                    bool destroyed = await player.DestroyHoldingAsync(cancellationToken);
+                    if (destroyed)
+                    {
+                        GeneratePiece();
+                    }
+                    break;
+                case PlayerMessageId.Discover:
+                    await player.DiscoverAsync(this, cancellationToken);
+                    break;
+                case PlayerMessageId.GiveInfo:
+                    await ForwardKnowledgeReply(message, cancellationToken);
+                    break;
+                case PlayerMessageId.BegForInfo:
+                    await ForwardKnowledgeQuestion(message, cancellationToken);
+                    break;
+                case PlayerMessageId.JoinTheGame:
+                {
+                    JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
+                    int key = message.PlayerId;
+                    bool accepted = TryToAddPlayer(key, payloadJoin.TeamId);
+                    JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
+                    {
+                        Accepted = accepted,
+                        PlayerId = key,
+                    };
+                    GMMessage answerJoin = new GMMessage()
+                    {
+                        Id = GMMessageId.JoinTheGameAnswer,
+                        PlayerId = key,
+                        Payload = JsonConvert.SerializeObject(answerJoinPayload),
+                    };
+                    await socketClient.SendAsync(answerJoin, cancellationToken);
+
+                    if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
+                       GetPlayersCount(Team.Blue) == conf.NumberOfPlayersPerTeam)
+                    {
+                        await StartGame(cancellationToken);
+                        WasGameStarted = true;
+                        logger.Information("Game was started.");
+                    }
+                    break;
+                }
+                case PlayerMessageId.Move:
+                {
+                    MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
+                    AbstractField field = null;
+                    int[] pos = player.GetPosition();
+                    switch (payloadMove.Direction)
+                    {
+                        case Direction.N:
+                            if (pos[0] + 1 < conf.Height && (player.Team == Team.Blue || pos[0] + 1 < SecondGoalAreaStart))
+                            {
+                                field = board[pos[0] + 1][pos[1]];
+                            }
+                            break;
+                        case Direction.S:
+                            if (pos[0] - 1 >= 0 && (player.Team == Team.Red || pos[0] - 1 >= conf.GoalAreaHeight))
+                            {
+                                field = board[pos[0] - 1][pos[1]];
+                            }
+                            break;
+                        case Direction.E:
+                            if (pos[1] + 1 < conf.Width)
+                            {
+                                field = board[pos[0]][pos[1] + 1];
+                            }
+                            break;
+                        case Direction.W:
+                            if (pos[1] - 1 >= 0)
+                            {
+                                field = board[pos[0]][pos[1] - 1];
+                            }
+                            break;
+                    }
+                    await player.MoveAsync(field, this, cancellationToken);
+
+                    break;
+                }
+                case PlayerMessageId.Pick:
+                    await player.PickAsync(cancellationToken);
+                    break;
+                case PlayerMessageId.Put:
+                    (bool? point, bool removed) = await player.PutAsync(cancellationToken);
+                    if (point == true)
+                    {
+                        int y = player.GetPosition()[0];
+                        string teamStr;
+                        if (y < conf.GoalAreaHeight)
+                        {
+                            teamStr = "RED";
+                            redTeamPoints++;
+                        }
+                        else
+                        {
+                            teamStr = "BLUE";
+                            blueTeamPoints++;
+                        }
+                        logger.Information($"{teamStr} TEAM POINT !!!\n" +
+                            $"    by {player.Team}");
+                        logger.Information($"RED: {redTeamPoints} | BLUE: {blueTeamPoints}");
+                    }
+                    if (removed)
+                    {
+                        GeneratePiece();
+                    }
+                    break;
+            }
+        }
+
+        private bool TryToAddPlayer(int key, Team team)
+        {
+            if (GetPlayersCount(team) == conf.NumberOfPlayersPerTeam)
+            {
+                return false;
+            }
+
+            // TODO: isLeader flag!
+            var player = new GMPlayer(key, conf, socketClient, team, log);
+            return players.TryAdd(key, player);
+        }
+
+        private int GetPlayersCount(Team team)
+        {
+            return players.Where(pair => pair.Value.Team == team).Count();
         }
 
         internal Dictionary<Direction, int> Discover(AbstractField field)
@@ -433,8 +350,7 @@ namespace GameMaster.Models
                     distances[i] = -1;
             }
 
-            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
-            for (int i = conf.GoalAreaHeight; i < secondGoalAreaStart; i++)
+            for (int i = conf.GoalAreaHeight; i < SecondGoalAreaStart; i++)
             {
                 for (int j = 0; j < board[i].Length; j++)
                 {
@@ -462,8 +378,7 @@ namespace GameMaster.Models
         {
             int[] center = field.GetPosition();
             int distance = int.MaxValue;
-            int secondGoalAreaStart = conf.Height - conf.GoalAreaHeight;
-            for (int i = conf.GoalAreaHeight; i < secondGoalAreaStart; i++)
+            for (int i = conf.GoalAreaHeight; i < SecondGoalAreaStart; i++)
             {
                 for (int j = 0; j < board[i].Length; j++)
                 {
@@ -480,7 +395,6 @@ namespace GameMaster.Models
 
         private void GeneratePiece()
         {
-            var rand = new Random();
             bool isSham = rand.Next(0, 101) < conf.ShamPieceProbability * 100;
             AbstractPiece piece;
             if (isSham)
@@ -492,14 +406,14 @@ namespace GameMaster.Models
                 piece = new NormalPiece();
             }
 
-            (int y, int x) = GenerateCoordinatesInTaskArea(rand);
+            (int y, int x) = GenerateCoordinatesInTaskArea();
             board[y][x].Put(piece);
         }
 
-        private (int y, int x) GenerateCoordinatesInTaskArea(Random rand)
+        private (int y, int x) GenerateCoordinatesInTaskArea()
         {
             int taskAreaStart = conf.GoalAreaHeight;
-            int yCoord = rand.Next(taskAreaStart, TaskAreaEnd);
+            int yCoord = rand.Next(taskAreaStart, SecondGoalAreaStart);
             int xCoord = rand.Next(0, conf.Width);
 
             return (yCoord, xCoord);
@@ -574,6 +488,7 @@ namespace GameMaster.Models
             }
             await socketClient.SendToAllAsync(messages, cancellationToken);
             logger.Information("Sent endGame to all.");
+            WasGameFinished = true;
 
             await Task.Delay(4000);
             lifetime.StopApplication();

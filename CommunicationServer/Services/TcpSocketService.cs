@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -13,8 +14,12 @@ namespace CommunicationServer.Services
     public abstract class TcpSocketService<R, S> : BackgroundService
     {
         protected const int Wait = 50;
-
         protected readonly ILogger logger;
+
+        public TcpSocketService(ILogger logger)
+        {
+            this.logger = logger;
+        }
 
         public abstract Task OnMessageAsync(TcpSocketClient<R, S> client, R message,
             CancellationToken cancellationToken);
@@ -26,11 +31,6 @@ namespace CommunicationServer.Services
         public abstract Task OnExceptionAsync(TcpSocketClient<R, S> client, Exception e,
             CancellationToken cancellationToken);
 
-        public TcpSocketService(ILogger logger)
-        {
-            this.logger = logger;
-        }
-
         public async Task ClientHandler(TcpSocketClient<R, S> client, CancellationToken cancellationToken)
         {
             OnConnect(client);
@@ -40,10 +40,12 @@ namespace CommunicationServer.Services
 
         public async Task ClientLoopAsync(TcpSocketClient<R, S> client, CancellationToken cancellationToken)
         {
-            var socket = (TcpClient)client.GetSocket();
-            logger.Information($"Started handling messages for {socket.Client.RemoteEndPoint}");
+            IClient socket = null;
             try
             {
+                socket = client.GetSocket();
+                logger.Information($"Started handling messages for {socket.Endpoint}");
+
                 (bool result, R message) = await client.ReceiveAsync(cancellationToken);
                 while (!cancellationToken.IsCancellationRequested && result)
                 {
@@ -51,13 +53,19 @@ namespace CommunicationServer.Services
                     (result, message) = await client.ReceiveAsync(cancellationToken);
                 }
             }
+            catch (IOException e)
+            {
+                logger.Warning("Connection stream closed");
+            }
             catch (Exception e)
             {
                 logger.Error($"Error reading message: {e}");
                 await OnExceptionAsync(client, e, cancellationToken);
             }
-
-            logger.Information($"Finished handling messages for {socket.Client.RemoteEndPoint}");
+            finally
+            {
+                logger.Information($"Finished handling messages for {socket.Endpoint}");
+            }
         }
 
         public TcpListener StartListener(string ip, int port)

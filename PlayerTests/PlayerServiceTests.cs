@@ -11,11 +11,12 @@ using Player.Models;
 using Player.Models.Strategies;
 using Player.Services;
 using Serilog;
+using Shared;
 using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
-using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
 using TestsShared;
 using Xunit;
 
@@ -33,7 +34,8 @@ namespace Player.Tests
             IServiceCollection services = new ServiceCollection();
             services.AddSingleton(logger);
 
-            services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, ClientMock<GMMessage, PlayerMessage>>();
+            var clientMock = MockGenerator.Get<ISocketClient<GMMessage, PlayerMessage>>();
+            services.AddSingleton(clientMock);
             var queue = new BufferBlock<GMMessage>();
             StartGamePayload payloadStart = new StartGamePayload
             {
@@ -47,7 +49,7 @@ namespace Player.Tests
                 NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
                 NumberOfPieces = 2,
                 NumberOfGoals = 2,
-                Penalties = new Penalties { Move = "0", CheckForSham = "0", Discovery = "0", DestroyPiece = "0", PutPiece = "0", InformationExchange = "0" },
+                Penalties = new Penalties(),
                 ShamPieceProbability = 0.5f,
                 Position = new Position { X = 1, Y = 1 },
             };
@@ -59,11 +61,10 @@ namespace Player.Tests
             queue.Post(messageStart);
             services.AddSingleton(queue);
             services.AddSingleton<PlayerConfiguration>();
-            services.AddSingleton<IStrategy, StrategyMock>();
+            services.AddSingleton(MockGenerator.Get<IStrategy>());
             services.AddSingleton<Models.Player>();
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
-            var context = new Services.SynchronizationContext();
-            context.SemaphoreSlim.Release();
+            var context = new ServiceSynchronization(1, 1);
             services.AddSingleton(context);
 
             services.AddHostedService<PlayerService>();
@@ -81,48 +82,6 @@ namespace Player.Tests
 
             // Assert
             Assert.Equal(0, queue.Count);
-        }
-
-        private class ClientMock<R, S> : ISocketClient<R, S>
-        {
-            public bool IsOpen => true;
-
-            public Task CloseAsync(CancellationToken cancellationToken)
-            {
-                return Task.CompletedTask;
-            }
-
-            public Task ConnectAsync(string host, int port, CancellationToken cancellationToken)
-            {
-                return Task.CompletedTask;
-            }
-
-            public object GetSocket()
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken)
-            {
-                return Task.FromResult((true, default(R)));
-            }
-
-            public async Task SendAsync(S message, CancellationToken cancellationToken)
-            {
-            }
-
-            public Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private class StrategyMock : IStrategy
-        {
-            public Task MakeDecision(Models.Player player, CancellationToken cancellationToken)
-            {
-                return Task.CompletedTask;
-            }
         }
     }
 }

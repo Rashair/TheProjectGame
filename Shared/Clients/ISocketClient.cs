@@ -9,18 +9,18 @@ namespace Shared.Clients
     {
         bool IsOpen { get; }
 
-        object GetSocket();
+        IClient GetSocket();
 
         Task ConnectAsync(string host, int port, CancellationToken cancellationToken);
 
         Task CloseAsync(CancellationToken cancellationToken);
 
-        /// <returns>
-        /// (bool notClosed, R value)
-        /// If notClosed is false then the socket is closed and value is set to default(R) otherwise,
-        /// the value is obtained from deserialization of the socket message.
-        /// </returns>
-        Task<(bool, R)> ReceiveAsync(CancellationToken cancellationToken);
+        /// <summary>
+        /// (bool wasReceived, R value)
+        /// If wasReceived is false then critical error was encountered and message is set to default(R),
+        /// otherwise the message is obtained from deserialization of the socket message.
+        /// </summary>
+        Task<(bool wasReceived, R message)> ReceiveAsync(CancellationToken cancellationToken);
 
         Task SendAsync(S message, CancellationToken cancellationToken);
 

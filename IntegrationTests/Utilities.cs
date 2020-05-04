@@ -11,18 +11,30 @@ namespace IntegrationTests
 {
     public static class Utilities
     {
-        public static IWebHostBuilder CreateWebHost(Type startupType, string[] args = null)
+        public static IWebHostBuilder CreateHostBuilder(Type startupType, string[] args = null)
         {
+            args = args ?? new string[] { };
             var projectDir = GetProjectPath("", startupType.GetTypeInfo().Assembly);
-            return WebHost.CreateDefaultBuilder(args)
+            var builder = new WebHostBuilder()
+                .UseKestrel()
                 .UseContentRoot(projectDir)
-                .UseConfiguration(new ConfigurationBuilder()
-                    .SetBasePath(projectDir)
-                    .AddJsonFile("appsettings.json")
-                    .AddCommandLine(args)
-                    .Build())
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    var env = hostingContext.HostingEnvironment;
+
+                    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
+                    config.AddEnvironmentVariables();
+                    config.AddCommandLine(args);
+                })
+                .UseDefaultServiceProvider((context, options) =>
+                {
+                    options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
+                })
+                .UseConfiguration(new ConfigurationBuilder().AddCommandLine(args).Build())
                 .UseSerilog()
                 .UseStartup(startupType);
+
+            return builder;
         }
 
         /// Ref: https://stackoverflow.com/a/52136848/3634867

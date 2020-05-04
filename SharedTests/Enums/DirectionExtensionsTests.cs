@@ -1,7 +1,7 @@
 ﻿using Shared.Enums;
 using Xunit;
 
-namespace SharedTests
+namespace Shared.Tests.Enums
 {
     public class DirectionExtensionsTests
     {

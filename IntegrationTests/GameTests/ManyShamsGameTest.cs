@@ -1,7 +1,8 @@
 ﻿using GameMaster.Models;
+using IntegrationTests.GameTests.Abstractions;
 using Xunit;
 
-namespace IntegrationTests
+namespace IntegrationTests.GameTests
 {
     public class ManyShamsGameTest : GameTest
     {
@@ -25,17 +26,15 @@ namespace IntegrationTests
                 NumberOfGoals = 6,
                 NumberOfPiecesOnBoard = 12,
                 NumberOfPlayersPerTeam = 4,
-                ShamPieceProbability = 0.8f,
+                ShamPieceProbability = 0.75f,
             };
 
-            PositionNotChangedCount = 3;
-            PositionsCheckTime = 6000;
+            TestConf.CheckInterval = 6000;
         }
 
-        [Fact(Timeout = 6 * 60 * 1000)]
+        [Fact(Timeout = 15 * 60 * 1000)]
         public override async void RunGameWithConfiguration()
         {
-            return;
             await RunGame();
         }
     }

@@ -32,8 +32,10 @@ namespace GameMaster.Tests
         public void TestGeneratePieceXTimes(int x)
         {
             // Arrange
-            var conf = new MockGameConfiguration();
-            conf.NumberOfPiecesOnBoard = 0;
+            var conf = new MockGameConfiguration
+            {
+                NumberOfPiecesOnBoard = 0
+            };
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
             var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
@@ -216,9 +218,11 @@ namespace GameMaster.Tests
                 players.Add(j, new GMPlayer(j, conf, client, Team.Blue, logger));
             }
             gameMaster.Invoke("InitGame");
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
+            var initializer = new GMInitializer(conf, board);
 
             // Act
-            gameMaster.Invoke("InitializePlayersPoisitions");
+            initializer.InitializePlayersPoisitions(players);
 
             // Assert
             Assert.All(players.Values, p =>
@@ -245,6 +249,84 @@ namespace GameMaster.Tests
         }
 
         [Fact]
+        public void TestInitGame()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration();
+            var queue = new BufferBlock<PlayerMessage>();
+            var lifetime = Mock.Of<IApplicationLifetime>();
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var gameMaster = new GM(lifetime, conf, queue, client, logger);
+
+            // Act
+            gameMaster.Invoke("InitGame");
+
+            // Assert
+            Assert.True(gameMaster.WasGameInitialized);
+
+            int redGoalFieldsCount = 0;
+            int blueGoalFieldsCount = 0;
+            int taskFieldsCount = 0;
+            int piecesCount = 0;
+            var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
+            for (int i = 0; i < board.Length; ++i)
+            {
+                for (int j = 0; j < board[i].Length; ++j)
+                {
+                    AbstractField field = board[i][j];
+                    if (field is GoalField)
+                    {
+                        if (i < conf.GoalAreaHeight)
+                        {
+                            ++redGoalFieldsCount;
+                        }
+                        else if (i >= gameMaster.SecondGoalAreaStart)
+                        {
+                            ++blueGoalFieldsCount;
+                        }
+                        else
+                        {
+                            Assert.True(false, "Goal field should be on correct position");
+                        }
+
+                        if (field.ContainsPieces())
+                        {
+                            Assert.True(false, "Goal field should not contain any pieces");
+                        }
+                    }
+                    else if (field is TaskField taskField)
+                    {
+                        ++taskFieldsCount;
+                        if (field.ContainsPieces())
+                        {
+                            piecesCount += GetPieceCount(taskField);
+                        }
+                    }
+                }
+            }
+
+            Assert.True(conf.NumberOfGoals == redGoalFieldsCount,
+                $"Number of red goal fields should match configuration setting.\n" +
+                $"Have: {redGoalFieldsCount}\n" +
+                $"Expected: {conf.NumberOfGoals}");
+            Assert.True(conf.NumberOfGoals == blueGoalFieldsCount,
+             $"Number of red goal fields should match configuration setting.\n" +
+             $"Have: {blueGoalFieldsCount}\n" +
+             $"Expected: {conf.NumberOfGoals}");
+
+            int expectedTaskFieldsCount = (conf.Height - (2 * conf.GoalAreaHeight)) * conf.Width;
+            Assert.True(expectedTaskFieldsCount == taskFieldsCount,
+                "Task fields should cover all fields except goal areas.\n" +
+                 $"Have: {taskFieldsCount}\n" +
+                 $"Expected: {expectedTaskFieldsCount}");
+
+            Assert.True(conf.NumberOfPiecesOnBoard == piecesCount,
+                "GM should generate enough pieces.\n" +
+                 $"Have: {piecesCount}\n" +
+                 $"Expected: {conf.NumberOfPiecesOnBoard}");
+        }
+
+        [Fact]
         public void TestStartGame()
         {
             // Arrange
@@ -259,7 +341,7 @@ namespace GameMaster.Tests
             {
                 var player = new GMPlayer(idRed, conf, client, Team.Red, logger);
                 players.Add(idRed, player);
-               
+
                 int idBlue = idRed + conf.NumberOfPlayersPerTeam;
                 player = new GMPlayer(idBlue, conf, client, Team.Blue, logger);
                 players.Add(idBlue, player);

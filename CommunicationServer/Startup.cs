@@ -9,8 +9,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
 using Serilog.Events;
+using Shared;
 using Shared.Clients;
 using Shared.Managers;
 using Shared.Messages;
@@ -55,23 +57,20 @@ namespace CommunicationServer
         public void ConfigureServices(IServiceCollection services)
         {
             var logger = GetLogger();
-            services.AddSingleton<ILogger>(logger);
-            logger.Information("Running CS");
+            services.TryAddSingleton<ILogger>(logger);
 
             ServerConfigurations conf = new ServerConfigurations();
-
             Configuration.Bind("DefaultCommunicationServerConfig", conf);
-
-            // For console override;
-            Configuration.Bind(conf);
+            Configuration.Bind(conf);  // For console override;
             services.AddSingleton(conf);
 
             services.AddSingleton<ServiceShareContainer>();
-            services.AddSingleton<ISocketManager<TcpSocketClient<PlayerMessage, GMMessage>, GMMessage>,
+            services.AddSingleton<ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage>,
                 TcpSocketManager<PlayerMessage, GMMessage>>();
             services.AddSingleton<BufferBlock<Message>>();
 
-            // Order matters, GMTcpSocketService must be first
+            var sync = new ServiceSynchronization(0, 2);
+            services.AddSingleton(sync);
             services.AddHostedService<GMTcpSocketService>();
             services.AddHostedService<PlayersTcpSocketService>();
             services.AddHostedService<CommunicationService>();

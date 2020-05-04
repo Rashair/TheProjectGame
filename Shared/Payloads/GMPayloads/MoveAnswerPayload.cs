@@ -1,6 +1,6 @@
 ﻿using Shared.Models;
 
-namespace Shared.Payloads
+namespace Shared.Payloads.GMPayloads
 {
     public class MoveAnswerPayload : Payload
     {

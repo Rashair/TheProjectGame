@@ -12,6 +12,7 @@
     "namingRules": {
       "allowedHungarianPrefixes": [
         "gm",
+        "cs",
         "x",
         "y",
         "id",
