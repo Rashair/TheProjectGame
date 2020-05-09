@@ -22,25 +22,27 @@ namespace Shared.Payloads.PlayerPayloads
         {
             StringBuilder message = new StringBuilder($" RespondToId:{RespondToId})");
             message.AppendLine();
-            message.Append("Distances:");
+            message.Append("Distances:\n");
             for (int i = 0; i < Distances.GetLength(0); i++)
             {
                 for (int j = 0; j < Distances.GetLength(1); j++)
                 {
                     message.Append($"{Distances[i, j]}, ");
                 }
+                message.AppendLine();
             }
             message.AppendLine();
-            message.Append("RedTeamGoalAreaInformations: ");
+            message.Append("RedTeamGoalAreaInformations:\n");
             for (int i = 0; i < RedTeamGoalAreaInformations.GetLength(0); i++)
             {
                 for (int j = 0; j < RedTeamGoalAreaInformations.GetLength(1); j++)
                 {
                     message.Append($"{RedTeamGoalAreaInformations[i, j]}, ");
                 }
+                message.AppendLine();
             }
             message.AppendLine();
-            message.Append("BlueTeamGoalAreaInformations: ");
+            message.Append("BlueTeamGoalAreaInformations:\n");
             for (int i = 0; i < BlueTeamGoalAreaInformations.GetLength(0); i++)
             {
                 for (int j = 0; j < BlueTeamGoalAreaInformations.GetLength(1); j++)
