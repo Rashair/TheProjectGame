@@ -33,7 +33,7 @@ namespace Player
             Configuration = configuration;
         }
 
-        private ILogger GetLogger(string team)
+        private ILogger GetLogger(string team, bool verbose)
         {
             LoggerLevel level = new LoggerLevel();
             Configuration.Bind("Serilog:MinimumLevel", level);
@@ -54,6 +54,14 @@ namespace Player
                 .MinimumLevel.Override("System", level.System);
             level.SetMinimumLevel(logConfig);
 
+            if (verbose)
+            {
+                logConfig.MinimumLevel.Verbose();
+            }
+            else
+            {
+                level.SetMinimumLevel(logConfig);
+            }
             return logConfig.CreateLogger();
         }
 
@@ -69,7 +77,7 @@ namespace Player
             services.AddSingleton(conf);
 
             // 'Try' for tests override
-            var logger = GetLogger(conf.TeamId);
+            var logger = GetLogger(conf.TeamId, conf.Verbose);
             services.TryAddSingleton<ILogger>(logger);
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, TcpSocketClient<GMMessage, PlayerMessage>>();

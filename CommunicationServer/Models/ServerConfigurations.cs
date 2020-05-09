@@ -12,5 +12,7 @@ namespace CommunicationServer.Models
         public int GMPort { get; set; }
 
         public string ListenerIP { get; set; }
+
+        public bool Verbose { get; set; }
     }
 }

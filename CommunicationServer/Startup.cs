@@ -35,7 +35,7 @@ namespace CommunicationServer
             Configuration = configuration;
         }
 
-        private ILogger GetLogger()
+        private ILogger GetLogger(bool verbose)
         {
             LoggerLevel level = new LoggerLevel();
             Configuration.Bind("Serilog:MinimumLevel", level);
@@ -53,8 +53,14 @@ namespace CommunicationServer
                .WriteTo.Console(outputTemplate: LoggerTemplate)
                 .MinimumLevel.Override("Microsoft", level.Microsoft)
                 .MinimumLevel.Override("System", level.System);
-            level.SetMinimumLevel(logConfig);
-
+            if (verbose)
+            {
+                logConfig.MinimumLevel.Verbose();
+            }
+            else
+            {
+                level.SetMinimumLevel(logConfig);
+            }
             return logConfig.CreateLogger();
         }
 
@@ -62,14 +68,14 @@ namespace CommunicationServer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkId=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            var logger = GetLogger();
-            services.TryAddSingleton<ILogger>(logger);
-            var p = logger;
-
             ServerConfigurations conf = new ServerConfigurations();
             Configuration.Bind("DefaultCommunicationServerConfig", conf);
             Configuration.Bind(conf);  // For console override;
             services.AddSingleton(conf);
+
+            var logger = GetLogger(conf.Verbose);
+            services.TryAddSingleton<ILogger>(logger);
+            var p = logger;
 
             services.AddSingleton<ServiceShareContainer>();
             services.AddSingleton<ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage>,

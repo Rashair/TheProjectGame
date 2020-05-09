@@ -35,7 +35,7 @@ namespace GameMaster
             Configuration = configuration;
         }
 
-        private ILogger GetLogger()
+        private ILogger GetLogger(bool verbose)
         {
             LoggerLevel level = new LoggerLevel();
             Configuration.Bind("Serilog:MinimumLevel", level);
@@ -53,8 +53,14 @@ namespace GameMaster
                .WriteTo.Console(outputTemplate: LoggerTemplate)
                 .MinimumLevel.Override("Microsoft", level.Microsoft)
                 .MinimumLevel.Override("System", level.System);
-            level.SetMinimumLevel(logConfig);
-
+            if (verbose)
+            {
+                logConfig.MinimumLevel.Verbose();
+            }
+            else
+            {
+                level.SetMinimumLevel(logConfig);
+            }
             return logConfig.CreateLogger();
         }
 
@@ -62,14 +68,6 @@ namespace GameMaster
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-
-            // In production, the React files will be served from this directory
-            services.AddSpaStaticFiles(configuration =>
-            {
-                configuration.RootPath = "ClientApp/build";
-            });
-            var q = GetLogger();
-            services.TryAddSingleton<ILogger>(GetLogger());
 
             // TODO: Restore if visualisation will be added
             // services.AddSingleton<TcpSocketManager<BackendMessage>>();
@@ -88,6 +86,12 @@ namespace GameMaster
                 Configuration.Bind("DefaultGameConfig", conf);
             }
             services.AddSingleton(conf);
+            
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = "ClientApp/build";
+            });
+            services.TryAddSingleton<ILogger>(GetLogger(conf.Verbose));
 
             services.AddSingleton<GM>();
             services.AddHostedService<SocketService>();

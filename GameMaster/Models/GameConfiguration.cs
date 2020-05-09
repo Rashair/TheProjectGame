@@ -39,6 +39,8 @@ namespace GameMaster.Models
 
         public int NumberOfPiecesOnBoard { get; set; }
 
+        public bool Verbose { get; set; }
+
         /// <summary>
         /// Percentage, between 0 and 1.
         /// </summary>
