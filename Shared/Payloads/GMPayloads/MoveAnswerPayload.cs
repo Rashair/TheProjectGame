@@ -9,5 +9,12 @@ namespace Shared.Payloads.GMPayloads
         public Position CurrentPosition { get; set; }
 
         public int ClosestPiece { get; set; }
+
+        public override string ToString()
+        {
+            string message = $" Accepted:{ClosestPiece}, PlayerId:({CurrentPosition.X},{CurrentPosition.Y})";
+            message += $"MadeMove:{MadeMove}";
+            return message;
+        }
     }
 }

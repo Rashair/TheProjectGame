@@ -33,5 +33,42 @@ namespace Shared.Payloads.GMPayloads
         public float ShamPieceProbability { get; set; }
 
         public Position Position { get; set; }
+
+        public override string ToString()
+        {
+            string message = $" PlayerId:{PlayerId}, TeamId:{TeamId}, LeaderId:{LeaderId}, ";
+            message += $"BoardSize:{BoardSize.X}x{BoardSize.Y}, GoalAreaSize:{GoalAreaSize}";
+            message += $"NumberOfAllies:{NumberOfPlayers.Allies},NumberOfEnemies:{NumberOfPlayers.Enemies},";
+            message += $" NumberOfPieces{NumberOfPieces}, NumberOfGoals:{NumberOfGoals},\n";
+            var penalty = Penalties;
+            message += "Penalties{" + $" Ask:{penalty.Ask}, CheckPiece:{penalty.CheckPiece}, DestroyPiece {penalty.DestroyPiece}, ";
+            message += $"Discover:{penalty.Discover}, Move:{penalty.Move}, PickPiece {penalty.PickPiece}, ";
+            message += $"PutPiece:{penalty.PutPiece}, Response:{penalty.Response}" + "}";
+
+            message += $"\nShamPieceProbability:{ShamPieceProbability}, Position:({Position.X},{Position.Y})\n";
+            message += "AlliesIds:";
+            if (AlliesIds != null)
+            {
+                for (int i = 0; i < AlliesIds.Length; i++)
+                    message += $"{AlliesIds[i]}, ";
+                message += "\n";
+            }
+            else
+            {
+                message += "null, ";
+            }
+
+            message += "EnemiesIds:";
+            if (EnemiesIds != null)
+            {
+                for (int i = 0; i < EnemiesIds.Length; i++)
+                    message += $"{EnemiesIds[i]}, ";
+            }
+            else
+            {
+                message += "null, ";
+            }
+            return message;
+        }
     }
 }

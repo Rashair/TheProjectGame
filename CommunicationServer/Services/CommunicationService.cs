@@ -45,10 +45,12 @@ namespace CommunicationServer.Services
                 {
                     case GMMessage gm:
                         await manager.SendMessageAsync(gm.PlayerId, gm, stoppingToken);
+                        logger.Verbose("Received message." + message.Get() + "Sent message to GM. ");
                         break;
 
                     case PlayerMessage pm:
                         await gmClient.SendAsync(pm, stoppingToken);
+                        logger.Verbose("Received message." + message.Get() + "Sent message to Player.");
                         break;
 
                     case null when stoppingToken.IsCancellationRequested:

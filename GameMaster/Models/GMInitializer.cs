@@ -1,9 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 using GameMaster.Models.Fields;
+using Microsoft.Extensions.Configuration;
+using Serilog;
 using Shared.Enums;
+using Shared.Models;
+
+using static System.Environment;
 
 namespace GameMaster.Models
 {
@@ -128,6 +134,41 @@ namespace GameMaster.Models
             }
 
             return (conf.GoalAreaHeight, conf.Height);
+        }
+
+        public ILogger GetLogger(bool verbose)
+        {
+            var s = System.Environment.CurrentDirectory;
+            var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .Build();
+
+            LoggerLevel level = new LoggerLevel();
+            configuration.Bind("Serilog:MinimumLevel", level);
+            string loggerTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
+            
+            string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "GameMaster");
+            int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
+            string fileName = $"gm-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
+            string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
+            var logConfig = new LoggerConfiguration()
+               .Enrich.FromLogContext()
+               .WriteTo.File(
+               path: path,
+               rollOnFileSizeLimit: true,
+               outputTemplate: loggerTemplate)
+               .WriteTo.Console(outputTemplate: loggerTemplate)
+                .MinimumLevel.Override("Microsoft", level.Microsoft)
+                .MinimumLevel.Override("System", level.System);
+            if (verbose)
+            {
+                logConfig.MinimumLevel.Verbose();
+            }
+            else
+            {
+                level.SetMinimumLevel(logConfig);
+            }
+            return logConfig.CreateLogger();
         }
     }
 }

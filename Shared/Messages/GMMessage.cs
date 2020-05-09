@@ -1,5 +1,7 @@
+using Newtonsoft.Json;
 using Shared.Enums;
 using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
 
 namespace Shared.Messages
 {
@@ -20,6 +22,18 @@ namespace Shared.Messages
             Id = id;
             PlayerId = playerId;
             Payload = payload.Serialize();
+        }
+
+        public override string Get()
+        {
+            string message = $"MessageId:{Id}, PlayerId:{PlayerId}";
+            if (Payload == null)
+            {
+                message += " Payload:null\n";
+                return message;
+            }
+            message += ", Payload:{" + Payload.ToString() + "}";
+            return message;
         }
     }
 }
