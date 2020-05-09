@@ -17,6 +17,7 @@ using Serilog.Events;
 using Shared.Clients;
 using Shared.Managers;
 using Shared.Messages;
+using Shared.Models;
 
 using static System.Environment;
 
@@ -36,21 +37,25 @@ namespace GameMaster
 
         private ILogger GetLogger()
         {
+            LoggerLevel level = new LoggerLevel();
+            Configuration.Bind("Serilog:MinimumLevel", level);
+
             string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "GameMaster");
             int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
             string fileName = $"gm-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
-            return new LoggerConfiguration()
+            var logConfig = new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
                path: path,
                rollOnFileSizeLimit: true,
                outputTemplate: LoggerTemplate)
                .WriteTo.Console(outputTemplate: LoggerTemplate)
-                .MinimumLevel.Information()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                .MinimumLevel.Override("System", LogEventLevel.Warning)
-               .CreateLogger();
+                .MinimumLevel.Override("Microsoft", level.Microsoft)
+                .MinimumLevel.Override("System", level.System);
+            level.SetMinimumLevel(logConfig);
+
+            return logConfig.CreateLogger();
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -63,7 +68,7 @@ namespace GameMaster
             {
                 configuration.RootPath = "ClientApp/build";
             });
-
+            var q = GetLogger();
             services.TryAddSingleton<ILogger>(GetLogger());
 
             // TODO: Restore if visualisation will be added

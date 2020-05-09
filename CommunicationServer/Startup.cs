@@ -11,11 +11,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using Shared;
 using Shared.Clients;
 using Shared.Managers;
 using Shared.Messages;
+using Shared.Models;
 
 using static System.Environment;
 
@@ -35,21 +37,25 @@ namespace CommunicationServer
 
         private ILogger GetLogger()
         {
+            LoggerLevel level = new LoggerLevel();
+            Configuration.Bind("Serilog:MinimumLevel", level);
+            
             string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "CommunicationServer");
             int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
             string fileName = $"cs-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
             string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
-            return new LoggerConfiguration()
+            var logConfig = new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(
                path: path,
                rollOnFileSizeLimit: true,
                outputTemplate: LoggerTemplate)
                .WriteTo.Console(outputTemplate: LoggerTemplate)
-                .MinimumLevel.Information()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                .MinimumLevel.Override("System", LogEventLevel.Warning)
-               .CreateLogger();
+                .MinimumLevel.Override("Microsoft", level.Microsoft)
+                .MinimumLevel.Override("System", level.System);
+            level.SetMinimumLevel(logConfig);
+
+            return logConfig.CreateLogger();
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -58,6 +64,7 @@ namespace CommunicationServer
         {
             var logger = GetLogger();
             services.TryAddSingleton<ILogger>(logger);
+            var p = logger;
 
             ServerConfigurations conf = new ServerConfigurations();
             Configuration.Bind("DefaultCommunicationServerConfig", conf);
