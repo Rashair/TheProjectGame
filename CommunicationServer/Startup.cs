@@ -75,7 +75,6 @@ namespace CommunicationServer
 
             var logger = GetLogger(conf.Verbose);
             services.TryAddSingleton<ILogger>(logger);
-            var p = logger;
 
             services.AddSingleton<ServiceShareContainer>();
             services.AddSingleton<ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage>,
