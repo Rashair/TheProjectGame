@@ -1,3 +1,5 @@
+using System.Text;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Shared.Enums;
@@ -18,35 +20,36 @@ namespace Shared.Payloads.PlayerPayloads
 
         public override string ToString()
         {
-            string message = $" RespondToId:{RespondToId}\n";
-            message += "Distances:\n";
+            StringBuilder message = new StringBuilder($" RespondToId:{RespondToId})");
+            message.AppendLine();
+            message.Append("Distances:");
             for (int i = 0; i < Distances.GetLength(0); i++)
             {
                 for (int j = 0; j < Distances.GetLength(1); j++)
                 {
-                    message += $"{Distances[i, j]}, ";
+                    message.Append($"{Distances[i, j]}, ");
                 }
-                message += "\n";
             }
-            message += "RedTeamGoalAreaInformations:\n";
+            message.AppendLine();
+            message.Append("RedTeamGoalAreaInformations: ");
             for (int i = 0; i < RedTeamGoalAreaInformations.GetLength(0); i++)
             {
                 for (int j = 0; j < RedTeamGoalAreaInformations.GetLength(1); j++)
                 {
-                    message += $"{RedTeamGoalAreaInformations[i, j]}, ";
+                    message.Append($"{RedTeamGoalAreaInformations[i, j]}, ");
                 }
-                message += "\n";
             }
-            message += "BlueTeamGoalAreaInformations:\n";
+            message.AppendLine();
+            message.Append("BlueTeamGoalAreaInformations: ");
             for (int i = 0; i < BlueTeamGoalAreaInformations.GetLength(0); i++)
             {
                 for (int j = 0; j < BlueTeamGoalAreaInformations.GetLength(1); j++)
                 {
-                    message += $"{BlueTeamGoalAreaInformations[i, j]}, ";
+                    message.Append($"{BlueTeamGoalAreaInformations[i, j]}, ");
                 }
-                message += "\n";
+                message.AppendLine();
             }
-            return message;
+            return message.ToString();
         }
     }
 }

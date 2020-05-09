@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text;
+
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Shared.Enums;
 using Shared.Models;
@@ -36,39 +38,40 @@ namespace Shared.Payloads.GMPayloads
 
         public override string ToString()
         {
-            string message = $" PlayerId:{PlayerId}, TeamId:{TeamId}, LeaderId:{LeaderId}, ";
-            message += $"BoardSize:{BoardSize.X}x{BoardSize.Y}, GoalAreaSize:{GoalAreaSize}";
-            message += $"NumberOfAllies:{NumberOfPlayers.Allies},NumberOfEnemies:{NumberOfPlayers.Enemies},";
-            message += $" NumberOfPieces{NumberOfPieces}, NumberOfGoals:{NumberOfGoals},\n";
+            StringBuilder message = new StringBuilder($" PlayerId:{PlayerId}, TeamId:{TeamId}, LeaderId:{LeaderId}, ");
+            message.Append($"BoardSize:{BoardSize.X}x{BoardSize.Y}, GoalAreaSize:{GoalAreaSize}");
+            message.Append($"NumberOfAllies:{NumberOfPlayers.Allies},NumberOfEnemies:{NumberOfPlayers.Enemies},");
+            message.Append($" NumberOfPieces{NumberOfPieces}, NumberOfGoals:{NumberOfGoals},");
             var penalty = Penalties;
-            message += "Penalties{" + $" Ask:{penalty.Ask}, CheckPiece:{penalty.CheckPiece}, DestroyPiece {penalty.DestroyPiece}, ";
-            message += $"Discover:{penalty.Discover}, Move:{penalty.Move}, PickPiece {penalty.PickPiece}, ";
-            message += $"PutPiece:{penalty.PutPiece}, Response:{penalty.Response}" + "}";
+            message.AppendLine();
+            message.Append("Penalties{" + $" Ask:{penalty.Ask}, CheckPiece:{penalty.CheckPiece}, DestroyPiece {penalty.DestroyPiece}, ");
+            message.Append($"Discover:{penalty.Discover}, Move:{penalty.Move}, PickPiece {penalty.PickPiece}, ");
+            message.AppendLine($"PutPiece:{penalty.PutPiece}, Response:{penalty.Response}" + "}");
 
-            message += $"\nShamPieceProbability:{ShamPieceProbability}, Position:({Position.X},{Position.Y})\n";
-            message += "AlliesIds:";
+            message.AppendLine($"ShamPieceProbability:{ShamPieceProbability}, Position:({Position.X},{Position.Y})");
+            message.Append("AlliesIds:");
             if (AlliesIds != null)
             {
                 for (int i = 0; i < AlliesIds.Length; i++)
-                    message += $"{AlliesIds[i]}, ";
-                message += "\n";
+                    message.Append($"{AlliesIds[i]}, ");
             }
             else
             {
-                message += "null, ";
+                message.Append("null, ");
             }
-
-            message += "EnemiesIds:";
+            message.AppendLine();
+            message.Append("EnemiesIds:");
             if (EnemiesIds != null)
             {
                 for (int i = 0; i < EnemiesIds.Length; i++)
-                    message += $"{EnemiesIds[i]}, ";
+                    message.Append($"{EnemiesIds[i]}, ");
             }
             else
             {
-                message += "null, ";
+                message.Append("null, ");
             }
-            return message;
+            message.AppendLine();
+            return message.ToString();
         }
     }
 }

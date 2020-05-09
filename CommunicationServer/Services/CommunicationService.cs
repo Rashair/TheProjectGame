@@ -10,6 +10,7 @@ using Shared;
 using Shared.Clients;
 using Shared.Managers;
 using Shared.Messages;
+using Shared.Models;
 
 namespace CommunicationServer.Services
 {
@@ -45,12 +46,12 @@ namespace CommunicationServer.Services
                 {
                     case GMMessage gm:
                         await manager.SendMessageAsync(gm.PlayerId, gm, stoppingToken);
-                        logger.Verbose("Received message." + message.Get() + "Sent message to GM. ");
+                        logger.Verbose("Received message." + LoggingMessage.Get(message) + "Sent message to GM. ");
                         break;
 
                     case PlayerMessage pm:
                         await gmClient.SendAsync(pm, stoppingToken);
-                        logger.Verbose("Received message." + message.Get() + "Sent message to Player.");
+                        logger.Verbose("Received message." + LoggingMessage.Get(message) + "Sent message to Player.");
                         break;
 
                     case null when stoppingToken.IsCancellationRequested:

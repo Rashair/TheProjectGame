@@ -69,12 +69,6 @@ namespace GameMaster.Models
             var gmInitializer = new GMInitializer(conf, board);
             gmInitializer.InitializeBoard();
             gmInitializer.GenerateAllPieces(GeneratePiece);
-            if (conf.Verbose != Verbose)
-            {
-                Verbose = conf.Verbose;
-                this.logger = gmInitializer.GetLogger(conf.Verbose).ForContext<GM>();
-            }
-
             WasGameInitialized = true;
             logger.Information("Game was initialized.");
         }
@@ -156,7 +150,7 @@ namespace GameMaster.Models
                     PlayerId = p.Key,
                     Payload = payload.Serialize(),
                 };
-                logger.Verbose("Sent message." + message.Get());
+                logger.Verbose("Sent message." + LoggingMessage.Get(message));
                 sendMessagesTasks.Add(socketClient.SendAsync(message, cancellationToken));
             }
 
@@ -172,7 +166,7 @@ namespace GameMaster.Models
                 try
                 {
                     PlayerMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
-                    logger.Verbose("Received message. " + message.Get());
+                    logger.Verbose("Received message. " + LoggingMessage.Get(message));
                     await AcceptMessage(message, cancellationToken);
                     if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
                     {
@@ -250,7 +244,7 @@ namespace GameMaster.Models
                         PlayerId = key,
                         Payload = JsonConvert.SerializeObject(answerJoinPayload),
                     };
-                    logger.Verbose("Sent message." + answerJoin.Get());
+                    logger.Verbose("Sent message." + LoggingMessage.Get(answerJoin));
                     await socketClient.SendAsync(answerJoin, cancellationToken);
 
                     if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
@@ -452,7 +446,7 @@ namespace GameMaster.Models
             };
 
             legalKnowledgeReplies.Add((begPayload.AskedPlayerId, playerMessage.PlayerId));
-            logger.Verbose("Sent message." + gmMessage.Get());
+            logger.Verbose("Sent message." + LoggingMessage.Get(gmMessage));
             await socketClient.SendAsync(gmMessage, cancellationToken);
         }
 
@@ -480,7 +474,7 @@ namespace GameMaster.Models
                     PlayerId = payload.RespondToId,
                     Payload = answerPayload.Serialize(),
                 };
-                logger.Verbose("Sent message." + answer.Get());
+                logger.Verbose("Sent message." + LoggingMessage.Get(answer));
                 await socketClient.SendAsync(answer, cancellationToken);
             }
         }
@@ -501,7 +495,7 @@ namespace GameMaster.Models
             }
             await socketClient.SendToAllAsync(messages, cancellationToken);
             for (int i = 0; i < messages.Count; i++)
-                logger.Verbose("Sent message." + messages[i].Get());
+                logger.Verbose("Sent message." + LoggingMessage.Get(messages[i]));
             logger.Information("Sent endGame to all.");
             WasGameFinished = true;
 

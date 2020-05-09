@@ -44,8 +44,7 @@ export class Configuration extends Component {
       numberOfGoals: 0,
       numberOfPlayersPerTeam: 0,
       shamPieceProbability: 0.0,
-      numberOfPiecesOnBoard: 0,
-      verbose: true
+      numberOfPiecesOnBoard: 0
     };
 
     this.sendData = this.sendData.bind(this);
@@ -258,11 +257,6 @@ export class Configuration extends Component {
             onChange={(e) => this.setState({ shamPieceProbability: e.target.value })}
           />
             </fieldset>
-            <fieldset className="form-group">
-                <label>Verbose </label>
-                <input type="checkbox" checked={this.state.verbose} onChange={(i) => this.setState({ verbose: i.target.checked })} /> 
-            </fieldset>
-
 
         <input className="btn btn-primary btn-block w-100" type="submit" value="Zapisz" />
       </form>

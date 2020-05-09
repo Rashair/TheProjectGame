@@ -11,10 +11,15 @@ namespace Shared.Models
     {
         public LogEventLevel Default { get; set; }
 
-        public LogEventLevel Microsoft { get; set; }
+        public class OverrideConfig
+        {
+            public LogEventLevel Microsoft { get; set; }
 
-        public LogEventLevel System { get; set; }
+            public LogEventLevel System { get; set; }
+        }
 
+        public OverrideConfig Override { get; set; }
+        
         public void SetMinimumLevel(LoggerConfiguration logConfig)
         {
             switch (Default)

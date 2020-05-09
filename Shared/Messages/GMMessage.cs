@@ -23,17 +23,5 @@ namespace Shared.Messages
             PlayerId = playerId;
             Payload = payload.Serialize();
         }
-
-        public override string Get()
-        {
-            string message = $"MessageId:{Id}, PlayerId:{PlayerId}";
-            if (Payload == null)
-            {
-                message += " Payload:null\n";
-                return message;
-            }
-            message += ", Payload:{" + Payload.ToString() + "}";
-            return message;
-        }
     }
 }

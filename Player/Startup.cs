@@ -50,8 +50,8 @@ namespace Player
                rollOnFileSizeLimit: true,
                outputTemplate: LoggerTemplate)
                .WriteTo.Console(outputTemplate: LoggerTemplate)
-                .MinimumLevel.Override("Microsoft", level.Microsoft)
-                .MinimumLevel.Override("System", level.System);
+                .MinimumLevel.Override("Microsoft", level.Override.Microsoft)
+                .MinimumLevel.Override("System", level.Override.System);
             level.SetMinimumLevel(logConfig);
 
             if (verbose)
