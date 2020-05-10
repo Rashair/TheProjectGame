@@ -44,7 +44,7 @@ export class Configuration extends Component {
       numberOfGoals: 0,
       numberOfPlayersPerTeam: 0,
       shamPieceProbability: 0.0,
-      numberOfPiecesOnBoard: 0,
+      numberOfPiecesOnBoard: 0
     };
 
     this.sendData = this.sendData.bind(this);
@@ -256,7 +256,7 @@ export class Configuration extends Component {
             value={this.state.shamPieceProbability}
             onChange={(e) => this.setState({ shamPieceProbability: e.target.value })}
           />
-        </fieldset>
+            </fieldset>
 
         <input className="btn btn-primary btn-block w-100" type="submit" value="Zapisz" />
       </form>

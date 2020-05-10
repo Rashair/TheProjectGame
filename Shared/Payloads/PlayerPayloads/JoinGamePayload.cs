@@ -7,5 +7,10 @@ namespace Shared.Payloads.PlayerPayloads
     {
         [JsonProperty("teamId")]
         public Team TeamId { get; set; }
+
+        public override string ToString()
+        {
+            return $" TeamId:{TeamId}";
+        }
     }
 }
