@@ -102,7 +102,7 @@ namespace Player.Tests
             };
             GMMessage messageCheck = new GMMessage()
             {
-                Id = GMMessageId.CheckAnswer,
+                MessageID = GMMessageId.CheckAnswer,
                 Payload = JsonConvert.SerializeObject(payloadCheck),
             };
             GMMessage startMessage = CreateStartMessage();
@@ -364,7 +364,7 @@ namespace Player.Tests
             await player.AcceptMessage(CancellationToken.None);
 
             // Assert
-            Assert.Equal(lastSended.MessageId, PlayerMessageId.GiveInfo);
+            Assert.Equal(lastSended.MessageID, PlayerMessageId.GiveInfo);
         }
 
         [Fact]
@@ -595,7 +595,7 @@ namespace Player.Tests
             await player.JoinTheGame(CancellationToken.None);
 
             // Assert
-            Assert.Equal(lastSended.MessageId, PlayerMessageId.JoinTheGame);
+            Assert.Equal(lastSended.MessageID, PlayerMessageId.JoinTheGame);
         }
 
         [Fact]
@@ -615,7 +615,7 @@ namespace Player.Tests
             await player.Move(Direction.N, CancellationToken.None);
 
             // Assert
-            Assert.Equal(lastSended.MessageId, PlayerMessageId.Move);
+            Assert.Equal(lastSended.MessageID, PlayerMessageId.Move);
         }
 
         [Fact]
@@ -635,7 +635,7 @@ namespace Player.Tests
             await player.Put(CancellationToken.None);
 
             // Assert
-            Assert.Equal(lastSended.MessageId, PlayerMessageId.Put);
+            Assert.Equal(lastSended.MessageID, PlayerMessageId.Put);
         }
 
         [Fact]
@@ -655,7 +655,7 @@ namespace Player.Tests
             await player.BegForInfo(CancellationToken.None);
 
             // Assert
-            Assert.Equal(lastSended.MessageId, PlayerMessageId.BegForInfo);
+            Assert.Equal(lastSended.MessageID, PlayerMessageId.BegForInfo);
         }
 
         [Fact]
@@ -685,7 +685,7 @@ namespace Player.Tests
             await player.GiveInfo(CancellationToken.None);
 
             // Assert
-            Assert.Equal(lastSended.MessageId, PlayerMessageId.GiveInfo);
+            Assert.Equal(lastSended.MessageID, PlayerMessageId.GiveInfo);
         }
 
         [Fact]
@@ -705,7 +705,7 @@ namespace Player.Tests
             await player.CheckPiece(CancellationToken.None);
 
             // Assert
-            Assert.Equal(lastSended.MessageId, PlayerMessageId.CheckPiece);
+            Assert.Equal(lastSended.MessageID, PlayerMessageId.CheckPiece);
         }
 
         [Fact]
@@ -725,7 +725,7 @@ namespace Player.Tests
             await player.Discover(CancellationToken.None);
 
             // Assert
-            Assert.Equal(lastSended.MessageId, PlayerMessageId.Discover);
+            Assert.Equal(lastSended.MessageID, PlayerMessageId.Discover);
         }
 
         [Fact]
@@ -745,7 +745,7 @@ namespace Player.Tests
             await player.DestroyPiece(CancellationToken.None);
 
             // Assert
-            Assert.Equal(lastSended.MessageId, PlayerMessageId.PieceDestruction);
+            Assert.Equal(lastSended.MessageID, PlayerMessageId.PieceDestruction);
         }
 
         [Fact]
@@ -765,7 +765,7 @@ namespace Player.Tests
             await player.Pick(CancellationToken.None);
 
             // Assert
-            Assert.Equal(lastSended.MessageId, PlayerMessageId.Pick);
+            Assert.Equal(lastSended.MessageID, PlayerMessageId.Pick);
         }
     }
 }

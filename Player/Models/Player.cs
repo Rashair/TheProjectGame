@@ -100,7 +100,7 @@ namespace Player.Models
             };
             PlayerMessage message = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.JoinTheGame,
+                MessageID = PlayerMessageId.JoinTheGame,
                 Payload = payload.Serialize(),
             };
             await Communicate(message, cancellationToken);
@@ -134,8 +134,8 @@ namespace Player.Models
             };
             PlayerMessage message = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.Move,
-                PlayerId = id,
+                MessageID = PlayerMessageId.Move,
+                AgentID = id,
                 Payload = payload.Serialize(),
             };
             await Communicate(message, cancellationToken);
@@ -146,8 +146,8 @@ namespace Player.Models
             EmptyPayload payload = new EmptyPayload();
             PlayerMessage message = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.Put,
-                PlayerId = id,
+                MessageID = PlayerMessageId.Put,
+                AgentID = id,
                 Payload = payload.Serialize(),
             };
             await Communicate(message, cancellationToken);
@@ -157,8 +157,8 @@ namespace Player.Models
         {
             PlayerMessage message = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.BegForInfo,
-                PlayerId = id,
+                MessageID = PlayerMessageId.BegForInfo,
+                AgentID = id,
             };
 
             Random rnd = new Random();
@@ -185,8 +185,8 @@ namespace Player.Models
 
             PlayerMessage message = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.GiveInfo,
-                PlayerId = id,
+                MessageID = PlayerMessageId.GiveInfo,
+                AgentID = id,
             };
 
             GiveInfoPayload response = new GiveInfoPayload();
@@ -243,8 +243,8 @@ namespace Player.Models
         {
             return new PlayerMessage()
             {
-                MessageId = type,
-                PlayerId = id,
+                MessageID = type,
+                AgentID = id,
                 Payload = payload.Serialize(),
             };
         }
@@ -272,7 +272,7 @@ namespace Player.Models
             var cancellationTimespan = TimeSpan.FromMinutes(2);
             GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
             logger.Verbose("Received message. " + MessageLogger.Get(message));
-            switch (message.Id)
+            switch (message.MessageID)
             {
                 case GMMessageId.CheckAnswer:
                     CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
@@ -387,7 +387,7 @@ namespace Player.Models
                         if (goal)
                         {
                             Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredGoal;
-                            logger.Information("I got goal at ");
+                            logger.Information($"GOT GOAL at ({Position.y}, {Position.x}) !!!");
                         }
                         else
                         {
@@ -446,8 +446,8 @@ namespace Player.Models
             EmptyPayload messagePickPayload = new EmptyPayload();
             PlayerMessage messagePick = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.PieceDestruction,
-                PlayerId = id,
+                MessageID = PlayerMessageId.PieceDestruction,
+                AgentID = id,
                 Payload = JsonConvert.SerializeObject(messagePickPayload),
             };
             await Communicate(messagePick, cancellationToken);
@@ -458,8 +458,8 @@ namespace Player.Models
             EmptyPayload messagePickPayload = new EmptyPayload();
             PlayerMessage messagePick = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.Pick,
-                PlayerId = id,
+                MessageID = PlayerMessageId.Pick,
+                AgentID = id,
                 Payload = JsonConvert.SerializeObject(messagePickPayload),
             };
             await Communicate(messagePick, cancellationToken);

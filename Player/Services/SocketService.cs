@@ -75,7 +75,7 @@ namespace Player.Services
                 bool sended = await queue.SendAsync(message, stoppingToken);
                 if (!sended)
                 {
-                    logger.Warning($"SocketService| GMMessage id: {message.Id} has been lost");
+                    logger.Warning($"SocketService| GMMessage id: {message.MessageID} has been lost");
                 }
                 (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
             }

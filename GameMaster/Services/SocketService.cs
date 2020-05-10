@@ -52,7 +52,7 @@ namespace GameMaster.Services
                 bool sended = await queue.SendAsync(message, stoppingToken);
                 if (!sended)
                 {
-                    logger.Warning($"SocketService| PlayerMessage id: {message.MessageId} has been lost");
+                    logger.Warning($"SocketService| PlayerMessage id: {message.MessageID} has been lost");
                 }
                 (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
             }

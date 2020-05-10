@@ -45,7 +45,7 @@ namespace CommunicationServer.Services
                 switch (message)
                 {
                     case GMMessage gm:
-                        await manager.SendMessageAsync(gm.PlayerId, gm, stoppingToken);
+                        await manager.SendMessageAsync(gm.AgentID, gm, stoppingToken);
                         logger.Verbose("Received message." + MessageLogger.Get(message) + "Sent message to GM. ");
                         break;
 

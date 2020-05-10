@@ -24,7 +24,7 @@ namespace Shared.Tests
                 var deserializedObject = JsonConvert.DeserializeObject<GMMessage>(jsonString);
 
                 // Assert
-                Assert.Equal(msg.Value, deserializedObject.Id);
+                Assert.Equal(msg.Value, deserializedObject.MessageID);
             }
         }
 
@@ -40,8 +40,8 @@ namespace Shared.Tests
             {
                 var obj = new GMMessage
                 {
-                    Id = msg.Value,
-                    PlayerId = playerId,
+                    MessageID = msg.Value,
+                    AgentID = playerId,
                     Payload = new EmptyAnswerPayload().Serialize(),
                 };
 
