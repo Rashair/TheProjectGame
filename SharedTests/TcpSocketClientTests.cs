@@ -51,10 +51,10 @@ namespace Shared.Tests
             var socket = socketClient.GetSocket();
 
             // Assert
-            Assert.True(socket == tcpClient, 
+            Assert.True(socket == tcpClient,
                 "Returned socket should be the same object which was passed via constructor");
         }
-        
+
         [Fact]
         public async void CloseAsync_Test()
         {

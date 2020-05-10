@@ -26,7 +26,7 @@ namespace Player.Models
 
         private int id;
         private int penaltyTime;
-        private IStrategy strategy;
+        private readonly IStrategy strategy;
         private bool working;
         private readonly PlayerConfiguration conf;
         private Team? winner;

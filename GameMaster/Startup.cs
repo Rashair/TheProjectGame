@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Net.Sockets;
 using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Models;
@@ -15,7 +14,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
 using Serilog.Events;
 using Shared.Clients;
-using Shared.Managers;
 using Shared.Messages;
 using Shared.Models;
 

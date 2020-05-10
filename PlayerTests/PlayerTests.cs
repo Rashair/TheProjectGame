@@ -21,7 +21,7 @@ namespace Player.Tests
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
         private readonly int playerId = 1;
         private PlayerMessage lastSended;
-        private BoardSize playerBoardSize = new BoardSize { X = 3, Y = 3 };
+        private readonly BoardSize playerBoardSize = new BoardSize { X = 3, Y = 3 };
 
         private ISocketClient<GMMessage, PlayerMessage> GenerateSocketClient()
         {
@@ -497,8 +497,8 @@ namespace Player.Tests
 
             // Assert
             GoalInfo actualGoalInfo = player.Board[randomPosition3.Y, randomPosition3.X].GoalInfo;
-            Assert.Equal(GoalInfo.DiscoveredGoal, actualGoalInfo); 
-            
+            Assert.Equal(GoalInfo.DiscoveredGoal, actualGoalInfo);
+
             int actualDist1 = player.Board[randomPosition1.Y, randomPosition1.X].DistToPiece;
             Assert.Equal(randomDistance1, actualDist1);
 

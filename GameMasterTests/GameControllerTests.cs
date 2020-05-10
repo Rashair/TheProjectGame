@@ -43,11 +43,13 @@ namespace GameMaster.Tests
             GameController gameController = new GameController(config, gameConfig, gameMaster, logger);
 
             // Act
-            GameConfiguration newGameConfig = new MockGameConfiguration();
-            newGameConfig.AskPenalty = 200;
-            newGameConfig.Height = 10;
-            newGameConfig.DestroyPenalty = 100;
-            newGameConfig.PickPenalty = 100;
+            GameConfiguration newGameConfig = new MockGameConfiguration
+            {
+                AskPenalty = 200,
+                Height = 10,
+                DestroyPenalty = 100,
+                PickPenalty = 100
+            };
 
             var result = await gameController.Configuration(newGameConfig);
             var createdResult = (CreatedResult)result.Result;

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -29,7 +28,7 @@ namespace GameMaster.Tests
 
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
         private GMMessage lastSended;
-    
+
         private ISocketClient<PlayerMessage, GMMessage> GenerateSocketClient()
         {
             var mock = new Mock<ISocketClient<PlayerMessage, GMMessage>>();
