@@ -91,7 +91,8 @@ namespace GameMaster
             {
                 configuration.RootPath = "ClientApp/build";
             });
-            services.TryAddSingleton<ILogger>(GetLogger(conf.Verbose));
+            
+            services.TryAddSingleton<ILogger>(GetLogger(Configuration.GetValue<bool>("DefaultGameConfig:Verbose")));
 
             services.AddSingleton<GM>();
             services.AddHostedService<SocketService>();
