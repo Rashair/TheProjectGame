@@ -3,7 +3,6 @@
 using Newtonsoft.Json;
 using Shared.Enums;
 using Shared.Messages;
-using Shared.Payloads;
 using Shared.Payloads.GMPayloads;
 using Xunit;
 
@@ -20,7 +19,7 @@ namespace Shared.Tests
             // Act
             foreach (var msg in gmMessages)
             {
-                var jsonString = "{\"id\":" + msg.Key + ",\"Payload\":\"{}\"}";
+                var jsonString = "{\"MessageID\":" + msg.Key + ",\"Payload\":\"{}\"}";
                 var deserializedObject = JsonConvert.DeserializeObject<GMMessage>(jsonString);
 
                 // Assert
@@ -45,7 +44,7 @@ namespace Shared.Tests
                     Payload = new EmptyAnswerPayload().Serialize(),
                 };
 
-                var expectedJsonString = "{\"Id\":" + msg.Key + ",\"PlayerId\":" + playerId + ",\"Payload\":\"{}\"}";
+                var expectedJsonString = "{\"MessageID\":" + msg.Key + ",\"AgentID\":" + playerId + ",\"Payload\":\"{}\"}";
                 var serializedObject = JsonConvert.SerializeObject(obj);
 
                 // Assert

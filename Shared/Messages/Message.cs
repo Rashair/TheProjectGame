@@ -4,7 +4,7 @@ namespace Shared.Messages
 {
     public class Message
     {
-        public Enum MessageID { get; set; }
+        public virtual Enum MessageID { get; set; }
 
         public int AgentID { get; set; }
 
