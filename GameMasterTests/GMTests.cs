@@ -146,7 +146,7 @@ namespace GameMaster.Tests
             }
 
             // Act
-            var discoveryActionResult = gameMaster.Invoke<GM, Dictionary<Direction, int>>("Discover", field);
+            var discoveryActionResult = gameMaster.Invoke<GM, Dictionary<Direction, int?>>("Discover", field);
 
             // Assert
             var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
@@ -370,13 +370,13 @@ namespace GameMaster.Tests
             gameMaster.Invoke("InitGame");
 
             // Act
-            var distances = gameMaster.Invoke<GM, Dictionary<Direction, int>>("Discover", new TaskField(0, 5));
+            var distances = gameMaster.Invoke<GM, Dictionary<Direction, int?>>("Discover", new TaskField(0, 5));
             var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
 
-            int expectedResult = -1;
-            int resultS = distances[Direction.S];
-            int resultSE = distances[Direction.SE];
-            int resultSW = distances[Direction.SW];
+            int? expectedResult = null;
+            int? resultS = distances[Direction.S];
+            int? resultSE = distances[Direction.SE];
+            int? resultSW = distances[Direction.SW];
 
             // Assert
             Assert.Equal(expectedResult, resultS);
