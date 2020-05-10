@@ -53,25 +53,14 @@ namespace GameMaster.Models
             lockedTill = DateTime.Now;
         }
 
-        public bool TryLock(TimeSpan timeSpan)
-        {
-            DateTime frozenTime = DateTime.Now;
-            bool isUnlocked = lockedTill <= frozenTime;
-            if (isUnlocked)
-            {
-                lockedTill = frozenTime + timeSpan;
-            }
-            return isUnlocked;
-        }
-
         public async Task<bool> MoveAsync(AbstractField field, GM gm, CancellationToken cancellationToken)
         {
-            bool isUnlocked = await TryLockAsync(conf.MovePenalty, cancellationToken);
+            bool isUnlocked = await TryGetLockAsync(cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 bool moved = field?.MoveHere(this) == true;
                 GMMessage message = MoveAnswerMessage(moved, gm);
-                await socketClient.SendAsync(message, cancellationToken);
+                await SendAndLockAsync(message, conf.MovePenalty, cancellationToken);
                 logger.Verbose("Sent message." + MessageLogger.Get(message));
                 return moved;
             }
@@ -80,7 +69,7 @@ namespace GameMaster.Models
 
         public async Task<bool> DestroyHoldingAsync(CancellationToken cancellationToken)
         {
-            bool isUnlocked = await TryLockAsync(conf.DestroyPenalty, cancellationToken);
+            bool isUnlocked = await TryGetLockAsync(cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 GMMessage message;
@@ -95,7 +84,7 @@ namespace GameMaster.Models
                     // TODO Issue 129
                     message = UnknownErrorMessage();
                 }
-                await socketClient.SendAsync(message, cancellationToken);
+                await SendAndLockAsync(message, conf.DestroyPenalty, cancellationToken);
                 logger.Verbose("Sent message." + MessageLogger.Get(message));
                 return isHolding;
             }
@@ -104,7 +93,7 @@ namespace GameMaster.Models
 
         public async Task CheckHoldingAsync(CancellationToken cancellationToken)
         {
-            bool isUnlocked = await TryLockAsync(conf.CheckPenalty, cancellationToken);
+            bool isUnlocked = await TryGetLockAsync(cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 GMMessage message;
@@ -117,18 +106,20 @@ namespace GameMaster.Models
                 {
                     message = CheckAnswerMessage();
                 }
-                await socketClient.SendAsync(message, cancellationToken);
+
+                await SendAndLockAsync(message, conf.CheckPenalty, cancellationToken);
                 logger.Verbose("Sent message." + MessageLogger.Get(message));
             }
         }
 
         public async Task DiscoverAsync(GM gm, CancellationToken cancellationToken)
         {
-            bool isUnlocked = await TryLockAsync(conf.DiscoverPenalty, cancellationToken);
+            bool isUnlocked = await TryGetLockAsync(cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 GMMessage message = DiscoverAnswerMessage(gm);
-                await socketClient.SendAsync(message, cancellationToken);
+
+                await SendAndLockAsync(message, conf.DiscoverPenalty, cancellationToken);
                 logger.Verbose("Sent message." + MessageLogger.Get(message));
             }
         }
@@ -138,7 +129,7 @@ namespace GameMaster.Models
         /// </returns>
         public async Task<(bool?, bool)> PutAsync(CancellationToken cancellationToken)
         {
-            bool isUnlocked = await TryLockAsync(conf.PutPenalty, cancellationToken);
+            bool isUnlocked = await TryGetLockAsync(cancellationToken);
             (bool? goal, bool removed) = (false, false);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
@@ -155,13 +146,14 @@ namespace GameMaster.Models
                 }
                 await socketClient.SendAsync(message, cancellationToken);
                 logger.Verbose("Sent message." + MessageLogger.Get(message));
+                await SendAndLockAsync(message, conf.PutPenalty, cancellationToken);
             }
             return (goal, removed);
         }
 
         public async Task<bool> PickAsync(CancellationToken cancellationToken)
         {
-            bool isUnlocked = await TryLockAsync(conf.PickPenalty, cancellationToken);
+            bool isUnlocked = await TryGetLockAsync(cancellationToken);
             bool picked = false;
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
@@ -182,9 +174,10 @@ namespace GameMaster.Models
                 {
                     message = PickErrorMessage(PickError.Other);
                 }
-                await socketClient.SendAsync(message, cancellationToken);
+                await SendAndLockAsync(message, conf.PickPenalty, cancellationToken);
                 logger.Verbose("Sent message." + message.ToString());
             }
+
             return picked;
         }
 
@@ -198,14 +191,15 @@ namespace GameMaster.Models
             get { return position.GetPosition()[i]; }
         }
 
-        private async Task<bool> TryLockAsync(int time, CancellationToken cancellationToken)
+        private async Task<bool> TryGetLockAsync(CancellationToken cancellationToken)
         {
             if (!cancellationToken.IsCancellationRequested)
             {
-                int rounded = ((int)Math.Round(time / 10.0)) * 10;
-                bool isUnlocked = TryLock(TimeSpan.FromMilliseconds(rounded));
+                bool isUnlocked = lockedTill <= DateTime.Now;
                 if (!isUnlocked)
                 {
+                    // TODO: Change to PrematureRequestPenalty (@Zhanna)
+                    Lock(50);
                     GMMessage message = NotWaitedErrorMessage();
                     await socketClient.SendAsync(message, cancellationToken);
                     logger.Verbose("Sent message." + MessageLogger.Get(message));
@@ -213,6 +207,25 @@ namespace GameMaster.Models
                 return isUnlocked;
             }
             return false;
+        }
+
+        private async Task SendAndLockAsync(GMMessage message, int time, CancellationToken cancellationToken)
+        {
+            await socketClient.SendAsync(message, cancellationToken);
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                Lock(time);
+            }
+        }
+
+        private DateTime Lock(int time)
+        {
+            DateTime frozenTime = DateTime.Now;
+            int rounded = ((int)Math.Round(time / 10.0)) * 10;
+            TimeSpan span = TimeSpan.FromMilliseconds(rounded);
+            lockedTill = frozenTime + span;
+
+            return lockedTill;
         }
 
         private GMMessage NotWaitedErrorMessage()

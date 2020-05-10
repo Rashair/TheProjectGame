@@ -72,15 +72,24 @@ namespace GameMaster.Tests
         }
 
         [Fact]
-        public async Task TestTryLock()
+        public async Task TestLock()
         {
+            // Arrange
+            var token = CancellationToken.None;
             var player = GenerateGMPlayer();
             int delay = 100;
-            var lockSpan = TimeSpan.FromMilliseconds(delay);
-            Assert.True(player.TryLock(lockSpan));
-            Assert.False(player.TryLock(lockSpan));
+
+            // Act
+            player.Invoke("Lock", delay);
+
+            // Assert
+            bool gotLock = await player.Invoke<GMPlayer, Task<bool>>("TryGetLockAsync", token);
+            Assert.False(gotLock);
+
             await Task.Delay(delay * 2);
-            Assert.True(player.TryLock(lockSpan));
+
+            gotLock = await player.Invoke<GMPlayer, Task<bool>>("TryGetLockAsync", token);
+            Assert.True(gotLock);
         }
 
         [Fact]
