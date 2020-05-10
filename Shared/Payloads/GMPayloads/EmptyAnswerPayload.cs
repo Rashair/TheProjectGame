@@ -2,5 +2,9 @@
 {
     public class EmptyAnswerPayload : Payload
     {
+        public override string ToString()
+        {
+            return "";
+        }
     }
 }

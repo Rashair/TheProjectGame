@@ -19,5 +19,13 @@
         public int? DistanceW { get; set; }
 
         public int? DistanceNW { get; set; }
+
+        public override string ToString()
+        {
+            string message = $"\nNE:{DistanceNE}, N:{DistanceN}, NW:{DistanceNW},\n";
+            message += $"E:{DistanceE}, FromCurrent:{DistanceFromCurrent}, W:{DistanceW},\n";
+            message += $"SE:{DistanceNE}, N:{DistanceN}, NW:{DistanceNW}";
+            return message;
+        }
     }
 }

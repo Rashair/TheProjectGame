@@ -9,5 +9,10 @@ namespace Shared.Payloads.PlayerPayloads
         [JsonProperty("direction")]
         [JsonConverter(typeof(StringEnumConverter))]
         public Direction Direction { get; set; }
+
+        public override string ToString()
+        {
+            return $" Direction:{Direction}";
+        }
     }
 }
