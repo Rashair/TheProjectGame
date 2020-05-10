@@ -11,20 +11,20 @@ namespace Shared.Models
     {
         public static string Get(Message msg)
         {
-            string messageLog = $"MessageId:{msg.MessageID}, PlayerId:{msg.AgentID}";
-            messageLog += ", Payload:{";
+            string messageLog = "";
             Payload payload = null;
             switch (msg)
             {
                 case GMMessage gmMessage:
+                    messageLog = $"MessageId:{gmMessage.MessageID}, PlayerId:{gmMessage.AgentID}";
                     payload = GetPayload(gmMessage.MessageID, gmMessage.Payload);
                     break;
                 case PlayerMessage playerMessage:
+                    messageLog = $"MessageId:{playerMessage.MessageID}, PlayerId:{playerMessage.AgentID}";
                     payload = GetPayload(playerMessage.MessageID, playerMessage.Payload);
                     break;
             }
-            messageLog += payload?.ToString() ?? "null";
-            messageLog += "} ";
+            messageLog += $", Payload: {{{payload?.ToString() ?? "null"}}}";
             return messageLog;
         }
 

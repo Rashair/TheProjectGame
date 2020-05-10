@@ -67,12 +67,11 @@ public static class ReflectionExtensions
         Type source, Type destination)
     {
         return from sourceProperty in source.GetProperties()
-                  let destProperty = destination.GetProperty(sourceProperty.Name, BindingFlags.DeclaredOnly)
+                  let destProperty = destination.GetProperty(sourceProperty.Name)
                   where sourceProperty.CanRead
                   && destProperty != null
                   && destProperty.GetSetMethod(true) != null && !destProperty.GetSetMethod(true).IsPrivate
                   && (destProperty.GetSetMethod().Attributes & MethodAttributes.Static) == 0
-                  && (destProperty.GetSetMethod().Attributes & MethodAttributes.Virtual) == 0
                   && destProperty.PropertyType.IsAssignableFrom(sourceProperty.PropertyType)
                   select (sourceProperty, destProperty);
     }

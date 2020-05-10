@@ -68,23 +68,7 @@ namespace GameMaster.Models
         public override bool Equals(object obj)
         {
             return obj is GameConfiguration configuration &&
-                   CsIP == configuration.CsIP &&
-                   CsPort == configuration.CsPort &&
-                   MovePenalty == configuration.MovePenalty &&
-                   AskPenalty == configuration.AskPenalty &&
-                   ResponsePenalty == configuration.ResponsePenalty &&
-                   DiscoverPenalty == configuration.DiscoverPenalty &&
-                   PickPenalty == configuration.PickPenalty &&
-                   CheckPenalty == configuration.CheckPenalty &&
-                   PutPenalty == configuration.PutPenalty &&
-                   DestroyPenalty == configuration.DestroyPenalty &&
-                   Width == configuration.Width &&
-                   Height == configuration.Height &&
-                   GoalAreaHeight == configuration.GoalAreaHeight &&
-                   NumberOfGoals == configuration.NumberOfGoals &&
-                   NumberOfPiecesOnBoard == configuration.NumberOfPiecesOnBoard &&
-                   ShamPieceProbability == configuration.ShamPieceProbability &&
-                   NumberOfPlayersPerTeam == configuration.NumberOfPlayersPerTeam;
+                this.AreAllPropertiesTheSame(configuration);
         }
 
         public override int GetHashCode()
@@ -107,6 +91,7 @@ namespace GameMaster.Models
             hash.Add(NumberOfPiecesOnBoard);
             hash.Add(ShamPieceProbability);
             hash.Add(NumberOfPlayersPerTeam);
+            hash.Add(Verbose);
             return hash.ToHashCode();
         }
     }
