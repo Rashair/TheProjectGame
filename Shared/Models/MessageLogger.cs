@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Payloads;
@@ -11,106 +7,102 @@ using Shared.Payloads.PlayerPayloads;
 
 namespace Shared.Models
 {
-    public class MessageLogger
+    public static class MessageLogger
     {
-        public static string Get(Message message)
+        public static string Get(Message msg)
         {
+            string messageLog = "";
             Payload payload = null;
-            string logMessage = "";
-            switch (message)
+            switch (msg)
             {
-                case GMMessage gm:
-                    {
-                        logMessage = $"MessageId:{gm.Id}, PlayerId:{gm.PlayerId}";
-                        logMessage += ", Payload:{";
-                        switch (gm.Id)
-                        {
-                            case GMMessageId.CheckAnswer:
-                                payload = JsonConvert.DeserializeObject<CheckAnswerPayload>(gm.Payload);
-                                break;
-                            case GMMessageId.DestructionAnswer:
-                                break;
-                            case GMMessageId.DiscoverAnswer:
-                                payload = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(gm.Payload);
-                                break;
-                            case GMMessageId.EndGame:
-                                payload = JsonConvert.DeserializeObject<EndGamePayload>(gm.Payload);
-                                break;
-                            case GMMessageId.StartGame:
-                                payload = JsonConvert.DeserializeObject<StartGamePayload>(gm.Payload);
-                                break;
-                            case GMMessageId.BegForInfoForwarded:
-                                payload = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(gm.Payload);
-                                break;
-                            case GMMessageId.JoinTheGameAnswer:
-                                payload = JsonConvert.DeserializeObject<JoinAnswerPayload>(gm.Payload);
-                                break;
-                            case GMMessageId.MoveAnswer:
-                                payload = JsonConvert.DeserializeObject<MoveAnswerPayload>(gm.Payload);
-                                break;
-                            case GMMessageId.PutAnswer:
-                                payload = JsonConvert.DeserializeObject<PutAnswerPayload>(gm.Payload);
-                                break;
-                            case GMMessageId.GiveInfoForwarded:
-                                payload = JsonConvert.DeserializeObject<GiveInfoForwardedPayload>(gm.Payload);
-                                break;
-                            case GMMessageId.NotWaitedError:
-                                payload = JsonConvert.DeserializeObject<NotWaitedErrorPayload>(gm.Payload);
-                                break;
-                            case GMMessageId.PickError:
-                                payload = JsonConvert.DeserializeObject<PickErrorPayload>(gm.Payload);
-                                break;
-                            case GMMessageId.PutError:
-                                payload = JsonConvert.DeserializeObject<PutAnswerPayload>(gm.Payload);
-                                break;
-                            case GMMessageId.UnknownError:
-                                payload = JsonConvert.DeserializeObject<UnknownErrorPayload>(gm.Payload);
-                                break; 
-                        }
-                        break;
-                    }
-                case PlayerMessage pm:
-                    {
-                        logMessage = $"MessageId:{pm.MessageId}, PlayerId:{pm.PlayerId}";
-                        logMessage += ", Payload:{";
-                        switch (pm.MessageId)
-                        {
-                            case PlayerMessageId.CheckPiece:
-                                break;
-                            case PlayerMessageId.PieceDestruction:
-                                break;
-                            case PlayerMessageId.Discover:
-                                break;
-                            case PlayerMessageId.GiveInfo:
-                                payload = JsonConvert.DeserializeObject<GiveInfoPayload>(pm.Payload);
-                                break;
-                            case PlayerMessageId.BegForInfo:
-                                payload = JsonConvert.DeserializeObject<BegForInfoPayload>(pm.Payload);
-                                break;
-                            case PlayerMessageId.JoinTheGame:
-                                payload = JsonConvert.DeserializeObject<JoinGamePayload>(pm.Payload);
-                                break;
-                            case PlayerMessageId.Move:
-                                payload = JsonConvert.DeserializeObject<MovePayload>(pm.Payload);
-                                break;
-                            case PlayerMessageId.Pick:
-                                break;
-                            case PlayerMessageId.Put:
-                                break;
-                        }
-                        break;
-                    }
+                case GMMessage gmMessage:
+                    messageLog = $"MessageId:{gmMessage.MessageID}, PlayerId:{gmMessage.AgentID}";
+                    payload = GetPayload(gmMessage.MessageID, gmMessage.Payload);
+                    break;
+                case PlayerMessage playerMessage:
+                    messageLog = $"MessageId:{playerMessage.MessageID}, PlayerId:{playerMessage.AgentID}";
+                    payload = GetPayload(playerMessage.MessageID, playerMessage.Payload);
+                    break;
             }
-            if (payload == null)
+            messageLog += $", Payload: {{{payload?.ToString() ?? "null"}}}";
+            return messageLog;
+        }
+
+        private static Payload GetPayload(GMMessageId messageId, string payload)
+        {
+            switch (messageId)
             {
-                logMessage += " null";
+                case GMMessageId.DestructionAnswer:
+                    return null;
+
+                case GMMessageId.CheckAnswer:
+                    return JsonConvert.DeserializeObject<CheckAnswerPayload>(payload);
+
+                case GMMessageId.DiscoverAnswer:
+                    return JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(payload);
+
+                case GMMessageId.EndGame:
+                    return JsonConvert.DeserializeObject<EndGamePayload>(payload);
+
+                case GMMessageId.StartGame:
+                    return JsonConvert.DeserializeObject<StartGamePayload>(payload);
+
+                case GMMessageId.BegForInfoForwarded:
+                    return JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(payload);
+
+                case GMMessageId.JoinTheGameAnswer:
+                    return JsonConvert.DeserializeObject<JoinAnswerPayload>(payload);
+
+                case GMMessageId.MoveAnswer:
+                    return JsonConvert.DeserializeObject<MoveAnswerPayload>(payload);
+
+                case GMMessageId.PutAnswer:
+                    return JsonConvert.DeserializeObject<PutAnswerPayload>(payload);
+
+                case GMMessageId.GiveInfoForwarded:
+                    return JsonConvert.DeserializeObject<GiveInfoForwardedPayload>(payload);
+
+                case GMMessageId.NotWaitedError:
+                    return JsonConvert.DeserializeObject<NotWaitedErrorPayload>(payload);
+
+                case GMMessageId.PickError:
+                    return JsonConvert.DeserializeObject<PickErrorPayload>(payload);
+
+                case GMMessageId.PutError:
+                    return JsonConvert.DeserializeObject<PutAnswerPayload>(payload);
+
+                case GMMessageId.UnknownError:
+                    return JsonConvert.DeserializeObject<UnknownErrorPayload>(payload);
             }
-            else
+
+            return null;
+        }
+
+        private static Payload GetPayload(PlayerMessageId messageId, string payload)
+        {
+            switch (messageId)
             {
-                logMessage += payload.ToString();
+                case PlayerMessageId.CheckPiece:
+                case PlayerMessageId.PieceDestruction:
+                case PlayerMessageId.Discover:
+                case PlayerMessageId.Pick:
+                case PlayerMessageId.Put:
+                    return null;
+
+                case PlayerMessageId.GiveInfo:
+                    return JsonConvert.DeserializeObject<GiveInfoPayload>(payload);
+
+                case PlayerMessageId.BegForInfo:
+                    return JsonConvert.DeserializeObject<BegForInfoPayload>(payload);
+
+                case PlayerMessageId.JoinTheGame:
+                    return JsonConvert.DeserializeObject<JoinGamePayload>(payload);
+
+                case PlayerMessageId.Move:
+                    return JsonConvert.DeserializeObject<MovePayload>(payload);
             }
-            logMessage += "} ";
-            return logMessage;
+
+            return null;
         }
     }
 }

@@ -55,7 +55,7 @@ namespace Player.Tests
             };
             GMMessage messageStart = new GMMessage()
             {
-                Id = GMMessageId.StartGame,
+                MessageID = GMMessageId.StartGame,
                 Payload = payloadStart.Serialize(),
             };
             queue.Post(messageStart);

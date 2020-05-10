@@ -20,7 +20,7 @@ namespace Shared.Payloads.GMPayloads
 
         public override string ToString()
         {
-            StringBuilder message = new StringBuilder($" AnsweringId:{AnsweringId}, ");
+            StringBuilder message = new StringBuilder($"AnsweringId:{AnsweringId}, ");
             message.AppendLine("Distances:\n");
             for (int i = 0; i < Distances.GetLength(0); i++)
             {
@@ -50,6 +50,7 @@ namespace Shared.Payloads.GMPayloads
                 }
                 message.AppendLine();
             }
+
             return message.ToString();
         }
     } 
