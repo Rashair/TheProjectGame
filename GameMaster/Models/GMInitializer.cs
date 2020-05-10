@@ -1,15 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 
 using GameMaster.Models.Fields;
-using Microsoft.Extensions.Configuration;
-using Serilog;
 using Shared.Enums;
-using Shared.Models;
-
-using static System.Environment;
 
 namespace GameMaster.Models
 {
