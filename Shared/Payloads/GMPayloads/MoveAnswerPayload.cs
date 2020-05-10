@@ -12,8 +12,8 @@ namespace Shared.Payloads.GMPayloads
 
         public override string ToString()
         {
-            string message = $" Accepted:{ClosestPiece}, PlayerId:({CurrentPosition.X},{CurrentPosition.Y})";
-            message += $"MadeMove:{MadeMove}";
+            string message = $" Accepted:{ClosestPiece}, PlayerPosition:({CurrentPosition.X},{CurrentPosition.Y})";
+            message += $" MadeMove:{MadeMove}";
             return message;
         }
     }

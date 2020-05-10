@@ -109,7 +109,7 @@ namespace Shared.Models
             {
                 logMessage += payload.ToString();
             }
-            logMessage += "}";
+            logMessage += "} ";
             return logMessage;
         }
     }
