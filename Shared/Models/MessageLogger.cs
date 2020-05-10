@@ -11,7 +11,7 @@ using Shared.Payloads.PlayerPayloads;
 
 namespace Shared.Models
 {
-    public class LoggingMessage
+    public class MessageLogger
     {
         public static string Get(Message message)
         {

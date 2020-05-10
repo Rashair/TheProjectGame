@@ -150,7 +150,7 @@ namespace GameMaster.Models
                     PlayerId = p.Key,
                     Payload = payload.Serialize(),
                 };
-                logger.Verbose("Sent message." + LoggingMessage.Get(message));
+                logger.Verbose("Sent message." + MessageLogger.Get(message));
                 sendMessagesTasks.Add(socketClient.SendAsync(message, cancellationToken));
             }
 
@@ -166,7 +166,7 @@ namespace GameMaster.Models
                 try
                 {
                     PlayerMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
-                    logger.Verbose("Received message. " + LoggingMessage.Get(message));
+                    logger.Verbose("Received message. " + MessageLogger.Get(message));
                     await AcceptMessage(message, cancellationToken);
                     if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
                     {
@@ -244,7 +244,7 @@ namespace GameMaster.Models
                         PlayerId = key,
                         Payload = JsonConvert.SerializeObject(answerJoinPayload),
                     };
-                    logger.Verbose("Sent message." + LoggingMessage.Get(answerJoin));
+                    logger.Verbose("Sent message." + MessageLogger.Get(answerJoin));
                     await socketClient.SendAsync(answerJoin, cancellationToken);
 
                     if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
@@ -446,7 +446,7 @@ namespace GameMaster.Models
             };
 
             legalKnowledgeReplies.Add((begPayload.AskedPlayerId, playerMessage.PlayerId));
-            logger.Verbose("Sent message." + LoggingMessage.Get(gmMessage));
+            logger.Verbose("Sent message." + MessageLogger.Get(gmMessage));
             await socketClient.SendAsync(gmMessage, cancellationToken);
         }
 
@@ -474,7 +474,7 @@ namespace GameMaster.Models
                     PlayerId = payload.RespondToId,
                     Payload = answerPayload.Serialize(),
                 };
-                logger.Verbose("Sent message." + LoggingMessage.Get(answer));
+                logger.Verbose("Sent message." + MessageLogger.Get(answer));
                 await socketClient.SendAsync(answer, cancellationToken);
             }
         }
@@ -495,7 +495,7 @@ namespace GameMaster.Models
             }
             await socketClient.SendToAllAsync(messages, cancellationToken);
             for (int i = 0; i < messages.Count; i++)
-                logger.Verbose("Sent message." + LoggingMessage.Get(messages[i]));
+                logger.Verbose("Sent message." + MessageLogger.Get(messages[i]));
             logger.Information("Sent endGame to all.");
             WasGameFinished = true;
 

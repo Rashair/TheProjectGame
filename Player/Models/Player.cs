@@ -272,7 +272,7 @@ namespace Player.Models
         {
             var cancellationTimespan = TimeSpan.FromMinutes(2);
             GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
-            logger.Verbose("Received message. " + LoggingMessage.Get(message));
+            logger.Verbose("Received message. " + MessageLogger.Get(message));
             logger.Information($"|{message.Id} | {message.Payload} | HasPiece: {HasPiece} | Discovered goal-fields: " + $"{discovered} ");
             switch (message.Id)
             {
@@ -472,7 +472,7 @@ namespace Player.Models
         private async Task Communicate(PlayerMessage message, CancellationToken cancellationToken)
         {
             await client.SendAsync(message, cancellationToken);
-            logger.Verbose("Sent message." + LoggingMessage.Get(message));
+            logger.Verbose("Sent message." + MessageLogger.Get(message));
         }
 
         private async Task Penalty(CancellationToken cancellationToken)
