@@ -433,6 +433,12 @@ namespace Player.Models
                     }
                     penaltyTime = PenaltiesTimes.Response;
                     break;
+                case GMMessageId.InformationExchangeResponse:
+                    penaltyTime = PenaltiesTimes.Response;
+                    break;
+                case GMMessageId.InformationExchangeRequest:
+                    penaltyTime = PenaltiesTimes.Ask;
+                    break;
                 case GMMessageId.NotWaitedError:
                     NotWaitedErrorPayload errorPayload = JsonConvert.DeserializeObject<NotWaitedErrorPayload>(message.Payload);
                     int toWait = (int)Math.Ceiling((errorPayload.WaitUntil - DateTime.Now).TotalMilliseconds);
