@@ -6,6 +6,6 @@ namespace Shared.Messages
 {
     public class PlayerMessage : Message
     {
-        public new PlayerMessageId MessageID { get; set; }
+        public PlayerMessageId MessageID { get; set; }
     }
 }

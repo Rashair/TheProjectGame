@@ -7,7 +7,7 @@ namespace Shared.Messages
 {
     public class GMMessage : Message
     {
-        public new GMMessageId MessageID { get; set; }
+        public GMMessageId MessageID { get; set; }
 
         public GMMessage()
         {
