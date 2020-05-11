@@ -510,7 +510,6 @@ namespace GameMaster.Models
             }
 
             GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
-            GMMessage confirmationMessage;
             if (legalKnowledgeReplies.Contains((playerMessage.AgentID, payload.RespondToId)))
             {
                 legalKnowledgeReplies.Remove((playerMessage.AgentID, payload.RespondToId));
