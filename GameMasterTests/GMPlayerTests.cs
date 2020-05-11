@@ -79,6 +79,9 @@ namespace GameMaster.Tests
             var player = GenerateGMPlayer();
             int delay = 100;
 
+            // TODO: Change from conf
+            int prematureRequestPenalty = 200;
+
             // Act
             player.Invoke("Lock", delay, DateTime.Now);
 
@@ -86,7 +89,7 @@ namespace GameMaster.Tests
             bool gotLock = await player.TryGetLockAsync(token);
             Assert.False(gotLock);
 
-            await Task.Delay(delay * 2);
+            await Task.Delay((int)(delay * 1.5) + prematureRequestPenalty);
 
             gotLock = await player.TryGetLockAsync(token);
             Assert.True(gotLock);
