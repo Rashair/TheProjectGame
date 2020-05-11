@@ -43,6 +43,7 @@ namespace IntegrationTests.GameTests.Abstractions
         protected async Task RunGame()
         {
             Assert.NotNull(Conf);
+            Conf.Verbose = false;
 
             await Task.Run(InitGame);
 

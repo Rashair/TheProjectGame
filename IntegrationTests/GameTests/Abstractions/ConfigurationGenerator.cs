@@ -22,7 +22,7 @@ namespace IntegrationTests.GameTests.Abstractions
                 "urls=http://127.0.0.1:0",
                 $"GMPort={csPort}",
                 $"PlayerPort={playerPort}",
-                $"ListenerIP={csIP}"
+                $"ListenerIP={csIP}",
             };
             var gmArgs = new string[]
             {
@@ -43,7 +43,8 @@ namespace IntegrationTests.GameTests.Abstractions
                 $"TeamId={team.ToString().ToLower()}",
                 "urls=http://127.0.0.1:0",
                 $"CsIP={csIP}",
-                $"CsPort={port}"
+                $"CsPort={port}",
+                "Verbose=false"
             };
         }
     }
