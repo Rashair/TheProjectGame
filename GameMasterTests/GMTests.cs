@@ -12,10 +12,12 @@ using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.Hosting;
 using Moq;
+using Newtonsoft.Json;
 using Serilog;
 using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
+using Shared.Payloads.GMPayloads;
 using Shared.Payloads.PlayerPayloads;
 using TestsShared;
 using Xunit;
@@ -593,7 +595,6 @@ namespace GameMaster.Tests
         [Fact]
         public async Task TestSendInformationExchangeRequesMessage()
         {
-            // Arrange
             var conf = GenerateConfiguration();
             var queue = GenerateBuffer();
             var client = GenerateSocketClient();
@@ -604,19 +605,35 @@ namespace GameMaster.Tests
 
             int player1ID = 1;
             int player2ID = 2;
+            int player3ID = 3;
 
-            // Act
-            InitializeAndBegForInfo(gameMaster, player1ID, player2ID);
+            await InitializeAndBegForInfo(gameMaster, player1ID, player2ID);
             var lastMessage = sendedMessages.Pop();
 
-            // Assert
             Assert.Equal(GMMessageId.InformationExchangeRequest, lastMessage.MessageID);
+            Assert.True(JsonConvert.DeserializeObject<InformationExchangeRequestPayload>(lastMessage.Payload).WasSent);
+
+            BegForInfoPayload begForInfoPayload = new BegForInfoPayload()
+            {
+                AskedPlayerId = player3ID,
+            };
+            PlayerMessage askMessage = new PlayerMessage()
+            {
+                MessageID = PlayerMessageId.BegForInfo,
+                AgentID = player1ID,
+                Payload = begForInfoPayload.Serialize(),
+            };
+
+            await gameMaster.AcceptMessage(askMessage, CancellationToken.None);
+            lastMessage = sendedMessages.Pop();
+
+            Assert.Equal(GMMessageId.InformationExchangeRequest, lastMessage.MessageID);
+            Assert.False(JsonConvert.DeserializeObject<InformationExchangeRequestPayload>(lastMessage.Payload).WasSent);
         }
 
         [Fact]
         public async Task TestSendInformationExchangeResponseMessage()
         {
-            // Arrange
             var conf = GenerateConfiguration();
             var queue = GenerateBuffer();
             var client = GenerateSocketClient();
@@ -627,26 +644,49 @@ namespace GameMaster.Tests
 
             int player1ID = 1;
             int player2ID = 2;
+            int player3ID = 3;
 
-            InitializeAndBegForInfo(gameMaster, player1ID, player2ID);
+            await InitializeAndBegForInfo(gameMaster, player1ID, player2ID);
 
-            GiveInfoPayload giveInfoPayload = new GiveInfoPayload()
+            GiveInfoPayload giveInfoPayload1 = new GiveInfoPayload()
             {
-                RespondToId = player2ID,
+                RespondToId = player1ID,
+                Distances = new int[,] { { 1, 1 } },
+                RedTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },
+                BlueTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },
             };
-            PlayerMessage giveMessage = new PlayerMessage()
+            PlayerMessage giveMessage1 = new PlayerMessage()
             {
                 MessageID = PlayerMessageId.GiveInfo,
-                AgentID = player1ID,
-                Payload = giveInfoPayload.Serialize(),
+                AgentID = player2ID,
+                Payload = giveInfoPayload1.Serialize(),
             };
 
-            // Act
-            await gameMaster.AcceptMessage(giveMessage, CancellationToken.None);
+            GiveInfoPayload giveInfoPayload2 = new GiveInfoPayload()
+            {
+                RespondToId = player1ID,
+                Distances = new int[,] { { 1, 1 } },
+                RedTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },
+                BlueTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },
+            };
+            PlayerMessage giveMessage2 = new PlayerMessage()
+            {
+                MessageID = PlayerMessageId.GiveInfo,
+                AgentID = player3ID,
+                Payload = giveInfoPayload1.Serialize(),
+            };
+
+            await gameMaster.AcceptMessage(giveMessage1, CancellationToken.None);
             var lastMessage = sendedMessages.Pop();
 
-            // Assert
             Assert.Equal(GMMessageId.InformationExchangeResponse, lastMessage.MessageID);
+            Assert.True(JsonConvert.DeserializeObject<InformationExchangeResponsePayload>(lastMessage.Payload).WasSent);
+
+            await gameMaster.AcceptMessage(giveMessage2, CancellationToken.None);
+            lastMessage = sendedMessages.Pop();
+
+            Assert.Equal(GMMessageId.InformationExchangeResponse, lastMessage.MessageID);
+            Assert.False(JsonConvert.DeserializeObject<InformationExchangeResponsePayload>(lastMessage.Payload).WasSent);
         }
     }
 }
