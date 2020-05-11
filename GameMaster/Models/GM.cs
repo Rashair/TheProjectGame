@@ -114,7 +114,7 @@ namespace GameMaster.Models
                         },
                     };
                 }
-                payload.PlayerId = p.Key;
+                payload.AgentID = p.Key;
                 payload.BoardSize = new BoardSize
                 {
                     Y = conf.Height,
@@ -147,7 +147,7 @@ namespace GameMaster.Models
                     AgentID = p.Key,
                     Payload = payload.Serialize(),
                 };
-                logger.Verbose("Sent message." + MessageLogger.Get(message));
+                logger.Verbose("Sent message: " + MessageLogger.Get(message));
                 sendMessagesTasks.Add(socketClient.SendAsync(message, cancellationToken));
             }
 
@@ -231,7 +231,7 @@ namespace GameMaster.Models
                     JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
                     {
                         Accepted = accepted,
-                        PlayerId = key,
+                        AgentID = key,
                     };
                     GMMessage answerJoin = new GMMessage()
                     {
@@ -241,7 +241,7 @@ namespace GameMaster.Models
                     };
 
                     await socketClient.SendAsync(answerJoin, cancellationToken);
-                    logger.Verbose("Sent message." + MessageLogger.Get(answerJoin));
+                    logger.Verbose("Sent message: " + MessageLogger.Get(answerJoin));
 
                     if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
                         GetPlayersCount(Team.Blue) == conf.NumberOfPlayersPerTeam)
@@ -285,7 +285,6 @@ namespace GameMaster.Models
                             break;
                     }
                     await player.MoveAsync(field, this, cancellationToken);
-
                     break;
                 }
                 case PlayerMessageId.Pick:
@@ -372,6 +371,7 @@ namespace GameMaster.Models
             {
                 discoveryResult.Add(neighbourCoordinates[i].dir, distances[i]);
             }
+
             return discoveryResult;
         }
 
@@ -391,6 +391,7 @@ namespace GameMaster.Models
                     }
                 }
             }
+
             return distance;
         }
 
@@ -437,13 +438,13 @@ namespace GameMaster.Models
             GMMessage gmMessage = new GMMessage()
             {
                 MessageID = GMMessageId.BegForInfoForwarded,
-                AgentID = begPayload.AskedPlayerId,
+                AgentID = begPayload.AskedAgentID,
                 Payload = payload.Serialize(),
             };
 
-            legalKnowledgeReplies.Add((begPayload.AskedPlayerId, playerMessage.AgentID));
+            legalKnowledgeReplies.Add((begPayload.AskedAgentID, playerMessage.AgentID));
             await socketClient.SendAsync(gmMessage, cancellationToken);
-            logger.Verbose("Sent message." + MessageLogger.Get(gmMessage));
+            logger.Verbose("Sent message: " + MessageLogger.Get(gmMessage));
         }
 
         private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
@@ -472,7 +473,7 @@ namespace GameMaster.Models
                 };
 
                 await socketClient.SendAsync(answer, cancellationToken);
-                logger.Verbose("Sent message." + MessageLogger.Get(answer));
+                logger.Verbose("Sent message: " + MessageLogger.Get(answer));
             }
         }
 
@@ -493,7 +494,7 @@ namespace GameMaster.Models
             await socketClient.SendToAllAsync(messages, cancellationToken);
             for (int i = 0; i < messages.Count; i++)
             {
-                logger.Verbose("Sent message." + MessageLogger.Get(messages[i]));
+                logger.Verbose("Sent message: " + MessageLogger.Get(messages[i]));
             }
             logger.Information("Sent endGame to all.");
             WasGameFinished = true;

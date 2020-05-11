@@ -179,7 +179,7 @@ namespace Player.Tests
             // Arrange
             StartGamePayload startGamePayload = new StartGamePayload
             {
-                PlayerId = playerId,
+                AgentID = playerId,
                 AlliesIds = alliesId,
                 LeaderId = leaderId,
                 EnemiesIds = enemiesId,
@@ -379,7 +379,7 @@ namespace Player.Tests
             JoinAnswerPayload payload = new JoinAnswerPayload()
             {
                 Accepted = false,
-                PlayerId = 1,
+                AgentID = 1,
             };
             GMMessage messageStart = new GMMessage(GMMessageId.JoinTheGameAnswer, playerId, payload);
 
@@ -560,7 +560,7 @@ namespace Player.Tests
         {
             StartGamePayload payloadStart = new StartGamePayload
             {
-                PlayerId = 1,
+                AgentID = 1,
                 AlliesIds = new int[1] { 2 },
                 LeaderId = 1,
                 EnemiesIds = new int[2] { 3, 4 },

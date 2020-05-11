@@ -38,7 +38,7 @@ namespace Player.Tests
             var queue = new BufferBlock<GMMessage>();
             StartGamePayload payloadStart = new StartGamePayload
             {
-                PlayerId = 1,
+                AgentID = 1,
                 AlliesIds = new int[2] { 1, 2 },
                 LeaderId = 1,
                 EnemiesIds = new int[2] { 3, 4 },

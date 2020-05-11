@@ -187,7 +187,7 @@ namespace GameMaster.Models
             get { return position.GetPosition()[i]; }
         }
 
-        private async Task<bool> TryGetLockAsync(CancellationToken cancellationToken)
+        public async Task<bool> TryGetLockAsync(CancellationToken cancellationToken)
         {
             if (!cancellationToken.IsCancellationRequested)
             {
@@ -195,31 +195,39 @@ namespace GameMaster.Models
                 if (!isUnlocked)
                 {
                     // TODO: Change to PrematureRequestPenalty (@Zhanna)
-                    Lock(100);
+                    Lock(100, DateTime.Now);
                     GMMessage message = NotWaitedErrorMessage();
                     await socketClient.SendAsync(message, cancellationToken);
+                    logger.Verbose("Sent message: " + MessageLogger.Get(message));
                 }
                 return isUnlocked;
             }
             return false;
         }
 
-        private async Task SendAndLockAsync(GMMessage message, int time, CancellationToken cancellationToken)
+        public async Task SendAndLockAsync(GMMessage message, int time, CancellationToken cancellationToken)
         {
+            DateTime frozenTime = DateTime.Now;
             await socketClient.SendAsync(message, cancellationToken);
             if (!cancellationToken.IsCancellationRequested)
             {
-                Lock(time);
-                logger.Verbose("Sent message." + MessageLogger.Get(message));
+                Lock(time, frozenTime);
+                logger.Verbose("Sent message: " + MessageLogger.Get(message));
             }
         }
 
-        private DateTime Lock(int time)
+        private DateTime Lock(int time, DateTime startTime)
         {
-            DateTime frozenTime = DateTime.Now;
             int rounded = ((int)Math.Round(time / 10.0)) * 10;
             TimeSpan span = TimeSpan.FromMilliseconds(rounded);
-            lockedTill = frozenTime + span;
+            if (lockedTill < startTime)
+            {
+                lockedTill = startTime + span;
+            }
+            else
+            {
+                lockedTill += span;
+            }
 
             return lockedTill;
         }

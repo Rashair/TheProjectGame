@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -79,7 +80,7 @@ namespace GameMaster.Tests
             int delay = 100;
 
             // Act
-            player.Invoke("Lock", delay);
+            player.Invoke("Lock", delay, DateTime.Now);
 
             // Assert
             bool gotLock = await player.Invoke<GMPlayer, Task<bool>>("TryGetLockAsync", token);

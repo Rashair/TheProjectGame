@@ -170,7 +170,7 @@ namespace Player.Models
 
             BegForInfoPayload payload = new BegForInfoPayload()
             {
-                AskedPlayerId = TeamMatesIds[index],
+                AskedAgentID = TeamMatesIds[index],
             };
 
             message.Payload = payload.Serialize();
@@ -312,7 +312,7 @@ namespace Player.Models
                     break;
                 case GMMessageId.StartGame:
                     StartGamePayload payloadStart = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
-                    id = payloadStart.PlayerId;
+                    id = payloadStart.AgentID;
                     TeamMatesIds = payloadStart.AlliesIds;
                     if (id == payloadStart.LeaderId)
                     {
@@ -356,7 +356,7 @@ namespace Player.Models
                     break;
                 case GMMessageId.JoinTheGameAnswer:
                     JoinAnswerPayload payloadJoin = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.Payload);
-                    id = payloadJoin.PlayerId;
+                    id = payloadJoin.AgentID;
                     if (!payloadJoin.Accepted)
                     {
                         StopWorking();

@@ -85,13 +85,14 @@ namespace GameMaster
             }
             Configuration.Bind(conf);  // For console override;
             services.AddSingleton(conf);
-            
+
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/build";
             });
-            
-            services.TryAddSingleton<ILogger>(GetLogger(Configuration.GetValue<bool>("DefaultGameConfig:Verbose")));
+
+            services.TryAddSingleton<ILogger>(GetLogger(conf.Verbose ??
+                Configuration.GetValue<bool>("DefaultGameConfig:Verbose")));
 
             services.AddSingleton<GM>();
             services.AddHostedService<SocketService>();

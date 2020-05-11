@@ -28,7 +28,7 @@ namespace IntegrationTests.GameTests.Abstractions
             var gmArgs = new string[]
             {
                 $"urls={gmUrl}",
-                "Verbose=false"
+                "Verbose=true"
             };
 
             var redArgs = CreatePlayerConfig(Team.Red, playerPort);
@@ -46,7 +46,7 @@ namespace IntegrationTests.GameTests.Abstractions
                 "urls=http://127.0.0.1:0",
                 $"CsIP={csIP}",
                 $"CsPort={port}",
-                "Verbose=false"
+                "Verbose=true"
             };
         }
     }
