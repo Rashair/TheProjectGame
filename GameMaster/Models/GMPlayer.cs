@@ -141,7 +141,6 @@ namespace GameMaster.Models
                     message = PutAnswerMessage(goal);
                     Holding = null;
                 }
-                await socketClient.SendAsync(message, cancellationToken);
 
                 await SendAndLockAsync(message, conf.PutPenalty, cancellationToken);
             }
@@ -196,8 +195,9 @@ namespace GameMaster.Models
                 if (!isUnlocked)
                 {
                     // TODO: Change to PrematureRequestPenalty (@Zhanna)
-                    Lock(0, frozenTime);
+                    Lock(200, frozenTime);
                     GMMessage message = NotWaitedErrorMessage();
+
                     await socketClient.SendAsync(message, cancellationToken);
                     logger.Verbose(MessageLogger.Sent(message));
                 }
