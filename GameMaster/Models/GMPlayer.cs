@@ -199,7 +199,7 @@ namespace GameMaster.Models
                     Lock(0, frozenTime);
                     GMMessage message = NotWaitedErrorMessage();
                     await socketClient.SendAsync(message, cancellationToken);
-                    logger.Verbose("Sent message: " + MessageLogger.Get(message));
+                    logger.Verbose(MessageLogger.Sent(message));
                 }
                 return isUnlocked;
             }
@@ -213,7 +213,7 @@ namespace GameMaster.Models
             if (!cancellationToken.IsCancellationRequested)
             {
                 Lock(time, frozenTime);
-                logger.Verbose("Sent message: " + MessageLogger.Get(message));
+                logger.Verbose(MessageLogger.Sent(message));
             }
         }
 

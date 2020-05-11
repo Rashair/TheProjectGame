@@ -473,7 +473,7 @@ namespace Player.Models
         private async Task Communicate(PlayerMessage message, CancellationToken cancellationToken)
         {
             await client.SendAsync(message, cancellationToken);
-            logger.Verbose("Sent message." + MessageLogger.Get(message));
+            logger.Verbose(MessageLogger.Sent(message));
         }
 
         private async Task Penalty(CancellationToken cancellationToken)

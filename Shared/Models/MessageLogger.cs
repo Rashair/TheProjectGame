@@ -9,6 +9,16 @@ namespace Shared.Models
 {
     public static class MessageLogger
     {
+        public static string Received(Message msg)
+        {
+            return $"Received message: {Get(msg)}";
+        }
+
+        public static string Sent(Message msg)
+        {
+            return $"Sent message: {Get(msg)}";
+        }
+
         public static string Get(Message msg)
         {
             string messageLog = "";
