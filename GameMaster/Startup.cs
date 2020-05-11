@@ -83,6 +83,7 @@ namespace GameMaster
                 conf = new GameConfiguration();
                 Configuration.Bind("DefaultGameConfig", conf);
             }
+            Configuration.Bind(conf);  // For console override;
             services.AddSingleton(conf);
             
             services.AddSpaStaticFiles(configuration =>

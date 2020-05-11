@@ -14,7 +14,7 @@ public static class ReflectionExtensions
     /// </summary>
     /// <param name="source">The source.</param>
     /// <param name="destination">The destination.</param>
-    public static void CopyProperties(this object source, object destination)
+    public static void CopyProperties(this object source, object destination, Func<PropertyInfo, bool> sourceFilter = null)
     {
         // If any this null throw an exception
         if (source == null || destination == null)
@@ -22,12 +22,14 @@ public static class ReflectionExtensions
             throw new Exception("Source or/and Destination Objects are null");
         }
 
+        sourceFilter = sourceFilter ?? ((p) => true);
+
         // Getting the Types of the objects
         Type typeDest = destination.GetType();
         Type typeSource = source.GetType();
 
         // Collect all the valid properties to map
-        var results = GetProperties(typeSource, typeDest);
+        var results = GetProperties(typeSource, typeDest).Where((pair) => sourceFilter(pair.sourceProperty));
 
         // map the properties.
         foreach (var (sourceProperty, destProperty) in results)

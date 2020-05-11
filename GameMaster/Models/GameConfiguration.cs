@@ -39,7 +39,7 @@ namespace GameMaster.Models
 
         public int NumberOfPiecesOnBoard { get; set; }
 
-        public bool Verbose { get; set; }
+        public bool? Verbose { get; set; }
 
         /// <summary>
         /// Percentage, between 0 and 1.
@@ -62,7 +62,7 @@ namespace GameMaster.Models
 
         public void Update(GameConfiguration conf)
         {
-            conf.CopyProperties(this);
+            conf.CopyProperties(this, prop => prop.GetValue(conf) != null);
         }
 
         public override bool Equals(object obj)

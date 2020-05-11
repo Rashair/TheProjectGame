@@ -28,6 +28,7 @@ namespace IntegrationTests.GameTests.Abstractions
             var gmArgs = new string[]
             {
                 $"urls={gmUrl}",
+                "Verbose=false"
             };
 
             var redArgs = CreatePlayerConfig(Team.Red, playerPort);

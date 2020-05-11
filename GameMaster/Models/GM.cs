@@ -44,8 +44,6 @@ namespace GameMaster.Models
 
         public int SecondGoalAreaStart { get => conf.Height - conf.GoalAreaHeight; }
 
-        public bool Verbose { get; set; }
-
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
             BufferBlock<PlayerMessage> queue, ISocketClient<PlayerMessage, GMMessage> socketClient,
             ILogger log)
@@ -60,7 +58,6 @@ namespace GameMaster.Models
             players = new Dictionary<int, GMPlayer>();
             legalKnowledgeReplies = new HashSet<(int, int)>();
             rand = new Random();
-            Verbose = conf.Verbose;
         }
 
         internal void InitGame()
