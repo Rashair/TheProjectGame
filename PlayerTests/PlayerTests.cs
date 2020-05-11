@@ -172,7 +172,17 @@ namespace Player.Tests
             NumberOfPlayers numberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 };
             int numberOfPieces = 2;
             int numberOfGoals = 2;
-            Penalties penalties = new Penalties();
+            Penalties penalties = new Penalties()
+            {
+                Move = 100,
+                Ask = 100,
+                Response = 100,
+                Discover = 100,
+                PickPiece = 100,
+                CheckPiece = 100,
+                PutPiece = 100,
+                DestroyPiece = 100,
+            };
             float shanProbability = 0.5f;
             Position position = new Position { X = 1, Y = 1 };
 
@@ -191,7 +201,7 @@ namespace Player.Tests
                 NumberOfGoals = numberOfGoals,
                 Penalties = penalties,
                 ShamPieceProbability = shanProbability,
-                Position = position,
+                Position = position
             };
             GMMessage startMessage = new GMMessage(GMMessageId.StartGame, agentID, startGamePayload);
 
