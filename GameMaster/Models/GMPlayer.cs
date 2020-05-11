@@ -191,11 +191,12 @@ namespace GameMaster.Models
         {
             if (!cancellationToken.IsCancellationRequested)
             {
-                bool isUnlocked = lockedTill <= DateTime.Now;
+                var frozenTime = DateTime.Now;
+                bool isUnlocked = lockedTill <= frozenTime;
                 if (!isUnlocked)
                 {
                     // TODO: Change to PrematureRequestPenalty (@Zhanna)
-                    Lock(100, DateTime.Now);
+                    Lock(0, frozenTime);
                     GMMessage message = NotWaitedErrorMessage();
                     await socketClient.SendAsync(message, cancellationToken);
                     logger.Verbose("Sent message: " + MessageLogger.Get(message));
