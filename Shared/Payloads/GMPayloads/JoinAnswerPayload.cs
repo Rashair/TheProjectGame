@@ -8,7 +8,7 @@
 
         public override string ToString()
         {
-            return $" Accepted:{Accepted}, PlayerId:{PlayerId}";
+            return $"Accepted:{Accepted}, PlayerId:{PlayerId}";
         }
     }
 }

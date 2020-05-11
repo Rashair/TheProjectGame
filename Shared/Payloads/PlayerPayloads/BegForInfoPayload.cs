@@ -6,7 +6,7 @@
 
         public override string ToString()
         {
-            return $" AskedPlayerId:{AskedPlayerId}";
+            return $"AskedPlayerId:{AskedPlayerId}";
         }
     }
 }
