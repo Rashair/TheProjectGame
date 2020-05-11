@@ -23,12 +23,12 @@ namespace IntegrationTests.GameTests.Abstractions
                 $"GMPort={csPort}",
                 $"PlayerPort={playerPort}",
                 $"ListenerIP={csIP}",
-                "Verbose=false"
+                "Verbose=true"
             };
             var gmArgs = new string[]
             {
                 $"urls={gmUrl}",
-                "Verbose=true"
+                "Verbose=false"
             };
 
             var redArgs = CreatePlayerConfig(Team.Red, playerPort);
@@ -46,7 +46,7 @@ namespace IntegrationTests.GameTests.Abstractions
                 "urls=http://127.0.0.1:0",
                 $"CsIP={csIP}",
                 $"CsPort={port}",
-                "Verbose=true"
+                "Verbose=false"
             };
         }
     }
