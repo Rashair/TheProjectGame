@@ -27,16 +27,8 @@ namespace GameMaster.Models.Fields
 
         public override (PutEvent putEvent, bool removed) Put(AbstractPiece piece)
         {
-            if (piece.CheckForSham() == false)
-            {
-                Pieces.Add(piece);
-                return (PutEvent.TaskField, false);
-            }
-            else
-            {
-                Pieces.Add(piece);
-                return (PutEvent.TaskField, false);
-            }
+            Pieces.Add(piece);
+            return (PutEvent.TaskField, false);
         }
 
         public override bool CanPick()
