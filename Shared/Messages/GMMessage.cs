@@ -13,10 +13,10 @@ namespace Shared.Messages
         {
         }
 
-        public GMMessage(GMMessageId id, int playerId, Payload payload)
+        public GMMessage(GMMessageId id, int agentID, Payload payload)
         {
             MessageID = id;
-            AgentID = playerId;
+            AgentID = agentID;
             Payload = payload.Serialize();
         }
     }

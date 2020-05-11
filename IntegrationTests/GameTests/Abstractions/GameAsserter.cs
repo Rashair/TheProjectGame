@@ -111,7 +111,7 @@ namespace IntegrationTests.GameTests.Abstractions
                 {
                     ++positionsCounter[i];
                     Assert.False(positionsCounter[i] > testConf.PositionNotChangedThreshold,
-                        $"Player should not be stuck on one position, playerId: " +
+                        $"Player should not be stuck on one position, agentID: " +
                         $"{team[i].GetValue<Player.Models.Player, int>("id")}");
                 }
                 else
