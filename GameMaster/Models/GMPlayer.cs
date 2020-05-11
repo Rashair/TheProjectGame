@@ -195,7 +195,7 @@ namespace GameMaster.Models
                 if (!isUnlocked)
                 {
                     // TODO: Change to PrematureRequestPenalty (@Zhanna)
-                    Lock(50);
+                    Lock(100);
                     GMMessage message = NotWaitedErrorMessage();
                     await socketClient.SendAsync(message, cancellationToken);
                 }
