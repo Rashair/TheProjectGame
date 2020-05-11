@@ -4,13 +4,13 @@ using System.Text;
 
 namespace Shared.Payloads.GMPayloads
 {
-    public class InformationExchangeRequest
+    public class InformationExchangeRequestPayload : Payload
     {
-        public bool Received { get; set; }
+        public bool WasSent { get; set; }
 
         public override string ToString()
         {
-           return $"Received: {Received}";
+           return $"Was the message send: {WasSent}";
         }
     }
 }

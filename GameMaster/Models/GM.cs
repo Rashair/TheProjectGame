@@ -467,22 +467,39 @@ namespace GameMaster.Models
             }
 
             BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(playerMessage.Payload);
-            BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
+            if (players.ContainsKey(begPayload.AskedPlayerId))
             {
-                AskingId = playerMessage.AgentID,
-                Leader = players[playerMessage.AgentID].IsLeader,
-                TeamId = players[playerMessage.AgentID].Team,
-            };
-            GMMessage gmMessage = new GMMessage()
-            {
-                MessageID = GMMessageId.BegForInfoForwarded,
-                AgentID = begPayload.AskedAgentID,
-                Payload = payload.Serialize(),
-            };
+                BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
+                {
+                    AskingId = playerMessage.AgentID,
+                    Leader = players[playerMessage.AgentID].IsLeader,
+                    TeamId = players[playerMessage.AgentID].Team,
+                };
+                GMMessage gmMessage = new GMMessage()
+                {
+                    MessageID = GMMessageId.BegForInfoForwarded,
+                    AgentID = begPayload.AskedPlayerId,
+                    Payload = payload.Serialize(),
+                };
 
-            legalKnowledgeReplies.Add((begPayload.AskedAgentID, playerMessage.AgentID));
-            await socketClient.SendAsync(gmMessage, cancellationToken);
-            logger.Verbose(MessageLogger.Sent(gmMessage));
+                legalKnowledgeReplies.Add((begPayload.AskedPlayerId, playerMessage.AgentID));
+                logger.Verbose("Sent message." + MessageLogger.Get(gmMessage));
+                await socketClient.SendAsync(gmMessage, cancellationToken);
+
+                await SendInformationExchangeRequestMessage(playerMessage.AgentID, true, cancellationToken);
+            }
+            else
+            {
+                await SendInformationExchangeRequestMessage(playerMessage.AgentID, false, cancellationToken);
+            }
+        }
+
+        private async Task SendInformationExchangeRequestMessage(int agentID, bool wasSent, CancellationToken cancellationToken)
+        {
+            GMMessage confirmationMessage = new GMMessage(GMMessageId.InformationExchangeRequest,
+                    agentID, new InformationExchangeRequestPayload() { WasSent = wasSent });
+            logger.Verbose("Sent message." + MessageLogger.Get(confirmationMessage));
+            await socketClient.SendAsync(confirmationMessage, cancellationToken);
         }
 
         private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
@@ -493,6 +510,7 @@ namespace GameMaster.Models
             }
 
             GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
+            GMMessage confirmationMessage;
             if (legalKnowledgeReplies.Contains((playerMessage.AgentID, payload.RespondToId)))
             {
                 legalKnowledgeReplies.Remove((playerMessage.AgentID, payload.RespondToId));
@@ -511,8 +529,21 @@ namespace GameMaster.Models
                 };
 
                 await socketClient.SendAsync(answer, cancellationToken);
-                logger.Verbose(MessageLogger.Sent(answer));
+
+                await SendInformationExchangeResponseMessage(playerMessage.AgentID, true, cancellationToken);
             }
+            else
+            {
+                await SendInformationExchangeResponseMessage(playerMessage.AgentID, false, cancellationToken);
+            }
+        }
+
+        private async Task SendInformationExchangeResponseMessage(int agentID, bool wasSent, CancellationToken cancellationToken)
+        {
+            GMMessage confirmationMessage = new GMMessage(GMMessageId.InformationExchangeResponse,
+                    agentID, new InformationExchangeResponsePayload() { WasSent = wasSent });
+            logger.Verbose("Sent message." + MessageLogger.Get(confirmationMessage));
+            await socketClient.SendAsync(confirmationMessage, cancellationToken);
         }
 
         internal async Task EndGame(CancellationToken cancellationToken)
