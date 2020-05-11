@@ -19,7 +19,7 @@ namespace Player.Tests
     public class PlayerTests
     {
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
-        private readonly int playerId = 1;
+        private readonly int agentID = 1;
         private PlayerMessage lastSended;
         private readonly BoardSize playerBoardSize = new BoardSize { X = 3, Y = 3 };
 
@@ -51,7 +51,7 @@ namespace Player.Tests
                 DistanceNW = 0,
                 DistanceSW = 0,
             };
-            GMMessage messageDiscover = new GMMessage(GMMessageId.DiscoverAnswer, playerId, payloadDiscover);
+            GMMessage messageDiscover = new GMMessage(GMMessageId.DiscoverAnswer, agentID, payloadDiscover);
             GMMessage messageStart = CreateStartMessage();
 
             BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
@@ -76,7 +76,7 @@ namespace Player.Tests
                 Leader = false,
                 TeamId = Team.Red,
             };
-            GMMessage messageBeg = new GMMessage(GMMessageId.BegForInfoForwarded, playerId, payloadBeg);
+            GMMessage messageBeg = new GMMessage(GMMessageId.BegForInfoForwarded, agentID, payloadBeg);
             GMMessage messageStart = CreateStartMessage();
 
             BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
@@ -131,10 +131,10 @@ namespace Player.Tests
         {
             // Arrange
             EmptyAnswerPayload destructionPayload = new EmptyAnswerPayload();
-            GMMessage destructionMessage = new GMMessage(GMMessageId.DestructionAnswer, playerId, destructionPayload);
+            GMMessage destructionMessage = new GMMessage(GMMessageId.DestructionAnswer, agentID, destructionPayload);
 
             EmptyAnswerPayload pickPayload = new EmptyAnswerPayload();
-            GMMessage pickMessage = new GMMessage(GMMessageId.PickAnswer, playerId, pickPayload);
+            GMMessage pickMessage = new GMMessage(GMMessageId.PickAnswer, agentID, pickPayload);
             GMMessage startMessage = CreateStartMessage();
 
             BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
@@ -162,7 +162,7 @@ namespace Player.Tests
         [Fact]
         public async Task TestAcceptMessageStartGameShouldSetFields()
         {
-            int playerId = 1;
+            int agentID = 1;
             int leaderId = 1;
             Team teamId = Team.Red;
             int[] alliesId = new int[1] { 2 };
@@ -179,7 +179,7 @@ namespace Player.Tests
             // Arrange
             StartGamePayload startGamePayload = new StartGamePayload
             {
-                AgentID = playerId,
+                AgentID = agentID,
                 AlliesIds = alliesId,
                 LeaderId = leaderId,
                 EnemiesIds = enemiesId,
@@ -193,7 +193,7 @@ namespace Player.Tests
                 ShamPieceProbability = shanProbability,
                 Position = position,
             };
-            GMMessage startMessage = new GMMessage(GMMessageId.StartGame, playerId, startGamePayload);
+            GMMessage startMessage = new GMMessage(GMMessageId.StartGame, agentID, startGamePayload);
 
             BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
             inputBuffer.Post(startMessage);
@@ -208,7 +208,7 @@ namespace Player.Tests
 
             await player.AcceptMessage(CancellationToken.None);
 
-            var playerIdResult = player.GetValue<Player.Models.Player, int>("id");
+            var agentIDResult = player.GetValue<Player.Models.Player, int>("id");
             var leaderIdResult = player.LeaderId;
             var teamMatesResult = player.TeamMatesIds;
             var isLeaderResult = player.IsLeader;
@@ -224,13 +224,14 @@ namespace Player.Tests
             var shamProbabilityResult = player.ShamPieceProbability;
 
             // Assert
-            Assert.Equal(playerId, playerIdResult);
+            Assert.Equal(agentID, agentIDResult);
             Assert.Equal(leaderId, leaderIdResult);
             Assert.Equal(alliesId, teamMatesResult);
             Assert.Equal(expectedisLeader, isLeaderResult);
             Assert.Equal(teamId, teamResult);
             Assert.Equal(expectedBoardSize, boardSizeResult);
-            Assert.True(penalties.AreAllPropertiesTheSame(penaltiesResult));
+            Assert.True(penalties.AreAllPropertiesTheSame(penaltiesResult), 
+                $"Penalties should be the same,\n expected: {penalties},\n actual {penaltiesResult}");
             Assert.Equal(expectedPosition, positionResult);
             Assert.Equal(enemiesId, enemiesResult);
             Assert.Equal(goalAreaSize, goalAreaSizeResult);
@@ -258,7 +259,7 @@ namespace Player.Tests
                 CurrentPosition = newPosition,
                 ClosestPiece = distToClosestPiece,
             };
-            GMMessage moveAnswerMessage = new GMMessage(GMMessageId.MoveAnswer, playerId, moveAnswerPayload);
+            GMMessage moveAnswerMessage = new GMMessage(GMMessageId.MoveAnswer, agentID, moveAnswerPayload);
             GMMessage startMessage = CreateStartMessage();
 
             BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
@@ -285,7 +286,7 @@ namespace Player.Tests
         public async Task TestAcceptMessagePickAnswerShouldChangeDistToPieceAndPickPiece()
         {
             EmptyAnswerPayload pickPayload = new EmptyAnswerPayload();
-            GMMessage pickAnswerMessage = new GMMessage(GMMessageId.PickAnswer, playerId, pickPayload);
+            GMMessage pickAnswerMessage = new GMMessage(GMMessageId.PickAnswer, agentID, pickPayload);
             GMMessage startMessage = CreateStartMessage();
 
             BufferBlock<GMMessage> inputBuffer = new BufferBlock<GMMessage>();
@@ -327,7 +328,7 @@ namespace Player.Tests
             {
                 Winner = Team.Red,
             };
-            GMMessage endGameMessage = new GMMessage(GMMessageId.EndGame, playerId, endGamePayload);
+            GMMessage endGameMessage = new GMMessage(GMMessageId.EndGame, agentID, endGamePayload);
             inputBuffer.Post<GMMessage>(endGameMessage);
 
             // Act
@@ -381,7 +382,7 @@ namespace Player.Tests
                 Accepted = false,
                 AgentID = 1,
             };
-            GMMessage messageStart = new GMMessage(GMMessageId.JoinTheGameAnswer, playerId, payload);
+            GMMessage messageStart = new GMMessage(GMMessageId.JoinTheGameAnswer, agentID, payload);
 
             // Act
             inputBuffer.Post(messageStart);
@@ -409,7 +410,7 @@ namespace Player.Tests
             {
                 WasGoal = true,
             };
-            GMMessage putAnswer = new GMMessage(GMMessageId.PutAnswer, playerId, payload);
+            GMMessage putAnswer = new GMMessage(GMMessageId.PutAnswer, agentID, payload);
 
             // Act
             inputBuffer.Post(putAnswer);
@@ -433,7 +434,7 @@ namespace Player.Tests
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
-            GMMessage pickMessage = new GMMessage(GMMessageId.PickAnswer, playerId, new EmptyAnswerPayload());
+            GMMessage pickMessage = new GMMessage(GMMessageId.PickAnswer, agentID, new EmptyAnswerPayload());
             inputBuffer.Post(pickMessage);
             await player.AcceptMessage(CancellationToken.None);
 
@@ -441,7 +442,7 @@ namespace Player.Tests
             {
                 WasGoal = true,
             };
-            GMMessage putAnswer = new GMMessage(GMMessageId.PutAnswer, playerId, payload);
+            GMMessage putAnswer = new GMMessage(GMMessageId.PutAnswer, agentID, payload);
 
             // Act
             inputBuffer.Post(putAnswer);
@@ -489,7 +490,7 @@ namespace Player.Tests
                 RedTeamGoalAreaInformations = infoBoard,
                 BlueTeamGoalAreaInformations = infoBoard,
             };
-            GMMessage giveFwInfoMessage = new GMMessage(GMMessageId.GiveInfoForwarded, playerId, payload);
+            GMMessage giveFwInfoMessage = new GMMessage(GMMessageId.GiveInfoForwarded, agentID, payload);
 
             // Act
             inputBuffer.Post(giveFwInfoMessage);
@@ -519,7 +520,7 @@ namespace Player.Tests
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
-            GMMessage errorMessage = new GMMessage(GMMessageId.PutError, playerId, new PutErrorPayload());
+            GMMessage errorMessage = new GMMessage(GMMessageId.PutError, agentID, new PutErrorPayload());
 
             // Act
             inputBuffer.Post(errorMessage);
@@ -544,7 +545,7 @@ namespace Player.Tests
             inputBuffer.Post(messageStart);
             await player.AcceptMessage(CancellationToken.None);
 
-            GMMessage errorMessage = new GMMessage(GMMessageId.PickError, playerId, new PutErrorPayload());
+            GMMessage errorMessage = new GMMessage(GMMessageId.PickError, agentID, new PutErrorPayload());
 
             // Act
             inputBuffer.Post(errorMessage);
@@ -575,7 +576,7 @@ namespace Player.Tests
                 Position = new Position { X = 1, Y = 1 },
             };
 
-            return new GMMessage(GMMessageId.StartGame, playerId, payloadStart);
+            return new GMMessage(GMMessageId.StartGame, agentID, payloadStart);
         }
 
         [Fact]
@@ -677,7 +678,7 @@ namespace Player.Tests
                 Leader = false,
                 TeamId = Team.Red,
             };
-            GMMessage beg4Info = new GMMessage(GMMessageId.BegForInfoForwarded, playerId, payload);
+            GMMessage beg4Info = new GMMessage(GMMessageId.BegForInfoForwarded, agentID, payload);
             inputBuffer.Post(beg4Info);
             await player.AcceptMessage(CancellationToken.None);
 

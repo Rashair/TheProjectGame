@@ -83,12 +83,12 @@ namespace GameMaster.Tests
             player.Invoke("Lock", delay, DateTime.Now);
 
             // Assert
-            bool gotLock = await player.Invoke<GMPlayer, Task<bool>>("TryGetLockAsync", token);
+            bool gotLock = await player.TryGetLockAsync(token);
             Assert.False(gotLock);
 
             await Task.Delay(delay * 2);
 
-            gotLock = await player.Invoke<GMPlayer, Task<bool>>("TryGetLockAsync", token);
+            gotLock = await player.TryGetLockAsync(token);
             Assert.True(gotLock);
         }
 

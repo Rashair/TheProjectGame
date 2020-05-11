@@ -56,7 +56,9 @@ public static class ReflectionExtensions
         // map the properties.
         foreach (var (sourceProperty, destProperty) in results)
         {
-            if (!sourceProperty.GetValue(source).Equals(destProperty.GetValue(destination)))
+            var valSource = sourceProperty.GetValue(source);
+            var valDest = destProperty.GetValue(destination);
+            if ((valSource == null && valDest != null) || (valSource != null && !valSource.Equals(valDest)))
             {
                 return false;
             }
