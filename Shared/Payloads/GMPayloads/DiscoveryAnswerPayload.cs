@@ -22,7 +22,7 @@
 
         public override string ToString()
         {
-            string message = $"NE:{DistanceNE}, N:{DistanceN}, NW:{DistanceNW},\n" +
+            string message = $"\nNE:{DistanceNE}, N:{DistanceN}, NW:{DistanceNW},\n" +
                 $"E:{DistanceE}, FromCurrent:{DistanceFromCurrent}, W:{DistanceW},\n" +
                 $"SE:{DistanceNE}, N:{DistanceN}, NW:{DistanceNW}";
             return message;
