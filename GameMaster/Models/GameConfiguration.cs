@@ -94,5 +94,65 @@ namespace GameMaster.Models
             hash.Add(Verbose);
             return hash.ToHashCode();
         }
+
+        public (bool, string) IsValid()
+        {
+            if (Width < 1)
+            {
+                return (false, "Width must be greater than or equal to 1");
+            }
+
+            if (Height < 3)
+            {
+                return (false, "Height must be greater than or equal to 3");
+            }
+
+            if (GoalAreaHeight < 1 || GoalAreaHeight > Height / 2)
+            {
+                return (false, "GoalAreaHeight must be in range [1, Height / 2]");
+            }
+
+            if (NumberOfGoals <= 0 || NumberOfGoals > GoalAreaHeight * Width)
+            {
+                return (false, "NumberOfGoals must be in range (0,  GoalAreaHeight * Width]");
+            }
+
+            if (NumberOfPlayersPerTeam <= 0 || NumberOfPlayersPerTeam > Height * Width)
+            {
+                return (false, "NumberOfPlayersPerTeam must be in range (0, Height * Width]");
+            }
+
+            if (NumberOfPiecesOnBoard <= 0 ||
+                NumberOfPiecesOnBoard > (Height - (GoalAreaHeight * 2)) * Width)
+            {
+                return (false, "NumberOfPiecesOnBoard must be in range (0, (Height - (GoalAreaHeight * 2)) * Width]");
+            }
+
+            if (ShamPieceProbability <= 0 || ShamPieceProbability >= 1)
+            {
+                return (false, "ShamPieceProbability must be in range (0, 1)");
+            }
+
+            int[] penelties = new int[]
+            {
+                AskPenalty,
+                CheckPenalty,
+                DestroyPenalty,
+                DiscoverPenalty,
+                MovePenalty,
+                PickPenalty,
+                PutPenalty,
+                ResponsePenalty
+            };
+            foreach (int penelty in penelties)
+            {
+                if (penelty <= 0)
+                {
+                    return (false, "Every penelty must be greater than 0");
+                }
+            }
+
+            return (true, "");
+        }
     }
 }
