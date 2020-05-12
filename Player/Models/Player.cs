@@ -83,7 +83,8 @@ namespace Player.Models
         {
             isWorking = true;
             GMMessageId messageID = GMMessageId.Unknown;
-            while (messageID != GMMessageId.JoinTheGameAnswer && isWorking && !cancellationToken.IsCancellationRequested)
+            while (messageID != GMMessageId.JoinTheGameAnswer && isWorking &&
+                !cancellationToken.IsCancellationRequested)
             {
                 messageID = await AcceptMessage(cancellationToken);
             }
@@ -316,6 +317,11 @@ namespace Player.Models
                 case GMMessageId.EndGame:
                     EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
                     winner = payloadEnd.Winner;
+                    StopWorking();
+                    break;
+                case GMMessageId.CSDisconnected:
+                    winner = Team == Team.Blue ? Team.Red : Team.Blue;
+                    logger.Warning("CS disconnected");
                     StopWorking();
                     break;
                 case GMMessageId.StartGame:

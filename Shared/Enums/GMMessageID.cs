@@ -21,5 +21,7 @@
         PutError,
         NotWaitedError,
         UnknownError,
+
+        CSDisconnected = 1001, // inside type
     }
 }

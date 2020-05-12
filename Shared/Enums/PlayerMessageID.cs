@@ -12,5 +12,8 @@
         Move,
         Pick,
         Put,
+        Disconnected = 906,
+
+        CSDisconnected = 1002, // inside type
     }
 }
