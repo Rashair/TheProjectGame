@@ -1,15 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
+using Newtonsoft.Json;
 using Serilog;
 using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
 using Shared.Payloads.GMPayloads;
+using Shared.Payloads.PlayerPayloads;
 
 namespace GameMaster.Models
 {
@@ -76,6 +79,59 @@ namespace GameMaster.Models
                 return moved;
             }
             return false;
+        }
+
+        public async Task ForwardKnowledgeQuestion(PlayerMessage playerMessage, HashSet<(int, int)> legalKnowledgeReplies, CancellationToken cancellationToken)
+        {
+            bool isUnlocked = await TryLockAsync(0, cancellationToken);
+            if (!cancellationToken.IsCancellationRequested && isUnlocked)
+            {
+                BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(playerMessage.Payload);
+                BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
+                {
+                    AskingId = playerMessage.AgentID,
+                    Leader = IsLeader,
+                    TeamId = Team,
+                };
+                GMMessage gmMessage = new GMMessage()
+                {
+                    MessageID = GMMessageId.BegForInfoForwarded,
+                    AgentID = begPayload.AskedPlayerId,
+                    Payload = payload.Serialize(),
+                };
+
+                legalKnowledgeReplies.Add((begPayload.AskedPlayerId, playerMessage.AgentID));
+                logger.Verbose("Sent message." + MessageLogger.Get(gmMessage));
+                await socketClient.SendAsync(gmMessage, cancellationToken);
+            }
+        }
+
+        public async Task ForwardKnowledgeReply(PlayerMessage playerMessage, HashSet<(int, int)> legalKnowledgeReplies, CancellationToken cancellationToken)
+        {
+            bool isUnlocked = await TryLockAsync(0, cancellationToken);
+            if (!cancellationToken.IsCancellationRequested && isUnlocked)
+            {
+                GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
+                if (legalKnowledgeReplies.Contains((playerMessage.AgentID, payload.RespondToId)))
+                {
+                    legalKnowledgeReplies.Remove((playerMessage.AgentID, payload.RespondToId));
+                    GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload()
+                    {
+                        AnsweringId = playerMessage.AgentID,
+                        Distances = payload.Distances,
+                        RedTeamGoalAreaInformations = payload.RedTeamGoalAreaInformations,
+                        BlueTeamGoalAreaInformations = payload.BlueTeamGoalAreaInformations,
+                    };
+                    GMMessage answer = new GMMessage()
+                    {
+                        MessageID = GMMessageId.GiveInfoForwarded,
+                        AgentID = payload.RespondToId,
+                        Payload = answerPayload.Serialize(),
+                    };
+                    logger.Verbose("Sent message." + MessageLogger.Get(answer));
+                    await socketClient.SendAsync(answer, cancellationToken);
+                }
+            }
         }
 
         public async Task<bool> DestroyHoldingAsync(CancellationToken cancellationToken)

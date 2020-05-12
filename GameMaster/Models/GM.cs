@@ -224,10 +224,10 @@ namespace GameMaster.Models
                     await player.DiscoverAsync(this, cancellationToken);
                     break;
                 case PlayerMessageId.GiveInfo:
-                    await ForwardKnowledgeReply(message, cancellationToken);
+                    await player.ForwardKnowledgeReply(message, legalKnowledgeReplies, cancellationToken);
                     break;
                 case PlayerMessageId.BegForInfo:
-                    await ForwardKnowledgeQuestion(message, cancellationToken);
+                    await player.ForwardKnowledgeQuestion(message, legalKnowledgeReplies, cancellationToken);
                     break;
                 case PlayerMessageId.JoinTheGame:
                 {
@@ -423,62 +423,7 @@ namespace GameMaster.Models
             int xCoord = rand.Next(0, conf.Width);
 
             return (yCoord, xCoord);
-        }
-
-        private async Task ForwardKnowledgeQuestion(PlayerMessage playerMessage, CancellationToken cancellationToken)
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
-
-            BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(playerMessage.Payload);
-            BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
-            {
-                AskingId = playerMessage.AgentID,
-                Leader = players[playerMessage.AgentID].IsLeader,
-                TeamId = players[playerMessage.AgentID].Team,
-            };
-            GMMessage gmMessage = new GMMessage()
-            {
-                MessageID = GMMessageId.BegForInfoForwarded,
-                AgentID = begPayload.AskedPlayerId,
-                Payload = payload.Serialize(),
-            };
-
-            legalKnowledgeReplies.Add((begPayload.AskedPlayerId, playerMessage.AgentID));
-            logger.Verbose("Sent message." + MessageLogger.Get(gmMessage));
-            await socketClient.SendAsync(gmMessage, cancellationToken);
-        }
-
-        private async Task ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken)
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
-
-            GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
-            if (legalKnowledgeReplies.Contains((playerMessage.AgentID, payload.RespondToId)))
-            {
-                legalKnowledgeReplies.Remove((playerMessage.AgentID, payload.RespondToId));
-                GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload()
-                {
-                    AnsweringId = playerMessage.AgentID,
-                    Distances = payload.Distances,
-                    RedTeamGoalAreaInformations = payload.RedTeamGoalAreaInformations,
-                    BlueTeamGoalAreaInformations = payload.BlueTeamGoalAreaInformations,
-                };
-                GMMessage answer = new GMMessage()
-                {
-                    MessageID = GMMessageId.GiveInfoForwarded,
-                    AgentID = payload.RespondToId,
-                    Payload = answerPayload.Serialize(),
-                };
-                logger.Verbose("Sent message." + MessageLogger.Get(answer));
-                await socketClient.SendAsync(answer, cancellationToken);
-            }
-        }
+        }  
 
         internal async Task EndGame(CancellationToken cancellationToken)
         {
