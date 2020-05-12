@@ -63,14 +63,21 @@ namespace GameMaster.Models
             Verbose = conf.Verbose;
         }
 
-        internal void InitGame()
+        internal bool InitGame()
         {
+            (bool valid, string msg) = conf.IsValid();
+            if (!valid)
+            {
+                logger.Error(msg);
+                return false;
+            }
             board = new AbstractField[conf.Height][];
             var gmInitializer = new GMInitializer(conf, board);
             gmInitializer.InitializeBoard();
             gmInitializer.GenerateAllPieces(GeneratePiece);
             WasGameInitialized = true;
             logger.Information("Game was initialized.");
+            return true;
         }
 
         internal async Task StartGame(CancellationToken cancellationToken)
