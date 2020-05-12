@@ -66,7 +66,7 @@ namespace GameMaster.Controllers
                 logger.Warning($"Error writing to file: {e}");
             }
 
-            return Created("/configuration", conf);
+            return Created("/configuration", gameConfiguration);
         }
 
         [HttpPost]

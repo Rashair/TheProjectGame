@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace GameMaster.Models
@@ -45,6 +46,32 @@ namespace GameMaster.Models
         /// Percentage, between 0 and 1.
         /// </summary>
         public float ShamPieceProbability { get; set; }
+
+        public static GameConfiguration GetConfiguration(IConfiguration configuration)
+        {
+            GameConfiguration conf = null;
+            string path = configuration.GetValue<string>("GameConfigPath");
+            if (File.Exists(path))
+            {
+                try
+                {
+                    conf = new GameConfiguration(path);
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            if (conf == null)
+            {
+                conf = new GameConfiguration();
+                configuration.Bind("DefaultGameConfig", conf);
+            }
+
+            configuration.Bind(conf);  // For console override;
+
+            return conf;
+        }
 
         public GameConfiguration()
         {

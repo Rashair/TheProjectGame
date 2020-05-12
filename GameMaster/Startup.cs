@@ -72,18 +72,7 @@ namespace GameMaster
             services.AddSingleton<ISocketClient<PlayerMessage, GMMessage>, TcpSocketClient<PlayerMessage, GMMessage>>();
             services.AddSingleton<BufferBlock<PlayerMessage>>();
 
-            GameConfiguration conf;
-            string path = Configuration.GetValue<string>("GameConfigPath");
-            if (File.Exists(path))
-            {
-                conf = new GameConfiguration(path);
-            }
-            else
-            {
-                conf = new GameConfiguration();
-                Configuration.Bind("DefaultGameConfig", conf);
-            }
-            Configuration.Bind(conf);  // For console override;
+            GameConfiguration conf = GameConfiguration.GetConfiguration(Configuration);
             services.AddSingleton(conf);
 
             services.AddSpaStaticFiles(configuration =>
