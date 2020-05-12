@@ -34,7 +34,7 @@ namespace GameMaster.Tests
             // Arrange
             var conf = new MockGameConfiguration
             {
-                NumberOfPiecesOnBoard = 0
+                NumberOfPiecesOnBoard = 1
             };
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
@@ -70,7 +70,7 @@ namespace GameMaster.Tests
                 }
             }
 
-            Assert.Equal(x, pieceCount);
+            Assert.Equal(x + 1, pieceCount);
         }
 
         private int GetPieceCount(TaskField taskField)
