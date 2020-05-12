@@ -17,5 +17,7 @@
         public int DestroyPiece { get; set; }
 
         public int PutPiece { get; set; }
+
+        public int PrematureRequest { get; set; }
     }
 }

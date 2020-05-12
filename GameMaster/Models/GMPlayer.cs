@@ -217,9 +217,10 @@ namespace GameMaster.Models
 
         private GMMessage NotWaitedErrorMessage()
         {
+            DateTime nw = DateTime.Now;
             NotWaitedErrorPayload payload = new NotWaitedErrorPayload()
             {
-                WaitUntil = lockedTill,
+                WaitFor = (lockedTill - nw).Milliseconds,
             };
             return new GMMessage(GMMessageId.NotWaitedError, id, payload);
         }

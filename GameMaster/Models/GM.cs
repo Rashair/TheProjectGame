@@ -136,6 +136,7 @@ namespace GameMaster.Models
                     CheckPiece = conf.CheckPenalty,
                     DestroyPiece = conf.DestroyPenalty,
                     PutPiece = conf.PutPenalty,
+                    PrematureRequest = conf.PrematureRequestPenalty
                 };
                 payload.ShamPieceProbability = conf.ShamPieceProbability;
                 payload.Position = new Position

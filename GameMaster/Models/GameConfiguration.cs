@@ -41,6 +41,8 @@ namespace GameMaster.Models
 
         public bool Verbose { get; set; }
 
+        public int PrematureRequestPenalty { get; set; }
+
         /// <summary>
         /// Percentage, between 0 and 1.
         /// </summary>

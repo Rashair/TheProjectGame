@@ -44,7 +44,8 @@ export class Configuration extends Component {
       numberOfGoals: 0,
       numberOfPlayersPerTeam: 0,
       shamPieceProbability: 0.0,
-      numberOfPiecesOnBoard: 0
+      numberOfPiecesOnBoard: 0,
+      rematureRequestPenalty:0
     };
 
     this.sendData = this.sendData.bind(this);
@@ -181,6 +182,12 @@ export class Configuration extends Component {
             label: "Kara za zniszczenie fragmentu",
             value: this.state.destroyPenalty,
             onChange: (e) => this.setState({ destroyPenalty: e.target.value }),
+          })}
+          {CustomFieldset({
+            id: "prematureRequestPenalty",
+            label: "Kara za nie odczekanie",
+            value: this.state.prematureRequestPenalty,
+            onChange: (e) => this.setState({prematureRequestPenalty: e.target.value }),
           })}
         </div>
 

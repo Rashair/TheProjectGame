@@ -4,11 +4,11 @@ namespace Shared.Payloads.GMPayloads
 {
     public class NotWaitedErrorPayload : Payload
     {
-       public DateTime WaitUntil { get; set; }
+       public int WaitFor { get; set; }
 
        public override string ToString()
        {
-            return $"WaitUntil:{WaitUntil}";
+            return $"WaitFor:{WaitFor}";
        }
     }
 }
