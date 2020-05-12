@@ -395,97 +395,142 @@ namespace GameMaster.Tests
         [Fact]
         public void TestValidateConf()
         {
+            // Arrange
             var conf = new MockGameConfiguration();
             var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
             gameMaster.Invoke("InitGame");
+
+            // Assert
             Assert.True(gameMaster.WasGameInitialized);
         }
 
         [Fact]
         public void TestValidateConfWidth()
         {
+            // Arrange
             var conf = new MockGameConfiguration()
             {
                 Width = 0
             };
             var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
             gameMaster.Invoke("InitGame");
+
+            // Assert
             Assert.False(gameMaster.WasGameInitialized);
         }
 
         [Fact]
         public void TestValidateConfHeight()
         {
+            // Arrange
             var conf = new MockGameConfiguration()
             {
                 Height = 2
             };
             var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
             gameMaster.Invoke("InitGame");
+
+            // Assert
             Assert.False(gameMaster.WasGameInitialized);
         }
 
         [Fact]
         public void TestValidateConfGoalAreaHeight()
         {
+            // Arrange
             var conf = new MockGameConfiguration();
             conf.GoalAreaHeight = (conf.Height / 2) + 1;
             var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
             gameMaster.Invoke("InitGame");
+
+            // Assert
             Assert.False(gameMaster.WasGameInitialized);
         }
 
         [Fact]
         public void TestValidateConfNumberOfGoals()
         {
+            // Arrange
             var conf = new MockGameConfiguration();
             conf.NumberOfGoals = (conf.GoalAreaHeight * conf.Width) + 1;
             var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
             gameMaster.Invoke("InitGame");
+
+            // Assert
             Assert.False(gameMaster.WasGameInitialized);
         }
 
         [Fact]
         public void TestValidateConfNumberOfPlayersPerTeam()
         {
+            // Arrange
             var conf = new MockGameConfiguration();
             conf.NumberOfGoals = (conf.Height * conf.Width) + 1;
             var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
             gameMaster.Invoke("InitGame");
+
+            // Assert
             Assert.False(gameMaster.WasGameInitialized);
         }
 
         [Fact]
         public void TestValidateConfNumberOfPiecesOnBoard()
         {
+            // Arrange
             var conf = new MockGameConfiguration();
             conf.NumberOfPiecesOnBoard = ((conf.Height - (conf.GoalAreaHeight * 2)) * conf.Width) + 1;
             var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
             gameMaster.Invoke("InitGame");
+
+            // Assert
             Assert.False(gameMaster.WasGameInitialized);
         }
 
         [Fact]
         public void TestValidateConfShamPieceProbability()
         {
+            // Arrange
             var conf = new MockGameConfiguration()
             {
                 ShamPieceProbability = 1
             };
             var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
             gameMaster.Invoke("InitGame");
+
+            // Assert
             Assert.False(gameMaster.WasGameInitialized);
         }
 
         [Fact]
         public void TestValidatePenalty()
         {
+            // Arrange
             var conf = new MockGameConfiguration()
             {
                 PickPenalty = 0
             };
             var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
             gameMaster.Invoke("InitGame");
+
+            // Assert
             Assert.False(gameMaster.WasGameInitialized);
         }
     }
