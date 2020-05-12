@@ -30,16 +30,15 @@ namespace Player.Models
         private bool working;
         private readonly PlayerConfiguration conf;
         private Team? winner;
-        private int discovered;
 
         public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage,
-            PlayerMessage> client, ILogger logger)
+            PlayerMessage> client, ILogger log)
         {
             this.conf = conf;
             this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
             this.queue = queue;
             this.client = client;
-            this.logger = logger.ForContext<Player>();
+            this.logger = log.ForContext<Player>();
             this.Team = conf.TeamId == "red" ? Team.Red : Team.Blue;
             this.Position = (-1, -1);
         }
@@ -101,7 +100,7 @@ namespace Player.Models
             };
             PlayerMessage message = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.JoinTheGame,
+                MessageID = PlayerMessageId.JoinTheGame,
                 Payload = payload.Serialize(),
             };
             await Communicate(message, cancellationToken);
@@ -135,8 +134,8 @@ namespace Player.Models
             };
             PlayerMessage message = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.Move,
-                PlayerId = id,
+                MessageID = PlayerMessageId.Move,
+                AgentID = id,
                 Payload = payload.Serialize(),
             };
             await Communicate(message, cancellationToken);
@@ -147,8 +146,8 @@ namespace Player.Models
             EmptyPayload payload = new EmptyPayload();
             PlayerMessage message = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.Put,
-                PlayerId = id,
+                MessageID = PlayerMessageId.Put,
+                AgentID = id,
                 Payload = payload.Serialize(),
             };
             await Communicate(message, cancellationToken);
@@ -158,8 +157,8 @@ namespace Player.Models
         {
             PlayerMessage message = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.BegForInfo,
-                PlayerId = id,
+                MessageID = PlayerMessageId.BegForInfo,
+                AgentID = id,
             };
 
             Random rnd = new Random();
@@ -186,8 +185,8 @@ namespace Player.Models
 
             PlayerMessage message = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.GiveInfo,
-                PlayerId = id,
+                MessageID = PlayerMessageId.GiveInfo,
+                AgentID = id,
             };
 
             GiveInfoPayload response = new GiveInfoPayload();
@@ -244,8 +243,8 @@ namespace Player.Models
         {
             return new PlayerMessage()
             {
-                MessageId = type,
-                PlayerId = id,
+                MessageID = type,
+                AgentID = id,
                 Payload = payload.Serialize(),
             };
         }
@@ -272,9 +271,8 @@ namespace Player.Models
         {
             var cancellationTimespan = TimeSpan.FromMinutes(2);
             GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
-            logger.Information($"|{message.Id} | {message.Payload} | HasPiece: {HasPiece} | Discovered goal-fields: " +
-                $"{discovered} ");
-            switch (message.Id)
+            logger.Verbose("Received message. " + MessageLogger.Get(message));
+            switch (message.MessageID)
             {
                 case GMMessageId.CheckAnswer:
                     CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
@@ -386,12 +384,15 @@ namespace Player.Models
                     if (payload.WasGoal.HasValue)
                     {
                         bool goal = payload.WasGoal.Value;
-                        if (Board[Position.y, Position.x].GoalInfo == GoalInfo.IDK)
+                        if (goal)
                         {
-                            ++discovered;
+                            Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredGoal;
+                            logger.Information($"GOT GOAL at ({Position.y}, {Position.x}) !!!");
                         }
-                        Board[Position.y, Position.x].GoalInfo = goal ?
-                            GoalInfo.DiscoveredGoal : GoalInfo.DiscoveredNotGoal;
+                        else
+                        {
+                            Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredNotGoal;
+                        }
                     }
 
                     penaltyTime = PenaltiesTimes.PutPiece;
@@ -445,8 +446,8 @@ namespace Player.Models
             EmptyPayload messagePickPayload = new EmptyPayload();
             PlayerMessage messagePick = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.PieceDestruction,
-                PlayerId = id,
+                MessageID = PlayerMessageId.PieceDestruction,
+                AgentID = id,
                 Payload = JsonConvert.SerializeObject(messagePickPayload),
             };
             await Communicate(messagePick, cancellationToken);
@@ -457,8 +458,8 @@ namespace Player.Models
             EmptyPayload messagePickPayload = new EmptyPayload();
             PlayerMessage messagePick = new PlayerMessage()
             {
-                MessageId = PlayerMessageId.Pick,
-                PlayerId = id,
+                MessageID = PlayerMessageId.Pick,
+                AgentID = id,
                 Payload = JsonConvert.SerializeObject(messagePickPayload),
             };
             await Communicate(messagePick, cancellationToken);
@@ -472,6 +473,7 @@ namespace Player.Models
         private async Task Communicate(PlayerMessage message, CancellationToken cancellationToken)
         {
             await client.SendAsync(message, cancellationToken);
+            logger.Verbose("Sent message." + MessageLogger.Get(message));
         }
 
         private async Task Penalty(CancellationToken cancellationToken)

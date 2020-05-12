@@ -23,7 +23,7 @@ namespace GameMaster.Models
     public class GM
     {
         private readonly ILogger log;
-        private readonly ILogger logger;
+        private ILogger logger;
         private readonly IApplicationLifetime lifetime;
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
@@ -44,6 +44,8 @@ namespace GameMaster.Models
 
         public int SecondGoalAreaStart { get => conf.Height - conf.GoalAreaHeight; }
 
+        public bool Verbose { get; set; }
+
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
             BufferBlock<PlayerMessage> queue, ISocketClient<PlayerMessage, GMMessage> socketClient,
             ILogger log)
@@ -58,16 +60,24 @@ namespace GameMaster.Models
             players = new Dictionary<int, GMPlayer>();
             legalKnowledgeReplies = new HashSet<(int, int)>();
             rand = new Random();
+            Verbose = conf.Verbose;
         }
 
-        internal void InitGame()
+        internal bool InitGame()
         {
+            (bool valid, string msg) = conf.IsValid();
+            if (!valid)
+            {
+                logger.Error(msg);
+                return false;
+            }
             board = new AbstractField[conf.Height][];
             var gmInitializer = new GMInitializer(conf, board);
             gmInitializer.InitializeBoard();
             gmInitializer.GenerateAllPieces(GeneratePiece);
             WasGameInitialized = true;
             logger.Information("Game was initialized.");
+            return true;
         }
 
         internal async Task StartGame(CancellationToken cancellationToken)
@@ -143,11 +153,11 @@ namespace GameMaster.Models
 
                 var message = new GMMessage
                 {
-                    Id = GMMessageId.StartGame,
-                    PlayerId = p.Key,
+                    MessageID = GMMessageId.StartGame,
+                    AgentID = p.Key,
                     Payload = payload.Serialize(),
                 };
-
+                logger.Verbose("Sent message." + MessageLogger.Get(message));
                 sendMessagesTasks.Add(socketClient.SendAsync(message, cancellationToken));
             }
 
@@ -163,6 +173,7 @@ namespace GameMaster.Models
                 try
                 {
                     PlayerMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
+                    logger.Verbose("Received message. " + MessageLogger.Get(message));
                     await AcceptMessage(message, cancellationToken);
                     if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
                     {
@@ -193,17 +204,17 @@ namespace GameMaster.Models
                 return;
             }
 
-            if (!WasGameStarted && message.MessageId != PlayerMessageId.JoinTheGame)
+            if (!WasGameStarted && message.MessageID != PlayerMessageId.JoinTheGame)
             {
                 // TODO: send error message
                 logger.Warning("Game was not started yet: GM can't accept messages other than JoinTheGame");
                 return;
             }
 
-            players.TryGetValue(message.PlayerId, out GMPlayer player);
+            players.TryGetValue(message.AgentID, out GMPlayer player);
            
             // logger.Information($"|{message.MessageId} | {message.Payload} | | {player?.Team}");
-            switch (message.MessageId)
+            switch (message.MessageID)
             {
                 case PlayerMessageId.CheckPiece:
                     await player.CheckHoldingAsync(cancellationToken);
@@ -227,7 +238,7 @@ namespace GameMaster.Models
                 case PlayerMessageId.JoinTheGame:
                 {
                     JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
-                    int key = message.PlayerId;
+                    int key = message.AgentID;
                     bool accepted = TryToAddPlayer(key, payloadJoin.TeamId);
                     JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
                     {
@@ -236,10 +247,11 @@ namespace GameMaster.Models
                     };
                     GMMessage answerJoin = new GMMessage()
                     {
-                        Id = GMMessageId.JoinTheGameAnswer,
-                        PlayerId = key,
+                        MessageID = GMMessageId.JoinTheGameAnswer,
+                        AgentID = key,
                         Payload = JsonConvert.SerializeObject(answerJoinPayload),
                     };
+                    logger.Verbose("Sent message." + MessageLogger.Get(answerJoin));
                     await socketClient.SendAsync(answerJoin, cancellationToken);
 
                     if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
@@ -429,18 +441,19 @@ namespace GameMaster.Models
             BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(playerMessage.Payload);
             BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
             {
-                AskingId = playerMessage.PlayerId,
-                Leader = players[playerMessage.PlayerId].IsLeader,
-                TeamId = players[playerMessage.PlayerId].Team,
+                AskingId = playerMessage.AgentID,
+                Leader = players[playerMessage.AgentID].IsLeader,
+                TeamId = players[playerMessage.AgentID].Team,
             };
             GMMessage gmMessage = new GMMessage()
             {
-                Id = GMMessageId.BegForInfoForwarded,
-                PlayerId = begPayload.AskedPlayerId,
+                MessageID = GMMessageId.BegForInfoForwarded,
+                AgentID = begPayload.AskedPlayerId,
                 Payload = payload.Serialize(),
             };
 
-            legalKnowledgeReplies.Add((begPayload.AskedPlayerId, playerMessage.PlayerId));
+            legalKnowledgeReplies.Add((begPayload.AskedPlayerId, playerMessage.AgentID));
+            logger.Verbose("Sent message." + MessageLogger.Get(gmMessage));
             await socketClient.SendAsync(gmMessage, cancellationToken);
         }
 
@@ -452,22 +465,23 @@ namespace GameMaster.Models
             }
 
             GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
-            if (legalKnowledgeReplies.Contains((playerMessage.PlayerId, payload.RespondToId)))
+            if (legalKnowledgeReplies.Contains((playerMessage.AgentID, payload.RespondToId)))
             {
-                legalKnowledgeReplies.Remove((playerMessage.PlayerId, payload.RespondToId));
+                legalKnowledgeReplies.Remove((playerMessage.AgentID, payload.RespondToId));
                 GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload()
                 {
-                    AnsweringId = playerMessage.PlayerId,
+                    AnsweringId = playerMessage.AgentID,
                     Distances = payload.Distances,
                     RedTeamGoalAreaInformations = payload.RedTeamGoalAreaInformations,
                     BlueTeamGoalAreaInformations = payload.BlueTeamGoalAreaInformations,
                 };
                 GMMessage answer = new GMMessage()
                 {
-                    Id = GMMessageId.GiveInfoForwarded,
-                    PlayerId = payload.RespondToId,
+                    MessageID = GMMessageId.GiveInfoForwarded,
+                    AgentID = payload.RespondToId,
                     Payload = answerPayload.Serialize(),
                 };
+                logger.Verbose("Sent message." + MessageLogger.Get(answer));
                 await socketClient.SendAsync(answer, cancellationToken);
             }
         }
@@ -487,6 +501,8 @@ namespace GameMaster.Models
                messages.Add(new GMMessage(GMMessageId.EndGame, p.Key, payload));
             }
             await socketClient.SendToAllAsync(messages, cancellationToken);
+            for (int i = 0; i < messages.Count; i++)
+                logger.Verbose("Sent message." + MessageLogger.Get(messages[i]));
             logger.Information("Sent endGame to all.");
             WasGameFinished = true;
 

@@ -7,5 +7,10 @@ namespace Shared.Payloads.GMPayloads
     {
         [JsonProperty("winner")]
         public Team Winner { get; set; }
+
+        public override string ToString()
+        {
+            return $"Winner:{Winner}";
+        }
     }
 }

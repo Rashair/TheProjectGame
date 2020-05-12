@@ -11,5 +11,10 @@ namespace Shared.Payloads.GMPayloads
 
         [JsonProperty("teamId")]
         public Team TeamId { get; set; }
+
+        public override string ToString()
+        {
+            return $" AskingId:{AskingId}, Leader:{Leader}, TeamId{TeamId}";
+        }
     }
 }

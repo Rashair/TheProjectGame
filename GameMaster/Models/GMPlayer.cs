@@ -8,6 +8,7 @@ using Serilog;
 using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
+using Shared.Models;
 using Shared.Payloads.GMPayloads;
 
 namespace GameMaster.Models
@@ -71,6 +72,7 @@ namespace GameMaster.Models
                 bool moved = field?.MoveHere(this) == true;
                 GMMessage message = MoveAnswerMessage(moved, gm);
                 await socketClient.SendAsync(message, cancellationToken);
+                logger.Verbose("Sent message." + MessageLogger.Get(message));
                 return moved;
             }
             return false;
@@ -94,6 +96,7 @@ namespace GameMaster.Models
                     message = UnknownErrorMessage();
                 }
                 await socketClient.SendAsync(message, cancellationToken);
+                logger.Verbose("Sent message." + MessageLogger.Get(message));
                 return isHolding;
             }
             return false;
@@ -115,6 +118,7 @@ namespace GameMaster.Models
                     message = CheckAnswerMessage();
                 }
                 await socketClient.SendAsync(message, cancellationToken);
+                logger.Verbose("Sent message." + MessageLogger.Get(message));
             }
         }
 
@@ -125,6 +129,7 @@ namespace GameMaster.Models
             {
                 GMMessage message = DiscoverAnswerMessage(gm);
                 await socketClient.SendAsync(message, cancellationToken);
+                logger.Verbose("Sent message." + MessageLogger.Get(message));
             }
         }
 
@@ -149,6 +154,7 @@ namespace GameMaster.Models
                     Holding = null;
                 }
                 await socketClient.SendAsync(message, cancellationToken);
+                logger.Verbose("Sent message." + MessageLogger.Get(message));
             }
             return (goal, removed);
         }
@@ -177,6 +183,7 @@ namespace GameMaster.Models
                     message = PickErrorMessage(PickError.Other);
                 }
                 await socketClient.SendAsync(message, cancellationToken);
+                logger.Verbose("Sent message." + message.ToString());
             }
             return picked;
         }
@@ -201,6 +208,7 @@ namespace GameMaster.Models
                 {
                     GMMessage message = NotWaitedErrorMessage();
                     await socketClient.SendAsync(message, cancellationToken);
+                    logger.Verbose("Sent message." + MessageLogger.Get(message));
                 }
                 return isUnlocked;
             }

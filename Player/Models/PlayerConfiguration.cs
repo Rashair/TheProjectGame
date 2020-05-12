@@ -9,5 +9,7 @@ namespace Player.Models
         public string TeamId { get; set; }
 
         public int Strategy { get; set; }
+
+        public bool Verbose { get; set; }
     }
 }
