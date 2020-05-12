@@ -133,7 +133,7 @@ namespace GameMaster.Models
                 return (false, "ShamPieceProbability must be in range (0, 1)");
             }
 
-            int[] penelties = new int[]
+            int[] penalties = new int[]
             {
                 AskPenalty,
                 CheckPenalty,
@@ -144,11 +144,11 @@ namespace GameMaster.Models
                 PutPenalty,
                 ResponsePenalty
             };
-            foreach (int penelty in penelties)
+            foreach (int penalty in penalties)
             {
-                if (penelty <= 0)
+                if (penalty <= 0)
                 {
-                    return (false, "Every penelty must be greater than 0");
+                    return (false, "Every penalty must be greater than 0");
                 }
             }
 
