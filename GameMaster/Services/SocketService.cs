@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -8,7 +9,9 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Shared;
 using Shared.Clients;
+using Shared.Enums;
 using Shared.Messages;
+using Shared.Payloads.PlayerPayloads;
 
 namespace GameMaster.Services
 {
@@ -57,6 +60,14 @@ namespace GameMaster.Services
                 (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
             }
             await client.CloseAsync(stoppingToken);
+
+            message = new PlayerMessage()
+            {
+                AgentID = -1,
+                MessageID = PlayerMessageId.CSDisconnected,
+                Payload = new EmptyPayload().Serialize()
+            };
+            await queue.SendAsync(message, stoppingToken);
         }
     }
 }
