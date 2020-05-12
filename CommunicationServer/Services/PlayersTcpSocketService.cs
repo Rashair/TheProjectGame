@@ -10,8 +10,10 @@ using CommunicationServer.Models;
 using Serilog;
 using Shared;
 using Shared.Clients;
+using Shared.Enums;
 using Shared.Managers;
 using Shared.Messages;
+using Shared.Payloads.PlayerPayloads;
 
 namespace CommunicationServer.Services
 {
@@ -19,16 +21,19 @@ namespace CommunicationServer.Services
     {
         private readonly ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage> manager;
         private readonly BufferBlock<Message> queue;
+        private readonly ServiceShareContainer container;
         private readonly ServerConfigurations conf;
         private readonly ServiceSynchronization sync;
         protected readonly ILogger log;
 
         public PlayersTcpSocketService(ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage> manager,
-            BufferBlock<Message> queue, ServerConfigurations conf, ILogger log, ServiceSynchronization sync)
+            BufferBlock<Message> queue, ServiceShareContainer container, ServerConfigurations conf, ILogger log,
+            ServiceSynchronization sync)
             : base(log.ForContext<PlayersTcpSocketService>())
         {
             this.manager = manager;
             this.queue = queue;
+            this.container = container;
             this.conf = conf;
             this.log = log;
             this.sync = sync;
@@ -62,6 +67,13 @@ namespace CommunicationServer.Services
                 logger.Error($"Failed to remove socket: {socket.Endpoint}");
             }
             logger.Information($"Player {id} disconnected");
+            PlayerMessage message = new PlayerMessage()
+            {
+                AgentID = id,
+                MessageID = PlayerMessageId.Disconnected,
+                Payload = new EmptyPayload().Serialize()
+            };
+            await container.GMClient.SendAsync(message, cancellationToken);
         }
 
         public override async Task OnExceptionAsync(TcpSocketClient<PlayerMessage, GMMessage> client, Exception e,
