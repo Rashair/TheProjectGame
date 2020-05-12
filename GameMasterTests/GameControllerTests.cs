@@ -47,7 +47,7 @@ namespace GameMaster.Tests
             newGameConfig.AskPenalty = 200;
             newGameConfig.Height = 10;
             newGameConfig.DestroyPenalty = 100;
-            newGameConfig.PickPenalty = 100;
+            newGameConfig.PickUpPenalty = 100;
 
             var result = await gameController.Configuration(newGameConfig);
             var createdResult = (CreatedResult)result.Result;

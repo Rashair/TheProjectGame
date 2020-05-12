@@ -551,7 +551,7 @@ namespace Player.Tests
             await player.AcceptMessage(CancellationToken.None);
 
             // Assert
-            int expectedPenaltyTime = player.PenaltiesTimes.PickPiece;
+            int expectedPenaltyTime = player.PenaltiesTimes.PickUpPiece;
             int actualPenaltyTime = player.GetValue<Player.Models.Player, int>("penaltyTime");
             Assert.Equal(expectedPenaltyTime, actualPenaltyTime);
         }

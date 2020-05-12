@@ -132,7 +132,7 @@ namespace GameMaster.Models
                     Ask = conf.AskPenalty,
                     Response = conf.ResponsePenalty,
                     Discover = conf.DiscoverPenalty,
-                    PickPiece = conf.PickPenalty,
+                    PickUpPiece = conf.PickUpPenalty,
                     CheckPiece = conf.CheckPenalty,
                     DestroyPiece = conf.DestroyPenalty,
                     PutPiece = conf.PutPenalty,

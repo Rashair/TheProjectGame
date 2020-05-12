@@ -17,7 +17,7 @@ namespace IntegrationTests.GameTests
                 CheckPenalty = 300,
                 MovePenalty = 300,
                 DestroyPenalty = 100,
-                PickPenalty = 100,
+                PickUpPenalty = 100,
                 DiscoverPenalty = 700,
                 ResponsePenalty = 1500,
                 Height = 20,

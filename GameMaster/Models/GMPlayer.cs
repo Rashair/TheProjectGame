@@ -161,7 +161,7 @@ namespace GameMaster.Models
 
         public async Task<bool> PickAsync(CancellationToken cancellationToken)
         {
-            bool isUnlocked = await TryLockAsync(conf.PickPenalty, cancellationToken);
+            bool isUnlocked = await TryLockAsync(conf.PickUpPenalty, cancellationToken);
             bool picked = false;
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
@@ -220,7 +220,7 @@ namespace GameMaster.Models
             DateTime nw = DateTime.Now;
             NotWaitedErrorPayload payload = new NotWaitedErrorPayload()
             {
-                WaitFor = (lockedTill - nw).Milliseconds,
+                WaitFor = (lockedTill - nw).Milliseconds + conf.PrematureRequestPenalty,
             };
             return new GMMessage(GMMessageId.NotWaitedError, id, payload);
         }

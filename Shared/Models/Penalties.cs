@@ -10,7 +10,7 @@
 
         public int Discover { get; set; }
 
-        public int PickPiece { get; set; }
+        public int PickUpPiece { get; set; }
 
         public int CheckPiece { get; set; }
 

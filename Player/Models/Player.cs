@@ -374,7 +374,7 @@ namespace Player.Models
                 case GMMessageId.PickAnswer:
                     HasPiece = true;
                     Board[Position.y, Position.x].DistToPiece = int.MaxValue;
-                    penaltyTime = PenaltiesTimes.PickPiece;
+                    penaltyTime = PenaltiesTimes.PickUpPiece;
                     break;
                 case GMMessageId.PutAnswer:
                     HasPiece = false;
@@ -428,7 +428,7 @@ namespace Player.Models
                     }
                     break;
                 case GMMessageId.PickError:
-                    penaltyTime = PenaltiesTimes.PickPiece;
+                    penaltyTime = PenaltiesTimes.PickUpPiece;
                     break;
                 case GMMessageId.PutError:
                     penaltyTime = PenaltiesTimes.PutPiece;
