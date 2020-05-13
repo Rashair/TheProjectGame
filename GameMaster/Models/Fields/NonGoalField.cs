@@ -1,4 +1,5 @@
 ﻿using GameMaster.Models.Pieces;
+using Shared.Enums;
 
 namespace GameMaster.Models.Fields
 {
@@ -14,17 +15,17 @@ namespace GameMaster.Models.Fields
             return false;
         }
 
-        public override (bool? goal, bool removed) Put(AbstractPiece piece)
+        public override (PutEvent putEvent, bool removed) Put(AbstractPiece piece)
         {
             if (piece.CheckForSham() == false)
             {
                 Pieces.Add(piece);
-                return (false, true);
+                return (PutEvent.NormalOnGoalField, true);
             }
             else
             {
                 Pieces.Add(piece);
-                return (null, true);
+                return (PutEvent.ShamOnGoalArea, true);
             }
         }
 

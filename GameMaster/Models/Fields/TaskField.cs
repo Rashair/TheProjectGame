@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 
 using GameMaster.Models.Pieces;
+using Shared.Enums;
 
 namespace GameMaster.Models.Fields
 {
@@ -24,18 +25,10 @@ namespace GameMaster.Models.Fields
             return false;
         }
 
-        public override (bool? goal, bool removed) Put(AbstractPiece piece)
+        public override (PutEvent putEvent, bool removed) Put(AbstractPiece piece)
         {
-            if (piece.CheckForSham() == false)
-            {
-                Pieces.Add(piece);
-                return (false, false);
-            }
-            else
-            {
-                Pieces.Add(piece);
-                return (null, false);
-            }
+            Pieces.Add(piece);
+            return (PutEvent.TaskField, false);
         }
 
         public override bool CanPick()
