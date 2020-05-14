@@ -60,7 +60,8 @@ namespace GameMaster.Models
             {
                 bool moved = field?.MoveHere(this) == true;
                 GMMessage message = MoveAnswerMessage(moved, gm);
-                await SendAndLockAsync(message, conf.MovePenalty, cancellationToken);
+                await SendAndLockAsync(message, conf.MovePenalty, cancellationToken);
+
                 return moved;
             }
             return false;
@@ -127,23 +128,40 @@ namespace GameMaster.Models
         public async Task<(bool?, bool)> PutAsync(CancellationToken cancellationToken)
         {
             bool isUnlocked = await TryGetLockAsync(cancellationToken);
-            (bool? goal, bool removed) = (false, false);
+            bool removed = false;
+            bool? goal = null;
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 GMMessage message;
-                if (Holding is null)
+                if (Holding != null)
                 {
-                    message = PutErrorMessage(PutError.AgentNotHolding);
+                    PutEvent putEvent;
+                    (putEvent, removed) = Holding.Put(Position);
+
+                    if (putEvent == PutEvent.NormalOnGoalField)
+                    {
+                        goal = true;
+                    }
+                    else if (putEvent == PutEvent.NormalOnNonGoalField)
+                    {
+                        goal = false;
+                    }
+                    else
+                    {
+                        goal = null;
+                    }
+
+                    message = PutAnswerMessage(goal, putEvent);
+                    Holding = null;
                 }
                 else
                 {
-                    (goal, removed) = Holding.Put(Position);
-                    message = PutAnswerMessage(goal);
-                    Holding = null;
+                    message = PutErrorMessage(PutError.AgentNotHolding);
                 }
 
                 await SendAndLockAsync(message, conf.PutPenalty, cancellationToken);
             }
+
             return (goal, removed);
         }
 
@@ -305,12 +323,12 @@ namespace GameMaster.Models
             return new GMMessage(GMMessageId.PutError, id, payload);
         }
 
-        private GMMessage PutAnswerMessage(bool? goal)
+        private GMMessage PutAnswerMessage(bool? wasGoal, PutEvent putEvent)
         {
-            // TODO Issue 119
             PutAnswerPayload payload = new PutAnswerPayload()
             {
-                WasGoal = goal
+                WasGoal = wasGoal,
+                PutEvent = putEvent,
             };
 
             return new GMMessage(GMMessageId.PutAnswer, id, payload);

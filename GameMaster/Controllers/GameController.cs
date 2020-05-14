@@ -80,8 +80,12 @@ namespace GameMaster.Controllers
                 return Ok();
             }
 
-            gameMaster.InitGame();
-            return Ok();
+            bool result = gameMaster.InitGame();
+            if (result)
+            {
+                return Ok();
+            }
+            return BadRequest();
         }
 
         [HttpGet]
