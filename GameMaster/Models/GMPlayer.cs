@@ -195,7 +195,8 @@ namespace GameMaster.Models
         public async Task<(bool?, bool)> PutAsync(CancellationToken cancellationToken)
         {
             bool isUnlocked = await TryLockAsync(conf.PutPenalty, cancellationToken);
-            (bool? goal, bool removed) = (false, false);
+            (PutEvent putEvent, bool removed) = (PutEvent.TaskField, false);
+            bool? goal = null;
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 GMMessage message;
@@ -205,8 +206,22 @@ namespace GameMaster.Models
                 }
                 else
                 {
-                    (goal, removed) = Holding.Put(Position);
-                    message = PutAnswerMessage(goal);
+                    (putEvent, removed) = Holding.Put(Position);
+
+                    if (putEvent == PutEvent.NormalOnGoalField)
+                    {
+                        goal = true;
+                    }
+                    else if (putEvent == PutEvent.NormalOnNonGoalField)
+                    {
+                        goal = false;
+                    }
+                    else
+                    {
+                        goal = null;
+                    }
+
+                    message = PutAnswerMessage(goal, putEvent);
                     Holding = null;
                 }
                 await socketClient.SendAsync(message, cancellationToken);
@@ -344,12 +359,12 @@ namespace GameMaster.Models
             return new GMMessage(GMMessageId.PutError, id, payload);
         }
 
-        private GMMessage PutAnswerMessage(bool? goal)
+        private GMMessage PutAnswerMessage(bool? wasGoal, PutEvent putEvent)
         {
-            // TODO Issue 119
             PutAnswerPayload payload = new PutAnswerPayload()
             {
-                WasGoal = goal
+                WasGoal = wasGoal,
+                PutEvent = putEvent,
             };
 
             return new GMMessage(GMMessageId.PutAnswer, id, payload);

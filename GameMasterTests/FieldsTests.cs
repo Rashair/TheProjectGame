@@ -7,6 +7,7 @@ using GameMaster.Models.Pieces;
 using Moq;
 using Serilog;
 using Shared.Clients;
+using Shared.Enums;
 using Shared.Messages;
 using TestsShared;
 using Xunit;
@@ -72,9 +73,9 @@ namespace GameMaster.Tests
         {
             public IEnumerator<object[]> GetEnumerator()
             {
-                yield return new object[] { new List<AbstractPiece> { new NormalPiece(), new ShamPiece() }, null };
-                yield return new object[] { new List<AbstractPiece> { new NormalPiece() }, true };
-                yield return new object[] { new List<AbstractPiece> { new ShamPiece() }, null };
+                yield return new object[] { new List<AbstractPiece> { new NormalPiece(), new ShamPiece() }, PutEvent.ShamOnGoalArea };
+                yield return new object[] { new List<AbstractPiece> { new NormalPiece() }, PutEvent.NormalOnGoalField };
+                yield return new object[] { new List<AbstractPiece> { new ShamPiece() }, PutEvent.ShamOnGoalArea };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -82,16 +83,16 @@ namespace GameMaster.Tests
 
         [Theory]
         [ClassData(typeof(PutGoalTestData))]
-        public void PutGoalTest(List<AbstractPiece> pieces, bool? expected)
+        public void PutGoalTest(List<AbstractPiece> pieces, PutEvent expected)
         {
             // Arrange
             GoalField goalField = new GoalField(5, 0);
-            bool? result = null;
+            PutEvent result = PutEvent.TaskField;
 
             // Act
             foreach (AbstractPiece p in pieces)
             {
-                result = goalField.Put(p).goal;
+                result = goalField.Put(p).putEvent;
             }
 
             // Assert

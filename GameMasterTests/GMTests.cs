@@ -34,7 +34,7 @@ namespace GameMaster.Tests
             // Arrange
             var conf = new MockGameConfiguration
             {
-                NumberOfPiecesOnBoard = 0
+                NumberOfPiecesOnBoard = 1
             };
             var queue = new BufferBlock<PlayerMessage>();
             var lifetime = Mock.Of<IApplicationLifetime>();
@@ -70,7 +70,7 @@ namespace GameMaster.Tests
                 }
             }
 
-            Assert.Equal(x, pieceCount);
+            Assert.Equal(x + 1, pieceCount);
         }
 
         private int GetPieceCount(TaskField taskField)
@@ -101,9 +101,9 @@ namespace GameMaster.Tests
             int x = 3;
             int y = 4;
             NormalPiece piece = new NormalPiece();
-            Mock<GoalField> field = new Mock<GoalField>(x, y);
-            field.Setup(m => m.Put(piece)).Returns((true, true));
-            Assert.True(piece.Put(field.Object).goal);
+            GoalField field = new GoalField(x, y);
+            bool result = field.Put(piece).putEvent == PutEvent.NormalOnGoalField ? true : false;
+            Assert.True(result);
         }
 
         [Fact]
@@ -112,9 +112,9 @@ namespace GameMaster.Tests
             int x = 3;
             int y = 4;
             ShamPiece piece = new ShamPiece();
-            Mock<NonGoalField> field = new Mock<NonGoalField>(x, y);
-            field.Setup(m => m.Put(piece)).Returns((false, true));
-            Assert.False(piece.Put(field.Object).goal);
+            NonGoalField field = new NonGoalField(x, y);
+            bool result = field.Put(piece).putEvent == PutEvent.ShamOnGoalArea ? true : false;
+            Assert.True(result);
         }
 
         public class DiscoverTestData : IEnumerable<object[]>
@@ -146,7 +146,7 @@ namespace GameMaster.Tests
             }
 
             // Act
-            var discoveryActionResult = gameMaster.Invoke<GM, Dictionary<Direction, int>>("Discover", field);
+            var discoveryActionResult = gameMaster.Invoke<GM, Dictionary<Direction, int?>>("Discover", field);
 
             // Assert
             var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
@@ -370,18 +370,168 @@ namespace GameMaster.Tests
             gameMaster.Invoke("InitGame");
 
             // Act
-            var distances = gameMaster.Invoke<GM, Dictionary<Direction, int>>("Discover", new TaskField(0, 5));
+            var distances = gameMaster.Invoke<GM, Dictionary<Direction, int?>>("Discover", new TaskField(0, 5));
             var board = gameMaster.GetValue<GM, AbstractField[][]>("board");
 
-            int expectedResult = -1;
-            int resultS = distances[Direction.S];
-            int resultSE = distances[Direction.SE];
-            int resultSW = distances[Direction.SW];
+            int? expectedResult = null;
+            int? resultS = distances[Direction.S];
+            int? resultSE = distances[Direction.SE];
+            int? resultSW = distances[Direction.SW];
 
             // Assert
             Assert.Equal(expectedResult, resultS);
             Assert.Equal(expectedResult, resultSE);
             Assert.Equal(expectedResult, resultSW);
+        }
+
+        private GM ValidationConfGMHelper(GameConfiguration conf)
+        {
+            var queue = new BufferBlock<PlayerMessage>();
+            var lifetime = Mock.Of<IApplicationLifetime>();
+            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            return new GM(lifetime, conf, queue, client, logger);
+        }
+
+        [Fact]
+        public void TestValidateConf()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration();
+            var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
+            gameMaster.Invoke("InitGame");
+
+            // Assert
+            Assert.True(gameMaster.WasGameInitialized);
+        }
+
+        [Fact]
+        public void TestValidateConfWidth()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration()
+            {
+                Width = 0
+            };
+            var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
+            gameMaster.Invoke("InitGame");
+
+            // Assert
+            Assert.False(gameMaster.WasGameInitialized);
+        }
+
+        [Fact]
+        public void TestValidateConfHeight()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration()
+            {
+                Height = 2
+            };
+            var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
+            gameMaster.Invoke("InitGame");
+
+            // Assert
+            Assert.False(gameMaster.WasGameInitialized);
+        }
+
+        [Fact]
+        public void TestValidateConfGoalAreaHeight()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration();
+            conf.GoalAreaHeight = (conf.Height / 2) + 1;
+            var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
+            gameMaster.Invoke("InitGame");
+
+            // Assert
+            Assert.False(gameMaster.WasGameInitialized);
+        }
+
+        [Fact]
+        public void TestValidateConfNumberOfGoals()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration();
+            conf.NumberOfGoals = (conf.GoalAreaHeight * conf.Width) + 1;
+            var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
+            gameMaster.Invoke("InitGame");
+
+            // Assert
+            Assert.False(gameMaster.WasGameInitialized);
+        }
+
+        [Fact]
+        public void TestValidateConfNumberOfPlayersPerTeam()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration();
+            conf.NumberOfGoals = (conf.Height * conf.Width) + 1;
+            var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
+            gameMaster.Invoke("InitGame");
+
+            // Assert
+            Assert.False(gameMaster.WasGameInitialized);
+        }
+
+        [Fact]
+        public void TestValidateConfNumberOfPiecesOnBoard()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration();
+            conf.NumberOfPiecesOnBoard = ((conf.Height - (conf.GoalAreaHeight * 2)) * conf.Width) + 1;
+            var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
+            gameMaster.Invoke("InitGame");
+
+            // Assert
+            Assert.False(gameMaster.WasGameInitialized);
+        }
+
+        [Fact]
+        public void TestValidateConfShamPieceProbability()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration()
+            {
+                ShamPieceProbability = 1
+            };
+            var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
+            gameMaster.Invoke("InitGame");
+
+            // Assert
+            Assert.False(gameMaster.WasGameInitialized);
+        }
+
+        [Fact]
+        public void TestValidatePenalty()
+        {
+            // Arrange
+            var conf = new MockGameConfiguration()
+            {
+                PickPenalty = 0
+            };
+            var gameMaster = ValidationConfGMHelper(conf);
+
+            // Act
+            gameMaster.Invoke("InitGame");
+
+            // Assert
+            Assert.False(gameMaster.WasGameInitialized);
         }
     }
 }

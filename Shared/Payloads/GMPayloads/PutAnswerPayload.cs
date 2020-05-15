@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+
+using Shared.Enums;
 
 namespace Shared.Payloads.GMPayloads
 {
@@ -13,11 +13,14 @@ namespace Shared.Payloads.GMPayloads
         /// </summary>
         public bool? WasGoal { get; set; }
 
+        public PutEvent PutEvent { get; set; }
+
         public override string ToString()
         {
             string message = "";
             if (WasGoal != null)
                 message = $"WasGoal:{WasGoal}";
+            message += $" PutEvent: {Enum.GetName(typeof(PutEvent), PutEvent)}";
             return message;
         }
     }

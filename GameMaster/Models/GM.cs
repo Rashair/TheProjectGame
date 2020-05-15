@@ -63,14 +63,21 @@ namespace GameMaster.Models
             Verbose = conf.Verbose;
         }
 
-        internal void InitGame()
+        internal bool InitGame()
         {
+            (bool valid, string msg) = conf.IsValid();
+            if (!valid)
+            {
+                logger.Error(msg);
+                return false;
+            }
             board = new AbstractField[conf.Height][];
             var gmInitializer = new GMInitializer(conf, board);
             gmInitializer.InitializeBoard();
             gmInitializer.GenerateAllPieces(GeneratePiece);
             WasGameInitialized = true;
             logger.Information("Game was initialized.");
+            return true;
         }
 
         internal async Task StartGame(CancellationToken cancellationToken)
@@ -341,19 +348,19 @@ namespace GameMaster.Models
             return players.Where(pair => pair.Value.Team == team).Count();
         }
 
-        internal Dictionary<Direction, int> Discover(AbstractField field)
+        internal Dictionary<Direction, int?> Discover(AbstractField field)
         {
             int[] center = field.GetPosition();
             var neighbourCoordinates = DirectionExtensions.GetCoordinatesAroundCenter(center);
 
-            int[] distances = new int[neighbourCoordinates.Length];
+            int?[] distances = new int?[neighbourCoordinates.Length];
             for (int i = 0; i < distances.Length; i++)
             {
                 var (dir, y, x) = neighbourCoordinates[i];
                 if (y >= 0 && y < conf.Height && x >= 0 && x < conf.Width)
                     distances[i] = int.MaxValue;
                 else
-                    distances[i] = -1;
+                    distances[i] = null;
             }
 
             for (int i = conf.GoalAreaHeight; i < SecondGoalAreaStart; i++)
@@ -372,7 +379,7 @@ namespace GameMaster.Models
                 }
             }
 
-            Dictionary<Direction, int> discoveryResult = new Dictionary<Direction, int>();
+            Dictionary<Direction, int?> discoveryResult = new Dictionary<Direction, int?>();
             for (int i = 0; i < distances.Length; i++)
             {
                 discoveryResult.Add(neighbourCoordinates[i].dir, distances[i]);
