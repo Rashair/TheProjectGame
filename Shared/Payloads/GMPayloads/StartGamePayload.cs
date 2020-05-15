@@ -1,7 +1,6 @@
 ﻿using System.Text;
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Shared.Enums;
 using Shared.Models;
 
@@ -9,7 +8,7 @@ namespace Shared.Payloads.GMPayloads
 {
     public class StartGamePayload : Payload
     {
-        public int PlayerId { get; set; }
+        public int AgentID { get; set; }
 
         public int[] AlliesIds { get; set; }
 
@@ -38,15 +37,14 @@ namespace Shared.Payloads.GMPayloads
 
         public override string ToString()
         {
-            StringBuilder message = new StringBuilder($" PlayerId:{PlayerId}, TeamId:{TeamId}, LeaderId:{LeaderId}, ");
-            message.Append($"BoardSize:{BoardSize.X}x{BoardSize.Y}, GoalAreaSize:{GoalAreaSize}");
-            message.Append($"NumberOfAllies:{NumberOfPlayers.Allies},NumberOfEnemies:{NumberOfPlayers.Enemies},");
-            message.Append($" NumberOfPieces{NumberOfPieces}, NumberOfGoals:{NumberOfGoals},");
+            StringBuilder message = new StringBuilder($"\nAgentID:{AgentID}, TeamId:{TeamId}, LeaderId:{LeaderId},\n");
+            message.Append($"BoardSize:{BoardSize.X}x{BoardSize.Y}, GoalAreaSize:{GoalAreaSize}\n");
+            message.Append($"NumberOfAllies:{NumberOfPlayers.Allies}, NumberOfEnemies:{NumberOfPlayers.Enemies},\n");
+            message.Append($"NumberOfPieces{NumberOfPieces}, NumberOfGoals:{NumberOfGoals},\n");
             var penalty = Penalties;
-            message.AppendLine();
-            message.Append("Penalties{" + $" Ask:{penalty.Ask}, CheckPiece:{penalty.CheckPiece}, DestroyPiece {penalty.DestroyPiece}, ");
-            message.Append($"Discover:{penalty.Discover}, Move:{penalty.Move}, PickPiece {penalty.PickPiece}, ");
-            message.AppendLine($"PutPiece:{penalty.PutPiece}, Response:{penalty.Response}" + "}");
+            message.Append("Penalties: {" + $"Move:{penalty.Move}, Ask:{penalty.Ask}, Response:{penalty.Response}, ");
+            message.Append($"Discover:{penalty.Discover}, PickPiece {penalty.PickPiece}, CheckPiece:{penalty.CheckPiece}, ");
+            message.AppendLine($"PutPiece:{penalty.PutPiece}, DestroyPiece {penalty.DestroyPiece}}}");
 
             message.AppendLine($"ShamPieceProbability:{ShamPieceProbability}, Position:({Position.X},{Position.Y})");
             message.Append("AlliesIds:");
@@ -59,8 +57,8 @@ namespace Shared.Payloads.GMPayloads
             {
                 message.Append("null, ");
             }
-            message.AppendLine();
-            message.Append("EnemiesIds:");
+
+            message.Append("\nEnemiesIds:");
             if (EnemiesIds != null)
             {
                 for (int i = 0; i < EnemiesIds.Length; i++)
@@ -70,7 +68,6 @@ namespace Shared.Payloads.GMPayloads
             {
                 message.Append("null, ");
             }
-            message.AppendLine();
             return message.ToString();
         }
     }

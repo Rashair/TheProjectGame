@@ -1,7 +1,4 @@
-﻿using GameMaster.Models.Fields;
-using Serilog;
-
-namespace GameMaster.Models.Pieces
+﻿namespace GameMaster.Models.Pieces
 {
     public class ShamPiece : AbstractPiece
     {
