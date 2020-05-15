@@ -81,10 +81,14 @@ namespace Player.Models
 
         internal async Task Start(CancellationToken cancellationToken)
         {
-            bool startGame = false;
-            while (!cancellationToken.IsCancellationRequested && !startGame)
+            GMMessageId? messageID = null;
+            while (!cancellationToken.IsCancellationRequested && messageID != GMMessageId.JoinTheGameAnswer)
             {
-                startGame = await AcceptMessage(cancellationToken);
+                messageID = await AcceptMessage(cancellationToken);
+            }
+            while (!cancellationToken.IsCancellationRequested && messageID != GMMessageId.StartGame)
+            {
+                messageID = await AcceptMessage(cancellationToken);
             }
 
             logger.Information("Player starting game\n" +
@@ -267,7 +271,7 @@ namespace Player.Models
         /// <summary>
         /// Returns true if StartGameMessage was accepted
         /// </summary>
-        public async Task<bool> AcceptMessage(CancellationToken cancellationToken)
+        public async Task<GMMessageId?> AcceptMessage(CancellationToken cancellationToken)
         {
             var cancellationTimespan = TimeSpan.FromMinutes(2);
             GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
@@ -346,7 +350,7 @@ namespace Player.Models
                     NumberOfGoals = payloadStart.NumberOfGoals;
                     ShamPieceProbability = payloadStart.ShamPieceProbability;
                     WaitingPlayers = new List<int>();
-                    return true;
+                    break;
                 case GMMessageId.BegForInfoForwarded:
                     BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
                     if (Team == payloadBeg.TeamId)
@@ -436,9 +440,11 @@ namespace Player.Models
                 case GMMessageId.UnknownError:
                     penaltyTime = 50;
                     break;
+                default:
+                    return null;
             }
 
-            return false;
+            return message.MessageID;
         }
 
         public async Task DestroyPiece(CancellationToken cancellationToken)
