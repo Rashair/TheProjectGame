@@ -486,17 +486,17 @@ namespace GameMaster.Models
                 logger.Verbose("Sent message." + MessageLogger.Get(gmMessage));
                 await socketClient.SendAsync(gmMessage, cancellationToken);
 
-                await SendInformationExchangeRequestMessage(playerMessage.AgentID, true, cancellationToken);
+                await SendInformationExchangeMessage(GMMessageId.InformationExchangeRequest, playerMessage.AgentID, true, cancellationToken);
             }
             else
             {
-                await SendInformationExchangeRequestMessage(playerMessage.AgentID, false, cancellationToken);
+                await SendInformationExchangeMessage(GMMessageId.InformationExchangeRequest, playerMessage.AgentID, false, cancellationToken);
             }
         }
 
-        private async Task SendInformationExchangeRequestMessage(int agentID, bool wasSent, CancellationToken cancellationToken)
+        private async Task SendInformationExchangeMessage(GMMessageId messageId, int agentID, bool wasSent, CancellationToken cancellationToken)
         {
-            GMMessage confirmationMessage = new GMMessage(GMMessageId.InformationExchangeRequest,
+            GMMessage confirmationMessage = new GMMessage(messageId,
                     agentID, new InformationExchangePayload() { WasSent = wasSent });
             logger.Verbose("Sent message." + MessageLogger.Get(confirmationMessage));
             await socketClient.SendAsync(confirmationMessage, cancellationToken);
@@ -529,20 +529,12 @@ namespace GameMaster.Models
 
                 await socketClient.SendAsync(answer, cancellationToken);
 
-                await SendInformationExchangeResponseMessage(playerMessage.AgentID, true, cancellationToken);
+                await SendInformationExchangeMessage(GMMessageId.InformationExchangeResponse, playerMessage.AgentID, true, cancellationToken);
             }
             else
             {
-                await SendInformationExchangeResponseMessage(playerMessage.AgentID, false, cancellationToken);
+                await SendInformationExchangeMessage(GMMessageId.InformationExchangeResponse, playerMessage.AgentID, false, cancellationToken);
             }
-        }
-
-        private async Task SendInformationExchangeResponseMessage(int agentID, bool wasSent, CancellationToken cancellationToken)
-        {
-            GMMessage confirmationMessage = new GMMessage(GMMessageId.InformationExchangeResponse,
-                    agentID, new InformationExchangePayload() { WasSent = wasSent });
-            logger.Verbose("Sent message." + MessageLogger.Get(confirmationMessage));
-            await socketClient.SendAsync(confirmationMessage, cancellationToken);
         }
 
         internal async Task EndGame(CancellationToken cancellationToken)
