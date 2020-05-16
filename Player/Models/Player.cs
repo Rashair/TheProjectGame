@@ -232,7 +232,6 @@ namespace Player.Models
             }
             message.Payload = response.Serialize();
             await Communicate(message, cancellationToken);
-            penaltyTime = PenaltiesTimes.Response;
         }
 
         public async Task RequestsResponse(CancellationToken cancellationToken, int respondToId, bool isFromLeader = false)
