@@ -83,7 +83,8 @@ namespace Player.Models
         {
             isWorking = true;
             GMMessageId messageID = GMMessageId.Unknown;
-            while (messageID != GMMessageId.JoinTheGameAnswer && isWorking && !cancellationToken.IsCancellationRequested)
+            while (messageID != GMMessageId.JoinTheGameAnswer && isWorking &&
+                !cancellationToken.IsCancellationRequested)
             {
                 messageID = await AcceptMessage(cancellationToken);
             }
@@ -231,7 +232,6 @@ namespace Player.Models
             }
             message.Payload = response.Serialize();
             await Communicate(message, cancellationToken);
-            penaltyTime = PenaltiesTimes.Response;
         }
 
         public async Task RequestsResponse(CancellationToken cancellationToken, int respondToId, bool isFromLeader = false)
@@ -316,6 +316,11 @@ namespace Player.Models
                 case GMMessageId.EndGame:
                     EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
                     winner = payloadEnd.Winner;
+                    StopWorking();
+                    break;
+                case GMMessageId.CSDisconnected:
+                    winner = Team == Team.Blue ? Team.Red : Team.Blue;
+                    logger.Warning("CS disconnected");
                     StopWorking();
                     break;
                 case GMMessageId.StartGame:
@@ -425,7 +430,12 @@ namespace Player.Models
                             }
                         }
                     }
+                    break;
+                case GMMessageId.InformationExchangeResponse:
                     penaltyTime = PenaltiesTimes.Response;
+                    break;
+                case GMMessageId.InformationExchangeRequest:
+                    penaltyTime = PenaltiesTimes.Ask;
                     break;
                 case GMMessageId.NotWaitedError:
                     NotWaitedErrorPayload errorPayload = JsonConvert.DeserializeObject<NotWaitedErrorPayload>(message.Payload);

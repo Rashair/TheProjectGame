@@ -7,5 +7,7 @@
         public int PositionNotChangedThreshold { get; set; }
 
         public int NoNewPiecesThreshold { get; set; }
+
+        public int MinimumRunTimeSec { get; set; }
     }
 }

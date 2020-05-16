@@ -35,6 +35,7 @@ namespace GameMaster.Models
 
         private int redTeamPoints;
         private int blueTeamPoints;
+        private bool forceEndGame;
 
         public bool WasGameInitialized { get; private set; }
 
@@ -178,6 +179,12 @@ namespace GameMaster.Models
                         await EndGame(cancellationToken);
                         break;
                     }
+                    if (forceEndGame)
+                    {
+                        logger.Warning("CS disconnected, exiting.");
+                        lifetime.StopApplication();
+                        break;
+                    }
                 }
                 catch (TimeoutException e)
                 {
@@ -193,6 +200,14 @@ namespace GameMaster.Models
             }
         }
 
+        private async Task SendInformationExchangeMessage(GMMessageId messageId, int agentID, bool wasSent, CancellationToken cancellationToken)
+        {
+            GMMessage confirmationMessage = new GMMessage(messageId,
+                    agentID, new InformationExchangePayload() { WasSent = wasSent });
+            logger.Verbose("Sent message." + MessageLogger.Get(confirmationMessage));
+            await socketClient.SendAsync(confirmationMessage, cancellationToken);
+        }
+
         public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
         {
             if (!WasGameInitialized)
@@ -202,10 +217,13 @@ namespace GameMaster.Models
                 return;
             }
 
-            if (!WasGameStarted && message.MessageID != PlayerMessageId.JoinTheGame)
+            if (!WasGameStarted && message.MessageID != PlayerMessageId.JoinTheGame &&
+                message.MessageID != PlayerMessageId.Disconnected &&
+                message.MessageID != PlayerMessageId.CSDisconnected)
             {
                 // TODO: send error message
-                logger.Warning("Game was not started yet: GM can't accept messages other than JoinTheGame");
+                logger.Warning("Game was not started yet: GM can't accept messages other than JoinTheGame," +
+                    "Disconnected or CSDisconnected");
                 return;
             }
 
@@ -226,10 +244,53 @@ namespace GameMaster.Models
                     await player.DiscoverAsync(this, cancellationToken);
                     break;
                 case PlayerMessageId.GiveInfo:
-                    await player.ForwardKnowledgeReply(message, legalKnowledgeReplies, cancellationToken);
+                    if (player == null)
+                    {
+                        await SendInformationExchangeMessage(GMMessageId.InformationExchangeResponse, message.AgentID, false, cancellationToken);
+                    }
+                    else
+                    {
+                        (int agentID, bool? res) forwardReply = await player.ForwardKnowledgeReply(message, cancellationToken, legalKnowledgeReplies);
+                        if (forwardReply.res != null)
+                        {
+                            await SendInformationExchangeMessage(GMMessageId.InformationExchangeResponse, forwardReply.agentID, (bool)forwardReply.res, cancellationToken);
+                        }
+                    }
                     break;
                 case PlayerMessageId.BegForInfo:
-                    await player.ForwardKnowledgeQuestion(message, legalKnowledgeReplies, cancellationToken);
+                    if (player == null)
+                    {
+                        await SendInformationExchangeMessage(GMMessageId.InformationExchangeRequest, message.AgentID, false, cancellationToken);
+                    }
+                    else
+                    {
+                        (int agentID, bool? res) forwardQuestion = await player.ForwardKnowledgeQuestion(message, cancellationToken, players, legalKnowledgeReplies);
+                        if (forwardQuestion.res != null)
+                        {
+                            await SendInformationExchangeMessage(GMMessageId.InformationExchangeRequest, forwardQuestion.agentID, (bool)forwardQuestion.res, cancellationToken);
+                        }
+                    }
+                    break;
+                case PlayerMessageId.Disconnected:
+                {
+                    int key = message.AgentID;
+                    players.Remove(key);
+                    logger.Verbose($"Player {key} disconnected");
+                    if (WasGameStarted)
+                    {
+                        if (player.Team == Team.Blue)
+                        {
+                            redTeamPoints = conf.NumberOfGoals;
+                        }
+                        else
+                        {
+                            blueTeamPoints = conf.NumberOfGoals;
+                        }
+                    }
+                    break;
+                }
+                case PlayerMessageId.CSDisconnected:
+                    forceEndGame = true;
                     break;
                 case PlayerMessageId.JoinTheGame:
                 {
@@ -303,16 +364,20 @@ namespace GameMaster.Models
                     if (point == true)
                     {
                         int y = player.GetPosition()[0];
-                        string teamStr;
+                        string teamStr = "";
                         if (y < conf.GoalAreaHeight)
                         {
                             teamStr = "RED";
                             redTeamPoints++;
                         }
-                        else
+                        else if (y >= SecondGoalAreaStart)
                         {
                             teamStr = "BLUE";
                             blueTeamPoints++;
+                        }
+                        else
+                        {
+                            logger.Error("Critical error, goal on task field.");
                         }
                         logger.Information($"{teamStr} TEAM POINT !!!\n" +
                             $"    by {player.Team}");
@@ -449,9 +514,10 @@ namespace GameMaster.Models
                 logger.Verbose(MessageLogger.Sent(messages[i]));
             }
             logger.Information("Sent endGame to all.");
-            WasGameFinished = true;
 
             await Task.Delay(4000);
+            WasGameFinished = true;
+
             lifetime.StopApplication();
         }
     }

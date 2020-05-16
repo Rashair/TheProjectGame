@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -122,7 +123,7 @@ namespace IntegrationTests.GameTests.Abstractions
             }
         }
 
-        public void CheckEnd()
+        public void CheckEnd(DateTime startTime)
         {
             var winnerRed = teamRed[0].GetValue<Player.Models.Player, Team?>("winner");
             Assert.False(winnerRed == null, "Winner should not be null");
@@ -134,6 +135,9 @@ namespace IntegrationTests.GameTests.Abstractions
             var bluePoints = gameMaster.GetValue<GM, int>("blueTeamPoints");
             var expectedWinner = redPoints > bluePoints ? Team.Red : Team.Blue;
             Assert.True(winnerRed == expectedWinner, "GM and players should have same winner");
+
+            int runTime = (int)(DateTime.Now - startTime).TotalSeconds;
+            Assert.True(runTime > testConf.MinimumRunTimeSec, $"Game was too fast: {runTime} sec");
         }
     }
 }
