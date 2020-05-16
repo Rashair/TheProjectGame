@@ -1,6 +1,7 @@
 ﻿import React, { Component } from "react";
 import { error } from "../helpers/errors";
-import { API_URL } from "../helpers/constants";
+import { API_URL, NOTIFY_SHOW_TIME } from "../helpers/constants";
+import { notify } from "react-notify-toast";
 
 export class Start extends Component {
   constructor(props, context) {
@@ -19,9 +20,9 @@ export class Start extends Component {
     const button = e.target;
     button.disabled = true;
 
-    fetch(`${API_URL}/InitGame`, { method: "POST" }).then(res => {
+    fetch(`${API_URL}/InitGame`, { method: "POST" }).then((res) => {
       if (res.ok) {
-        alert("Gra zainicjalizowana");
+        notify.show("Gra zainicjalizowana", "success", NOTIFY_SHOW_TIME);
         this.setState({ gameInitialized: true, timer: setInterval(this.checkIfGameStarted, 10000) });
       } else {
         error(res);
@@ -33,7 +34,7 @@ export class Start extends Component {
     const timer = this.state.timer;
     fetch(`${API_URL}/WasGameStarted`, { method: "GET" })
       .then(
-        res => {
+        (res) => {
           if (res.ok) {
             return res.json();
           } else {
@@ -41,15 +42,15 @@ export class Start extends Component {
             error(res);
           }
         },
-        e => {
+        (e) => {
           clearInterval(timer);
           error(e);
         }
       )
-      .then(started => {
+      .then((started) => {
         console.log(`Started: ${started}`);
         if (started === true) {
-          alert("Gra wystartowała");
+          notify.show("Gra wystartowała", "success", NOTIFY_SHOW_TIME);
           this.setState({ gameStarted: true });
           clearInterval(timer);
         }
