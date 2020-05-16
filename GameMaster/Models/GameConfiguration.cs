@@ -20,7 +20,7 @@ namespace GameMaster.Models
 
         public int DiscoverPenalty { get; set; }
 
-        public int PickUpPenalty { get; set; }
+        public int PickupPenalty { get; set; }
 
         public int CheckPenalty { get; set; }
 
@@ -109,7 +109,7 @@ namespace GameMaster.Models
             hash.Add(AskPenalty);
             hash.Add(ResponsePenalty);
             hash.Add(DiscoverPenalty);
-            hash.Add(PickUpPenalty);
+            hash.Add(PickupPenalty);
             hash.Add(CheckPenalty);
             hash.Add(PutPenalty);
             hash.Add(DestroyPenalty);
@@ -169,7 +169,7 @@ namespace GameMaster.Models
                 DestroyPenalty,
                 DiscoverPenalty,
                 MovePenalty,
-                PickUpPenalty,
+                PickupPenalty,
                 PutPenalty,
                 ResponsePenalty
             };

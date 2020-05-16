@@ -34,7 +34,7 @@ export class Configuration extends Component {
       askPenalty: 0,
       responsePenalty: 0,
       discoverPenalty: 0,
-      pickUpPenalty: 0,
+      pickupPenalty: 0,
       checkPenalty: 0,
       putPenalty: 0,
       destroyPenalty: 0,
@@ -45,7 +45,7 @@ export class Configuration extends Component {
       numberOfPlayersPerTeam: 0,
       shamPieceProbability: 0.0,
       numberOfPiecesOnBoard: 0,
-      rematureRequestPenalty:0
+      prematureRequestPenalty:0
     };
 
     this.sendData = this.sendData.bind(this);
@@ -160,10 +160,10 @@ export class Configuration extends Component {
             onChange: (e) => this.setState({ discoverPenalty: e.target.value }),
           })}
           {CustomFieldset({
-            id: "pickUpPenalty",
+            id: "pickupPenalty",
             label: "Kara za podniesienie fragmentu",
-            value: this.state.pickPenalty,
-            onChange: (e) => this.setState({ pickUpPenalty: e.target.value }),
+            value: this.state.pickupPenalty,
+            onChange: (e) => this.setState({ pickupPenalty: e.target.value }),
           })}
           {CustomFieldset({
             id: "checkPenalty",

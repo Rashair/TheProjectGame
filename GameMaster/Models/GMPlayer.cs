@@ -244,7 +244,7 @@ namespace GameMaster.Models
                 {
                     message = PickErrorMessage(PickError.Other);
                 }
-                await SendAndLockAsync(message, conf.PickUpPenalty, cancellationToken);
+                await SendAndLockAsync(message, conf.PickupPenalty, cancellationToken);
             }
 
             return picked;
