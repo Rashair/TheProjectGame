@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Shared.Payloads.GMPayloads
 {
-    public class InformationExchangeRequestPayload : Payload
+    public class InformationExchangePayload : Payload
     {
         public bool WasSent { get; set; }
 

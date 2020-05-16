@@ -73,10 +73,10 @@ namespace Shared.Models
                     return JsonConvert.DeserializeObject<GiveInfoForwardedPayload>(payload);
 
                 case GMMessageId.InformationExchangeResponse:
-                    return JsonConvert.DeserializeObject<InformationExchangeResponsePayload>(payload);
+                    return JsonConvert.DeserializeObject<InformationExchangePayload>(payload);
                 
                 case GMMessageId.InformationExchangeRequest:
-                    return JsonConvert.DeserializeObject<InformationExchangeRequestPayload>(payload);
+                    return JsonConvert.DeserializeObject<InformationExchangePayload>(payload);
 
                 case GMMessageId.NotWaitedError:
                     return JsonConvert.DeserializeObject<NotWaitedErrorPayload>(payload);

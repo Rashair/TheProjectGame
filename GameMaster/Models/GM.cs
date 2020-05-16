@@ -497,7 +497,7 @@ namespace GameMaster.Models
         private async Task SendInformationExchangeRequestMessage(int agentID, bool wasSent, CancellationToken cancellationToken)
         {
             GMMessage confirmationMessage = new GMMessage(GMMessageId.InformationExchangeRequest,
-                    agentID, new InformationExchangeRequestPayload() { WasSent = wasSent });
+                    agentID, new InformationExchangePayload() { WasSent = wasSent });
             logger.Verbose("Sent message." + MessageLogger.Get(confirmationMessage));
             await socketClient.SendAsync(confirmationMessage, cancellationToken);
         }
@@ -540,7 +540,7 @@ namespace GameMaster.Models
         private async Task SendInformationExchangeResponseMessage(int agentID, bool wasSent, CancellationToken cancellationToken)
         {
             GMMessage confirmationMessage = new GMMessage(GMMessageId.InformationExchangeResponse,
-                    agentID, new InformationExchangeResponsePayload() { WasSent = wasSent });
+                    agentID, new InformationExchangePayload() { WasSent = wasSent });
             logger.Verbose("Sent message." + MessageLogger.Get(confirmationMessage));
             await socketClient.SendAsync(confirmationMessage, cancellationToken);
         }
