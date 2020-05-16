@@ -26,8 +26,8 @@ namespace Player.Models
 
         private int id;
         private int penaltyTime;
-        private readonly IStrategy strategy;
-        private bool working;
+        private IStrategy strategy;
+        private bool isWorking;
         private readonly PlayerConfiguration conf;
         private Team? winner;
 
@@ -81,24 +81,26 @@ namespace Player.Models
 
         internal async Task Start(CancellationToken cancellationToken)
         {
-            working = true;
-            GMMessageId? messageID = null;
-            while (working && !cancellationToken.IsCancellationRequested && messageID != GMMessageId.JoinTheGameAnswer)
+            isWorking = true;
+            GMMessageId messageID = GMMessageId.Unknown;
+            while (messageID != GMMessageId.JoinTheGameAnswer && isWorking && !cancellationToken.IsCancellationRequested)
             {
                 messageID = await AcceptMessage(cancellationToken);
             }
-            while (working && !cancellationToken.IsCancellationRequested && messageID != GMMessageId.StartGame)
+            while (messageID != GMMessageId.StartGame && isWorking && !cancellationToken.IsCancellationRequested)
             {
                 messageID = await AcceptMessage(cancellationToken);
             }
 
-            if (working)
+            if (isWorking)
             {
                 logger.Information("Player starting game\n" +
-                $"Team: {conf.TeamId}, strategy: {conf.Strategy}".PadLeft(12));
+                    $"Team: {conf.TeamId}, strategy: {conf.Strategy}".PadLeft(12));
+
+                await Work(cancellationToken);
             }
 
-            await Work(cancellationToken);
+            await client.CloseAsync(cancellationToken);
         }
 
         public async Task JoinTheGame(CancellationToken cancellationToken)
@@ -118,19 +120,17 @@ namespace Player.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
-            while (working && !cancellationToken.IsCancellationRequested)
+            while (isWorking && !cancellationToken.IsCancellationRequested)
             {
                 await MakeDecisionFromStrategy(cancellationToken);
                 await AcceptMessage(cancellationToken);
                 await Penalty(cancellationToken);
             }
-
-            await client.CloseAsync(cancellationToken);
         }
 
         internal void StopWorking()
         {
-            working = false;
+            isWorking = false;
             logger.Warning($"Stopped player: {Team}");
         }
 
@@ -275,7 +275,7 @@ namespace Player.Models
         /// <summary>
         /// Returns true if StartGameMessage was accepted
         /// </summary>
-        public async Task<GMMessageId?> AcceptMessage(CancellationToken cancellationToken)
+        public async Task<GMMessageId> AcceptMessage(CancellationToken cancellationToken)
         {
             var cancellationTimespan = TimeSpan.FromMinutes(2);
             GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
@@ -429,7 +429,7 @@ namespace Player.Models
                     break;
                 case GMMessageId.NotWaitedError:
                     NotWaitedErrorPayload errorPayload = JsonConvert.DeserializeObject<NotWaitedErrorPayload>(message.Payload);
-                    int toWait = (int)Math.Ceiling((errorPayload.WaitUntil - DateTime.Now).TotalMilliseconds);
+                    int toWait = (int)(DateTime.Now - errorPayload.WaitUntil).TotalMilliseconds;
                     if (toWait >= 0)
                     {
                         penaltyTime = toWait;
@@ -445,7 +445,7 @@ namespace Player.Models
                     penaltyTime = 50;
                     break;
                 default:
-                    return null;
+                    return GMMessageId.Unknown;
             }
 
             return message.MessageID;
@@ -483,7 +483,7 @@ namespace Player.Models
         private async Task Communicate(PlayerMessage message, CancellationToken cancellationToken)
         {
             await client.SendAsync(message, cancellationToken);
-            logger.Verbose(MessageLogger.Sent(message));
+            logger.Verbose("Sent message." + MessageLogger.Get(message));
         }
 
         private async Task Penalty(CancellationToken cancellationToken)
