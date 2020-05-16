@@ -8,6 +8,8 @@
             {
                 case StrategyEnum.SimpleStrategy:
                     return new SimpleStrategy();
+                case StrategyEnum.AdvancedStrategy:
+                    return new AdvancedStrategy();
                 default:
                     return null;
             }
