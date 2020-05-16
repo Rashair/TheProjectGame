@@ -6,6 +6,7 @@ namespace Shared.Enums
 {
     public enum PutEvent
     {
+        Unknown,
         NormalOnGoalField,
         NormalOnNonGoalField,
         TaskField,

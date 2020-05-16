@@ -125,7 +125,7 @@ namespace GameMaster.Models
         /// <returns>
         /// Task<(bool? goal, bool removed)>
         /// </returns>
-        public async Task<(bool?, bool)> PutAsync(CancellationToken cancellationToken)
+        public async Task<(bool? goal, bool removed)> PutAsync(CancellationToken cancellationToken)
         {
             bool isUnlocked = await TryGetLockAsync(cancellationToken);
             bool removed = false;
