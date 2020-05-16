@@ -580,7 +580,7 @@ namespace GameMaster.Tests
             gameMaster.Invoke("StartGame", CancellationToken.None);
             BegForInfoPayload begForInfoPayload = new BegForInfoPayload()
             {
-                AskedPlayerId = player2ID,
+                AskedAgentID = player2ID,
             };
             PlayerMessage askMessage = new PlayerMessage()
             {
@@ -615,7 +615,7 @@ namespace GameMaster.Tests
 
             BegForInfoPayload begForInfoPayload = new BegForInfoPayload()
             {
-                AskedPlayerId = player3ID,
+                AskedAgentID = player3ID,
             };
             PlayerMessage askMessage = new PlayerMessage()
             {

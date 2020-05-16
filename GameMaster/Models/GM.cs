@@ -467,7 +467,7 @@ namespace GameMaster.Models
             }
 
             BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(playerMessage.Payload);
-            if (players.ContainsKey(begPayload.AskedPlayerId))
+            if (players.ContainsKey(begPayload.AskedAgentID))
             {
                 BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
                 {
@@ -478,12 +478,12 @@ namespace GameMaster.Models
                 GMMessage gmMessage = new GMMessage()
                 {
                     MessageID = GMMessageId.BegForInfoForwarded,
-                    AgentID = begPayload.AskedPlayerId,
+                    AgentID = begPayload.AskedAgentID,
                     Payload = payload.Serialize(),
                 };
 
-                legalKnowledgeReplies.Add((begPayload.AskedPlayerId, playerMessage.AgentID));
-                logger.Verbose("Sent message." + MessageLogger.Get(gmMessage));
+                legalKnowledgeReplies.Add((begPayload.AskedAgentID, playerMessage.AgentID));
+                logger.Verbose(MessageLogger.Sent(gmMessage));
                 await socketClient.SendAsync(gmMessage, cancellationToken);
 
                 await SendInformationExchangeMessage(GMMessageId.InformationExchangeRequest, playerMessage.AgentID, true, cancellationToken);
