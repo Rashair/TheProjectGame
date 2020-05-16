@@ -1,6 +1,6 @@
 ﻿import React, { Component } from "react";
 import { error } from "../helpers/errors";
-import { API_URL, NOTIFY_SHOW_TIME } from "../helpers/constants";
+import { API_URL, NOTIFY_SHOW_TIME, API_REQUEST_INTERVAL } from "../helpers/constants";
 import { notify } from "react-notify-toast";
 
 export class Start extends Component {
@@ -12,8 +12,10 @@ export class Start extends Component {
       gameFinished: false,
       timer: {},
     };
+
     this.initGame = this.initGame.bind(this);
     this.checkIfGameStarted = this.checkIfGameStarted.bind(this);
+    this.checkIfGameFinished = this.checkIfGameFinished.bind(this);
   }
 
   initGame(e) {
@@ -23,7 +25,7 @@ export class Start extends Component {
     fetch(`${API_URL}/InitGame`, { method: "POST" }).then((res) => {
       if (res.ok) {
         notify.show("Gra zainicjalizowana", "success", NOTIFY_SHOW_TIME);
-        this.setState({ gameInitialized: true, timer: setInterval(this.checkIfGameStarted, 10000) });
+        this.setState({ gameInitialized: true, timer: setInterval(this.checkIfGameStarted, API_REQUEST_INTERVAL) });
       } else {
         error(res);
       }
@@ -48,11 +50,38 @@ export class Start extends Component {
         }
       )
       .then((started) => {
-        console.log(`Started: ${started}`);
         if (started === true) {
           notify.show("Gra wystartowała", "success", NOTIFY_SHOW_TIME);
-          this.setState({ gameStarted: true });
           clearInterval(timer);
+          this.setState({ gameStarted: true, timer: setInterval(this.checkIfGameFinished, API_REQUEST_INTERVAL) });
+        }
+      });
+  }
+
+  checkIfGameFinished() {
+    const timer = this.state.timer;
+    fetch(`${API_URL}/WasGameFinished`, { method: "GET" })
+      .then(
+        (res) => {
+          if (res.ok) {
+            return res.json();
+          } else {
+            notify.show("Gra skończona", "success", NOTIFY_SHOW_TIME);
+            clearInterval(timer);
+            this.setState({ gameFinished: true });
+          }
+        },
+        (e) => {
+          notify.show("Gra skończona", "success", NOTIFY_SHOW_TIME);
+          clearInterval(timer);
+          this.setState({ gameFinished: true });
+        }
+      )
+      .then((finished) => {
+        if (finished === true) {
+          notify.show("Gra skończona", "success", NOTIFY_SHOW_TIME);
+          clearInterval(timer);
+          this.setState({ gameFinished: true });
         }
       });
   }

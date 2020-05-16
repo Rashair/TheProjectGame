@@ -3,7 +3,7 @@ import { error } from "../helpers/errors";
 import { API_URL, NOTIFY_SHOW_TIME } from "../helpers/constants";
 import { notify } from "react-notify-toast";
 
-const CustomFieldset = ({ id, label, type = "number", min = 0, value, onChange, regex, title }) => {
+const CustomFieldset = ({ id, label, type = "number", min = 1, value, onChange, regex, title }) => {
   return (
     <fieldset className="form-group col-md-4 mb-4 pl-3 ">
       <label className="ml-1" htmlFor={id}>
