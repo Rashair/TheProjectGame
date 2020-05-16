@@ -20,7 +20,7 @@ namespace GameMaster.Models
 
         public int DiscoverPenalty { get; set; }
 
-        public int PickPenalty { get; set; }
+        public int PickupPenalty { get; set; }
 
         public int CheckPenalty { get; set; }
 
@@ -41,6 +41,8 @@ namespace GameMaster.Models
         public int NumberOfPiecesOnBoard { get; set; }
 
         public bool? Verbose { get; set; }
+
+        public int PrematureRequestPenalty { get; set; }
 
         /// <summary>
         /// Percentage, between 0 and 1.
@@ -107,7 +109,7 @@ namespace GameMaster.Models
             hash.Add(AskPenalty);
             hash.Add(ResponsePenalty);
             hash.Add(DiscoverPenalty);
-            hash.Add(PickPenalty);
+            hash.Add(PickupPenalty);
             hash.Add(CheckPenalty);
             hash.Add(PutPenalty);
             hash.Add(DestroyPenalty);
@@ -167,7 +169,7 @@ namespace GameMaster.Models
                 DestroyPenalty,
                 DiscoverPenalty,
                 MovePenalty,
-                PickPenalty,
+                PickupPenalty,
                 PutPenalty,
                 ResponsePenalty
             };

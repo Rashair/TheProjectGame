@@ -34,7 +34,7 @@ export class Configuration extends Component {
       askPenalty: 0,
       responsePenalty: 0,
       discoverPenalty: 0,
-      pickPenalty: 0,
+      pickupPenalty: 0,
       checkPenalty: 0,
       putPenalty: 0,
       destroyPenalty: 0,
@@ -44,7 +44,8 @@ export class Configuration extends Component {
       numberOfGoals: 0,
       numberOfPlayersPerTeam: 0,
       shamPieceProbability: 0.0,
-      numberOfPiecesOnBoard: 0
+      numberOfPiecesOnBoard: 0,
+      prematureRequestPenalty:0
     };
 
     this.sendData = this.sendData.bind(this);
@@ -159,10 +160,10 @@ export class Configuration extends Component {
             onChange: (e) => this.setState({ discoverPenalty: e.target.value }),
           })}
           {CustomFieldset({
-            id: "pickPenalty",
+            id: "pickupPenalty",
             label: "Kara za podniesienie fragmentu",
-            value: this.state.pickPenalty,
-            onChange: (e) => this.setState({ pickPenalty: e.target.value }),
+            value: this.state.pickupPenalty,
+            onChange: (e) => this.setState({ pickupPenalty: e.target.value }),
           })}
           {CustomFieldset({
             id: "checkPenalty",
@@ -181,6 +182,12 @@ export class Configuration extends Component {
             label: "Kara za zniszczenie fragmentu",
             value: this.state.destroyPenalty,
             onChange: (e) => this.setState({ destroyPenalty: e.target.value }),
+          })}
+          {CustomFieldset({
+            id: "prematureRequestPenalty",
+            label: "Kara za nie odczekanie",
+            value: this.state.prematureRequestPenalty,
+            onChange: (e) => this.setState({prematureRequestPenalty: e.target.value }),
           })}
         </div>
 

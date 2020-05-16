@@ -1,15 +1,18 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
+using Newtonsoft.Json;
 using Serilog;
 using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
 using Shared.Payloads.GMPayloads;
+using Shared.Payloads.PlayerPayloads;
 
 namespace GameMaster.Models
 {
@@ -165,6 +168,75 @@ namespace GameMaster.Models
             return (goal, removed);
         }
 
+        public async Task<(int, bool?)> ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken, HashSet<(int recipient, int sender)> legalKnowledgeReplies)
+        {
+            bool isUnlocked = await TryGetLockAsync(cancellationToken);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return (0, null);
+            }
+
+            GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
+            if (legalKnowledgeReplies.Contains((playerMessage.AgentID, payload.RespondToId)) && isUnlocked)
+            {
+                legalKnowledgeReplies.Remove((playerMessage.AgentID, payload.RespondToId));
+                GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload()
+                {
+                    AnsweringId = playerMessage.AgentID,
+                    Distances = payload.Distances,
+                    RedTeamGoalAreaInformations = payload.RedTeamGoalAreaInformations,
+                    BlueTeamGoalAreaInformations = payload.BlueTeamGoalAreaInformations,
+                };
+                GMMessage answer = new GMMessage()
+                {
+                    MessageID = GMMessageId.GiveInfoForwarded,
+                    AgentID = payload.RespondToId,
+                    Payload = answerPayload.Serialize(),
+                };
+
+                await socketClient.SendAsync(answer, cancellationToken);
+                return (playerMessage.AgentID, true);
+            }
+            else
+            {
+                return (playerMessage.AgentID, false);
+            }
+        }
+
+        public async Task<(int, bool?)> ForwardKnowledgeQuestion(PlayerMessage playerMessage, CancellationToken cancellationToken, Dictionary<int, GMPlayer> players, HashSet<(int recipient, int sender)> legalKnowledgeReplies)
+        {
+            bool isUnlocked = await TryGetLockAsync(cancellationToken);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return (0, null);
+            }
+            BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(playerMessage.Payload);
+            if (players.ContainsKey(begPayload.AskedAgentID) && isUnlocked)
+            {
+                BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
+                {
+                    AskingId = playerMessage.AgentID,
+                    Leader = players[playerMessage.AgentID].IsLeader,
+                    TeamId = players[playerMessage.AgentID].Team,
+                };
+                GMMessage gmMessage = new GMMessage()
+                {
+                    MessageID = GMMessageId.BegForInfoForwarded,
+                    AgentID = begPayload.AskedAgentID,
+                    Payload = payload.Serialize(),
+                };
+
+                legalKnowledgeReplies.Add((begPayload.AskedAgentID, playerMessage.AgentID));
+                logger.Verbose(MessageLogger.Sent(gmMessage));
+                await socketClient.SendAsync(gmMessage, cancellationToken);
+                return (playerMessage.AgentID, true);
+            }
+            else
+            {
+                return (playerMessage.AgentID, false);
+            }
+        }
+
         public async Task<bool> PickAsync(CancellationToken cancellationToken)
         {
             bool isUnlocked = await TryGetLockAsync(cancellationToken);
@@ -188,7 +260,7 @@ namespace GameMaster.Models
                 {
                     message = PickErrorMessage(PickError.Other);
                 }
-                await SendAndLockAsync(message, conf.PickPenalty, cancellationToken);
+                await SendAndLockAsync(message, conf.PickupPenalty, cancellationToken);
             }
 
             return picked;
@@ -212,8 +284,7 @@ namespace GameMaster.Models
                 bool isUnlocked = lockedTill <= frozenTime;
                 if (!isUnlocked)
                 {
-                    // TODO: Change to PrematureRequestPenalty (@Zhanna)
-                    Lock(200, frozenTime);
+                    Lock(conf.PrematureRequestPenalty, frozenTime);
                     GMMessage message = NotWaitedErrorMessage();
 
                     await socketClient.SendAsync(message, cancellationToken);
@@ -255,7 +326,7 @@ namespace GameMaster.Models
         {
             NotWaitedErrorPayload payload = new NotWaitedErrorPayload()
             {
-                WaitUntil = lockedTill,
+                WaitFor = (int)(lockedTill - DateTime.Now).TotalMilliseconds + conf.PrematureRequestPenalty,
             };
             return new GMMessage(GMMessageId.NotWaitedError, id, payload);
         }

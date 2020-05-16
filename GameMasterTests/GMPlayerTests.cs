@@ -339,7 +339,7 @@ namespace GameMaster.Tests
             Assert.Null(prevSended);
 
             // delay
-            await Task.Delay(conf.PickPenalty * 2);
+            await Task.Delay(conf.PickupPenalty * 2);
             field.Put(piece);
             lastSended = null;
             picked = await player.PickAsync(CancellationToken.None);
@@ -348,7 +348,7 @@ namespace GameMaster.Tests
             Assert.Equal(GMMessageId.PickAnswer, lastSended.MessageID);
 
             // delay
-            await Task.Delay(conf.PickPenalty * 2);
+            await Task.Delay(conf.PickupPenalty * 2);
             lastSended = null;
             picked = await player.PickAsync(CancellationToken.None);
             Assert.False(picked);
@@ -358,7 +358,7 @@ namespace GameMaster.Tests
             Assert.Equal(PickError.Other, payload.ErrorSubtype);
 
             // delay
-            await Task.Delay(conf.PickPenalty * 2);
+            await Task.Delay(conf.PickupPenalty * 2);
             var secondPiece = new NormalPiece();
             field.Put(secondPiece);
             lastSended = null;

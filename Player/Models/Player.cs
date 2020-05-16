@@ -387,7 +387,7 @@ namespace Player.Models
                 case GMMessageId.PickAnswer:
                     HasPiece = true;
                     Board[Position.y, Position.x].DistToPiece = int.MaxValue;
-                    penaltyTime = PenaltiesTimes.PickPiece;
+                    penaltyTime = PenaltiesTimes.PickupPiece;
                     break;
                 case GMMessageId.PutAnswer:
                     HasPiece = false;
@@ -439,14 +439,14 @@ namespace Player.Models
                     break;
                 case GMMessageId.NotWaitedError:
                     NotWaitedErrorPayload errorPayload = JsonConvert.DeserializeObject<NotWaitedErrorPayload>(message.Payload);
-                    int toWait = (int)Math.Ceiling((errorPayload.WaitUntil - DateTime.Now).TotalMilliseconds);
+                    int toWait = errorPayload.WaitFor;
                     if (toWait >= 0)
                     {
                         penaltyTime = toWait;
                     }
                     break;
                 case GMMessageId.PickError:
-                    penaltyTime = PenaltiesTimes.PickPiece;
+                    penaltyTime = PenaltiesTimes.PickupPiece;
                     break;
                 case GMMessageId.PutError:
                     penaltyTime = PenaltiesTimes.PutPiece;

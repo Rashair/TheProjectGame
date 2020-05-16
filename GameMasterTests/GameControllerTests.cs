@@ -48,7 +48,7 @@ namespace GameMaster.Tests
                 AskPenalty = 200,
                 Height = 10,
                 DestroyPenalty = 100,
-                PickPenalty = 100
+                PickupPenalty = 100
             };
 
             var result = await gameController.Configuration(newGameConfig);

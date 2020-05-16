@@ -42,8 +42,9 @@ namespace Shared.Payloads.GMPayloads
             message.Append($"NumberOfAllies:{NumberOfPlayers.Allies}, NumberOfEnemies:{NumberOfPlayers.Enemies},\n");
             message.Append($"NumberOfPieces{NumberOfPieces}, NumberOfGoals:{NumberOfGoals},\n");
             var penalty = Penalties;
+
             message.Append("Penalties: {" + $"Move:{penalty.Move}, Ask:{penalty.Ask}, Response:{penalty.Response}, ");
-            message.Append($"Discover:{penalty.Discover}, PickPiece {penalty.PickPiece}, CheckPiece:{penalty.CheckPiece}, ");
+            message.Append($"Discover:{penalty.Discover}, PrematureRequest{penalty.PrematureRequest}, PickupPiece {penalty.PickupPiece}, CheckPiece:{penalty.CheckPiece}, ");
             message.AppendLine($"PutPiece:{penalty.PutPiece}, DestroyPiece {penalty.DestroyPiece}}}");
 
             message.AppendLine($"ShamPieceProbability:{ShamPieceProbability}, Position:({Position.X},{Position.Y})");
