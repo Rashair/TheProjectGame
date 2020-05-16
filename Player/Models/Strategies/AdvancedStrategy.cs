@@ -39,13 +39,9 @@ namespace Player.Models.Strategies
             }
 
             List<Direction> directions = new List<Direction>() { Direction.N, Direction.S, Direction.E, Direction.W };
-            if (y <= player.GoalAreaSize)
+            if (IsInGoalArea(y))
             {
-                directions.Remove(Direction.S);
-            }
-            else if (y >= player.BoardSize.y - player.GoalAreaSize - 1)
-            {
-                directions.Remove(Direction.N);
+                directions.Remove(player.GoalAreaDirection);
             }
 
             if (x == player.BoardSize.x - 1)
@@ -63,7 +59,6 @@ namespace Player.Models.Strategies
 
         public Task HasPieceDecision(CancellationToken cancellationToken)
         {
-            (int y, int x) = player.Position;
             if (player.IsHeldPieceSham == null)
             {
                 return player.CheckPiece(cancellationToken);
@@ -73,92 +68,49 @@ namespace Player.Models.Strategies
                 return player.DestroyPiece(cancellationToken);
             }
 
-            List<Direction> directions;
-            int ind;
-            switch (player.Team)
+            List<Direction> directions = new List<Direction>() { Direction.N, Direction.S, Direction.E, Direction.W };
+            (int y, int x) = player.Position;
+            if (y == player.GoalAreaRange.y1)
+                directions.Remove(Direction.S);
+            if (y == player.GoalAreaRange.y2 - 1)
+                directions.Remove(Direction.N);
+            if (x == 0)
+                directions.Remove(Direction.W);
+            if (x == player.BoardSize.x - 1)
+                directions.Remove(Direction.E);
+
+            if (IsInGoalArea(y))
             {
-                case Team.Red:
+                if (player.Board[y, x].GoalInfo == GoalInfo.IDK)
                 {
-                    if (y < player.GoalAreaSize)
-                    {
-                        if (player.Board[y, x].GoalInfo == GoalInfo.IDK)
-                        {
-                            return player.Put(cancellationToken);
-                        }
-
-                        directions = new List<Direction>() { Direction.N, Direction.S, Direction.E, Direction.W };
-                        if (y == player.GoalAreaSize - 1)
-                            directions.Remove(Direction.N);
-                        if (y == 0)
-                            directions.Remove(Direction.S);
-                        if (x == 0)
-                            directions.Remove(Direction.W);
-                        if (x == player.BoardSize.x - 1)
-                            directions.Remove(Direction.E);
-
-                        ind = random.Next(directions.Count);
-
-                        return player.Move(directions[ind], cancellationToken);
-                    }
-
-                    if (random.Next(1, 6) < 5)
-                    {
-                        return player.Move(Direction.S, cancellationToken);
-                    }
-
-                    directions = new List<Direction>() { Direction.W, Direction.E };
-                    if (x == 0)
-                        directions.Remove(Direction.W);
-                    if (x == player.BoardSize.x - 1)
-                        directions.Remove(Direction.E);
-
-                    ind = random.Next(directions.Count);
-
-                    return player.Move(directions[ind], cancellationToken);
+                    return player.Put(cancellationToken);
                 }
-                case Team.Blue:
-                {
-                    int beginning = player.BoardSize.y - player.GoalAreaSize;
-                    if (y >= beginning)
-                    {
-                        if (player.Board[y, x].GoalInfo == GoalInfo.IDK)
-                        {
-                            return player.Put(cancellationToken);
-                        }
 
-                        directions = new List<Direction>() { Direction.N, Direction.S, Direction.E, Direction.W };
-                        if (y == beginning)
-                            directions.Remove(Direction.S);
-                        if (y == player.BoardSize.y - 1)
-                            directions.Remove(Direction.N);
-                        if (x == 0)
-                            directions.Remove(Direction.W);
-                        if (x == player.BoardSize.x - 1)
-                            directions.Remove(Direction.E);
-
-                        ind = random.Next(directions.Count);
-
-                        return player.Move(directions[ind], cancellationToken);
-                    }
-
-                    if (random.Next(1, 6) < 5)
-                    {
-                        return player.Move(Direction.N, cancellationToken);
-                    }
-
-                    directions = new List<Direction>() { Direction.W, Direction.E };
-                    if (x == 0)
-                        directions.Remove(Direction.W);
-                    if (x == player.BoardSize.x - 1)
-                        directions.Remove(Direction.E);
-
-                    ind = random.Next(directions.Count);
-
-                    return player.Move(directions[ind], cancellationToken);
-                }
+                return player.Move(GetRandomDirection(directions), cancellationToken);
             }
 
-            return Task.CompletedTask;
+            if (random.Next(1, 6) < 5)
+            {
+                return player.Move(player.GoalAreaDirection, cancellationToken);
+            }
+
+            directions = new List<Direction>() { Direction.W, Direction.E };
+            if (x == 0)
+                directions.Remove(Direction.W);
+            if (x == player.BoardSize.x - 1)
+                directions.Remove(Direction.E);
+
+            return player.Move(GetRandomDirection(directions), cancellationToken);
+        }
+
+        private bool IsInGoalArea(int y)
+        {
+            return y >= player.GoalAreaRange.y1 && y < player.GoalAreaRange.y2;
+        }
+
+        private Direction GetRandomDirection(List<Direction> directions)
+        {
+            return directions[random.Next(directions.Count)];
         }
     }
 }

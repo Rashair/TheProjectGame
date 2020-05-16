@@ -54,5 +54,33 @@ namespace Shared.Enums
         {
             return dir.GetCoordinates((center[0], center[1]));
         }
+
+        public static Direction GetOppositeDirection(this Direction dir)
+        {
+            switch (dir)
+            {
+                case Direction.NW:
+                    return Direction.SE;
+                case Direction.N:
+                    return Direction.S;
+                case Direction.NE:
+                    return Direction.SW;
+                case Direction.W:
+                    return Direction.E;
+                case Direction.FromCurrent:
+                    return Direction.FromCurrent;
+                case Direction.E:
+                    return Direction.W;
+                case Direction.SW:
+                    return Direction.NE;
+                case Direction.S:
+                    return Direction.N;
+                case Direction.SE:
+                    return Direction.NW;
+
+                default:
+                    return Direction.FromCurrent;
+            }
+        }
     }
 }

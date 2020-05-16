@@ -79,6 +79,10 @@ namespace Player.Models
 
         public int GoalAreaSize { get; private set; }
 
+        public (int y1, int y2) GoalAreaRange { get; set; }
+
+        public Direction GoalAreaDirection { get; set; }
+
         internal async Task Start(CancellationToken cancellationToken)
         {
             isWorking = true;
@@ -353,6 +357,18 @@ namespace Player.Models
                     EnemiesIds = payloadStart.EnemiesIDs;
 
                     GoalAreaSize = payloadStart.GoalAreaSize;
+                    switch (this.Team)
+                    {
+                        case Team.Red:
+                            this.GoalAreaRange = (0, GoalAreaSize);
+                            this.GoalAreaDirection = Direction.S;
+                            break;
+                        case Team.Blue:
+                            this.GoalAreaRange = (BoardSize.y - GoalAreaSize, BoardSize.y);
+                            this.GoalAreaDirection = Direction.N;
+                            break;
+                    }
+
                     NumberOfPlayers = payloadStart.NumberOfPlayers;
                     NumberOfPieces = payloadStart.NumberOfPieces;
                     NumberOfGoals = payloadStart.NumberOfGoals;
