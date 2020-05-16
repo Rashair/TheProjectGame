@@ -399,7 +399,7 @@ namespace Player.Tests
             await player.AcceptMessage(CancellationToken.None);
 
             // Assert
-            bool isNowWorking = player.GetValue<Player.Models.Player, bool>("working");
+            bool isNowWorking = player.GetValue<Player.Models.Player, bool>("isWorking");
             Assert.False(isNowWorking);
         }
 
