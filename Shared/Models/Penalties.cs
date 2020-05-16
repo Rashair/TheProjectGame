@@ -19,5 +19,11 @@
         public int PutPiece { get; set; }
 
         public int PrematureRequest { get; set; }
+
+        public override string ToString()
+        {
+            return $"Move: {Move}, Ask: {Ask}, Response: {Response}, Discover: {Discover}," +
+                $" PickPiece: {PickUpPiece}, CheckPiece: {CheckPiece}, DestroyPiece: {DestroyPiece}, PutPiece: {PutPiece}, PrematureRequest:{PrematureRequest} ";
+        }
     }
 }

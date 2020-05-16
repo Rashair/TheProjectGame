@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -8,9 +7,7 @@ using System.Threading.Tasks;
 using GameMaster.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Player.Models;
 using Serilog;
-using Shared.Enums;
 using TestsShared;
 using Xunit;
 
@@ -28,8 +25,6 @@ namespace IntegrationTests.GameTests.Abstractions
 
         protected GameTestConfiguration TestConf { get; private set; }
 
-        public bool ShouldLogPlayers { get; }
-
         public HttpClient Client { get; set; }
 
         public GameTest()
@@ -41,9 +36,6 @@ namespace IntegrationTests.GameTests.Abstractions
                 PositionNotChangedThreshold = 4,
                 NoNewPiecesThreshold = 5,
             };
-
-            string env = Environment.GetEnvironmentVariable("PLAYER_LOGGING");
-            ShouldLogPlayers = env != null ? bool.Parse(env) : true;
         }
 
         public abstract void RunGameWithConfiguration();
@@ -93,13 +85,6 @@ namespace IntegrationTests.GameTests.Abstractions
             {
                 var builderRed = Utilities.CreateHostBuilder(typeof(Player.Startup), redArgs);
                 var builderBlue = Utilities.CreateHostBuilder(typeof(Player.Startup), blueArgs);
-                if (!ShouldLogPlayers)
-                {
-                    builderRed.ConfigureServices(serv =>
-                                   serv.AddSingleton<ILogger>(MockGenerator.Get<ILogger>()));
-                    builderBlue.ConfigureServices(serv =>
-                                   serv.AddSingleton<ILogger>(MockGenerator.Get<ILogger>()));
-                }
                 redPlayersHosts[i] = builderRed.Build();
                 bluePlayersHosts[i] = builderBlue.Build();
             }

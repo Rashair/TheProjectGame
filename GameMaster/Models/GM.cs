@@ -35,7 +35,7 @@ namespace GameMaster.Models
 
         private int redTeamPoints;
         private int blueTeamPoints;
-    
+
         public bool WasGameInitialized { get; private set; }
 
         public bool WasGameStarted { get; private set; }
@@ -43,8 +43,6 @@ namespace GameMaster.Models
         public bool WasGameFinished { get; private set; }
 
         public int SecondGoalAreaStart { get => conf.Height - conf.GoalAreaHeight; }
-
-        public bool Verbose { get; set; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
             BufferBlock<PlayerMessage> queue, ISocketClient<PlayerMessage, GMMessage> socketClient,
@@ -60,7 +58,6 @@ namespace GameMaster.Models
             players = new Dictionary<int, GMPlayer>();
             legalKnowledgeReplies = new HashSet<(int, int)>();
             rand = new Random();
-            Verbose = conf.Verbose;
         }
 
         internal bool InitGame()
@@ -124,7 +121,7 @@ namespace GameMaster.Models
                         },
                     };
                 }
-                payload.PlayerId = p.Key;
+                payload.AgentID = p.Key;
                 payload.BoardSize = new BoardSize
                 {
                     Y = conf.Height,
@@ -158,7 +155,7 @@ namespace GameMaster.Models
                     AgentID = p.Key,
                     Payload = payload.Serialize(),
                 };
-                logger.Verbose("Sent message." + MessageLogger.Get(message));
+                logger.Verbose(MessageLogger.Sent(message));
                 sendMessagesTasks.Add(socketClient.SendAsync(message, cancellationToken));
             }
 
@@ -174,7 +171,7 @@ namespace GameMaster.Models
                 try
                 {
                     PlayerMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
-                    logger.Verbose("Received message. " + MessageLogger.Get(message));
+                    logger.Verbose(MessageLogger.Received(message));
                     await AcceptMessage(message, cancellationToken);
                     if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
                     {
@@ -213,8 +210,6 @@ namespace GameMaster.Models
             }
 
             players.TryGetValue(message.AgentID, out GMPlayer player);
-           
-            // logger.Information($"|{message.MessageId} | {message.Payload} | | {player?.Team}");
             switch (message.MessageID)
             {
                 case PlayerMessageId.CheckPiece:
@@ -244,7 +239,7 @@ namespace GameMaster.Models
                     JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
                     {
                         Accepted = accepted,
-                        PlayerId = key,
+                        AgentID = key,
                     };
                     GMMessage answerJoin = new GMMessage()
                     {
@@ -252,11 +247,12 @@ namespace GameMaster.Models
                         AgentID = key,
                         Payload = JsonConvert.SerializeObject(answerJoinPayload),
                     };
-                    logger.Verbose("Sent message." + MessageLogger.Get(answerJoin));
+
                     await socketClient.SendAsync(answerJoin, cancellationToken);
+                    logger.Verbose(MessageLogger.Sent(answerJoin));
 
                     if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
-                       GetPlayersCount(Team.Blue) == conf.NumberOfPlayersPerTeam)
+                        GetPlayersCount(Team.Blue) == conf.NumberOfPlayersPerTeam)
                     {
                         await StartGame(cancellationToken);
                         WasGameStarted = true;
@@ -297,7 +293,6 @@ namespace GameMaster.Models
                             break;
                     }
                     await player.MoveAsync(field, this, cancellationToken);
-
                     break;
                 }
                 case PlayerMessageId.Pick:
@@ -384,6 +379,7 @@ namespace GameMaster.Models
             {
                 discoveryResult.Add(neighbourCoordinates[i].dir, distances[i]);
             }
+
             return discoveryResult;
         }
 
@@ -397,12 +393,13 @@ namespace GameMaster.Models
                 {
                     if (board[i][j].ContainsPieces() && board[i][j].CanPick())
                     {
-                            int manhattanDistance = Math.Abs(center[0] - i) + Math.Abs(center[1] - j);
-                            if (manhattanDistance < distance)
-                                distance = manhattanDistance;
+                        int manhattanDistance = Math.Abs(center[0] - i) + Math.Abs(center[1] - j);
+                        if (manhattanDistance < distance)
+                            distance = manhattanDistance;
                     }
                 }
             }
+
             return distance;
         }
 
@@ -440,15 +437,17 @@ namespace GameMaster.Models
             {
                 Winner = winner,
             };
-            
+
             List<GMMessage> messages = new List<GMMessage>();
             foreach (var p in players)
             {
-               messages.Add(new GMMessage(GMMessageId.EndGame, p.Key, payload));
+                messages.Add(new GMMessage(GMMessageId.EndGame, p.Key, payload));
             }
             await socketClient.SendToAllAsync(messages, cancellationToken);
             for (int i = 0; i < messages.Count; i++)
-                logger.Verbose("Sent message." + MessageLogger.Get(messages[i]));
+            {
+                logger.Verbose(MessageLogger.Sent(messages[i]));
+            }
             logger.Information("Sent endGame to all.");
             WasGameFinished = true;
 

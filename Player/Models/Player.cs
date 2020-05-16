@@ -26,7 +26,7 @@ namespace Player.Models
 
         private int id;
         private int penaltyTime;
-        private IStrategy strategy;
+        private readonly IStrategy strategy;
         private bool working;
         private readonly PlayerConfiguration conf;
         private Team? winner;
@@ -170,7 +170,7 @@ namespace Player.Models
 
             BegForInfoPayload payload = new BegForInfoPayload()
             {
-                AskedPlayerId = TeamMatesIds[index],
+                AskedAgentID = TeamMatesIds[index],
             };
 
             message.Payload = payload.Serialize();
@@ -312,7 +312,7 @@ namespace Player.Models
                     break;
                 case GMMessageId.StartGame:
                     StartGamePayload payloadStart = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
-                    id = payloadStart.PlayerId;
+                    id = payloadStart.AgentID;
                     TeamMatesIds = payloadStart.AlliesIds;
                     if (id == payloadStart.LeaderId)
                     {
@@ -356,7 +356,7 @@ namespace Player.Models
                     break;
                 case GMMessageId.JoinTheGameAnswer:
                     JoinAnswerPayload payloadJoin = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.Payload);
-                    id = payloadJoin.PlayerId;
+                    id = payloadJoin.AgentID;
                     if (!payloadJoin.Accepted)
                     {
                         StopWorking();
@@ -473,7 +473,7 @@ namespace Player.Models
         private async Task Communicate(PlayerMessage message, CancellationToken cancellationToken)
         {
             await client.SendAsync(message, cancellationToken);
-            logger.Verbose("Sent message." + MessageLogger.Get(message));
+            logger.Verbose(MessageLogger.Sent(message));
         }
 
         private async Task Penalty(CancellationToken cancellationToken)
