@@ -35,6 +35,7 @@ namespace GameMaster.Models
 
         private int redTeamPoints;
         private int blueTeamPoints;
+        private bool forceEndGame;
 
         public bool WasGameInitialized { get; private set; }
 
@@ -177,6 +178,12 @@ namespace GameMaster.Models
                         await EndGame(cancellationToken);
                         break;
                     }
+                    if (forceEndGame)
+                    {
+                        logger.Warning("CS disconnected, exiting.");
+                        lifetime.StopApplication();
+                        break;
+                    }
                 }
                 catch (TimeoutException e)
                 {
@@ -201,10 +208,13 @@ namespace GameMaster.Models
                 return;
             }
 
-            if (!WasGameStarted && message.MessageID != PlayerMessageId.JoinTheGame)
+            if (!WasGameStarted && message.MessageID != PlayerMessageId.JoinTheGame &&
+                message.MessageID != PlayerMessageId.Disconnected &&
+                message.MessageID != PlayerMessageId.CSDisconnected)
             {
                 // TODO: send error message
-                logger.Warning("Game was not started yet: GM can't accept messages other than JoinTheGame");
+                logger.Warning("Game was not started yet: GM can't accept messages other than JoinTheGame," +
+                    "Disconnected or CSDisconnected");
                 return;
             }
 
@@ -229,6 +239,27 @@ namespace GameMaster.Models
                     break;
                 case PlayerMessageId.BegForInfo:
                     await ForwardKnowledgeQuestion(message, cancellationToken);
+                    break;
+                case PlayerMessageId.Disconnected:
+                {
+                    int key = message.AgentID;
+                    players.Remove(key);
+                    logger.Verbose($"Player {key} disconnected");
+                    if (WasGameStarted)
+                    {
+                        if (player.Team == Team.Blue)
+                        {
+                            redTeamPoints = conf.NumberOfGoals;
+                        }
+                        else
+                        {
+                            blueTeamPoints = conf.NumberOfGoals;
+                        }
+                    }
+                    break;
+                }
+                case PlayerMessageId.CSDisconnected:
+                    forceEndGame = true;
                     break;
                 case PlayerMessageId.JoinTheGame:
                 {

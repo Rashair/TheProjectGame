@@ -7,7 +7,9 @@ using Player.Models;
 using Serilog;
 using Shared;
 using Shared.Clients;
+using Shared.Enums;
 using Shared.Messages;
+using Shared.Payloads.GMPayloads;
 
 namespace Player.Services
 {
@@ -79,7 +81,9 @@ namespace Player.Services
                 }
                 (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
             }
-            await client.CloseAsync(stoppingToken);
+
+            message = new GMMessage(GMMessageId.CSDisconnected, -1, new EmptyAnswerPayload());
+            await queue.SendAsync(message, stoppingToken);
         }
     }
 }

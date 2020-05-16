@@ -46,6 +46,7 @@ namespace CommunicationServer.Services
         public override async Task OnDisconnectAsync(TcpSocketClient<GMMessage, PlayerMessage> client,
             CancellationToken cancellationToken)
         {
+            await client.CloseAsync(cancellationToken);
             lifetime.StopApplication();
             await Task.CompletedTask;
         }
