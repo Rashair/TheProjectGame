@@ -232,7 +232,6 @@ namespace Player.Models
             }
             message.Payload = response.Serialize();
             await Communicate(message, cancellationToken);
-            penaltyTime = PenaltiesTimes.Response;
         }
 
         public async Task RequestsResponse(CancellationToken cancellationToken, int respondToId, bool isFromLeader = false)
@@ -431,7 +430,12 @@ namespace Player.Models
                             }
                         }
                     }
+                    break;
+                case GMMessageId.InformationExchangeResponse:
                     penaltyTime = PenaltiesTimes.Response;
+                    break;
+                case GMMessageId.InformationExchangeRequest:
+                    penaltyTime = PenaltiesTimes.Ask;
                     break;
                 case GMMessageId.NotWaitedError:
                     NotWaitedErrorPayload errorPayload = JsonConvert.DeserializeObject<NotWaitedErrorPayload>(message.Payload);

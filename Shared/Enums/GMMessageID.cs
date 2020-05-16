@@ -15,6 +15,8 @@
         PickAnswer,
         PutAnswer,
         GiveInfoForwarded,
+        InformationExchangeResponse,
+        InformationExchangeRequest,
 
         InvalidMoveError = 901,
         PickError, // TODO Issue 111
