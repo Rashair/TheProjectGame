@@ -431,7 +431,6 @@ namespace Player.Models
                             }
                         }
                     }
-                    penaltyTime = PenaltiesTimes.Response;
                     break;
                 case GMMessageId.InformationExchangeResponse:
                     penaltyTime = PenaltiesTimes.Response;
