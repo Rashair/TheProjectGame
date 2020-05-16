@@ -121,8 +121,8 @@ export class Configuration extends Component {
             type: "string",
             value: this.state.csIP,
             regex:
-              "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
-            title: "Wprowadź poprawny adres IP",
+              "^[-a-zA-Z0-9@:%._\+~#=]+$",
+            title: "Wprowadź poprawny adres",
             onChange: (e) => this.setState({ csIP: e.target.value }),
           })}
           {CustomFieldset({
