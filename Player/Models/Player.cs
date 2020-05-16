@@ -81,18 +81,23 @@ namespace Player.Models
 
         internal async Task Start(CancellationToken cancellationToken)
         {
+            working = true;
             GMMessageId? messageID = null;
-            while (!cancellationToken.IsCancellationRequested && messageID != GMMessageId.JoinTheGameAnswer)
+            while (working && !cancellationToken.IsCancellationRequested && messageID != GMMessageId.JoinTheGameAnswer)
             {
                 messageID = await AcceptMessage(cancellationToken);
             }
-            while (!cancellationToken.IsCancellationRequested && messageID != GMMessageId.StartGame)
+            while (working && !cancellationToken.IsCancellationRequested && messageID != GMMessageId.StartGame)
             {
                 messageID = await AcceptMessage(cancellationToken);
             }
 
-            logger.Information("Player starting game\n" +
+            if (working)
+            {
+                logger.Information("Player starting game\n" +
                 $"Team: {conf.TeamId}, strategy: {conf.Strategy}".PadLeft(12));
+            }
+
             await Work(cancellationToken);
         }
 
@@ -113,7 +118,6 @@ namespace Player.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
-            working = true;
             while (working && !cancellationToken.IsCancellationRequested)
             {
                 await MakeDecisionFromStrategy(cancellationToken);
