@@ -429,7 +429,7 @@ namespace Player.Models
                     break;
                 case GMMessageId.NotWaitedError:
                     NotWaitedErrorPayload errorPayload = JsonConvert.DeserializeObject<NotWaitedErrorPayload>(message.Payload);
-                    int toWait = (int)(DateTime.Now - errorPayload.WaitUntil).TotalMilliseconds;
+                    int toWait = (int)Math.Ceiling((errorPayload.WaitUntil - DateTime.Now).TotalMilliseconds);
                     if (toWait >= 0)
                     {
                         penaltyTime = toWait;
@@ -483,7 +483,7 @@ namespace Player.Models
         private async Task Communicate(PlayerMessage message, CancellationToken cancellationToken)
         {
             await client.SendAsync(message, cancellationToken);
-            logger.Verbose("Sent message." + MessageLogger.Get(message));
+            logger.Verbose(MessageLogger.Sent(message));
         }
 
         private async Task Penalty(CancellationToken cancellationToken)
