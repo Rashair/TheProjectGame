@@ -648,7 +648,7 @@ namespace GameMaster.Tests
 
             await InitializeAndBegForInfo(gameMaster, player1ID, player2ID);
 
-            GiveInfoPayload giveInfoPayload1 = new GiveInfoPayload()
+            GiveInfoPayload giveInfoPayload = new GiveInfoPayload()
             {
                 RespondToId = player1ID,
                 Distances = new int[,] { { 1, 1 } },
@@ -659,21 +659,14 @@ namespace GameMaster.Tests
             {
                 MessageID = PlayerMessageId.GiveInfo,
                 AgentID = player2ID,
-                Payload = giveInfoPayload1.Serialize(),
+                Payload = giveInfoPayload.Serialize(),
             };
 
-            GiveInfoPayload giveInfoPayload2 = new GiveInfoPayload()
-            {
-                RespondToId = player1ID,
-                Distances = new int[,] { { 1, 1 } },
-                RedTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },
-                BlueTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },
-            };
             PlayerMessage giveMessage2 = new PlayerMessage()
             {
                 MessageID = PlayerMessageId.GiveInfo,
                 AgentID = player3ID,
-                Payload = giveInfoPayload1.Serialize(),
+                Payload = giveInfoPayload.Serialize(),
             };
 
             await gameMaster.AcceptMessage(giveMessage1, CancellationToken.None);
