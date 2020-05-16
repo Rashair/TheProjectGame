@@ -51,7 +51,7 @@ namespace GameMaster.Controllers
 
             gameConfiguration.Update(conf);
 
-            string gameConfigString = JsonConvert.SerializeObject(conf);
+            string gameConfigString = JsonConvert.SerializeObject(gameConfiguration);
             string path = configuration.GetValue<string>("GameConfigPath");
             try
             {
@@ -66,7 +66,7 @@ namespace GameMaster.Controllers
                 logger.Warning($"Error writing to file: {e}");
             }
 
-            return Created("/configuration", conf);
+            return Created("/configuration", gameConfiguration);
         }
 
         [HttpPost]

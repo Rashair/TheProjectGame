@@ -8,7 +8,7 @@ namespace Shared.Payloads.GMPayloads
 
        public override string ToString()
        {
-            return $"WaitUntil:{WaitUntil}";
+            return $"WaitUntil:{WaitUntil:HH:mm:ss.fff}";
        }
     }
 }

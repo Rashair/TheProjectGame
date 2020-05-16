@@ -10,7 +10,7 @@ namespace Shared.Payloads.PlayerPayloads
 
         public override string ToString()
         {
-            return $" TeamId:{TeamId}";
+            return $"TeamId:{TeamId}";
         }
     }
 }

@@ -9,6 +9,16 @@ namespace Shared.Models
 {
     public static class MessageLogger
     {
+        public static string Received(Message msg)
+        {
+            return $"Received message: {Get(msg)}";
+        }
+
+        public static string Sent(Message msg)
+        {
+            return $"Sent message: {Get(msg)}";
+        }
+
         public static string Get(Message msg)
         {
             string messageLog = "";
@@ -16,11 +26,11 @@ namespace Shared.Models
             switch (msg)
             {
                 case GMMessage gmMessage:
-                    messageLog = $"MessageId:{gmMessage.MessageID}, PlayerId:{gmMessage.AgentID}";
+                    messageLog = $"MessageId:{gmMessage.MessageID}, AgentID:{gmMessage.AgentID}";
                     payload = GetPayload(gmMessage.MessageID, gmMessage.Payload);
                     break;
                 case PlayerMessage playerMessage:
-                    messageLog = $"MessageId:{playerMessage.MessageID}, PlayerId:{playerMessage.AgentID}";
+                    messageLog = $"MessageId:{playerMessage.MessageID}, AgentID:{playerMessage.AgentID}";
                     payload = GetPayload(playerMessage.MessageID, playerMessage.Payload);
                     break;
             }

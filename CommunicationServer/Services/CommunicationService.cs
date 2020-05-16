@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -48,12 +47,12 @@ namespace CommunicationServer.Services
                     case GMMessage gm:
                         await manager.SendMessageAsync(gm.AgentID, gm, stoppingToken);
                         if (gm.MessageID == GMMessageId.StartGame) container.CanConnect = false;
-                        logger.Verbose("Received message." + MessageLogger.Get(message) + "Sent message to GM. ");
+                        logger.Verbose(MessageLogger.Received(gm) + ". Sent message to Player");
                         break;
 
                     case PlayerMessage pm:
                         await gmClient.SendAsync(pm, stoppingToken);
-                        logger.Verbose("Received message." + MessageLogger.Get(message) + "Sent message to Player.");
+                        logger.Verbose(MessageLogger.Received(pm) + ". Sent message to GM");
                         break;
 
                     case null when stoppingToken.IsCancellationRequested:

@@ -14,7 +14,7 @@ namespace Shared.Payloads.GMPayloads
 
         public override string ToString()
         {
-            return $" AskingId:{AskingId}, Leader:{Leader}, TeamId{TeamId}";
+            return $"AskingId:{AskingId}, Leader:{Leader}, TeamId{TeamId}";
         }
     }
 }

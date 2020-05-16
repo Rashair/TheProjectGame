@@ -12,7 +12,7 @@ namespace Shared.Payloads.PlayerPayloads
 
         public override string ToString()
         {
-            return $" Direction:{Direction}";
+            return $"Direction:{Direction}";
         }
     }
 }
