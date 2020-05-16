@@ -71,6 +71,7 @@ namespace CommunicationServer.Services
 
             // Singleton initialization
             container.GMClient = gmClient;
+            container.CanConnect = true;
             logger.Information("GM connected");
 
             // GM connected, ServiceShareContainer initiated, release another services and start async section.

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Shared;
 using Shared.Clients;
+using Shared.Enums;
 using Shared.Managers;
 using Shared.Messages;
 using Shared.Models;
@@ -46,6 +47,7 @@ namespace CommunicationServer.Services
                 {
                     case GMMessage gm:
                         await manager.SendMessageAsync(gm.AgentID, gm, stoppingToken);
+                        if (gm.MessageID == GMMessageId.StartGame) container.CanConnect = false;
                         logger.Verbose("Received message." + MessageLogger.Get(message) + "Sent message to GM. ");
                         break;
 
