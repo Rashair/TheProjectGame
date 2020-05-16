@@ -35,7 +35,7 @@ namespace Player.Models
             Message> client, ILogger log)
         {
             this.conf = conf;
-            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
+            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy, this);
             this.queue = queue;
             this.client = client;
             this.logger = log.ForContext<Player>();
@@ -487,7 +487,7 @@ namespace Player.Models
 
         public async Task MakeDecisionFromStrategy(CancellationToken cancellationToken)
         {
-            await strategy.MakeDecision(this, cancellationToken);
+            await strategy.MakeDecision(cancellationToken);
         }
 
         private async Task Communicate(Message message, CancellationToken cancellationToken)
