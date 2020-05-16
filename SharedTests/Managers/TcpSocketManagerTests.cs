@@ -80,7 +80,7 @@ namespace Shared.Tests.Managers
             var token = CancellationToken.None;
 
             // Act
-            var task = tcpSocketManager.Invoke<TcpSocketManager<PlayerMessage, GMMessage>, Task>("SendMessageAsync", 
+            var task = tcpSocketManager.Invoke<TcpSocketManager<PlayerMessage, GMMessage>, Task>("SendMessageAsync",
                 new object[] { clientMock.Object, message, token });
 
             // Assert
@@ -100,7 +100,7 @@ namespace Shared.Tests.Managers
                 Throws(new SocketException());
 
             // Act
-            var task = tcpSocketManager.Invoke<TcpSocketManager<PlayerMessage, GMMessage>, Task>("SendMessageAsync", 
+            var task = tcpSocketManager.Invoke<TcpSocketManager<PlayerMessage, GMMessage>, Task>("SendMessageAsync",
                 new object[] { clientMock.Object, message, CancellationToken.None });
 
             // Assert

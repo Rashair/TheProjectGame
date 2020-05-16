@@ -53,7 +53,7 @@ namespace CommunicationServer.Services
                     (result, message) = await client.ReceiveAsync(cancellationToken);
                 }
             }
-            catch (IOException e)
+            catch (IOException)
             {
                 logger.Warning("Connection stream closed");
             }
