@@ -27,7 +27,7 @@ namespace Player.Models
         private int id;
         private int penaltyTime;
         private readonly IStrategy strategy;
-        private bool working;
+        private bool isWorking;
         private readonly PlayerConfiguration conf;
         private Team? winner;
 
@@ -81,15 +81,26 @@ namespace Player.Models
 
         internal async Task Start(CancellationToken cancellationToken)
         {
-            bool startGame = false;
-            while (!cancellationToken.IsCancellationRequested && !startGame)
+            isWorking = true;
+            GMMessageId messageID = GMMessageId.Unknown;
+            while (messageID != GMMessageId.JoinTheGameAnswer && isWorking && !cancellationToken.IsCancellationRequested)
             {
-                startGame = await AcceptMessage(cancellationToken);
+                messageID = await AcceptMessage(cancellationToken);
+            }
+            while (messageID != GMMessageId.StartGame && isWorking && !cancellationToken.IsCancellationRequested)
+            {
+                messageID = await AcceptMessage(cancellationToken);
             }
 
-            logger.Information("Player starting game\n" +
-                $"Team: {conf.TeamId}, strategy: {conf.Strategy}".PadLeft(12));
-            await Work(cancellationToken);
+            if (isWorking)
+            {
+                logger.Information("Player starting game\n" +
+                    $"Team: {conf.TeamId}, strategy: {conf.Strategy}".PadLeft(12));
+
+                await Work(cancellationToken);
+            }
+
+            await client.CloseAsync(cancellationToken);
         }
 
         public async Task JoinTheGame(CancellationToken cancellationToken)
@@ -109,20 +120,17 @@ namespace Player.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
-            working = true;
-            while (working && !cancellationToken.IsCancellationRequested)
+            while (isWorking && !cancellationToken.IsCancellationRequested)
             {
                 await MakeDecisionFromStrategy(cancellationToken);
                 await AcceptMessage(cancellationToken);
                 await Penalty(cancellationToken);
             }
-
-            await client.CloseAsync(cancellationToken);
         }
 
         internal void StopWorking()
         {
-            working = false;
+            isWorking = false;
             logger.Warning($"Stopped player: {Team}");
         }
 
@@ -267,7 +275,7 @@ namespace Player.Models
         /// <summary>
         /// Returns true if StartGameMessage was accepted
         /// </summary>
-        public async Task<bool> AcceptMessage(CancellationToken cancellationToken)
+        public async Task<GMMessageId> AcceptMessage(CancellationToken cancellationToken)
         {
             var cancellationTimespan = TimeSpan.FromMinutes(2);
             GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
@@ -346,7 +354,7 @@ namespace Player.Models
                     NumberOfGoals = payloadStart.NumberOfGoals;
                     ShamPieceProbability = payloadStart.ShamPieceProbability;
                     WaitingPlayers = new List<int>();
-                    return true;
+                    break;
                 case GMMessageId.BegForInfoForwarded:
                     BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
                     if (Team == payloadBeg.TeamId)
@@ -436,9 +444,11 @@ namespace Player.Models
                 case GMMessageId.UnknownError:
                     penaltyTime = 50;
                     break;
+                default:
+                    return GMMessageId.Unknown;
             }
 
-            return false;
+            return message.MessageID;
         }
 
         public async Task DestroyPiece(CancellationToken cancellationToken)
