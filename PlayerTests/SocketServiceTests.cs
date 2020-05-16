@@ -73,7 +73,7 @@ namespace Player.Tests
             await Task.WhenAll(new[] { socketTask, syncTask });
 
             // Assert
-            Assert.Equal(numberOfMessages, queue.Count);
+            Assert.Equal(numberOfMessages + 1, queue.Count);
         }
     }
 }
