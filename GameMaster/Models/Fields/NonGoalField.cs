@@ -20,7 +20,7 @@ namespace GameMaster.Models.Fields
             if (piece.CheckForSham() == false)
             {
                 Pieces.Add(piece);
-                return (PutEvent.NormalOnGoalField, true);
+                return (PutEvent.NormalOnNonGoalField, true);
             }
             else
             {

@@ -333,16 +333,20 @@ namespace GameMaster.Models
                     if (point == true)
                     {
                         int y = player.GetPosition()[0];
-                        string teamStr;
+                        string teamStr = "";
                         if (y < conf.GoalAreaHeight)
                         {
                             teamStr = "RED";
                             redTeamPoints++;
                         }
-                        else
+                        else if (y >= SecondGoalAreaStart)
                         {
                             teamStr = "BLUE";
                             blueTeamPoints++;
+                        }
+                        else
+                        {
+                            logger.Error("Critical error, goal on task field.");
                         }
                         logger.Information($"{teamStr} TEAM POINT !!!\n" +
                             $"    by {player.Team}");
@@ -557,9 +561,10 @@ namespace GameMaster.Models
                 logger.Verbose(MessageLogger.Sent(messages[i]));
             }
             logger.Information("Sent endGame to all.");
-            WasGameFinished = true;
 
             await Task.Delay(4000);
+            WasGameFinished = true;
+
             lifetime.StopApplication();
         }
     }

@@ -57,7 +57,7 @@ namespace Player.Tests
             var hostedService = (SocketService)serviceProvider.GetService<IHostedService>();
 
             // Act
-            int delay = 500;
+            int delay = 1000;
             Task socketTask = Task.Run(async () =>
             {
                 await hostedService.StartAsync(CancellationToken.None);
