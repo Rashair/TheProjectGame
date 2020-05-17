@@ -71,7 +71,7 @@ namespace Player.Models.Strategies
             {
                 int goalAreaSize = player.GoalAreaSize;
                 var directions = GetDirectionsInRange(goalAreaSize, player.BoardSize.y - goalAreaSize);
-                var minDirection = directions.Aggregate((d1, d2) =>
+                Direction currentDirection = directions.Aggregate((d1, d2) =>
                 {
                     (int y1, int x1) = d1.GetCoordinates(player.Position);
                     (int y2, int x2) = d2.GetCoordinates(player.Position);
@@ -79,17 +79,29 @@ namespace Player.Models.Strategies
                     return player.Board[y1, x1].DistToPiece < player.Board[y2, x2].DistToPiece ? d1 : d2;
                 });
 
-                previousDirection = minDirection;
-                previousPosition = player.Position;
-
-                decision = player.Move(minDirection, cancellationToken);
+                previousDirection = currentDirection;
+                decision = player.Move(currentDirection, cancellationToken);
                 state = DiscoverState.NoAction;
             }
             else
             {
-                decision = DoesNotHavePieceInTaskAreaDecision(cancellationToken);
+                Direction currentDirection;
+                int goalAreaSize = player.GoalAreaSize;
+                var directions = GetDirectionsInRange(goalAreaSize, player.BoardSize.y - goalAreaSize);
+                if (distToPiece >= previousDistToPiece || !directions.Contains(previousDirection))
+                {
+                    currentDirection = GetRandomDirection(directions);
+                }
+                else
+                {
+                    currentDirection = previousDirection;
+                }
+
+                previousDirection = currentDirection;
+                decision = player.Move(currentDirection, cancellationToken);
             }
 
+            previousPosition = player.Position;
             previousDistToPiece = distToPiece;
 
             return decision;
@@ -112,40 +124,6 @@ namespace Player.Models.Strategies
             previousPosition = player.Position;
 
             return player.Move(currentDirection, cancellationToken);
-        }
-
-        public Task DoesNotHavePieceInTaskAreaDecision(CancellationToken cancellationToken)
-        {
-            (int y, int x) = player.Position;
-            int distToPiece = player.Board[y, x].DistToPiece;
-
-            Task decision;
-            if (distToPiece == 0)
-            {
-                decision = player.Pick(cancellationToken);
-            }
-            else
-            {
-                Direction currentDirection;
-                int goalAreaSize = player.GoalAreaSize;
-                var directions = GetDirectionsInRange(goalAreaSize, player.BoardSize.y - goalAreaSize);
-                if (distToPiece >= previousDistToPiece || !directions.Contains(previousDirection))
-                {
-                    currentDirection = GetRandomDirection(directions);
-                }
-                else
-                {
-                    currentDirection = previousDirection;
-                }
-
-                previousDirection = currentDirection;
-                decision = player.Move(currentDirection, cancellationToken);
-            }
-
-            previousDistToPiece = distToPiece;
-            previousPosition = player.Position;
-
-            return decision;
         }
 
         public Task HasPieceDecision(CancellationToken cancellationToken)
