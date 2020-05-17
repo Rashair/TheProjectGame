@@ -93,7 +93,8 @@ namespace Shared.Clients
                 }
                 else if (countRead != length)
                 {
-                    logger.Warning($"Unexpected message: \"{Encoding.UTF8.GetString(buffer)}\" - wrong length provided.\n");
+                    logger.Warning($"Unexpected message: \"{Encoding.UTF8.GetString(buffer)}\" - " +
+                        $"wrong length provided: {length}, actual: {countRead}.\n");
                 }
                 return (false, default);
             }
