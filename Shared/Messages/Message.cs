@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Shared.Messages
+﻿namespace Shared.Messages
 {
     public abstract class Message
     {

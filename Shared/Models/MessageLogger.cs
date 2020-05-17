@@ -74,7 +74,7 @@ namespace Shared.Models
 
                 case GMMessageId.InformationExchangeResponse:
                     return JsonConvert.DeserializeObject<InformationExchangePayload>(payload);
-                
+
                 case GMMessageId.InformationExchangeRequest:
                     return JsonConvert.DeserializeObject<InformationExchangePayload>(payload);
 

@@ -34,9 +34,9 @@ namespace Player.Tests
             clientMock.Setup(m => m.ReceiveAsync(It.IsAny<CancellationToken>()))
             .Returns(() =>
             {
-                if (calls < numberOfMessages) 
+                if (calls < numberOfMessages)
                     return Task.FromResult((true, new GMMessage()));
-                else 
+                else
                     return Task.FromResult((false, new GMMessage()));
             })
             .Callback(() =>

@@ -76,7 +76,7 @@ namespace GameMaster.Tests
 
             public IEnumerator<object[]> GetEnumerator()
             {
-                yield return new object[] 
+                yield return new object[]
                 {
                     new GoalField(RandomY, RandomX),
                     new List<AbstractPiece> { new ShamPiece() },

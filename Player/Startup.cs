@@ -11,7 +11,6 @@ using Microsoft.Extensions.Hosting;
 using Player.Models;
 using Player.Services;
 using Serilog;
-using Serilog.Events;
 using Shared;
 using Shared.Clients;
 using Shared.Messages;
