@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Shared.Enums;
+﻿using Shared.Enums;
 
 namespace Shared.Payloads.GMPayloads
 {

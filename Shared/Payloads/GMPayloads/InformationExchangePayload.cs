@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Shared.Payloads.GMPayloads
+﻿namespace Shared.Payloads.GMPayloads
 {
     public class InformationExchangePayload : Payload
     {
@@ -10,7 +6,7 @@ namespace Shared.Payloads.GMPayloads
 
         public override string ToString()
         {
-           return $"Was the message send: {WasSent}";
+            return $"Was the message send: {WasSent}";
         }
     }
 }

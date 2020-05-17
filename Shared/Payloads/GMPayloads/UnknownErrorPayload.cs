@@ -10,7 +10,7 @@ namespace Shared.Payloads.GMPayloads
 
         public override string ToString()
         {
-          return $"HoldingPiece:{HoldingPiece}, Position:({Position.Y}, {Position.X})";
+            return $"HoldingPiece:{HoldingPiece}, Position:({Position.Y}, {Position.X})";
         }
     }
 }
