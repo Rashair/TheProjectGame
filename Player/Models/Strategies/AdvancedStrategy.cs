@@ -29,6 +29,7 @@ namespace Player.Models.Strategies
             this.previousPosition = (-1, -1);
             this.previousDistToPiece = int.MaxValue;
             this.previousDirection = Direction.FromCurrent;
+            this.state = DiscoverState.ShouldDiscover;
         }
 
         public Field[,] Board => player.Board;
@@ -120,13 +121,32 @@ namespace Player.Models.Strategies
             {
                 int goalAreaSize = player.GoalAreaSize;
                 var directions = GetDirectionsInRange(goalAreaSize, player.BoardSize.y - goalAreaSize);
-                if (CurrentDistToPiece >= previousDistToPiece || !directions.Contains(previousDirection))
-                {
-                    currentDirection = GetRandomDirection(directions);
-                }
-                else
+
+                int currDist = CurrentDistToPiece;
+                bool isPreviousDirPossible = directions.Contains(previousDirection);
+                if (currDist < previousDistToPiece && isPreviousDirPossible)
                 {
                     currentDirection = previousDirection;
+                }
+                else if (!isPreviousDirPossible)
+                {
+                    var (right, left) = previousDirection.GetPerpendicularDirections();
+                    if (directions.Contains(right))
+                    {
+                        currentDirection = right;
+                    }
+                    else
+                    {
+                        currentDirection = left;
+                    }
+                }
+                else //// if (currDist >= previousDistToPiece)
+                {
+                    currentDirection = previousDirection.GetOppositeDirection();
+                    if (currDist == previousDistToPiece)
+                    {
+                        state = DiscoverState.ShouldDiscover;
+                    }
                 }
             }
 

@@ -82,5 +82,33 @@ namespace Shared.Enums
                     return Direction.FromCurrent;
             }
         }
+
+        public static (Direction right, Direction left) GetPerpendicularDirections(this Direction dir)
+        {
+            switch (dir)
+            {
+                case Direction.NW:
+                    return (Direction.NE, Direction.SW);
+                case Direction.N:
+                    return (Direction.E, Direction.W);
+                case Direction.NE:
+                    return (Direction.SE, Direction.NW);
+                case Direction.W:
+                    return (Direction.N, Direction.S);
+                case Direction.FromCurrent:
+                    return (Direction.FromCurrent, Direction.FromCurrent);
+                case Direction.E:
+                    return (Direction.S, Direction.N);
+                case Direction.SW:
+                    return (Direction.NW, Direction.SE);
+                case Direction.S:
+                    return (Direction.W, Direction.E);
+                case Direction.SE:
+                    return (Direction.SW, Direction.NE);
+
+                default:
+                    return (Direction.FromCurrent, Direction.FromCurrent);
+            }
+        }
     }
 }
