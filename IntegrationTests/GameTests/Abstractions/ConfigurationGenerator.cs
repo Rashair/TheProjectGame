@@ -32,7 +32,7 @@ namespace IntegrationTests.GameTests.Abstractions
                 "Verbose=false"
             };
 
-            var redArgs = CreatePlayerConfig(Team.Red, playerPort, StrategyEnum.SimpleStrategy);
+            var redArgs = CreatePlayerConfig(Team.Red, playerPort, StrategyEnum.AdvancedStrategy);
             var blueArgs = CreatePlayerConfig(Team.Blue, playerPort, StrategyEnum.AdvancedStrategy);
 
             return (csArgs, gmArgs, redArgs, blueArgs);

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Player.Models.Strategies.Utils;
 using Shared.Enums;
-using Shared.Models;
 
 namespace Player.Models.Strategies
 {
@@ -17,6 +18,8 @@ namespace Player.Models.Strategies
         private (int y, int x) previousPosition;
         private int previousDistToPiece;
         private Direction previousDirection;
+
+        private DiscoverState state;
 
         public AdvancedStrategy(Player player)
         {
@@ -45,14 +48,51 @@ namespace Player.Models.Strategies
 
         public Task DoesNotHavePieceDecision(CancellationToken cancellationToken)
         {
+            (int y, int x) = player.Position;
             if (IsInGoalArea(player.Position.y))
             {
+                state = DiscoverState.ShouldDiscover;
                 return DoesNotHavePieceInGoalAreaDecision(cancellationToken);
+            }
+
+            Task decision;
+            int distToPiece = player.Board[y, x].DistToPiece;
+            if (distToPiece == 0)
+            {
+                decision = player.Pick(cancellationToken);
+                state = DiscoverState.NoAction;
+            }
+            else if (state == DiscoverState.ShouldDiscover)
+            {
+                decision = player.Discover(cancellationToken);
+                state = DiscoverState.Discovered;
+            }
+            else if (state == DiscoverState.Discovered)
+            {
+                int goalAreaSize = player.GoalAreaSize;
+                var directions = GetDirectionsInRange(goalAreaSize, player.BoardSize.y - goalAreaSize);
+                var minDirection = directions.Aggregate((d1, d2) =>
+                {
+                    (int y1, int x1) = d1.GetCoordinates(player.Position);
+                    (int y2, int x2) = d2.GetCoordinates(player.Position);
+
+                    return player.Board[y1, x1].DistToPiece < player.Board[y2, x2].DistToPiece ? d1 : d2;
+                });
+
+                previousDirection = minDirection;
+                previousPosition = player.Position;
+
+                decision = player.Move(minDirection, cancellationToken);
+                state = DiscoverState.NoAction;
             }
             else
             {
-                return DoesNotHavePieceInTaskAreaDecision(cancellationToken);
+                decision = DoesNotHavePieceInTaskAreaDecision(cancellationToken);
             }
+
+            previousDistToPiece = distToPiece;
+
+            return decision;
         }
 
         public Task DoesNotHavePieceInGoalAreaDecision(CancellationToken cancellationToken)
