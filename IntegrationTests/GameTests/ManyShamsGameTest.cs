@@ -12,13 +12,13 @@ namespace IntegrationTests.GameTests
             {
                 CsIP = "127.0.0.1",
                 CsPort = 5002,
+                MovePenalty = 200,
                 AskPenalty = 1000,
                 PutPenalty = 300,
-                CheckForShamPenalty = 300,
-                MovePenalty = 300,
-                DestroyPenalty = 100,
+                CheckPenalty = 300,
+                DestroyPenalty = 50,
                 PickupPenalty = 100,
-                DiscoveryPenalty = 1500,
+                DiscoverPenalty = 1200,
                 ResponsePenalty = 600,
                 PrematureRequestPenalty = 1000,
                 Height = 12,
@@ -26,12 +26,12 @@ namespace IntegrationTests.GameTests
                 GoalAreaHeight = 3,
                 NumberOfGoals = 6,
                 NumberOfPiecesOnBoard = 12,
-                NumberOfPlayersPerTeam = 4,
+                NumberOfPlayersPerTeam = 5,
                 ShamPieceProbability = 0.75f,
             };
 
             TestConf.MinimumRunTimeSec = 60;
-            TestConf.CheckInterval = 6000;
+            TestConf.CheckInterval = 5000;
         }
 
         [Fact(Timeout = 15 * 60 * 1000)]
