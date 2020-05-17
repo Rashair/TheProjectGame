@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Shared.Enums;
+using Shared.Models;
 
 namespace Player.Models.Strategies
 {
@@ -13,6 +14,7 @@ namespace Player.Models.Strategies
         private readonly Random random = new Random();
         private readonly Player player;
 
+        private (int y, int x) previousPosition;
         private int previousDistToPiece;
         private Direction previousDirection;
 
@@ -21,40 +23,89 @@ namespace Player.Models.Strategies
             this.player = player;
 
             this.random = new Random();
+            this.previousPosition = (-1, -1);
             this.previousDistToPiece = int.MaxValue;
             this.previousDirection = Direction.FromCurrent;
         }
 
         public Task MakeDecision(CancellationToken cancellationToken)
         {
+            Task decision;
             if (!player.HasPiece)
             {
-                return DoesNotHavePieceDecision(cancellationToken);
+                decision = DoesNotHavePieceDecision(cancellationToken);
             }
             else
             {
-                return HasPieceDecision(cancellationToken);
+                decision = HasPieceDecision(cancellationToken);
             }
+
+            return decision;
         }
 
         public Task DoesNotHavePieceDecision(CancellationToken cancellationToken)
         {
+            if (IsInGoalArea(player.Position.y))
+            {
+                return DoesNotHavePieceInGoalAreaDecision(cancellationToken);
+            }
+            else
+            {
+                return DoesNotHavePieceInTaskAreaDecision(cancellationToken);
+            }
+        }
+
+        public Task DoesNotHavePieceInGoalAreaDecision(CancellationToken cancellationToken)
+        {
+            Direction currentDirection;
+            if (previousDistToPiece == 0 || previousPosition != player.Position)
+            {
+                currentDirection = player.GoalAreaDirection.GetOppositeDirection();
+            }
+            else
+            {
+                var directions = GetDirectionsInRange(int.MaxValue, int.MinValue);
+                currentDirection = GetRandomDirection(directions);
+            }
+
+            previousDirection = currentDirection;
+            previousPosition = player.Position;
+
+            return player.Move(currentDirection, cancellationToken);
+        }
+
+        public Task DoesNotHavePieceInTaskAreaDecision(CancellationToken cancellationToken)
+        {
             (int y, int x) = player.Position;
             int distToPiece = player.Board[y, x].DistToPiece;
+
+            Task decision;
             if (distToPiece == 0)
             {
-                return player.Pick(cancellationToken);
+                decision = player.Pick(cancellationToken);
             }
-
-            int goalAreaSize = player.GoalAreaSize;
-            var directions = GetDirectionsInRange(goalAreaSize, player.BoardSize.y - goalAreaSize);
-            if (distToPiece >= previousDistToPiece || !directions.Contains(previousDirection))
+            else
             {
-                previousDirection = GetRandomDirection(directions);
-            }
-            previousDistToPiece = distToPiece;
+                Direction currentDirection;
+                int goalAreaSize = player.GoalAreaSize;
+                var directions = GetDirectionsInRange(goalAreaSize, player.BoardSize.y - goalAreaSize);
+                if (distToPiece >= previousDistToPiece || !directions.Contains(previousDirection))
+                {
+                    currentDirection = GetRandomDirection(directions);
+                }
+                else
+                {
+                    currentDirection = previousDirection;
+                }
 
-            return player.Move(previousDirection, cancellationToken);
+                previousDirection = currentDirection;
+                decision = player.Move(currentDirection, cancellationToken);
+            }
+
+            previousDistToPiece = distToPiece;
+            previousPosition = player.Position;
+
+            return decision;
         }
 
         public Task HasPieceDecision(CancellationToken cancellationToken)
