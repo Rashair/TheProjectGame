@@ -7,7 +7,7 @@ namespace GameMaster.Models.Pieces
     {
         public abstract bool CheckForSham();
 
-        public (PutEvent putEvent, bool removed) Put(AbstractField field)
+        public (PutEvent putEvent, bool wasPieceRemoved) Put(AbstractField field)
         {
             return field.Put(this);
         }

@@ -23,7 +23,7 @@ namespace GameMaster.Models
     public class GM
     {
         private readonly ILogger log;
-        private ILogger logger;
+        private readonly ILogger logger;
         private readonly IApplicationLifetime lifetime;
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
@@ -96,10 +96,10 @@ namespace GameMaster.Models
                 {
                     payload = new StartGamePayload
                     {
-                        AlliesIds = teamBlueIds,
+                        AlliesIDs = teamBlueIds,
                         LeaderId = teamBlueIds.First(),
-                        EnemiesIds = teamRedIds,
-                        TeamId = Team.Blue,
+                        EnemiesIDs = teamRedIds,
+                        TeamID = Team.Blue,
                         NumberOfPlayers = new NumberOfPlayers
                         {
                             Allies = teamBlueIds.Length,
@@ -111,10 +111,10 @@ namespace GameMaster.Models
                 {
                     payload = new StartGamePayload
                     {
-                        AlliesIds = teamRedIds,
+                        AlliesIDs = teamRedIds,
                         LeaderId = teamRedIds.First(),
-                        EnemiesIds = teamBlueIds,
-                        TeamId = Team.Red,
+                        EnemiesIDs = teamBlueIds,
+                        TeamID = Team.Red,
                         NumberOfPlayers = new NumberOfPlayers
                         {
                             Allies = teamBlueIds.Length,
@@ -360,8 +360,8 @@ namespace GameMaster.Models
                     await player.PickAsync(cancellationToken);
                     break;
                 case PlayerMessageId.Put:
-                    (bool? point, bool removed) = await player.PutAsync(cancellationToken);
-                    if (point == true)
+                    (PutEvent putEvent, bool wasPieceRemoved) = await player.PutAsync(cancellationToken);
+                    if (putEvent == PutEvent.NormalOnGoalField)
                     {
                         int y = player.GetPosition()[0];
                         string teamStr = "";
@@ -383,7 +383,8 @@ namespace GameMaster.Models
                             $"    by {player.Team}");
                         logger.Information($"RED: {redTeamPoints} | BLUE: {blueTeamPoints}");
                     }
-                    if (removed)
+
+                    if (wasPieceRemoved)
                     {
                         GeneratePiece();
                     }
@@ -492,7 +493,7 @@ namespace GameMaster.Models
             int xCoord = rand.Next(0, conf.Width);
 
             return (yCoord, xCoord);
-        }  
+        }
 
         internal async Task EndGame(CancellationToken cancellationToken)
         {

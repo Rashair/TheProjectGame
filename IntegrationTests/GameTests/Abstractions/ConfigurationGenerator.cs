@@ -23,7 +23,7 @@ namespace IntegrationTests.GameTests.Abstractions
                 $"GMPort={csPort}",
                 $"PlayerPort={playerPort}",
                 $"ListenerIP={csIP}",
-                "Verbose=false"
+                "Verbose=true"
             };
             var gmArgs = new string[]
             {

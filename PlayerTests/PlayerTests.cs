@@ -33,7 +33,7 @@ namespace Player.Tests
 
         private PlayerConfiguration GenerateSampleConfiguration()
         {
-            return new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = "red", Strategy = 3 };
+            return new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = Team.Red, Strategy = 3 };
         }
 
         [Fact]
@@ -72,9 +72,9 @@ namespace Player.Tests
         {
             BegForInfoForwardedPayload payloadBeg = new BegForInfoForwardedPayload()
             {
-                AskingId = 2,
+                AskingID = 2,
                 Leader = false,
-                TeamId = Team.Red,
+                TeamID = Team.Red,
             };
             GMMessage messageBeg = new GMMessage(GMMessageId.BegForInfoForwarded, agentID, payloadBeg);
             GMMessage messageStart = CreateStartMessage();
@@ -190,10 +190,10 @@ namespace Player.Tests
             StartGamePayload startGamePayload = new StartGamePayload
             {
                 AgentID = agentID,
-                AlliesIds = alliesId,
+                AlliesIDs = alliesId,
                 LeaderId = leaderId,
-                EnemiesIds = enemiesId,
-                TeamId = teamId,
+                EnemiesIDs = enemiesId,
+                TeamID = teamId,
                 BoardSize = boardSize,
                 GoalAreaSize = goalAreaSize,
                 NumberOfPlayers = numberOfPlayers,
@@ -240,7 +240,7 @@ namespace Player.Tests
             Assert.Equal(expectedisLeader, isLeaderResult);
             Assert.Equal(teamId, teamResult);
             Assert.Equal(expectedBoardSize, boardSizeResult);
-            Assert.True(penalties.AreAllPropertiesTheSame(penaltiesResult), 
+            Assert.True(penalties.AreAllPropertiesTheSame(penaltiesResult),
                 $"Penalties should be the same,\n expected: {penalties},\n actual {penaltiesResult}");
             Assert.Equal(expectedPosition, positionResult);
             Assert.Equal(enemiesId, enemiesResult);
@@ -364,9 +364,9 @@ namespace Player.Tests
 
             BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
             {
-                AskingId = 2,
+                AskingID = 2,
                 Leader = true,
-                TeamId = Team.Red,
+                TeamID = Team.Red,
             };
             GMMessage beg4Info = new GMMessage(GMMessageId.BegForInfoForwarded, 1, payload);
 
@@ -418,7 +418,7 @@ namespace Player.Tests
 
             PutAnswerPayload payload = new PutAnswerPayload()
             {
-                WasGoal = true,
+                PutEvent = PutEvent.NormalOnGoalField,
             };
             GMMessage putAnswer = new GMMessage(GMMessageId.PutAnswer, agentID, payload);
 
@@ -450,7 +450,7 @@ namespace Player.Tests
 
             PutAnswerPayload payload = new PutAnswerPayload()
             {
-                WasGoal = true,
+                PutEvent = PutEvent.NormalOnGoalField,
             };
             GMMessage putAnswer = new GMMessage(GMMessageId.PutAnswer, agentID, payload);
 
@@ -572,10 +572,10 @@ namespace Player.Tests
             StartGamePayload payloadStart = new StartGamePayload
             {
                 AgentID = 1,
-                AlliesIds = new int[1] { 2 },
+                AlliesIDs = new int[1] { 2 },
                 LeaderId = 1,
-                EnemiesIds = new int[2] { 3, 4 },
-                TeamId = Team.Red,
+                EnemiesIDs = new int[2] { 3, 4 },
+                TeamID = Team.Red,
                 BoardSize = playerBoardSize,
                 GoalAreaSize = 1,
                 NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
@@ -684,9 +684,9 @@ namespace Player.Tests
 
             BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
             {
-                AskingId = 2,
+                AskingID = 2,
                 Leader = false,
-                TeamId = Team.Red,
+                TeamID = Team.Red,
             };
             GMMessage beg4Info = new GMMessage(GMMessageId.BegForInfoForwarded, agentID, payload);
             inputBuffer.Post(beg4Info);

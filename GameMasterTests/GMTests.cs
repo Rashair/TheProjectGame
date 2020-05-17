@@ -27,7 +27,7 @@ namespace GameMaster.Tests
     public class GMTests
     {
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
-        private Stack<GMMessage> sendedMessages = new Stack<GMMessage>();
+        private readonly Stack<GMMessage> sendedMessages = new Stack<GMMessage>();
 
         [Theory]
         [InlineData(1)]
@@ -650,7 +650,7 @@ namespace GameMaster.Tests
 
             GiveInfoPayload giveInfoPayload = new GiveInfoPayload()
             {
-                RespondToId = player1ID,
+                RespondToID = player1ID,
                 Distances = new int[,] { { 1, 1 } },
                 RedTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },
                 BlueTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },

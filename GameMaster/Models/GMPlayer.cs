@@ -126,35 +126,19 @@ namespace GameMaster.Models
         }
 
         /// <returns>
-        /// Task<(bool? goal, bool removed)>
+        /// Task<(PutEvent putEvent, bool wasPieceRemoved)>
         /// </returns>
-        public async Task<(bool? goal, bool removed)> PutAsync(CancellationToken cancellationToken)
+        public async Task<(PutEvent putEvent, bool wasPieceRemoved)> PutAsync(CancellationToken cancellationToken)
         {
             bool isUnlocked = await TryGetLockAsync(cancellationToken);
-            bool removed = false;
-            bool? goal = null;
+            (PutEvent putEvent, bool wasPieceRemoved) = (PutEvent.Unknown, false);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 GMMessage message;
                 if (Holding != null)
                 {
-                    PutEvent putEvent;
-                    (putEvent, removed) = Holding.Put(Position);
-
-                    if (putEvent == PutEvent.NormalOnGoalField)
-                    {
-                        goal = true;
-                    }
-                    else if (putEvent == PutEvent.NormalOnNonGoalField)
-                    {
-                        goal = false;
-                    }
-                    else
-                    {
-                        goal = null;
-                    }
-
-                    message = PutAnswerMessage(goal, putEvent);
+                    (putEvent, wasPieceRemoved) = Holding.Put(Position);
+                    message = PutAnswerMessage(putEvent);
                     Holding = null;
                 }
                 else
@@ -165,7 +149,7 @@ namespace GameMaster.Models
                 await SendAndLockAsync(message, conf.PutPenalty, cancellationToken);
             }
 
-            return (goal, removed);
+            return (putEvent, wasPieceRemoved);
         }
 
         public async Task<(int, bool?)> ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken, HashSet<(int recipient, int sender)> legalKnowledgeReplies)
@@ -177,12 +161,12 @@ namespace GameMaster.Models
             }
 
             GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
-            if (legalKnowledgeReplies.Contains((playerMessage.AgentID, payload.RespondToId)) && isUnlocked)
+            if (legalKnowledgeReplies.Contains((playerMessage.AgentID, payload.RespondToID)) && isUnlocked)
             {
-                legalKnowledgeReplies.Remove((playerMessage.AgentID, payload.RespondToId));
+                legalKnowledgeReplies.Remove((playerMessage.AgentID, payload.RespondToID));
                 GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload()
                 {
-                    AnsweringId = playerMessage.AgentID,
+                    RespondingID = playerMessage.AgentID,
                     Distances = payload.Distances,
                     RedTeamGoalAreaInformations = payload.RedTeamGoalAreaInformations,
                     BlueTeamGoalAreaInformations = payload.BlueTeamGoalAreaInformations,
@@ -190,7 +174,7 @@ namespace GameMaster.Models
                 GMMessage answer = new GMMessage()
                 {
                     MessageID = GMMessageId.GiveInfoForwarded,
-                    AgentID = payload.RespondToId,
+                    AgentID = payload.RespondToID,
                     Payload = answerPayload.Serialize(),
                 };
 
@@ -215,9 +199,9 @@ namespace GameMaster.Models
             {
                 BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
                 {
-                    AskingId = playerMessage.AgentID,
+                    AskingID = playerMessage.AgentID,
                     Leader = players[playerMessage.AgentID].IsLeader,
-                    TeamId = players[playerMessage.AgentID].Team,
+                    TeamID = players[playerMessage.AgentID].Team,
                 };
                 GMMessage gmMessage = new GMMessage()
                 {
@@ -394,11 +378,10 @@ namespace GameMaster.Models
             return new GMMessage(GMMessageId.PutError, id, payload);
         }
 
-        private GMMessage PutAnswerMessage(bool? wasGoal, PutEvent putEvent)
+        private GMMessage PutAnswerMessage(PutEvent putEvent)
         {
             PutAnswerPayload payload = new PutAnswerPayload()
             {
-                WasGoal = wasGoal,
                 PutEvent = putEvent,
             };
 

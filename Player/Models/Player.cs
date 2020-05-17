@@ -201,12 +201,12 @@ namespace Player.Models
             GiveInfoPayload response = new GiveInfoPayload();
             if (toLeader)
             {
-                response.RespondToId = LeaderId;
+                response.RespondToID = LeaderId;
             }
             else
             {
                 // TODO: different algorithm - whole list is shifted, maybe from end?
-                response.RespondToId = WaitingPlayers[0];
+                response.RespondToID = WaitingPlayers[0];
                 WaitingPlayers.RemoveAt(0);
             }
 
@@ -326,7 +326,7 @@ namespace Player.Models
                 case GMMessageId.StartGame:
                     StartGamePayload payloadStart = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
                     id = payloadStart.AgentID;
-                    TeamMatesIds = payloadStart.AlliesIds;
+                    TeamMatesIds = payloadStart.AlliesIDs;
                     if (id == payloadStart.LeaderId)
                     {
                         IsLeader = true;
@@ -336,7 +336,7 @@ namespace Player.Models
                         IsLeader = false;
                     }
                     LeaderId = payloadStart.LeaderId;
-                    Team = payloadStart.TeamId;
+                    Team = payloadStart.TeamID;
                     BoardSize = (payloadStart.BoardSize.Y, payloadStart.BoardSize.X);
                     Board = new Field[payloadStart.BoardSize.Y, payloadStart.BoardSize.X];
                     for (int i = 0; i < payloadStart.BoardSize.Y; i++)
@@ -352,7 +352,8 @@ namespace Player.Models
                     }
                     PenaltiesTimes = payloadStart.Penalties;
                     Position = (payloadStart.Position.Y, payloadStart.Position.X);
-                    EnemiesIds = payloadStart.EnemiesIds;
+                    EnemiesIds = payloadStart.EnemiesIDs;
+
                     GoalAreaSize = payloadStart.GoalAreaSize;
                     NumberOfPlayers = payloadStart.NumberOfPlayers;
                     NumberOfPieces = payloadStart.NumberOfPieces;
@@ -362,9 +363,9 @@ namespace Player.Models
                     break;
                 case GMMessageId.BegForInfoForwarded:
                     BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
-                    if (Team == payloadBeg.TeamId)
+                    if (Team == payloadBeg.TeamID)
                     {
-                        await RequestsResponse(cancellationToken, payloadBeg.AskingId, payloadBeg.Leader);
+                        await RequestsResponse(cancellationToken, payloadBeg.AskingID, payloadBeg.Leader);
                     }
                     break;
                 case GMMessageId.JoinTheGameAnswer:
@@ -394,18 +395,14 @@ namespace Player.Models
                     IsHeldPieceSham = null;
 
                     var payload = JsonConvert.DeserializeObject<PutAnswerPayload>(message.Payload);
-                    if (payload.WasGoal.HasValue)
+                    if (payload.PutEvent == PutEvent.NormalOnGoalField)
                     {
-                        bool goal = payload.WasGoal.Value;
-                        if (goal)
-                        {
-                            Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredGoal;
-                            logger.Information($"GOT GOAL at ({Position.y}, {Position.x}) !!!");
-                        }
-                        else
-                        {
-                            Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredNotGoal;
-                        }
+                        Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredGoal;
+                        logger.Information($"GOT GOAL at ({Position.y}, {Position.x}) !!!");
+                    }
+                    else if (payload.PutEvent == PutEvent.NormalOnNonGoalField)
+                    {
+                        Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredNotGoal;
                     }
 
                     penaltyTime = PenaltiesTimes.PutPiece;

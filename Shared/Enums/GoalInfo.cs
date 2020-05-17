@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Runtime.Serialization;
+
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace Shared.Enums
@@ -7,7 +9,9 @@ namespace Shared.Enums
     public enum GoalInfo
     {
         IDK,
+        [EnumMember(Value = "N")]
         DiscoveredNotGoal,
+        [EnumMember(Value = "G")]
         DiscoveredGoal,
     }
 }
