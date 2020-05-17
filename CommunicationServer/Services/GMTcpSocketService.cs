@@ -48,14 +48,13 @@ namespace CommunicationServer.Services
         {
             await client.CloseAsync(cancellationToken);
             lifetime.StopApplication();
-            await Task.CompletedTask;
         }
 
-        public override async Task OnExceptionAsync(TcpSocketClient<GMMessage, PlayerMessage> client, Exception e,
+        public override Task OnExceptionAsync(TcpSocketClient<GMMessage, PlayerMessage> client, Exception e,
             CancellationToken cancellationToken)
         {
             logger.Warning($"IsOpen: {client.IsOpen}");
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
