@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,34 +33,59 @@ namespace Player.Models.Strategies
             this.state = DiscoverState.ShouldDiscover;
         }
 
-        public Field[,] Board => player.Board;
+        // Contstant
+        private Field[,] board;
+        private (int y, int x) boardSize;
+        private int goalAreaSize;
+        private (int y1, int y2) goalAreaRange;
 
-        public int CurrentDistToPiece => player.Board[player.Position.y, player.Position.x].DistToPiece;
+        // Changing
+        private CancellationToken cancellationToken;
+        private int y;
+        private int x;
+        private int distToPiece;
+        private bool isInGoalArea;
+
+        private void CacheCurrentState(CancellationToken token)
+        {
+            if (board == null)
+            {
+                board = player.Board;
+                boardSize = player.BoardSize;
+                goalAreaSize = player.GoalAreaSize;
+                goalAreaRange = player.GoalAreaRange;
+            }
+
+            cancellationToken = token;
+            (y, x) = player.Position;
+            distToPiece = board[y, x].DistToPiece;
+            isInGoalArea = y >= goalAreaRange.y1 && y < goalAreaRange.y2;
+        }
 
         public Task MakeDecision(CancellationToken cancellationToken)
         {
+            CacheCurrentState(cancellationToken);
+
             Task decision;
             if (!player.HasPiece)
             {
-                decision = DoesNotHavePieceDecision(cancellationToken);
+                decision = DoesNotHavePieceDecision();
             }
             else
             {
-                decision = HasPieceDecision(cancellationToken);
+                decision = HasPieceDecision();
             }
 
             return decision;
         }
 
-        public Task DoesNotHavePieceDecision(CancellationToken cancellationToken)
+        public Task DoesNotHavePieceDecision()
         {
             Task decision;
-            (int y, int x) = player.Position;
-            int distToPiece = player.Board[y, x].DistToPiece;
-            if (IsInGoalArea())
+            if (isInGoalArea)
             {
                 state = DiscoverState.ShouldDiscover;
-                decision = DoesNotHavePieceInGoalAreaMoveDecision(cancellationToken);
+                decision = DoesNotHavePieceInGoalAreaDecision();
             }
             else if (distToPiece == 0)
             {
@@ -73,16 +99,16 @@ namespace Player.Models.Strategies
             }
             else
             {
-                decision = DoesNotHavePieceInTaskAreaMoveDecision(cancellationToken);
+                decision = DoesNotHavePieceInTaskAreaMoveDecision();
             }
 
-            previousPosition = player.Position;
+            previousPosition = (y, x);
             previousDistToPiece = distToPiece;
 
             return decision;
         }
 
-        private Task DoesNotHavePieceInGoalAreaMoveDecision(CancellationToken cancellationToken)
+        private Task DoesNotHavePieceInGoalAreaDecision()
         {
             Direction currentDirection;
             if (previousDistToPiece == 0 || previousPosition != player.Position)
@@ -100,35 +126,36 @@ namespace Player.Models.Strategies
             return player.Move(currentDirection, cancellationToken);
         }
 
-        private Task DoesNotHavePieceInTaskAreaMoveDecision(CancellationToken cancellationToken)
+        private Task DoesNotHavePieceInTaskAreaDecision()
+        {
+            return Task.CompletedTask;
+        }
+
+        private Task DoesNotHavePieceInTaskAreaMoveDecision()
         {
             Direction currentDirection;
             if (state == DiscoverState.Discovered)
             {
-                int goalAreaSize = player.GoalAreaSize;
-                var directions = GetDirectionsInRange(goalAreaSize, player.BoardSize.y - goalAreaSize);
+                var directions = GetDirectionsInRange(goalAreaSize, boardSize.y - goalAreaSize);
                 currentDirection = directions.Aggregate((d1, d2) =>
                 {
-                    (int y1, int x1) = d1.GetCoordinates(player.Position);
-                    (int y2, int x2) = d2.GetCoordinates(player.Position);
+                    (int y1, int x1) = d1.GetCoordinates((y, x));
+                    (int y2, int x2) = d2.GetCoordinates((y, x));
 
-                    return player.Board[y1, x1].DistToPiece < player.Board[y2, x2].DistToPiece ? d1 : d2;
+                    return board[y1, x1].DistToPiece < board[y2, x2].DistToPiece ? d1 : d2;
                 });
 
                 state = DiscoverState.NoAction;
             }
             else
             {
-                int goalAreaSize = player.GoalAreaSize;
-                var directions = GetDirectionsInRange(goalAreaSize, player.BoardSize.y - goalAreaSize);
-
-                int currDist = CurrentDistToPiece;
+                var directions = GetDirectionsInRange(goalAreaSize, boardSize.y - goalAreaSize);
                 bool isPreviousDirPossible = directions.Contains(previousDirection);
-                if (currDist < previousDistToPiece && isPreviousDirPossible)
+                if (distToPiece < previousDistToPiece && isPreviousDirPossible)
                 {
                     currentDirection = previousDirection;
                 }
-                else if (!isPreviousDirPossible || currDist == previousDistToPiece)
+                else if (!isPreviousDirPossible || distToPiece == previousDistToPiece)
                 {
                     var (right, left) = previousDirection.GetPerpendicularDirections();
                     if (directions.Contains(right))
@@ -151,7 +178,7 @@ namespace Player.Models.Strategies
             return player.Move(currentDirection, cancellationToken);
         }
 
-        private Task HasPieceDecision(CancellationToken cancellationToken)
+        private Task HasPieceDecision()
         {
             if (player.IsHeldPieceSham == null)
             {
@@ -161,49 +188,51 @@ namespace Player.Models.Strategies
             {
                 return player.DestroyPiece(cancellationToken);
             }
-            else if (IsInGoalArea())
+            else if (isInGoalArea)
             {
-                return HasPieceInGoalAreaDecision(cancellationToken);
+                return HasPieceInGoalAreaDecision();
             }
             else
             {
-                return HasPieceNotInGoalAreaDecision(cancellationToken);
+                return HasPieceNotInGoalAreaDecision();
             }
         }
 
-        private Task HasPieceInGoalAreaDecision(CancellationToken cancellationToken)
+        private Task HasPieceInGoalAreaDecision()
         {
-            (int y, int x) = player.Position;
-            if (player.Board[y, x].GoalInfo == GoalInfo.IDK)
+            if (board[y, x].GoalInfo == GoalInfo.IDK)
             {
                 return player.Put(cancellationToken);
             }
 
-            var directions = GetDirectionsInRange(player.GoalAreaRange.y1, player.GoalAreaRange.y2);
+            var directions = GetDirectionsInRange(goalAreaRange.y1, goalAreaRange.y2);
 
             return player.Move(GetRandomDirection(directions), cancellationToken);
         }
 
-        private Task HasPieceNotInGoalAreaDecision(CancellationToken cancellationToken)
+        private Task HasPieceNotInGoalAreaDecision()
         {
             int goalAreaDirectionProbability = 80;
+            Direction moveDirection;
             if (random.Next(101) <= goalAreaDirectionProbability)
             {
-                return player.Move(player.GoalAreaDirection, cancellationToken);
+                moveDirection = player.GoalAreaDirection;
+            }
+            else
+            {
+                var directions = GetDirectionsInRange(int.MaxValue, int.MinValue);
+                moveDirection = GetRandomDirection(directions);
             }
 
-            var directions = GetDirectionsInRange(int.MaxValue, int.MinValue);
-
-            return player.Move(GetRandomDirection(directions), cancellationToken);
+            return player.Move(moveDirection, cancellationToken);
         }
 
         private List<Direction> GetDirectionsInRange(int y1 = int.MinValue, int y2 = int.MaxValue)
         {
             List<Direction> directions = new List<Direction>(NumberOfPossibleDirections);
-            (int y, int x) = player.Position;
             if (x > 0)
                 directions.Add(Direction.W);
-            if (x < player.BoardSize.x - 1)
+            if (x < boardSize.x - 1)
                 directions.Add(Direction.E);
 
             if (y > y1)
@@ -212,13 +241,6 @@ namespace Player.Models.Strategies
                 directions.Add(Direction.N);
 
             return directions;
-        }
-
-        private bool IsInGoalArea()
-        {
-            int y = player.Position.y;
-
-            return y >= player.GoalAreaRange.y1 && y < player.GoalAreaRange.y2;
         }
 
         private Direction GetRandomDirection(List<Direction> directions)
