@@ -42,7 +42,7 @@ namespace Shared.Tests
                     Payload = new EmptyAnswerPayload(),
                 };
 
-                var expectedJsonString = "{\"MessageID\":" + msg.Key + ",\"AgentID\":0,\"Payload\":\"{}\"}";
+                var expectedJsonString = "{\"messageID\":" + msg.Key + ",\"agentID\":0,\"payload\":\"{}\"}";
                 var serializedObject = JsonConvert.SerializeObject(obj);
 
                 // Assert
