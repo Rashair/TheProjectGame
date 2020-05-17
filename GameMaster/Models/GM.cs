@@ -154,7 +154,7 @@ namespace GameMaster.Models
                 {
                     MessageID = GMMessageId.StartGame,
                     AgentID = p.Key,
-                    Payload = payload.Serialize(),
+                    Payload = payload,
                 };
                 logger.Verbose(MessageLogger.Sent(message));
                 sendMessagesTasks.Add(socketClient.SendAsync(message, cancellationToken));

@@ -55,7 +55,7 @@ namespace Player.Tests
             GMMessage messageStart = new GMMessage()
             {
                 MessageID = GMMessageId.StartGame,
-                Payload = payloadStart.Serialize(),
+                Payload = payloadStart,
             };
             queue.Post(messageStart);
             services.AddSingleton(queue);

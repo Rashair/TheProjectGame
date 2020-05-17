@@ -6,7 +6,7 @@ namespace Shared.Payloads
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public abstract class Payload
     {
-        public static implicit operator string(Payload p) => p.Serialize();
+        public static implicit operator string(Payload p) => p;
 
         public string Serialize()
         {

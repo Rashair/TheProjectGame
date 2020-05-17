@@ -113,7 +113,7 @@ namespace Player.Models
             PlayerMessage message = new PlayerMessage()
             {
                 MessageID = PlayerMessageId.JoinTheGame,
-                Payload = payload.Serialize(),
+                Payload = payload,
             };
             await Communicate(message, cancellationToken);
             logger.Information("Sent JoinTheGame message");
@@ -145,7 +145,7 @@ namespace Player.Models
             {
                 MessageID = PlayerMessageId.Move,
                 AgentID = id,
-                Payload = payload.Serialize(),
+                Payload = payload,
             };
             await Communicate(message, cancellationToken);
         }
@@ -157,7 +157,7 @@ namespace Player.Models
             {
                 MessageID = PlayerMessageId.Put,
                 AgentID = id,
-                Payload = payload.Serialize(),
+                Payload = payload,
             };
             await Communicate(message, cancellationToken);
         }
@@ -182,7 +182,7 @@ namespace Player.Models
                 AskedAgentID = TeamMatesIds[index],
             };
 
-            message.Payload = payload.Serialize();
+            message.Payload = payload;
 
             await Communicate(message, cancellationToken);
         }
@@ -230,7 +230,7 @@ namespace Player.Models
                     response.RedTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
                 }
             }
-            message.Payload = response.Serialize();
+            message.Payload = response;
             await Communicate(message, cancellationToken);
         }
 
@@ -253,7 +253,7 @@ namespace Player.Models
             {
                 MessageID = type,
                 AgentID = id,
-                Payload = payload.Serialize(),
+                Payload = payload,
             };
         }
 
@@ -465,7 +465,7 @@ namespace Player.Models
             {
                 MessageID = PlayerMessageId.PieceDestruction,
                 AgentID = id,
-                Payload = messagePickPayload.Serialize(),
+                Payload = messagePickPayload,
             };
             await Communicate(messagePick, cancellationToken);
         }

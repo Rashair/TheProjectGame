@@ -64,7 +64,7 @@ namespace GameMaster.Services
             {
                 AgentID = -1,
                 MessageID = PlayerMessageId.CSDisconnected,
-                Payload = new EmptyPayload().Serialize()
+                Payload = new EmptyPayload()
             };
             await queue.SendAsync(message, stoppingToken);
         }
