@@ -93,12 +93,7 @@ namespace Shared.Clients
                 }
                 else if (countRead != length)
                 {
-                    StringBuilder builder = buffer.Aggregate(new StringBuilder(), (build, b) =>
-                    {
-                        build.Append(b);
-                        return build;
-                    });
-                    logger.Warning($"Unexpected message: {builder} - wrong length provided.\n");
+                    logger.Warning($"Unexpected message: {Encoding.UTF8.GetString(buffer)} - wrong length provided.\n");
                 }
                 return (false, default);
             }
