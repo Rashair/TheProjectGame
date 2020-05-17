@@ -25,7 +25,7 @@ namespace IntegrationTests.GameTests
                 Width = 3,
                 GoalAreaHeight = 3,
                 NumberOfGoals = 6,
-                NumberOfPiecesOnBoard = 6,
+                NumberOfPiecesOnBoard = 5,
                 NumberOfPlayersPerTeam = 6,
                 ShamPieceProbability = 0.4f,
             };

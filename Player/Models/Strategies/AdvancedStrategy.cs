@@ -66,7 +66,7 @@ namespace Player.Models.Strategies
                 decision = player.Pick(cancellationToken);
                 state = DiscoverState.NoAction;
             }
-            else if (state == DiscoverState.ShouldDiscover)
+            else if (state == DiscoverState.ShouldDiscover) //// TODO: Trip around square when discoverCost > 8 * moveCost
             {
                 decision = player.Discover(cancellationToken);
                 state = DiscoverState.Discovered;
@@ -128,7 +128,7 @@ namespace Player.Models.Strategies
                 {
                     currentDirection = previousDirection;
                 }
-                else if (!isPreviousDirPossible)
+                else if (!isPreviousDirPossible || currDist == previousDistToPiece)
                 {
                     var (right, left) = previousDirection.GetPerpendicularDirections();
                     if (directions.Contains(right))
@@ -140,13 +140,9 @@ namespace Player.Models.Strategies
                         currentDirection = left;
                     }
                 }
-                else //// if (currDist >= previousDistToPiece)
+                else //// if (currDist > previousDistToPiece)
                 {
                     currentDirection = previousDirection.GetOppositeDirection();
-                    if (currDist == previousDistToPiece)
-                    {
-                        state = DiscoverState.ShouldDiscover;
-                    }
                 }
             }
 
