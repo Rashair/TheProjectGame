@@ -39,7 +39,7 @@ namespace Player.Models
             this.queue = queue;
             this.client = client;
             this.logger = log.ForContext<Player>();
-            this.Team = conf.TeamId;
+            this.Team = conf.TeamID;
             this.Position = (-1, -1);
         }
 
@@ -96,7 +96,7 @@ namespace Player.Models
             if (isWorking)
             {
                 logger.Information("Player starting game\n" +
-                    $"Team: {conf.TeamId}, strategy: {conf.Strategy}".PadLeft(12));
+                    $"Team: {conf.TeamID}, strategy: {conf.Strategy}".PadLeft(12));
 
                 await Work(cancellationToken);
             }
@@ -108,7 +108,7 @@ namespace Player.Models
         {
             JoinGamePayload payload = new JoinGamePayload()
             {
-                TeamId = Team,
+                TeamID = Team,
             };
             PlayerMessage message = new PlayerMessage()
             {
@@ -327,7 +327,7 @@ namespace Player.Models
                     StartGamePayload payloadStart = message.DeserializePayload<StartGamePayload>();
                     id = payloadStart.AgentID;
                     TeamMatesIds = payloadStart.AlliesIDs;
-                    if (id == payloadStart.LeaderId)
+                    if (id == payloadStart.LeaderID)
                     {
                         IsLeader = true;
                     }
@@ -335,7 +335,7 @@ namespace Player.Models
                     {
                         IsLeader = false;
                     }
-                    LeaderId = payloadStart.LeaderId;
+                    LeaderId = payloadStart.LeaderID;
                     Team = payloadStart.TeamID;
                     BoardSize = (payloadStart.BoardSize.Y, payloadStart.BoardSize.X);
                     Board = new Field[payloadStart.BoardSize.Y, payloadStart.BoardSize.X];

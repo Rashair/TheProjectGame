@@ -40,7 +40,7 @@ namespace Player.Tests
             {
                 AgentID = 1,
                 AlliesIDs = new int[2] { 1, 2 },
-                LeaderId = 1,
+                LeaderID = 1,
                 EnemiesIDs = new int[2] { 3, 4 },
                 TeamID = Team.Red,
                 BoardSize = new BoardSize { X = 3, Y = 3 },

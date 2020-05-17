@@ -97,7 +97,7 @@ namespace GameMaster.Models
                     payload = new StartGamePayload
                     {
                         AlliesIDs = teamBlueIds,
-                        LeaderId = teamBlueIds.First(),
+                        LeaderID = teamBlueIds.First(),
                         EnemiesIDs = teamRedIds,
                         TeamID = Team.Blue,
                         NumberOfPlayers = new NumberOfPlayers
@@ -112,7 +112,7 @@ namespace GameMaster.Models
                     payload = new StartGamePayload
                     {
                         AlliesIDs = teamRedIds,
-                        LeaderId = teamRedIds.First(),
+                        LeaderID = teamRedIds.First(),
                         EnemiesIDs = teamBlueIds,
                         TeamID = Team.Red,
                         NumberOfPlayers = new NumberOfPlayers
@@ -296,7 +296,7 @@ namespace GameMaster.Models
                 {
                     JoinGamePayload payloadJoin = message.DeserializePayload<JoinGamePayload>();
                     int key = message.AgentID;
-                    bool accepted = TryToAddPlayer(key, payloadJoin.TeamId);
+                    bool accepted = TryToAddPlayer(key, payloadJoin.TeamID);
                     JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
                     {
                         Accepted = accepted,

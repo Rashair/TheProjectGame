@@ -11,7 +11,7 @@ namespace Shared.Payloads.GMPayloads
 
         public int[] AlliesIDs { get; set; }
 
-        public int LeaderId { get; set; }
+        public int LeaderID { get; set; }
 
         public int[] EnemiesIDs { get; set; }
 
@@ -35,7 +35,7 @@ namespace Shared.Payloads.GMPayloads
 
         public override string ToString()
         {
-            StringBuilder message = new StringBuilder($"\nAgentID:{AgentID}, TeamId:{TeamID}, LeaderId:{LeaderId},\n");
+            StringBuilder message = new StringBuilder($"\nAgentID:{AgentID}, TeamID:{TeamID}, LeaderId:{LeaderID},\n");
             message.Append($"BoardSize:{BoardSize.X}x{BoardSize.Y}, GoalAreaSize:{GoalAreaSize}\n");
             message.Append($"NumberOfAllies:{NumberOfPlayers.Allies}, NumberOfEnemies:{NumberOfPlayers.Enemies},\n");
             message.Append($"NumberOfPieces{NumberOfPieces}, NumberOfGoals:{NumberOfGoals},\n");

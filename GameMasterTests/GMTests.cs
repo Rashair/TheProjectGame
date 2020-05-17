@@ -560,7 +560,7 @@ namespace GameMaster.Tests
         {
             JoinGamePayload joinGamePayload = new JoinGamePayload()
             {
-                TeamId = Team.Blue,
+                TeamID = Team.Blue,
             };
 
             PlayerMessage joinMessage1 = new PlayerMessage()

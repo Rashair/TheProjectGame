@@ -77,7 +77,7 @@ namespace Player
             services.AddSingleton(conf);
 
             // 'Try' for tests override
-            var logger = GetLogger(conf.TeamId, conf.Verbose);
+            var logger = GetLogger(conf.TeamID, conf.Verbose);
             services.TryAddSingleton<ILogger>(logger);
 
             services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, TcpSocketClient<GMMessage, PlayerMessage>>();

@@ -33,7 +33,7 @@ namespace Player.Tests
 
         private PlayerConfiguration GenerateSampleConfiguration()
         {
-            return new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamId = Team.Red, Strategy = 3 };
+            return new PlayerConfiguration() { CsIP = "192.168.0.0", CsPort = 3729, TeamID = Team.Red, Strategy = 3 };
         }
 
         [Fact]
@@ -191,7 +191,7 @@ namespace Player.Tests
             {
                 AgentID = agentID,
                 AlliesIDs = alliesId,
-                LeaderId = leaderId,
+                LeaderID = leaderId,
                 EnemiesIDs = enemiesId,
                 TeamID = teamId,
                 BoardSize = boardSize,
@@ -573,7 +573,7 @@ namespace Player.Tests
             {
                 AgentID = 1,
                 AlliesIDs = new int[1] { 2 },
-                LeaderId = 1,
+                LeaderID = 1,
                 EnemiesIDs = new int[2] { 3, 4 },
                 TeamID = Team.Red,
                 BoardSize = playerBoardSize,
