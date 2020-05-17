@@ -556,7 +556,7 @@ namespace GameMaster.Tests
             return mock.Object;
         }
 
-        public async Task InitializeAndBegForInfo(GM gameMaster, int player1ID, int player2ID)
+        private async Task InitializeAndBegForInfo(GM gameMaster, int player1ID, int player2ID)
         {
             JoinGamePayload joinGamePayload = new JoinGamePayload()
             {
