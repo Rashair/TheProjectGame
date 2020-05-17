@@ -13,6 +13,7 @@ using Player.Services;
 using Serilog;
 using Shared;
 using Shared.Clients;
+using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
 
@@ -32,7 +33,7 @@ namespace Player
             Configuration = configuration;
         }
 
-        private ILogger GetLogger(string team, bool verbose)
+        private ILogger GetLogger(Team team, bool verbose)
         {
             LoggerLevel level = new LoggerLevel();
             Configuration.Bind("Serilog:MinimumLevel", level);

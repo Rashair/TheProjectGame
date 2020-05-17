@@ -39,7 +39,7 @@ namespace Player.Models
             this.queue = queue;
             this.client = client;
             this.logger = log.ForContext<Player>();
-            this.Team = conf.TeamId == "red" ? Team.Red : Team.Blue;
+            this.Team = conf.TeamId;
             this.Position = (-1, -1);
         }
 
