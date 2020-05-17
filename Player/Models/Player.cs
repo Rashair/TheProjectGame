@@ -477,7 +477,7 @@ namespace Player.Models
             {
                 MessageID = PlayerMessageId.Pick,
                 AgentID = id,
-                Payload = JsonConvert.SerializeObject(messagePickPayload),
+                Payload = messagePickPayload
             };
             await Communicate(messagePick, cancellationToken);
         }
