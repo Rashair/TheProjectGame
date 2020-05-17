@@ -394,7 +394,7 @@ namespace Player.Models
                     HasPiece = false;
                     IsHeldPieceSham = null;
 
-                    var payload = message.DeserializePayload<PutAnswerPayload>();
+                    PutAnswerPayload payload = message.DeserializePayload<PutAnswerPayload>();
                     if (payload.PutEvent == PutEvent.NormalOnGoalField)
                     {
                         Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredGoal;

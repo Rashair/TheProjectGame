@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 using Serilog;
+using Shared.Messages;
 
 namespace Shared.Clients
 {
@@ -117,9 +118,9 @@ namespace Shared.Clients
             }
         }
 
-        public async Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken)
+        public Task SendToAllAsync(List<S> messages, CancellationToken cancellationToken)
         {
-            await Task.WhenAll(from message in messages select SendAsync(message, cancellationToken));
+            return Task.WhenAll(messages.Select(m => SendAsync(m, cancellationToken)));
         }
 
         public async Task SendAsync(S message, CancellationToken cancellationToken)
@@ -129,8 +130,9 @@ namespace Shared.Clients
                 string serialized = JsonConvert.SerializeObject(message);
                 byte[] buffer = Encoding.UTF8.GetBytes(serialized);
                 byte[] length = buffer.Length.ToLittleEndian();
-                await stream.WriteAsync(length, 0, 2, cancellationToken);
-                await stream.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
+
+                byte[] result = length.Concat(buffer).ToArray();
+                await stream.WriteAsync(result, cancellationToken);
             }
         }
     }

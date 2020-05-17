@@ -10,11 +10,6 @@ namespace Shared.Messages
 
         public string Payload { get; set; }
 
-        public override string ToString()
-        {
-            return JsonConvert.SerializeObject(this);
-        }
-
         public T DeserializePayload<T>()
         {
             return JsonConvert.DeserializeObject<T>(Payload);
