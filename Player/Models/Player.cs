@@ -283,7 +283,7 @@ namespace Player.Models
             switch (message.MessageID)
             {
                 case GMMessageId.CheckAnswer:
-                    CheckAnswerPayload payloadCheck = JsonConvert.DeserializeObject<CheckAnswerPayload>(message.Payload);
+                    CheckAnswerPayload payloadCheck = message.DeserializePayload<CheckAnswerPayload>();
                     IsHeldPieceSham = payloadCheck.Sham;
                     penaltyTime = PenaltiesTimes.CheckPiece;
                     break;
@@ -293,7 +293,7 @@ namespace Player.Models
                     penaltyTime = PenaltiesTimes.DestroyPiece;
                     break;
                 case GMMessageId.DiscoverAnswer:
-                    DiscoveryAnswerPayload payloadDiscover = JsonConvert.DeserializeObject<DiscoveryAnswerPayload>(message.Payload);
+                    DiscoveryAnswerPayload payloadDiscover = message.DeserializePayload<DiscoveryAnswerPayload>();
                     Board[Position.y, Position.x].DistToPiece = payloadDiscover.DistanceFromCurrent.Value;
                     if (Position.y + 1 < BoardSize.y)
                         Board[Position.y + 1, Position.x].DistToPiece = payloadDiscover.DistanceN.Value;
@@ -314,7 +314,7 @@ namespace Player.Models
                     penaltyTime = PenaltiesTimes.Discover;
                     break;
                 case GMMessageId.EndGame:
-                    EndGamePayload payloadEnd = JsonConvert.DeserializeObject<EndGamePayload>(message.Payload);
+                    EndGamePayload payloadEnd = message.DeserializePayload<EndGamePayload>();
                     winner = payloadEnd.Winner;
                     StopWorking();
                     break;
@@ -324,7 +324,7 @@ namespace Player.Models
                     StopWorking();
                     break;
                 case GMMessageId.StartGame:
-                    StartGamePayload payloadStart = JsonConvert.DeserializeObject<StartGamePayload>(message.Payload);
+                    StartGamePayload payloadStart = message.DeserializePayload<StartGamePayload>();
                     id = payloadStart.AgentID;
                     TeamMatesIds = payloadStart.AlliesIDs;
                     if (id == payloadStart.LeaderId)
@@ -362,14 +362,14 @@ namespace Player.Models
                     WaitingPlayers = new List<int>();
                     break;
                 case GMMessageId.BegForInfoForwarded:
-                    BegForInfoForwardedPayload payloadBeg = JsonConvert.DeserializeObject<BegForInfoForwardedPayload>(message.Payload);
+                    BegForInfoForwardedPayload payloadBeg = message.DeserializePayload<BegForInfoForwardedPayload>();
                     if (Team == payloadBeg.TeamID)
                     {
                         await RequestsResponse(cancellationToken, payloadBeg.AskingID, payloadBeg.Leader);
                     }
                     break;
                 case GMMessageId.JoinTheGameAnswer:
-                    JoinAnswerPayload payloadJoin = JsonConvert.DeserializeObject<JoinAnswerPayload>(message.Payload);
+                    JoinAnswerPayload payloadJoin = message.DeserializePayload<JoinAnswerPayload>();
                     id = payloadJoin.AgentID;
                     if (!payloadJoin.Accepted)
                     {
@@ -377,7 +377,7 @@ namespace Player.Models
                     }
                     break;
                 case GMMessageId.MoveAnswer:
-                    MoveAnswerPayload payloadMove = JsonConvert.DeserializeObject<MoveAnswerPayload>(message.Payload);
+                    MoveAnswerPayload payloadMove = message.DeserializePayload<MoveAnswerPayload>();
                     if (payloadMove.MadeMove)
                     {
                         Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
@@ -394,7 +394,7 @@ namespace Player.Models
                     HasPiece = false;
                     IsHeldPieceSham = null;
 
-                    var payload = JsonConvert.DeserializeObject<PutAnswerPayload>(message.Payload);
+                    var payload = message.DeserializePayload<PutAnswerPayload>();
                     if (payload.PutEvent == PutEvent.NormalOnGoalField)
                     {
                         Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredGoal;
@@ -408,7 +408,7 @@ namespace Player.Models
                     penaltyTime = PenaltiesTimes.PutPiece;
                     break;
                 case GMMessageId.GiveInfoForwarded:
-                    GiveInfoForwardedPayload payloadGive = JsonConvert.DeserializeObject<GiveInfoForwardedPayload>(message.Payload);
+                    GiveInfoForwardedPayload payloadGive = message.DeserializePayload<GiveInfoForwardedPayload>();
                     for (int i = 0; i < payloadGive.Distances.GetLength(0); i++)
                     {
                         for (int j = 0; j < payloadGive.Distances.GetLength(1); j++)
@@ -435,7 +435,7 @@ namespace Player.Models
                     penaltyTime = PenaltiesTimes.Ask;
                     break;
                 case GMMessageId.NotWaitedError:
-                    NotWaitedErrorPayload errorPayload = JsonConvert.DeserializeObject<NotWaitedErrorPayload>(message.Payload);
+                    NotWaitedErrorPayload errorPayload = message.DeserializePayload<NotWaitedErrorPayload>();
                     int toWait = errorPayload.WaitFor;
                     if (toWait >= 0)
                     {

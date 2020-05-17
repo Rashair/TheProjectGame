@@ -160,7 +160,7 @@ namespace GameMaster.Models
                 return (0, null);
             }
 
-            GiveInfoPayload payload = JsonConvert.DeserializeObject<GiveInfoPayload>(playerMessage.Payload);
+            GiveInfoPayload payload = playerMessage.DeserializePayload<GiveInfoPayload>();
             if (legalKnowledgeReplies.Contains((playerMessage.AgentID, payload.RespondToID)) && isUnlocked)
             {
                 legalKnowledgeReplies.Remove((playerMessage.AgentID, payload.RespondToID));
@@ -194,7 +194,7 @@ namespace GameMaster.Models
             {
                 return (0, null);
             }
-            BegForInfoPayload begPayload = JsonConvert.DeserializeObject<BegForInfoPayload>(playerMessage.Payload);
+            BegForInfoPayload begPayload = playerMessage.DeserializePayload<BegForInfoPayload>();
             if (players.ContainsKey(begPayload.AskedAgentID) && isUnlocked)
             {
                 BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()

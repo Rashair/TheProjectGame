@@ -611,7 +611,7 @@ namespace GameMaster.Tests
             var lastMessage = sendedMessages.Pop();
 
             Assert.Equal(GMMessageId.InformationExchangeRequest, lastMessage.MessageID);
-            Assert.True(JsonConvert.DeserializeObject<InformationExchangePayload>(lastMessage.Payload).WasSent);
+            Assert.True(lastMessage.DeserializePayload<InformationExchangePayload>().WasSent);
 
             BegForInfoPayload begForInfoPayload = new BegForInfoPayload()
             {
@@ -628,7 +628,7 @@ namespace GameMaster.Tests
             lastMessage = sendedMessages.Pop();
 
             Assert.Equal(GMMessageId.InformationExchangeRequest, lastMessage.MessageID);
-            Assert.False(JsonConvert.DeserializeObject<InformationExchangePayload>(lastMessage.Payload).WasSent);
+            Assert.False(lastMessage.DeserializePayload<InformationExchangePayload>().WasSent);
         }
 
         [Fact]
@@ -673,13 +673,13 @@ namespace GameMaster.Tests
             var lastMessage = sendedMessages.Pop();
 
             Assert.Equal(GMMessageId.InformationExchangeResponse, lastMessage.MessageID);
-            Assert.True(JsonConvert.DeserializeObject<InformationExchangePayload>(lastMessage.Payload).WasSent);
+            Assert.True(lastMessage.DeserializePayload<InformationExchangePayload>().WasSent);
 
             await gameMaster.AcceptMessage(giveMessage2, CancellationToken.None);
             lastMessage = sendedMessages.Pop();
 
             Assert.Equal(GMMessageId.InformationExchangeResponse, lastMessage.MessageID);
-            Assert.False(JsonConvert.DeserializeObject<InformationExchangePayload>(lastMessage.Payload).WasSent);
+            Assert.False(lastMessage.DeserializePayload<InformationExchangePayload>().WasSent);
         }
     }
 }

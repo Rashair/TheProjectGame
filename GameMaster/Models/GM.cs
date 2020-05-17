@@ -294,7 +294,7 @@ namespace GameMaster.Models
                     break;
                 case PlayerMessageId.JoinTheGame:
                 {
-                    JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
+                    JoinGamePayload payloadJoin = message.DeserializePayload<JoinGamePayload>();
                     int key = message.AgentID;
                     bool accepted = TryToAddPlayer(key, payloadJoin.TeamId);
                     JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
@@ -306,7 +306,7 @@ namespace GameMaster.Models
                     {
                         MessageID = GMMessageId.JoinTheGameAnswer,
                         AgentID = key,
-                        Payload = JsonConvert.SerializeObject(answerJoinPayload),
+                        Payload = answerJoinPayload,
                     };
 
                     await socketClient.SendAsync(answerJoin, cancellationToken);
@@ -323,7 +323,7 @@ namespace GameMaster.Models
                 }
                 case PlayerMessageId.Move:
                 {
-                    MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
+                    MovePayload payloadMove = message.DeserializePayload<MovePayload>();
                     AbstractField field = null;
                     int[] pos = player.GetPosition();
                     switch (payloadMove.Direction)
