@@ -567,13 +567,13 @@ namespace GameMaster.Tests
             {
                 MessageID = PlayerMessageId.JoinTheGame,
                 AgentID = player1ID,
-                Payload = joinGamePayload,
+                Payload = joinGamePayload.Serialize(),
             };
             PlayerMessage joinMessage2 = new PlayerMessage()
             {
                 MessageID = PlayerMessageId.JoinTheGame,
                 AgentID = player2ID,
-                Payload = joinGamePayload,
+                Payload = joinGamePayload.Serialize(),
             };
             await gameMaster.AcceptMessage(joinMessage1, CancellationToken.None);
             await gameMaster.AcceptMessage(joinMessage2, CancellationToken.None);
@@ -586,7 +586,7 @@ namespace GameMaster.Tests
             {
                 MessageID = PlayerMessageId.BegForInfo,
                 AgentID = player1ID,
-                Payload = begForInfoPayload,
+                Payload = begForInfoPayload.Serialize(),
             };
 
             await gameMaster.AcceptMessage(askMessage, CancellationToken.None);
@@ -621,7 +621,7 @@ namespace GameMaster.Tests
             {
                 MessageID = PlayerMessageId.BegForInfo,
                 AgentID = player1ID,
-                Payload = begForInfoPayload,
+                Payload = begForInfoPayload.Serialize(),
             };
 
             await gameMaster.AcceptMessage(askMessage, CancellationToken.None);
@@ -659,14 +659,14 @@ namespace GameMaster.Tests
             {
                 MessageID = PlayerMessageId.GiveInfo,
                 AgentID = player2ID,
-                Payload = giveInfoPayload,
+                Payload = giveInfoPayload.Serialize(),
             };
 
             PlayerMessage giveMessage2 = new PlayerMessage()
             {
                 MessageID = PlayerMessageId.GiveInfo,
                 AgentID = player3ID,
-                Payload = giveInfoPayload,
+                Payload = giveInfoPayload.Serialize(),
             };
 
             await gameMaster.AcceptMessage(giveMessage1, CancellationToken.None);

@@ -41,7 +41,7 @@ namespace Shared.Tests
                 {
                     MessageID = msg.Value,
                     AgentID = agentID,
-                    Payload = new EmptyAnswerPayload(),
+                    Payload = new EmptyAnswerPayload().Serialize(),
                 };
 
                 var expectedJsonString = "{\"messageID\":" + msg.Key + ",\"agentID\":" + agentID + ",\"payload\":\"{}\"}";

@@ -103,7 +103,7 @@ namespace Player.Tests
             GMMessage messageCheck = new GMMessage()
             {
                 MessageID = GMMessageId.CheckAnswer,
-                Payload = payloadCheck,
+                Payload = payloadCheck.Serialize(),
             };
             GMMessage startMessage = CreateStartMessage();
 

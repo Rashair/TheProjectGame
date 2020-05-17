@@ -72,7 +72,7 @@ namespace CommunicationServer.Services
             {
                 AgentID = id,
                 MessageID = PlayerMessageId.Disconnected,
-                Payload = new EmptyPayload()
+                Payload = new EmptyPayload().Serialize()
             };
             await container.GMClient.SendAsync(message, cancellationToken);
         }

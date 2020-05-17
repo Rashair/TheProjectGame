@@ -154,7 +154,7 @@ namespace GameMaster.Models
                 {
                     MessageID = GMMessageId.StartGame,
                     AgentID = p.Key,
-                    Payload = payload,
+                    Payload = payload.Serialize(),
                 };
                 logger.Verbose(MessageLogger.Sent(message));
                 sendMessagesTasks.Add(socketClient.SendAsync(message, cancellationToken));
@@ -306,7 +306,7 @@ namespace GameMaster.Models
                     {
                         MessageID = GMMessageId.JoinTheGameAnswer,
                         AgentID = key,
-                        Payload = answerJoinPayload,
+                        Payload = answerJoinPayload.Serialize(),
                     };
 
                     await socketClient.SendAsync(answerJoin, cancellationToken);
@@ -507,13 +507,11 @@ namespace GameMaster.Models
             List<GMMessage> messages = new List<GMMessage>();
             foreach (var p in players)
             {
-                messages.Add(new GMMessage(GMMessageId.EndGame, p.Key, payload));
+                var msg = new GMMessage(GMMessageId.EndGame, p.Key, payload);
+                messages.Add(msg);
+                logger.Verbose(MessageLogger.Sent(msg));
             }
             await socketClient.SendToAllAsync(messages, cancellationToken);
-            for (int i = 0; i < messages.Count; i++)
-            {
-                logger.Verbose(MessageLogger.Sent(messages[i]));
-            }
             logger.Information("Sent endGame to all.");
 
             await Task.Delay(4000);

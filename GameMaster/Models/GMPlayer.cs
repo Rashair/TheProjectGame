@@ -175,7 +175,7 @@ namespace GameMaster.Models
                 {
                     MessageID = GMMessageId.GiveInfoForwarded,
                     AgentID = payload.RespondToID,
-                    Payload = answerPayload,
+                    Payload = answerPayload.Serialize(),
                 };
 
                 await socketClient.SendAsync(answer, cancellationToken);
@@ -207,7 +207,7 @@ namespace GameMaster.Models
                 {
                     MessageID = GMMessageId.BegForInfoForwarded,
                     AgentID = begPayload.AskedAgentID,
-                    Payload = payload,
+                    Payload = payload.Serialize(),
                 };
 
                 legalKnowledgeReplies.Add((begPayload.AskedAgentID, playerMessage.AgentID));
