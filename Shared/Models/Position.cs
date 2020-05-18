@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Shared.Models
 {
-    public class Position : IEquatable<Position>
+    public struct Position : IEquatable<Position>
     {
         public int Y { get; set; }
 
@@ -11,13 +11,17 @@ namespace Shared.Models
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as Position);
+            if (obj is Position)
+            {
+                return Equals((Position)obj);
+            }
+
+            return false;
         }
 
         public bool Equals(Position other)
         {
-            return other != null &&
-                   Y == other.Y &&
+            return Y == other.Y &&
                    X == other.X;
         }
 

@@ -67,6 +67,7 @@ namespace CommunicationServer.Services
                 logger.Error($"Failed to remove socket: {socket.Endpoint}");
             }
             logger.Information($"Player {id} disconnected");
+
             PlayerMessage message = new PlayerMessage()
             {
                 AgentID = id,

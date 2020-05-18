@@ -1,20 +1,18 @@
-﻿using Newtonsoft.Json;
-using Shared.Enums;
+﻿using Shared.Enums;
 
 namespace Shared.Payloads.GMPayloads
 {
     public class BegForInfoForwardedPayload : Payload
     {
-        public int AskingId { get; set; }
+        public int AskingID { get; set; }
 
         public bool Leader { get; set; }
 
-        [JsonProperty("teamId")]
-        public Team TeamId { get; set; }
+        public Team TeamID { get; set; }
 
         public override string ToString()
         {
-            return $"AskingId:{AskingId}, Leader:{Leader}, TeamId{TeamId}";
+            return $"AskingID:{AskingID}, Leader:{Leader}, TeamID{TeamID}";
         }
     }
 }

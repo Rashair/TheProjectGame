@@ -39,10 +39,10 @@ namespace Player.Tests
             StartGamePayload payloadStart = new StartGamePayload
             {
                 AgentID = 1,
-                AlliesIds = new int[2] { 1, 2 },
-                LeaderId = 1,
-                EnemiesIds = new int[2] { 3, 4 },
-                TeamId = Team.Red,
+                AlliesIDs = new int[2] { 1, 2 },
+                LeaderID = 1,
+                EnemiesIDs = new int[2] { 3, 4 },
+                TeamID = Team.Red,
                 BoardSize = new BoardSize { X = 3, Y = 3 },
                 GoalAreaSize = 1,
                 NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },

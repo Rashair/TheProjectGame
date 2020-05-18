@@ -23,7 +23,7 @@ namespace GameMaster.Models
     public class GM
     {
         private readonly ILogger log;
-        private ILogger logger;
+        private readonly ILogger logger;
         private readonly IApplicationLifetime lifetime;
         private readonly BufferBlock<PlayerMessage> queue;
         private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
@@ -96,10 +96,10 @@ namespace GameMaster.Models
                 {
                     payload = new StartGamePayload
                     {
-                        AlliesIds = teamBlueIds,
-                        LeaderId = teamBlueIds.First(),
-                        EnemiesIds = teamRedIds,
-                        TeamId = Team.Blue,
+                        AlliesIDs = teamBlueIds,
+                        LeaderID = teamBlueIds.First(),
+                        EnemiesIDs = teamRedIds,
+                        TeamID = Team.Blue,
                         NumberOfPlayers = new NumberOfPlayers
                         {
                             Allies = teamBlueIds.Length,
@@ -111,10 +111,10 @@ namespace GameMaster.Models
                 {
                     payload = new StartGamePayload
                     {
-                        AlliesIds = teamRedIds,
-                        LeaderId = teamRedIds.First(),
-                        EnemiesIds = teamBlueIds,
-                        TeamId = Team.Red,
+                        AlliesIDs = teamRedIds,
+                        LeaderID = teamRedIds.First(),
+                        EnemiesIDs = teamBlueIds,
+                        TeamID = Team.Red,
                         NumberOfPlayers = new NumberOfPlayers
                         {
                             Allies = teamBlueIds.Length,
@@ -294,9 +294,9 @@ namespace GameMaster.Models
                     break;
                 case PlayerMessageId.JoinTheGame:
                 {
-                    JoinGamePayload payloadJoin = JsonConvert.DeserializeObject<JoinGamePayload>(message.Payload);
+                    JoinGamePayload payloadJoin = message.DeserializePayload<JoinGamePayload>();
                     int key = message.AgentID;
-                    bool accepted = TryToAddPlayer(key, payloadJoin.TeamId);
+                    bool accepted = TryToAddPlayer(key, payloadJoin.TeamID);
                     JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
                     {
                         Accepted = accepted,
@@ -306,7 +306,7 @@ namespace GameMaster.Models
                     {
                         MessageID = GMMessageId.JoinTheGameAnswer,
                         AgentID = key,
-                        Payload = JsonConvert.SerializeObject(answerJoinPayload),
+                        Payload = answerJoinPayload.Serialize(),
                     };
 
                     await socketClient.SendAsync(answerJoin, cancellationToken);
@@ -323,7 +323,7 @@ namespace GameMaster.Models
                 }
                 case PlayerMessageId.Move:
                 {
-                    MovePayload payloadMove = JsonConvert.DeserializeObject<MovePayload>(message.Payload);
+                    MovePayload payloadMove = message.DeserializePayload<MovePayload>();
                     AbstractField field = null;
                     int[] pos = player.GetPosition();
                     switch (payloadMove.Direction)
@@ -360,8 +360,8 @@ namespace GameMaster.Models
                     await player.PickAsync(cancellationToken);
                     break;
                 case PlayerMessageId.Put:
-                    (bool? point, bool removed) = await player.PutAsync(cancellationToken);
-                    if (point == true)
+                    (PutEvent putEvent, bool wasPieceRemoved) = await player.PutAsync(cancellationToken);
+                    if (putEvent == PutEvent.NormalOnGoalField)
                     {
                         int y = player.GetPosition()[0];
                         string teamStr = "";
@@ -383,7 +383,8 @@ namespace GameMaster.Models
                             $"    by {player.Team}");
                         logger.Information($"RED: {redTeamPoints} | BLUE: {blueTeamPoints}");
                     }
-                    if (removed)
+
+                    if (wasPieceRemoved)
                     {
                         GeneratePiece();
                     }
@@ -492,7 +493,7 @@ namespace GameMaster.Models
             int xCoord = rand.Next(0, conf.Width);
 
             return (yCoord, xCoord);
-        }  
+        }
 
         internal async Task EndGame(CancellationToken cancellationToken)
         {
@@ -506,13 +507,11 @@ namespace GameMaster.Models
             List<GMMessage> messages = new List<GMMessage>();
             foreach (var p in players)
             {
-                messages.Add(new GMMessage(GMMessageId.EndGame, p.Key, payload));
+                var msg = new GMMessage(GMMessageId.EndGame, p.Key, payload);
+                messages.Add(msg);
+                logger.Verbose(MessageLogger.Sent(msg));
             }
             await socketClient.SendToAllAsync(messages, cancellationToken);
-            for (int i = 0; i < messages.Count; i++)
-            {
-                logger.Verbose(MessageLogger.Sent(messages[i]));
-            }
             logger.Information("Sent endGame to all.");
 
             await Task.Delay(4000);

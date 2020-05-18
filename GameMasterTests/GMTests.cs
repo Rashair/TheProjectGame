@@ -27,7 +27,7 @@ namespace GameMaster.Tests
     public class GMTests
     {
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
-        private Stack<GMMessage> sendedMessages = new Stack<GMMessage>();
+        private readonly Stack<GMMessage> sendedMessages = new Stack<GMMessage>();
 
         [Theory]
         [InlineData(1)]
@@ -556,11 +556,11 @@ namespace GameMaster.Tests
             return mock.Object;
         }
 
-        public async Task InitializeAndBegForInfo(GM gameMaster, int player1ID, int player2ID)
+        private async Task InitializeAndBegForInfo(GM gameMaster, int player1ID, int player2ID)
         {
             JoinGamePayload joinGamePayload = new JoinGamePayload()
             {
-                TeamId = Team.Blue,
+                TeamID = Team.Blue,
             };
 
             PlayerMessage joinMessage1 = new PlayerMessage()
@@ -611,7 +611,7 @@ namespace GameMaster.Tests
             var lastMessage = sendedMessages.Pop();
 
             Assert.Equal(GMMessageId.InformationExchangeRequest, lastMessage.MessageID);
-            Assert.True(JsonConvert.DeserializeObject<InformationExchangePayload>(lastMessage.Payload).WasSent);
+            Assert.True(lastMessage.DeserializePayload<InformationExchangePayload>().WasSent);
 
             BegForInfoPayload begForInfoPayload = new BegForInfoPayload()
             {
@@ -628,7 +628,7 @@ namespace GameMaster.Tests
             lastMessage = sendedMessages.Pop();
 
             Assert.Equal(GMMessageId.InformationExchangeRequest, lastMessage.MessageID);
-            Assert.False(JsonConvert.DeserializeObject<InformationExchangePayload>(lastMessage.Payload).WasSent);
+            Assert.False(lastMessage.DeserializePayload<InformationExchangePayload>().WasSent);
         }
 
         [Fact]
@@ -650,7 +650,7 @@ namespace GameMaster.Tests
 
             GiveInfoPayload giveInfoPayload = new GiveInfoPayload()
             {
-                RespondToId = player1ID,
+                RespondToID = player1ID,
                 Distances = new int[,] { { 1, 1 } },
                 RedTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },
                 BlueTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },
@@ -673,13 +673,13 @@ namespace GameMaster.Tests
             var lastMessage = sendedMessages.Pop();
 
             Assert.Equal(GMMessageId.InformationExchangeResponse, lastMessage.MessageID);
-            Assert.True(JsonConvert.DeserializeObject<InformationExchangePayload>(lastMessage.Payload).WasSent);
+            Assert.True(lastMessage.DeserializePayload<InformationExchangePayload>().WasSent);
 
             await gameMaster.AcceptMessage(giveMessage2, CancellationToken.None);
             lastMessage = sendedMessages.Pop();
 
             Assert.Equal(GMMessageId.InformationExchangeResponse, lastMessage.MessageID);
-            Assert.False(JsonConvert.DeserializeObject<InformationExchangePayload>(lastMessage.Payload).WasSent);
+            Assert.False(lastMessage.DeserializePayload<InformationExchangePayload>().WasSent);
         }
     }
 }

@@ -35,8 +35,8 @@ namespace IntegrationTests
             // Arrange
             int playersCount = 10;
             var source = new CancellationTokenSource();
-            string[] argsRed = new string[] { "TeamId=red", "urls=https://127.0.0.1:0", "CsPort=1" };
-            string[] argsBlue = new string[] { "TeamId=blue", "urls=https://127.0.0.1:0", "CsPort=1" };
+            string[] argsRed = new string[] { "TeamID=red", "urls=https://127.0.0.1:0", "CsPort=1" };
+            string[] argsBlue = new string[] { "TeamID=blue", "urls=https://127.0.0.1:0", "CsPort=1" };
             IWebHost[] webHostsRed = new IWebHost[playersCount];
             IWebHost[] webHostsBlue = new IWebHost[playersCount];
             for (int i = 0; i < playersCount; ++i)
