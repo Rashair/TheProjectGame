@@ -4,11 +4,16 @@ using Newtonsoft.Json.Serialization;
 namespace Shared.Payloads
 {
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public abstract class Payload
+    public class Payload
     {
-        public Payload Serialize()
+        public override bool Equals(object obj)
         {
-            return this;
+            return this.GetType() == obj.GetType() && this.AreAllPropertiesTheSame(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }

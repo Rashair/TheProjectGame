@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 using Serilog;
-using Shared.Messages;
 
 namespace Shared.Clients
 {
@@ -130,9 +129,6 @@ namespace Shared.Clients
                 string serialized = JsonConvert.SerializeObject(message);
                 byte[] buffer = Encoding.UTF8.GetBytes(serialized);
                 byte[] length = buffer.Length.ToLittleEndian();
-
-                logger.Information("MSG: " + serialized);
-                logger.Information("Length: " + buffer.Length);
 
                 byte[] result = length.Concat(buffer).ToArray();
                 await stream.WriteAsync(result, cancellationToken);

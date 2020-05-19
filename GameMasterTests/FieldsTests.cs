@@ -25,7 +25,7 @@ namespace GameMaster.Tests
             public IEnumerator<object[]> GetEnumerator()
             {
                 var conf = Mock.Of<GameConfiguration>();
-                var socketClient = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+                var socketClient = new TcpSocketClient<Message, Message>(logger);
                 yield return new object[]
                 {
                     new List<GMPlayer>
@@ -164,7 +164,7 @@ namespace GameMaster.Tests
         {
             // Arrange
             var conf = Mock.Of<GameConfiguration>();
-            var socketClient = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var socketClient = new TcpSocketClient<Message, Message>(logger);
             GMPlayer gmPlayer = new GMPlayer(1, conf, socketClient, Shared.Enums.Team.Red, logger);
             TaskField taskField = new TaskField(2, 2);
             for (int i = 0; i < numPut; i++)

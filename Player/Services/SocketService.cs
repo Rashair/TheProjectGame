@@ -18,15 +18,15 @@ namespace Player.Services
         private const int ConnectRetries = 60;
         private const int RetryIntervalMs = 1000;
 
-        private readonly ISocketClient<GMMessage, PlayerMessage> client;
+        private readonly ISocketClient<Message, Message> client;
         private readonly PlayerConfiguration conf;
-        private readonly BufferBlock<GMMessage> queue;
+        private readonly BufferBlock<Message> queue;
         private readonly IApplicationLifetime lifetime;
         private readonly ILogger logger;
         private readonly ServiceSynchronization synchronizationContext;
 
-        public SocketService(ISocketClient<GMMessage, PlayerMessage> client, PlayerConfiguration conf,
-            BufferBlock<GMMessage> queue, IApplicationLifetime lifetime, ILogger log,
+        public SocketService(ISocketClient<Message, Message> client, PlayerConfiguration conf,
+            BufferBlock<Message> queue, IApplicationLifetime lifetime, ILogger log,
             ServiceSynchronization serviceSync)
         {
             this.client = client;
@@ -64,7 +64,7 @@ namespace Player.Services
             await synchronizationContext.SemaphoreSlim.WaitAsync(stoppingToken);
 
             // Wait for JoinTheGame response
-            (bool receivedMessage, GMMessage message) = await client.ReceiveAsync(stoppingToken);
+            (bool receivedMessage, Message message) = await client.ReceiveAsync(stoppingToken);
             if (!receivedMessage)
             {
                 logger.Error($"Did not receive JoinTheGame response. Error: {errorMessage}");
@@ -77,12 +77,12 @@ namespace Player.Services
                 bool sended = await queue.SendAsync(message, stoppingToken);
                 if (!sended)
                 {
-                    logger.Warning($"SocketService| GMMessage id: {message.MessageID} has been lost");
+                    logger.Warning($"SocketService| Message id: {message.MessageID} has been lost");
                 }
                 (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
             }
 
-            message = new GMMessage(GMMessageId.CSDisconnected, -1, new EmptyAnswerPayload());
+            message = new Message(MessageID.CSDisconnected, -1, new EmptyAnswerPayload());
             await queue.SendAsync(message, stoppingToken);
         }
     }

@@ -5,6 +5,6 @@ namespace CommunicationServer.Models
 {
     public class ServiceShareContainer
     {
-        public ISocketClient<GMMessage, PlayerMessage> GMClient { get; set; }
+        public ISocketClient<Message, Message> GMClient { get; set; }
     }
 }

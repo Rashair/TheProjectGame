@@ -75,8 +75,8 @@ namespace CommunicationServer
             services.TryAddSingleton<ILogger>(logger);
 
             services.AddSingleton<ServiceShareContainer>();
-            services.AddSingleton<ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage>,
-                TcpSocketManager<PlayerMessage, GMMessage>>();
+            services.AddSingleton<ISocketManager<ISocketClient<Message, Message>, Message>,
+                TcpSocketManager<Message, Message>>();
             services.AddSingleton<BufferBlock<Message>>();
 
             var sync = new ServiceSynchronization(0, 2);

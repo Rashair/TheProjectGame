@@ -20,8 +20,8 @@ namespace Player.Models
 {
     public class Player
     {
-        private readonly BufferBlock<GMMessage> queue;
-        private readonly ISocketClient<GMMessage, PlayerMessage> client;
+        private readonly BufferBlock<Message> queue;
+        private readonly ISocketClient<Message, Message> client;
         private readonly ILogger logger;
 
         private int id;
@@ -31,8 +31,8 @@ namespace Player.Models
         private readonly PlayerConfiguration conf;
         private Team? winner;
 
-        public Player(PlayerConfiguration conf, BufferBlock<GMMessage> queue, ISocketClient<GMMessage,
-            PlayerMessage> client, ILogger log)
+        public Player(PlayerConfiguration conf, BufferBlock<Message> queue, ISocketClient<Message,
+            Message> client, ILogger log)
         {
             this.conf = conf;
             this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
@@ -82,13 +82,13 @@ namespace Player.Models
         internal async Task Start(CancellationToken cancellationToken)
         {
             isWorking = true;
-            GMMessageId messageID = GMMessageId.Unknown;
-            while (messageID != GMMessageId.JoinTheGameAnswer && isWorking &&
+            MessageID messageID = MessageID.Unknown;
+            while (messageID != MessageID.JoinTheGameAnswer && isWorking &&
                 !cancellationToken.IsCancellationRequested)
             {
                 messageID = await AcceptMessage(cancellationToken);
             }
-            while (messageID != GMMessageId.StartGame && isWorking && !cancellationToken.IsCancellationRequested)
+            while (messageID != MessageID.StartGame && isWorking && !cancellationToken.IsCancellationRequested)
             {
                 messageID = await AcceptMessage(cancellationToken);
             }
@@ -110,10 +110,10 @@ namespace Player.Models
             {
                 TeamID = Team,
             };
-            PlayerMessage message = new PlayerMessage()
+            Message message = new Message()
             {
-                MessageID = PlayerMessageId.JoinTheGame,
-                Payload = payload.Serialize(),
+                MessageID = MessageID.JoinTheGame,
+                Payload = payload,
             };
             await Communicate(message, cancellationToken);
             logger.Information("Sent JoinTheGame message");
@@ -141,11 +141,11 @@ namespace Player.Models
             {
                 Direction = direction,
             };
-            PlayerMessage message = new PlayerMessage()
+            Message message = new Message()
             {
-                MessageID = PlayerMessageId.Move,
+                MessageID = MessageID.Move,
                 AgentID = id,
-                Payload = payload.Serialize(),
+                Payload = payload,
             };
             await Communicate(message, cancellationToken);
         }
@@ -153,20 +153,20 @@ namespace Player.Models
         public async Task Put(CancellationToken cancellationToken)
         {
             EmptyPayload payload = new EmptyPayload();
-            PlayerMessage message = new PlayerMessage()
+            Message message = new Message()
             {
-                MessageID = PlayerMessageId.Put,
+                MessageID = MessageID.Put,
                 AgentID = id,
-                Payload = payload.Serialize(),
+                Payload = payload,
             };
             await Communicate(message, cancellationToken);
         }
 
         public async Task BegForInfo(CancellationToken cancellationToken)
         {
-            PlayerMessage message = new PlayerMessage()
+            Message message = new Message()
             {
-                MessageID = PlayerMessageId.BegForInfo,
+                MessageID = MessageID.BegForInfo,
                 AgentID = id,
             };
 
@@ -182,7 +182,7 @@ namespace Player.Models
                 AskedAgentID = TeamMatesIds[index],
             };
 
-            message.Payload = payload.Serialize();
+            message.Payload = payload;
 
             await Communicate(message, cancellationToken);
         }
@@ -192,9 +192,9 @@ namespace Player.Models
             if (WaitingPlayers.Count < 1 && !toLeader)
                 return;
 
-            PlayerMessage message = new PlayerMessage()
+            Message message = new Message()
             {
-                MessageID = PlayerMessageId.GiveInfo,
+                MessageID = MessageID.GiveInfo,
                 AgentID = id,
             };
 
@@ -230,7 +230,7 @@ namespace Player.Models
                     response.RedTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
                 }
             }
-            message.Payload = response.Serialize();
+            message.Payload = response;
             await Communicate(message, cancellationToken);
         }
 
@@ -247,27 +247,27 @@ namespace Player.Models
             }
         }
 
-        private PlayerMessage CreateMessage(PlayerMessageId type, Payload payload)
+        private Message CreateMessage(MessageID type, Payload payload)
         {
-            return new PlayerMessage()
+            return new Message()
             {
                 MessageID = type,
                 AgentID = id,
-                Payload = payload.Serialize(),
+                Payload = payload,
             };
         }
 
         public async Task CheckPiece(CancellationToken cancellationToken)
         {
             EmptyPayload payload = new EmptyPayload();
-            PlayerMessage message = CreateMessage(PlayerMessageId.CheckPiece, payload);
+            Message message = CreateMessage(MessageID.CheckPiece, payload);
             await Communicate(message, cancellationToken);
         }
 
         public async Task Discover(CancellationToken cancellationToken)
         {
             EmptyPayload payload = new EmptyPayload();
-            PlayerMessage message = CreateMessage(PlayerMessageId.Discover, payload);
+            Message message = CreateMessage(MessageID.Discover, payload);
 
             await Communicate(message, cancellationToken);
         }
@@ -275,25 +275,25 @@ namespace Player.Models
         /// <summary>
         /// Returns true if StartGameMessage was accepted
         /// </summary>
-        public async Task<GMMessageId> AcceptMessage(CancellationToken cancellationToken)
+        public async Task<MessageID> AcceptMessage(CancellationToken cancellationToken)
         {
             var cancellationTimespan = TimeSpan.FromMinutes(2);
-            GMMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
-            logger.Verbose("Received message. " + MessageLogger.Get(message));
+            Message message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
+            logger.Verbose("Received message. " + message.GetDescription());
             switch (message.MessageID)
             {
-                case GMMessageId.CheckAnswer:
-                    CheckAnswerPayload payloadCheck = message.DeserializePayload<CheckAnswerPayload>();
+                case MessageID.CheckAnswer:
+                    CheckAnswerPayload payloadCheck = (CheckAnswerPayload)message.Payload;
                     IsHeldPieceSham = payloadCheck.Sham;
                     penaltyTime = PenaltiesTimes.CheckPiece;
                     break;
-                case GMMessageId.DestructionAnswer:
+                case MessageID.DestructionAnswer:
                     HasPiece = false;
                     IsHeldPieceSham = null;
                     penaltyTime = PenaltiesTimes.DestroyPiece;
                     break;
-                case GMMessageId.DiscoverAnswer:
-                    DiscoveryAnswerPayload payloadDiscover = message.DeserializePayload<DiscoveryAnswerPayload>();
+                case MessageID.DiscoverAnswer:
+                    DiscoveryAnswerPayload payloadDiscover = (DiscoveryAnswerPayload)message.Payload;
                     Board[Position.y, Position.x].DistToPiece = payloadDiscover.DistanceFromCurrent.Value;
                     if (Position.y + 1 < BoardSize.y)
                         Board[Position.y + 1, Position.x].DistToPiece = payloadDiscover.DistanceN.Value;
@@ -313,18 +313,18 @@ namespace Player.Models
                         Board[Position.y - 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSW.Value;
                     penaltyTime = PenaltiesTimes.Discover;
                     break;
-                case GMMessageId.EndGame:
-                    EndGamePayload payloadEnd = message.DeserializePayload<EndGamePayload>();
+                case MessageID.EndGame:
+                    EndGamePayload payloadEnd = (EndGamePayload)message.Payload;
                     winner = payloadEnd.Winner;
                     StopWorking();
                     break;
-                case GMMessageId.CSDisconnected:
+                case MessageID.CSDisconnected:
                     winner = Team == Team.Blue ? Team.Red : Team.Blue;
                     logger.Warning("CS disconnected");
                     StopWorking();
                     break;
-                case GMMessageId.StartGame:
-                    StartGamePayload payloadStart = message.DeserializePayload<StartGamePayload>();
+                case MessageID.StartGame:
+                    StartGamePayload payloadStart = (StartGamePayload)message.Payload;
                     id = payloadStart.AgentID;
                     TeamMatesIds = payloadStart.AlliesIDs;
                     if (id == payloadStart.LeaderID)
@@ -361,23 +361,23 @@ namespace Player.Models
                     ShamPieceProbability = payloadStart.ShamPieceProbability;
                     WaitingPlayers = new List<int>();
                     break;
-                case GMMessageId.BegForInfoForwarded:
-                    BegForInfoForwardedPayload payloadBeg = message.DeserializePayload<BegForInfoForwardedPayload>();
+                case MessageID.BegForInfoForwarded:
+                    BegForInfoForwardedPayload payloadBeg = (BegForInfoForwardedPayload)message.Payload;
                     if (Team == payloadBeg.TeamID)
                     {
                         await RequestsResponse(cancellationToken, payloadBeg.AskingID, payloadBeg.Leader);
                     }
                     break;
-                case GMMessageId.JoinTheGameAnswer:
-                    JoinAnswerPayload payloadJoin = message.DeserializePayload<JoinAnswerPayload>();
+                case MessageID.JoinTheGameAnswer:
+                    JoinAnswerPayload payloadJoin = (JoinAnswerPayload)message.Payload;
                     id = payloadJoin.AgentID;
                     if (!payloadJoin.Accepted)
                     {
                         StopWorking();
                     }
                     break;
-                case GMMessageId.MoveAnswer:
-                    MoveAnswerPayload payloadMove = message.DeserializePayload<MoveAnswerPayload>();
+                case MessageID.MoveAnswer:
+                    MoveAnswerPayload payloadMove = (MoveAnswerPayload)message.Payload;
                     if (payloadMove.MadeMove)
                     {
                         Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
@@ -385,16 +385,16 @@ namespace Player.Models
                     }
                     penaltyTime = PenaltiesTimes.Move;
                     break;
-                case GMMessageId.PickAnswer:
+                case MessageID.PickAnswer:
                     HasPiece = true;
                     Board[Position.y, Position.x].DistToPiece = int.MaxValue;
                     penaltyTime = PenaltiesTimes.PickupPiece;
                     break;
-                case GMMessageId.PutAnswer:
+                case MessageID.PutAnswer:
                     HasPiece = false;
                     IsHeldPieceSham = null;
 
-                    PutAnswerPayload payload = message.DeserializePayload<PutAnswerPayload>();
+                    PutAnswerPayload payload = (PutAnswerPayload)message.Payload;
                     if (payload.PutEvent == PutEvent.NormalOnGoalField)
                     {
                         Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredGoal;
@@ -407,8 +407,8 @@ namespace Player.Models
 
                     penaltyTime = PenaltiesTimes.PutPiece;
                     break;
-                case GMMessageId.GiveInfoForwarded:
-                    GiveInfoForwardedPayload payloadGive = message.DeserializePayload<GiveInfoForwardedPayload>();
+                case MessageID.GiveInfoForwarded:
+                    GiveInfoForwardedPayload payloadGive = (GiveInfoForwardedPayload)message.Payload;
                     for (int i = 0; i < payloadGive.Distances.GetLength(0); i++)
                     {
                         for (int j = 0; j < payloadGive.Distances.GetLength(1); j++)
@@ -428,31 +428,31 @@ namespace Player.Models
                         }
                     }
                     break;
-                case GMMessageId.InformationExchangeResponse:
+                case MessageID.InformationExchangeResponse:
                     penaltyTime = PenaltiesTimes.Response;
                     break;
-                case GMMessageId.InformationExchangeRequest:
+                case MessageID.InformationExchangeRequest:
                     penaltyTime = PenaltiesTimes.Ask;
                     break;
-                case GMMessageId.NotWaitedError:
-                    NotWaitedErrorPayload errorPayload = message.DeserializePayload<NotWaitedErrorPayload>();
+                case MessageID.NotWaitedError:
+                    NotWaitedErrorPayload errorPayload = (NotWaitedErrorPayload)message.Payload;
                     int toWait = errorPayload.WaitFor;
                     if (toWait >= 0)
                     {
                         penaltyTime = toWait;
                     }
                     break;
-                case GMMessageId.PickError:
+                case MessageID.PickError:
                     penaltyTime = PenaltiesTimes.PickupPiece;
                     break;
-                case GMMessageId.PutError:
+                case MessageID.PutError:
                     penaltyTime = PenaltiesTimes.PutPiece;
                     break;
-                case GMMessageId.UnknownError:
+                case MessageID.UnknownError:
                     penaltyTime = 50;
                     break;
                 default:
-                    return GMMessageId.Unknown;
+                    return MessageID.Unknown;
             }
 
             return message.MessageID;
@@ -461,11 +461,11 @@ namespace Player.Models
         public async Task DestroyPiece(CancellationToken cancellationToken)
         {
             EmptyPayload messagePickPayload = new EmptyPayload();
-            PlayerMessage messagePick = new PlayerMessage()
+            Message messagePick = new Message()
             {
-                MessageID = PlayerMessageId.PieceDestruction,
+                MessageID = MessageID.PieceDestruction,
                 AgentID = id,
-                Payload = messagePickPayload.Serialize(),
+                Payload = messagePickPayload,
             };
             await Communicate(messagePick, cancellationToken);
         }
@@ -473,11 +473,11 @@ namespace Player.Models
         public async Task Pick(CancellationToken cancellationToken)
         {
             EmptyPayload messagePickPayload = new EmptyPayload();
-            PlayerMessage messagePick = new PlayerMessage()
+            Message messagePick = new Message()
             {
-                MessageID = PlayerMessageId.Pick,
+                MessageID = MessageID.Pick,
                 AgentID = id,
-                Payload = messagePickPayload.Serialize()
+                Payload = messagePickPayload
             };
             await Communicate(messagePick, cancellationToken);
         }
@@ -487,7 +487,7 @@ namespace Player.Models
             await strategy.MakeDecision(this, cancellationToken);
         }
 
-        private async Task Communicate(PlayerMessage message, CancellationToken cancellationToken)
+        private async Task Communicate(Message message, CancellationToken cancellationToken)
         {
             await client.SendAsync(message, cancellationToken);
             logger.Verbose(MessageLogger.Sent(message));

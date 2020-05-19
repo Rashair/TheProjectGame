@@ -14,19 +14,19 @@ namespace Shared.Tests.Managers
     public class SocketManagerTests
     {
         private readonly ILogger logger;
-        private readonly SocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage> socketManager;
+        private readonly SocketManager<ISocketClient<Message, Message>, Message> socketManager;
 
         public SocketManagerTests()
         {
             logger = MockGenerator.Get<ILogger>();
-            socketManager = new TcpSocketManager<PlayerMessage, GMMessage>(logger);
+            socketManager = new TcpSocketManager<Message, Message>(logger);
         }
 
         [Fact]
         public void AddSocket_Test()
         {
             // Arrange
-            var client = new Mock<ISocketClient<PlayerMessage, GMMessage>>() { DefaultValue = DefaultValue.Mock };
+            var client = new Mock<ISocketClient<Message, Message>>() { DefaultValue = DefaultValue.Mock };
 
             // Act
             int result = socketManager.AddSocket(client.Object);
@@ -39,7 +39,7 @@ namespace Shared.Tests.Managers
         public void GetId_Test()
         {
             // Arrange
-            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var client = new TcpSocketClient<Message, Message>(logger);
             int createdId = socketManager.AddSocket(client);
 
             // Act
@@ -53,7 +53,7 @@ namespace Shared.Tests.Managers
         public void GetSocketById_Test()
         {
             // Arrange
-            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var client = new TcpSocketClient<Message, Message>(logger);
             int id = socketManager.AddSocket(client);
 
             // Act
@@ -67,7 +67,7 @@ namespace Shared.Tests.Managers
         public async void RemoveSocketAsync_Test()
         {
             // Arrange
-            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var client = new TcpSocketClient<Message, Message>(logger);
             var token = CancellationToken.None;
             int id = socketManager.AddSocket(client);
 
@@ -84,10 +84,10 @@ namespace Shared.Tests.Managers
         public async void SendMessageAsync_WithOpenClient_ShouldSendMessage_Test()
         {
             // Arrange
-            var clientMock = new Mock<ISocketClient<PlayerMessage, GMMessage>>();
+            var clientMock = new Mock<ISocketClient<Message, Message>>();
             clientMock.Setup(c => c.IsOpen).Returns(true);
             var token = CancellationToken.None;
-            var message = new GMMessage();
+            var message = new Message();
             int id = socketManager.AddSocket(clientMock.Object);
 
             // Act
@@ -101,10 +101,10 @@ namespace Shared.Tests.Managers
         public async void SendMessageAsync_WithClosedClient_ShouldNotSendMessage_Test()
         {
             // Arrange
-            var clientMock = new Mock<ISocketClient<PlayerMessage, GMMessage>>();
+            var clientMock = new Mock<ISocketClient<Message, Message>>();
             clientMock.Setup(c => c.IsOpen).Returns(false);
             var token = CancellationToken.None;
-            var message = new GMMessage();
+            var message = new Message();
             int id = socketManager.AddSocket(clientMock.Object);
 
             // Act
@@ -119,17 +119,17 @@ namespace Shared.Tests.Managers
         {
             // Arrange
             int clientsNum = 10;
-            var clientMocks = new List<Mock<ISocketClient<PlayerMessage, GMMessage>>>();
+            var clientMocks = new List<Mock<ISocketClient<Message, Message>>>();
             for (int i = 0; i < clientsNum; ++i)
             {
-                var mock = new Mock<ISocketClient<PlayerMessage, GMMessage>>();
+                var mock = new Mock<ISocketClient<Message, Message>>();
                 mock.Setup(c => c.IsOpen).Returns(true);
                 clientMocks.Add(mock);
                 int id = socketManager.AddSocket(mock.Object);
                 Assert.True(id > 0, "Socket should be added");
             }
             var token = CancellationToken.None;
-            var message = new GMMessage();
+            var message = new Message();
 
             // Act
             await socketManager.SendMessageToAllAsync(message, token);
