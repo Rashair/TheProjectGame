@@ -27,7 +27,7 @@ namespace GameMaster.Tests
     public class GMTests
     {
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
-        private readonly Stack<GMMessage> sendedMessages = new Stack<GMMessage>();
+        private readonly Stack<Message> sendedMessages = new Stack<Message>();
 
         [Theory]
         [InlineData(1)]
@@ -40,9 +40,9 @@ namespace GameMaster.Tests
             {
                 NumberOfPiecesOnBoard = 1
             };
-            var queue = new BufferBlock<PlayerMessage>();
+            var queue = new BufferBlock<Message>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var client = new TcpSocketClient<Message, Message>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
 
@@ -139,9 +139,9 @@ namespace GameMaster.Tests
         public void DiscoverTest(TaskField field, int pieceCount)
         {
             var conf = new MockGameConfiguration();
-            var queue = new BufferBlock<PlayerMessage>();
+            var queue = new BufferBlock<Message>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var client = new TcpSocketClient<Message, Message>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
             for (int i = 0; i < pieceCount; ++i)
@@ -210,9 +210,9 @@ namespace GameMaster.Tests
         {
             // Arrange
             var conf = new MockGameConfiguration();
-            var queue = new BufferBlock<PlayerMessage>();
+            var queue = new BufferBlock<Message>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var client = new TcpSocketClient<Message, Message>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
             for (int i = 0; i < conf.NumberOfPlayersPerTeam; ++i)
@@ -257,9 +257,9 @@ namespace GameMaster.Tests
         {
             // Arrange
             var conf = new MockGameConfiguration();
-            var queue = new BufferBlock<PlayerMessage>();
+            var queue = new BufferBlock<Message>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var client = new TcpSocketClient<Message, Message>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
 
             // Act
@@ -335,9 +335,9 @@ namespace GameMaster.Tests
         {
             // Arrange
             var conf = new MockGameConfiguration();
-            var queue = new BufferBlock<PlayerMessage>();
+            var queue = new BufferBlock<Message>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var client = new TcpSocketClient<Message, Message>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
 
@@ -367,9 +367,9 @@ namespace GameMaster.Tests
         {
             // Arrange
             var conf = new MockGameConfiguration();
-            var queue = new BufferBlock<PlayerMessage>();
+            var queue = new BufferBlock<Message>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var client = new TcpSocketClient<Message, Message>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
 
@@ -390,9 +390,9 @@ namespace GameMaster.Tests
 
         private GM ValidationConfGMHelper(GameConfiguration conf)
         {
-            var queue = new BufferBlock<PlayerMessage>();
+            var queue = new BufferBlock<Message>();
             var lifetime = Mock.Of<IApplicationLifetime>();
-            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var client = new TcpSocketClient<Message, Message>(logger);
             return new GM(lifetime, conf, queue, client, logger);
         }
 
@@ -543,16 +543,16 @@ namespace GameMaster.Tests
             return new MockGameConfiguration();
         }
 
-        private BufferBlock<PlayerMessage> GenerateBuffer()
+        private BufferBlock<Message> GenerateBuffer()
         {
-            return new BufferBlock<PlayerMessage>();
+            return new BufferBlock<Message>();
         }
 
-        private ISocketClient<PlayerMessage, GMMessage> GenerateSocketClient()
+        private ISocketClient<Message, Message> GenerateSocketClient()
         {
-            var mock = new Mock<ISocketClient<PlayerMessage, GMMessage>>();
-            mock.Setup(c => c.SendAsync(It.IsAny<GMMessage>(), It.IsAny<CancellationToken>())).
-                Callback<GMMessage, CancellationToken>((m, c) => sendedMessages.Push(m));
+            var mock = new Mock<ISocketClient<Message, Message>>();
+            mock.Setup(c => c.SendAsync(It.IsAny<Message>(), It.IsAny<CancellationToken>())).
+                Callback<Message, CancellationToken>((m, c) => sendedMessages.Push(m));
             return mock.Object;
         }
 
@@ -563,17 +563,17 @@ namespace GameMaster.Tests
                 TeamID = Team.Blue,
             };
 
-            PlayerMessage joinMessage1 = new PlayerMessage()
+            Message joinMessage1 = new Message()
             {
-                MessageID = PlayerMessageId.JoinTheGame,
+                MessageID = MessageID.JoinTheGame,
                 AgentID = player1ID,
-                Payload = joinGamePayload.Serialize(),
+                Payload = joinGamePayload,
             };
-            PlayerMessage joinMessage2 = new PlayerMessage()
+            Message joinMessage2 = new Message()
             {
-                MessageID = PlayerMessageId.JoinTheGame,
+                MessageID = MessageID.JoinTheGame,
                 AgentID = player2ID,
-                Payload = joinGamePayload.Serialize(),
+                Payload = joinGamePayload,
             };
             await gameMaster.AcceptMessage(joinMessage1, CancellationToken.None);
             await gameMaster.AcceptMessage(joinMessage2, CancellationToken.None);
@@ -582,11 +582,11 @@ namespace GameMaster.Tests
             {
                 AskedAgentID = player2ID,
             };
-            PlayerMessage askMessage = new PlayerMessage()
+            Message askMessage = new Message()
             {
-                MessageID = PlayerMessageId.BegForInfo,
+                MessageID = MessageID.BegForInfo,
                 AgentID = player1ID,
-                Payload = begForInfoPayload.Serialize(),
+                Payload = begForInfoPayload,
             };
 
             await gameMaster.AcceptMessage(askMessage, CancellationToken.None);
@@ -610,25 +610,25 @@ namespace GameMaster.Tests
             await InitializeAndBegForInfo(gameMaster, player1ID, player2ID);
             var lastMessage = sendedMessages.Pop();
 
-            Assert.Equal(GMMessageId.InformationExchangeRequest, lastMessage.MessageID);
-            Assert.True(lastMessage.DeserializePayload<InformationExchangePayload>().WasSent);
+            Assert.Equal(MessageID.InformationExchangeRequest, lastMessage.MessageID);
+            Assert.True(((InformationExchangePayload)lastMessage.Payload).WasSent);
 
             BegForInfoPayload begForInfoPayload = new BegForInfoPayload()
             {
                 AskedAgentID = player3ID,
             };
-            PlayerMessage askMessage = new PlayerMessage()
+            Message askMessage = new Message()
             {
-                MessageID = PlayerMessageId.BegForInfo,
+                MessageID = MessageID.BegForInfo,
                 AgentID = player1ID,
-                Payload = begForInfoPayload.Serialize(),
+                Payload = begForInfoPayload,
             };
 
             await gameMaster.AcceptMessage(askMessage, CancellationToken.None);
             lastMessage = sendedMessages.Pop();
 
-            Assert.Equal(GMMessageId.InformationExchangeRequest, lastMessage.MessageID);
-            Assert.False(lastMessage.DeserializePayload<InformationExchangePayload>().WasSent);
+            Assert.Equal(MessageID.InformationExchangeRequest, lastMessage.MessageID);
+            Assert.False(((InformationExchangePayload)lastMessage.Payload).WasSent);
         }
 
         [Fact]
@@ -655,31 +655,31 @@ namespace GameMaster.Tests
                 RedTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },
                 BlueTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },
             };
-            PlayerMessage giveMessage1 = new PlayerMessage()
+            Message giveMessage1 = new Message()
             {
-                MessageID = PlayerMessageId.GiveInfo,
+                MessageID = MessageID.GiveInfo,
                 AgentID = player2ID,
-                Payload = giveInfoPayload.Serialize(),
+                Payload = giveInfoPayload,
             };
 
-            PlayerMessage giveMessage2 = new PlayerMessage()
+            Message giveMessage2 = new Message()
             {
-                MessageID = PlayerMessageId.GiveInfo,
+                MessageID = MessageID.GiveInfo,
                 AgentID = player3ID,
-                Payload = giveInfoPayload.Serialize(),
+                Payload = giveInfoPayload,
             };
 
             await gameMaster.AcceptMessage(giveMessage1, CancellationToken.None);
             var lastMessage = sendedMessages.Pop();
 
-            Assert.Equal(GMMessageId.InformationExchangeResponse, lastMessage.MessageID);
-            Assert.True(lastMessage.DeserializePayload<InformationExchangePayload>().WasSent);
+            Assert.Equal(MessageID.InformationExchangeResponse, lastMessage.MessageID);
+            Assert.True(((InformationExchangePayload)lastMessage.Payload).WasSent);
 
             await gameMaster.AcceptMessage(giveMessage2, CancellationToken.None);
             lastMessage = sendedMessages.Pop();
 
-            Assert.Equal(GMMessageId.InformationExchangeResponse, lastMessage.MessageID);
-            Assert.False(lastMessage.DeserializePayload<InformationExchangePayload>().WasSent);
+            Assert.Equal(MessageID.InformationExchangeResponse, lastMessage.MessageID);
+            Assert.False(((InformationExchangePayload)lastMessage.Payload).WasSent);
         }
     }
 }

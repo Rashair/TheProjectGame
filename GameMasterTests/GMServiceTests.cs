@@ -26,12 +26,12 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             services.AddSingleton<GameConfiguration>(conf);
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
-            services.AddSingleton<ISocketClient<PlayerMessage, GMMessage>, TcpSocketClient<PlayerMessage, GMMessage>>();
+            services.AddSingleton<ISocketClient<Message, Message>, TcpSocketClient<Message, Message>>();
             int messagesNum = 10;
-            var queue = new BufferBlock<PlayerMessage>();
+            var queue = new BufferBlock<Message>();
             for (int i = 0; i < messagesNum; ++i)
             {
-                queue.Post(new PlayerMessage());
+                queue.Post(new Message());
             }
             services.AddSingleton(queue);
             AddLogging(services);
@@ -68,12 +68,12 @@ namespace GameMaster.Tests
             var conf = new MockGameConfiguration();
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
             services.AddSingleton<GameConfiguration>(conf);
-            services.AddSingleton<ISocketClient<PlayerMessage, GMMessage>, TcpSocketClient<PlayerMessage, GMMessage>>();
+            services.AddSingleton<ISocketClient<Message, Message>, TcpSocketClient<Message, Message>>();
             int messagesNum = 10;
-            var queue = new BufferBlock<PlayerMessage>();
+            var queue = new BufferBlock<Message>();
             for (int i = 0; i < messagesNum; ++i)
             {
-                queue.Post(new PlayerMessage());
+                queue.Post(new Message());
             }
             services.AddSingleton(queue);
             AddLogging(services);

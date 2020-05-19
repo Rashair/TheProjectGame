@@ -4,11 +4,7 @@ using Newtonsoft.Json.Serialization;
 namespace Shared.Payloads
 {
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public abstract class Payload
+    public class Payload
     {
-        public Payload Serialize()
-        {
-            return this;
-        }
     }
 }

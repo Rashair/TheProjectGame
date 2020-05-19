@@ -21,7 +21,7 @@ namespace GameMaster.Models
         private readonly ILogger logger;
         private readonly int id;
         private readonly GameConfiguration conf;
-        private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
+        private readonly ISocketClient<Message, Message> socketClient;
         private DateTime lockedTill;
         private AbstractField position;
 
@@ -44,7 +44,7 @@ namespace GameMaster.Models
 
         public Team Team { get; }
 
-        public GMPlayer(int id, GameConfiguration conf, ISocketClient<PlayerMessage, GMMessage> socketClient, Team team,
+        public GMPlayer(int id, GameConfiguration conf, ISocketClient<Message, Message> socketClient, Team team,
             ILogger log, bool isLeader = false)
         {
             logger = log.ForContext<GMPlayer>();
@@ -62,7 +62,7 @@ namespace GameMaster.Models
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 bool moved = field?.MoveHere(this) == true;
-                GMMessage message = MoveAnswerMessage(moved, gm);
+                Message message = MoveAnswerMessage(moved, gm);
                 await SendAndLockAsync(message, conf.MovePenalty, cancellationToken);
 
                 return moved;
@@ -75,7 +75,7 @@ namespace GameMaster.Models
             bool isUnlocked = await TryGetLockAsync(cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
-                GMMessage message;
+                Message message;
                 bool isHolding = !(Holding is null);
                 if (isHolding)
                 {
@@ -99,7 +99,7 @@ namespace GameMaster.Models
             bool isUnlocked = await TryGetLockAsync(cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
-                GMMessage message;
+                Message message;
                 if (Holding is null)
                 {
                     // TODO Issue 129
@@ -119,7 +119,7 @@ namespace GameMaster.Models
             bool isUnlocked = await TryGetLockAsync(cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
-                GMMessage message = DiscoverAnswerMessage(gm);
+                Message message = DiscoverAnswerMessage(gm);
 
                 await SendAndLockAsync(message, conf.DiscoverPenalty, cancellationToken);
             }
@@ -134,7 +134,7 @@ namespace GameMaster.Models
             (PutEvent putEvent, bool wasPieceRemoved) = (PutEvent.Unknown, false);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
-                GMMessage message;
+                Message message;
                 if (Holding != null)
                 {
                     (putEvent, wasPieceRemoved) = Holding.Put(Position);
@@ -152,7 +152,7 @@ namespace GameMaster.Models
             return (putEvent, wasPieceRemoved);
         }
 
-        public async Task<(int, bool?)> ForwardKnowledgeReply(PlayerMessage playerMessage, CancellationToken cancellationToken, HashSet<(int recipient, int sender)> legalKnowledgeReplies)
+        public async Task<(int, bool?)> ForwardKnowledgeReply(Message playerMessage, CancellationToken cancellationToken, HashSet<(int recipient, int sender)> legalKnowledgeReplies)
         {
             bool isUnlocked = await TryGetLockAsync(cancellationToken);
             if (cancellationToken.IsCancellationRequested)
@@ -160,65 +160,67 @@ namespace GameMaster.Models
                 return (0, null);
             }
 
-            GiveInfoPayload payload = playerMessage.DeserializePayload<GiveInfoPayload>();
-            if (legalKnowledgeReplies.Contains((playerMessage.AgentID, payload.RespondToID)) && isUnlocked)
+            GiveInfoPayload payload = (GiveInfoPayload)playerMessage.Payload;
+            int agentID = playerMessage.AgentID.Value;
+            if (legalKnowledgeReplies.Contains((agentID, payload.RespondToID)) && isUnlocked)
             {
-                legalKnowledgeReplies.Remove((playerMessage.AgentID, payload.RespondToID));
+                legalKnowledgeReplies.Remove((agentID, payload.RespondToID));
                 GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload()
                 {
-                    RespondingID = playerMessage.AgentID,
+                    RespondingID = agentID,
                     Distances = payload.Distances,
                     RedTeamGoalAreaInformations = payload.RedTeamGoalAreaInformations,
                     BlueTeamGoalAreaInformations = payload.BlueTeamGoalAreaInformations,
                 };
-                GMMessage answer = new GMMessage()
+                Message answer = new Message()
                 {
-                    MessageID = GMMessageId.GiveInfoForwarded,
+                    MessageID = MessageID.GiveInfoForwarded,
                     AgentID = payload.RespondToID,
-                    Payload = answerPayload.Serialize(),
+                    Payload = answerPayload,
                 };
 
                 await socketClient.SendAsync(answer, cancellationToken);
-                return (playerMessage.AgentID, true);
+                return (agentID, true);
             }
             else
             {
-                return (playerMessage.AgentID, false);
+                return (agentID, false);
             }
         }
 
-        public async Task<(int, bool?)> ForwardKnowledgeQuestion(PlayerMessage playerMessage, CancellationToken cancellationToken, Dictionary<int, GMPlayer> players, HashSet<(int recipient, int sender)> legalKnowledgeReplies)
+        public async Task<(int, bool?)> ForwardKnowledgeQuestion(Message message, CancellationToken cancellationToken, Dictionary<int, GMPlayer> players, HashSet<(int recipient, int sender)> legalKnowledgeReplies)
         {
             bool isUnlocked = await TryGetLockAsync(cancellationToken);
             if (cancellationToken.IsCancellationRequested)
             {
                 return (0, null);
             }
-            BegForInfoPayload begPayload = playerMessage.DeserializePayload<BegForInfoPayload>();
+
+            BegForInfoPayload begPayload = (BegForInfoPayload)message.Payload;
+            int agentID = message.AgentID.Value;
             if (players.ContainsKey(begPayload.AskedAgentID) && isUnlocked)
             {
                 BegForInfoForwardedPayload payload = new BegForInfoForwardedPayload()
                 {
-                    AskingID = playerMessage.AgentID,
-                    Leader = players[playerMessage.AgentID].IsLeader,
-                    TeamID = players[playerMessage.AgentID].Team,
+                    AskingID = agentID,
+                    Leader = players[agentID].IsLeader,
+                    TeamID = players[agentID].Team,
                 };
-                GMMessage gmMessage = new GMMessage()
+                Message gmMessage = new Message()
                 {
-                    MessageID = GMMessageId.BegForInfoForwarded,
+                    MessageID = MessageID.BegForInfoForwarded,
                     AgentID = begPayload.AskedAgentID,
-                    Payload = payload.Serialize(),
+                    Payload = payload,
                 };
 
-                legalKnowledgeReplies.Add((begPayload.AskedAgentID, playerMessage.AgentID));
+                legalKnowledgeReplies.Add((begPayload.AskedAgentID, agentID));
                 logger.Verbose(MessageLogger.Sent(gmMessage));
                 await socketClient.SendAsync(gmMessage, cancellationToken);
-                return (playerMessage.AgentID, true);
+
+                return (agentID, true);
             }
-            else
-            {
-                return (playerMessage.AgentID, false);
-            }
+
+            return (agentID, false);
         }
 
         public async Task<bool> PickAsync(CancellationToken cancellationToken)
@@ -227,7 +229,7 @@ namespace GameMaster.Models
             bool picked = false;
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
-                GMMessage message;
+                Message message;
                 if (Holding is null)
                 {
                     picked = Position.PickUp(this);
@@ -269,7 +271,7 @@ namespace GameMaster.Models
                 if (!isUnlocked)
                 {
                     Lock(conf.PrematureRequestPenalty, frozenTime);
-                    GMMessage message = NotWaitedErrorMessage();
+                    Message message = NotWaitedErrorMessage();
 
                     await socketClient.SendAsync(message, cancellationToken);
                     logger.Verbose(MessageLogger.Sent(message));
@@ -279,7 +281,7 @@ namespace GameMaster.Models
             return false;
         }
 
-        public async Task SendAndLockAsync(GMMessage message, int time, CancellationToken cancellationToken)
+        public async Task SendAndLockAsync(Message message, int time, CancellationToken cancellationToken)
         {
             DateTime frozenTime = DateTime.Now;
             await socketClient.SendAsync(message, cancellationToken);
@@ -306,16 +308,16 @@ namespace GameMaster.Models
             return lockedTill;
         }
 
-        private GMMessage NotWaitedErrorMessage()
+        private Message NotWaitedErrorMessage()
         {
             NotWaitedErrorPayload payload = new NotWaitedErrorPayload()
             {
                 WaitFor = (int)(lockedTill - DateTime.Now).TotalMilliseconds + conf.PrematureRequestPenalty,
             };
-            return new GMMessage(GMMessageId.NotWaitedError, id, payload);
+            return new Message(MessageID.NotWaitedError, id, payload);
         }
 
-        private GMMessage MoveAnswerMessage(bool madeMove, GM gm)
+        private Message MoveAnswerMessage(bool madeMove, GM gm)
         {
             MoveAnswerPayload payload = new MoveAnswerPayload()
             {
@@ -323,35 +325,35 @@ namespace GameMaster.Models
                 CurrentPosition = Position.GetPosition(),
                 MadeMove = madeMove,
             };
-            return new GMMessage(GMMessageId.MoveAnswer, id, payload);
+            return new Message(MessageID.MoveAnswer, id, payload);
         }
 
-        private GMMessage UnknownErrorMessage()
+        private Message UnknownErrorMessage()
         {
             UnknownErrorPayload payload = new UnknownErrorPayload()
             {
                 HoldingPiece = !(Holding is null),
                 Position = Position.GetPosition(),
             };
-            return new GMMessage(GMMessageId.UnknownError, id, payload);
+            return new Message(MessageID.UnknownError, id, payload);
         }
 
-        private GMMessage DestructionAnswerMessage()
+        private Message DestructionAnswerMessage()
         {
             EmptyAnswerPayload payload = new EmptyAnswerPayload();
-            return new GMMessage(GMMessageId.DestructionAnswer, id, payload);
+            return new Message(MessageID.DestructionAnswer, id, payload);
         }
 
-        private GMMessage CheckAnswerMessage()
+        private Message CheckAnswerMessage()
         {
             CheckAnswerPayload payload = new CheckAnswerPayload()
             {
                 Sham = Holding.CheckForSham(),
             };
-            return new GMMessage(GMMessageId.CheckAnswer, id, payload);
+            return new Message(MessageID.CheckAnswer, id, payload);
         }
 
-        private GMMessage DiscoverAnswerMessage(GM gm)
+        private Message DiscoverAnswerMessage(GM gm)
         {
             var discovered = gm.Discover(Position);
             DiscoveryAnswerPayload payload = new DiscoveryAnswerPayload()
@@ -366,41 +368,41 @@ namespace GameMaster.Models
                 DistanceS = discovered[Direction.S],
                 DistanceSE = discovered[Direction.SE],
             };
-            return new GMMessage(GMMessageId.DiscoverAnswer, id, payload);
+            return new Message(MessageID.DiscoverAnswer, id, payload);
         }
 
-        private GMMessage PutErrorMessage(PutError error)
+        private Message PutErrorMessage(PutError error)
         {
             PutErrorPayload payload = new PutErrorPayload()
             {
                 ErrorSubtype = error,
             };
-            return new GMMessage(GMMessageId.PutError, id, payload);
+            return new Message(MessageID.PutError, id, payload);
         }
 
-        private GMMessage PutAnswerMessage(PutEvent putEvent)
+        private Message PutAnswerMessage(PutEvent putEvent)
         {
             PutAnswerPayload payload = new PutAnswerPayload()
             {
                 PutEvent = putEvent,
             };
 
-            return new GMMessage(GMMessageId.PutAnswer, id, payload);
+            return new Message(MessageID.PutAnswer, id, payload);
         }
 
-        private GMMessage PickErrorMessage(PickError error)
+        private Message PickErrorMessage(PickError error)
         {
             PickErrorPayload payload = new PickErrorPayload()
             {
                 ErrorSubtype = error,
             };
-            return new GMMessage(GMMessageId.PickError, id, payload);
+            return new Message(MessageID.PickError, id, payload);
         }
 
-        private GMMessage PickAnswerMessage()
+        private Message PickAnswerMessage()
         {
             EmptyAnswerPayload payload = new EmptyAnswerPayload();
-            return new GMMessage(GMMessageId.PickAnswer, id, payload);
+            return new Message(MessageID.PickAnswer, id, payload);
         }
     }
 }

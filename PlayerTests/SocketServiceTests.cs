@@ -26,8 +26,8 @@ namespace Player.Tests
             // Arrange
             int numberOfMessages = 5;
 
-            var clientMock = new Mock<ISocketClient<GMMessage, PlayerMessage>>();
-            BufferBlock<GMMessage> queue = new BufferBlock<GMMessage>();
+            var clientMock = new Mock<ISocketClient<Message, Message>>();
+            BufferBlock<Message> queue = new BufferBlock<Message>();
             ServiceSynchronization context = new ServiceSynchronization(0, 1);
 
             var calls = 0;
@@ -35,9 +35,9 @@ namespace Player.Tests
             .Returns(() =>
             {
                 if (calls < numberOfMessages)
-                    return Task.FromResult((true, new GMMessage()));
+                    return Task.FromResult((true, new Message()));
                 else
-                    return Task.FromResult((false, new GMMessage()));
+                    return Task.FromResult((false, new Message()));
             })
             .Callback(() =>
             {

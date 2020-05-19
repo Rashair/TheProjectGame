@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Serilog;
 using Shared.Clients;
+using Shared.Converters;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
@@ -25,8 +26,8 @@ namespace GameMaster.Models
         private readonly ILogger log;
         private readonly ILogger logger;
         private readonly IApplicationLifetime lifetime;
-        private readonly BufferBlock<PlayerMessage> queue;
-        private readonly ISocketClient<PlayerMessage, GMMessage> socketClient;
+        private readonly BufferBlock<Message> queue;
+        private readonly ISocketClient<Message, Message> socketClient;
         private readonly HashSet<(int recipient, int sender)> legalKnowledgeReplies;
         private readonly Dictionary<int, GMPlayer> players;
         private readonly GameConfiguration conf;
@@ -46,7 +47,7 @@ namespace GameMaster.Models
         public int SecondGoalAreaStart { get => conf.Height - conf.GoalAreaHeight; }
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
-            BufferBlock<PlayerMessage> queue, ISocketClient<PlayerMessage, GMMessage> socketClient,
+            BufferBlock<Message> queue, ISocketClient<Message, Message> socketClient,
             ILogger log)
         {
             this.log = log;
@@ -150,11 +151,11 @@ namespace GameMaster.Models
                     X = player[1],
                 };
 
-                var message = new GMMessage
+                var message = new Message
                 {
-                    MessageID = GMMessageId.StartGame,
+                    MessageID = MessageID.StartGame,
                     AgentID = p.Key,
-                    Payload = payload.Serialize(),
+                    Payload = payload,
                 };
                 logger.Verbose(MessageLogger.Sent(message));
                 sendMessagesTasks.Add(socketClient.SendAsync(message, cancellationToken));
@@ -171,7 +172,7 @@ namespace GameMaster.Models
             {
                 try
                 {
-                    PlayerMessage message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
+                    Message message = await queue.ReceiveAsync(cancellationTimespan, cancellationToken);
                     logger.Verbose(MessageLogger.Received(message));
                     await AcceptMessage(message, cancellationToken);
                     if (conf.NumberOfGoals == blueTeamPoints || conf.NumberOfGoals == redTeamPoints)
@@ -200,15 +201,15 @@ namespace GameMaster.Models
             }
         }
 
-        private async Task SendInformationExchangeMessage(GMMessageId messageId, int agentID, bool wasSent, CancellationToken cancellationToken)
+        private async Task SendInformationExchangeMessage(MessageID messageId, int agentID, bool wasSent, CancellationToken cancellationToken)
         {
-            GMMessage confirmationMessage = new GMMessage(messageId,
+            Message confirmationMessage = new Message(messageId,
                     agentID, new InformationExchangePayload() { WasSent = wasSent });
-            logger.Verbose("Sent message." + MessageLogger.Get(confirmationMessage));
+            logger.Verbose("Sent message." + confirmationMessage.GetDescription());
             await socketClient.SendAsync(confirmationMessage, cancellationToken);
         }
 
-        public async Task AcceptMessage(PlayerMessage message, CancellationToken cancellationToken)
+        public async Task AcceptMessage(Message message, CancellationToken cancellationToken)
         {
             if (!WasGameInitialized)
             {
@@ -217,9 +218,9 @@ namespace GameMaster.Models
                 return;
             }
 
-            if (!WasGameStarted && message.MessageID != PlayerMessageId.JoinTheGame &&
-                message.MessageID != PlayerMessageId.Disconnected &&
-                message.MessageID != PlayerMessageId.CSDisconnected)
+            if (!WasGameStarted && message.MessageID != MessageID.JoinTheGame &&
+                message.MessageID != MessageID.PlayerDisconnected &&
+                message.MessageID != MessageID.CSDisconnected)
             {
                 // TODO: send error message
                 logger.Warning("Game was not started yet: GM can't accept messages other than JoinTheGame," +
@@ -227,53 +228,54 @@ namespace GameMaster.Models
                 return;
             }
 
-            players.TryGetValue(message.AgentID, out GMPlayer player);
+            int agentID = message.AgentID.Value;
+            players.TryGetValue(agentID, out GMPlayer player);
             switch (message.MessageID)
             {
-                case PlayerMessageId.CheckPiece:
+                case MessageID.CheckPiece:
                     await player.CheckHoldingAsync(cancellationToken);
                     break;
-                case PlayerMessageId.PieceDestruction:
+                case MessageID.PieceDestruction:
                     bool destroyed = await player.DestroyHoldingAsync(cancellationToken);
                     if (destroyed)
                     {
                         GeneratePiece();
                     }
                     break;
-                case PlayerMessageId.Discover:
+                case MessageID.Discover:
                     await player.DiscoverAsync(this, cancellationToken);
                     break;
-                case PlayerMessageId.GiveInfo:
+                case MessageID.GiveInfo:
                     if (player == null)
                     {
-                        await SendInformationExchangeMessage(GMMessageId.InformationExchangeResponse, message.AgentID, false, cancellationToken);
+                        await SendInformationExchangeMessage(MessageID.InformationExchangeResponse, agentID, false, cancellationToken);
                     }
                     else
                     {
                         (int agentID, bool? res) forwardReply = await player.ForwardKnowledgeReply(message, cancellationToken, legalKnowledgeReplies);
                         if (forwardReply.res != null)
                         {
-                            await SendInformationExchangeMessage(GMMessageId.InformationExchangeResponse, forwardReply.agentID, (bool)forwardReply.res, cancellationToken);
+                            await SendInformationExchangeMessage(MessageID.InformationExchangeResponse, forwardReply.agentID, (bool)forwardReply.res, cancellationToken);
                         }
                     }
                     break;
-                case PlayerMessageId.BegForInfo:
+                case MessageID.BegForInfo:
                     if (player == null)
                     {
-                        await SendInformationExchangeMessage(GMMessageId.InformationExchangeRequest, message.AgentID, false, cancellationToken);
+                        await SendInformationExchangeMessage(MessageID.InformationExchangeRequest, agentID, false, cancellationToken);
                     }
                     else
                     {
                         (int agentID, bool? res) forwardQuestion = await player.ForwardKnowledgeQuestion(message, cancellationToken, players, legalKnowledgeReplies);
                         if (forwardQuestion.res != null)
                         {
-                            await SendInformationExchangeMessage(GMMessageId.InformationExchangeRequest, forwardQuestion.agentID, (bool)forwardQuestion.res, cancellationToken);
+                            await SendInformationExchangeMessage(MessageID.InformationExchangeRequest, forwardQuestion.agentID, (bool)forwardQuestion.res, cancellationToken);
                         }
                     }
                     break;
-                case PlayerMessageId.Disconnected:
+                case MessageID.PlayerDisconnected:
                 {
-                    int key = message.AgentID;
+                    int key = agentID;
                     players.Remove(key);
                     logger.Verbose($"Player {key} disconnected");
                     if (WasGameStarted)
@@ -289,24 +291,24 @@ namespace GameMaster.Models
                     }
                     break;
                 }
-                case PlayerMessageId.CSDisconnected:
+                case MessageID.CSDisconnected:
                     forceEndGame = true;
                     break;
-                case PlayerMessageId.JoinTheGame:
+                case MessageID.JoinTheGame:
                 {
-                    JoinGamePayload payloadJoin = message.DeserializePayload<JoinGamePayload>();
-                    int key = message.AgentID;
+                    JoinGamePayload payloadJoin = (JoinGamePayload)message.Payload;
+                    int key = agentID;
                     bool accepted = TryToAddPlayer(key, payloadJoin.TeamID);
                     JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
                     {
                         Accepted = accepted,
                         AgentID = key,
                     };
-                    GMMessage answerJoin = new GMMessage()
+                    Message answerJoin = new Message()
                     {
-                        MessageID = GMMessageId.JoinTheGameAnswer,
+                        MessageID = MessageID.JoinTheGameAnswer,
                         AgentID = key,
-                        Payload = answerJoinPayload.Serialize(),
+                        Payload = answerJoinPayload,
                     };
 
                     await socketClient.SendAsync(answerJoin, cancellationToken);
@@ -321,9 +323,9 @@ namespace GameMaster.Models
                     }
                     break;
                 }
-                case PlayerMessageId.Move:
+                case MessageID.Move:
                 {
-                    MovePayload payloadMove = message.DeserializePayload<MovePayload>();
+                    MovePayload payloadMove = (MovePayload)message.Payload;
                     AbstractField field = null;
                     int[] pos = player.GetPosition();
                     switch (payloadMove.Direction)
@@ -356,10 +358,10 @@ namespace GameMaster.Models
                     await player.MoveAsync(field, this, cancellationToken);
                     break;
                 }
-                case PlayerMessageId.Pick:
+                case MessageID.Pick:
                     await player.PickAsync(cancellationToken);
                     break;
-                case PlayerMessageId.Put:
+                case MessageID.Put:
                     (PutEvent putEvent, bool wasPieceRemoved) = await player.PutAsync(cancellationToken);
                     if (putEvent == PutEvent.NormalOnGoalField)
                     {
@@ -504,10 +506,10 @@ namespace GameMaster.Models
                 Winner = winner,
             };
 
-            List<GMMessage> messages = new List<GMMessage>();
+            List<Message> messages = new List<Message>();
             foreach (var p in players)
             {
-                var msg = new GMMessage(GMMessageId.EndGame, p.Key, payload);
+                var msg = new Message(MessageID.EndGame, p.Key, payload);
                 messages.Add(msg);
                 logger.Verbose(MessageLogger.Sent(msg));
             }

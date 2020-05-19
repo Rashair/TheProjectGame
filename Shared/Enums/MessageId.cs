@@ -1,8 +1,18 @@
 ﻿namespace Shared.Enums
 {
-    public enum GMMessageId
+    public enum MessageID
     {
         Unknown,
+
+        CheckPiece,
+        PieceDestruction,
+        Discover,
+        GiveInfo,
+        BegForInfo,
+        JoinTheGame,
+        Move,
+        Pick,
+        Put,
 
         CheckAnswer = 101,
         DestructionAnswer,
@@ -23,6 +33,7 @@
         PutError,
         NotWaitedError,
         UnknownError,
+        PlayerDisconnected,
 
         CSDisconnected = 1001, // inside type
     }

@@ -33,9 +33,9 @@ namespace Player.Tests
             IServiceCollection services = new ServiceCollection();
             services.AddSingleton(logger);
 
-            var clientMock = MockGenerator.Get<ISocketClient<GMMessage, PlayerMessage>>();
+            var clientMock = MockGenerator.Get<ISocketClient<Message, Message>>();
             services.AddSingleton(clientMock);
-            var queue = new BufferBlock<GMMessage>();
+            var queue = new BufferBlock<Message>();
             StartGamePayload payloadStart = new StartGamePayload
             {
                 AgentID = 1,
@@ -52,10 +52,10 @@ namespace Player.Tests
                 ShamPieceProbability = 0.5f,
                 Position = new Position { X = 1, Y = 1 },
             };
-            GMMessage messageStart = new GMMessage()
+            Message messageStart = new Message()
             {
-                MessageID = GMMessageId.StartGame,
-                Payload = payloadStart.Serialize(),
+                MessageID = MessageID.StartGame,
+                Payload = payloadStart,
             };
             queue.Post(messageStart);
             services.AddSingleton(queue);

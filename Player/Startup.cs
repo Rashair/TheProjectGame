@@ -80,8 +80,8 @@ namespace Player
             var logger = GetLogger(conf.TeamID, conf.Verbose);
             services.TryAddSingleton<ILogger>(logger);
 
-            services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, TcpSocketClient<GMMessage, PlayerMessage>>();
-            services.AddSingleton<BufferBlock<GMMessage>>();
+            services.AddSingleton<ISocketClient<Message, Message>, TcpSocketClient<Message, Message>>();
+            services.AddSingleton<BufferBlock<Message>>();
             services.AddSingleton<Models.Player>();
 
             var sync = new ServiceSynchronization(0, 1);
