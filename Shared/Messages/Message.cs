@@ -7,7 +7,16 @@ namespace Shared.Messages
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public abstract class Message
     {
-        public int AgentID { get; set; }
+        private int? agentID;
+
+        public int AgentID
+        {
+            get => agentID.Value;
+            set
+            {
+                this.agentID = value;
+            }
+        }
 
         public Payload Payload { get; set; }
 
