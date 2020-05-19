@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,20 +12,20 @@ namespace Player.Models.Strategies
     public class AdvancedStrategy : IStrategy
     {
         private const int NumberOfPossibleDirections = 4;
-        private readonly Random random = new Random();
+        private readonly RandomGenerator random;
         private readonly Player player;
 
+        // Strategy computed values
         private (int y, int x) previousPosition;
         private int previousDistToPiece;
         private Direction previousDirection;
-
         private DiscoverState state;
 
         public AdvancedStrategy(Player player)
         {
             this.player = player;
 
-            this.random = new Random();
+            this.random = new RandomGenerator();
             this.previousPosition = (-1, -1);
             this.previousDistToPiece = int.MaxValue;
             this.previousDirection = Direction.FromCurrent;
@@ -102,7 +101,7 @@ namespace Player.Models.Strategies
                 decision = DoesNotHavePieceInTaskAreaMoveDecision();
             }
 
-            previousPosition = (y, x);
+            previousPosition = player.Position;
             previousDistToPiece = distToPiece;
 
             return decision;
@@ -117,7 +116,7 @@ namespace Player.Models.Strategies
             }
             else
             {
-                var directions = GetDirectionsInRange(int.MaxValue, int.MinValue);
+                var directions = GetHorizontalDirections();
                 currentDirection = GetRandomDirection(directions);
             }
 
@@ -133,7 +132,7 @@ namespace Player.Models.Strategies
 
         private Task DoesNotHavePieceInTaskAreaMoveDecision()
         {
-            Direction currentDirection;
+            Direction currentDirection = Direction.FromCurrent;
             if (state == DiscoverState.Discovered)
             {
                 var directions = GetDirectionsInRange(goalAreaSize, boardSize.y - goalAreaSize);
@@ -158,14 +157,7 @@ namespace Player.Models.Strategies
                 else if (!isPreviousDirPossible || distToPiece == previousDistToPiece)
                 {
                     var (right, left) = previousDirection.GetPerpendicularDirections();
-                    if (directions.Contains(right))
-                    {
-                        currentDirection = right;
-                    }
-                    else
-                    {
-                        currentDirection = left;
-                    }
+                    currentDirection = GetRandomDirection(directions, right, left);
                 }
                 else //// if (currDist > previousDistToPiece)
                 {
@@ -212,15 +204,14 @@ namespace Player.Models.Strategies
 
         private Task HasPieceNotInGoalAreaDecision()
         {
-            int goalAreaDirectionProbability = 80;
             Direction moveDirection;
-            if (random.Next(101) <= goalAreaDirectionProbability)
+            if (random.IsLucky(80))
             {
                 moveDirection = player.GoalAreaDirection;
             }
             else
             {
-                var directions = GetDirectionsInRange(int.MaxValue, int.MinValue);
+                var directions = GetHorizontalDirections();
                 moveDirection = GetRandomDirection(directions);
             }
 
@@ -243,9 +234,47 @@ namespace Player.Models.Strategies
             return directions;
         }
 
+        private List<Direction> GetHorizontalDirections()
+        {
+            List<Direction> directions = new List<Direction>(NumberOfPossibleDirections / 2);
+            if (x > 0)
+                directions.Add(Direction.W);
+            if (x < boardSize.x - 1)
+                directions.Add(Direction.E);
+
+            return directions;
+        }
+
         private Direction GetRandomDirection(List<Direction> directions)
         {
-            return directions[random.Next(directions.Count)];
+            return directions[random[directions.Count]];
+        }
+
+        private Direction GetRandomDirection(List<Direction> directions, Direction right, Direction left)
+        {
+            int startInd = random[directions.Count];
+            int ind = startInd;
+            do
+            {
+                if (directions[ind] == right)
+                {
+                    return right;
+                }
+                else if (directions[ind] == left)
+                {
+                    return left;
+                }
+
+                ++ind;
+                if (ind == directions.Count)
+                {
+                    ind = 0;
+                }
+            } 
+            while (ind != startInd);
+
+            throw new InvalidOperationException($"None of the provided directions were in list, " +
+                $"lenght: {directions.Count}");
         }
     }
 }
