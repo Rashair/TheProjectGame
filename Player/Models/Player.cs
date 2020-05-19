@@ -449,6 +449,8 @@ namespace Player.Models
                     penaltyTime = PenaltiesTimes.PutPiece;
                     break;
                 case MessageID.UnknownError:
+                    UnknownErrorPayload unknownErrorPayload = (UnknownErrorPayload)message.Payload;
+                    HasPiece = unknownErrorPayload.HoldingPiece;
                     penaltyTime = 50;
                     break;
                 default:
