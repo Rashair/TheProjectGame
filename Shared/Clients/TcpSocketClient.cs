@@ -131,6 +131,9 @@ namespace Shared.Clients
                 byte[] buffer = Encoding.UTF8.GetBytes(serialized);
                 byte[] length = buffer.Length.ToLittleEndian();
 
+                logger.Information("MSG: " + serialized);
+                logger.Information("Length: " + buffer.Length);
+
                 byte[] result = length.Concat(buffer).ToArray();
                 await stream.WriteAsync(result, cancellationToken);
             }

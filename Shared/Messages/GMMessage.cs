@@ -15,7 +15,7 @@ namespace Shared.Messages
         {
             MessageID = id;
             AgentID = agentID;
-            Payload = payload.Serialize();
+            Payload = payload;
         }
     }
 }

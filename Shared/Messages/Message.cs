@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Shared.Payloads;
 
 namespace Shared.Messages
 {
@@ -8,11 +9,12 @@ namespace Shared.Messages
     {
         public int AgentID { get; set; }
 
-        public string Payload { get; set; }
+        public Payload Payload { get; set; }
 
         public T DeserializePayload<T>()
+            where T : Payload
         {
-            return JsonConvert.DeserializeObject<T>(Payload);
+            return (T)Payload;
         }
     }
 }

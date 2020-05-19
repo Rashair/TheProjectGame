@@ -6,9 +6,9 @@ namespace Shared.Payloads
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public abstract class Payload
     {
-        public string Serialize()
+        public Payload Serialize()
         {
-            return JsonConvert.SerializeObject(this);
+            return this;
         }
     }
 }
