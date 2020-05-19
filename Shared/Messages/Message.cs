@@ -11,7 +11,7 @@ namespace Shared.Messages
 
         public int AgentID
         {
-            get => agentID.Value;
+            get => agentID.HasValue ? agentID.Value : 0;
             set
             {
                 this.agentID = value;
