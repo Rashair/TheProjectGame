@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Newtonsoft.Json;
+using Shared.Converters;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Payloads.GMPayloads;
@@ -21,7 +22,7 @@ namespace Shared.Tests
             // Act
             foreach (var id in messages)
             {
-                var jsonString = "{\"messageId\":" + (int)id + ",\"AgentID\":0,\"Payload\":\"{}\"}";
+                var jsonString = "{\"messageID\":" + (int)id + ",\"agentID\":0,\"Payload\":{}}";
                 var deserializedObject = JsonConvert.DeserializeObject<Message>(jsonString);
 
                 // Assert
@@ -36,15 +37,17 @@ namespace Shared.Tests
             IEnumerable<MessageID> messages = GetMessages();
 
             // Act
+            int agentID = 1;
             foreach (var id in messages)
             {
                 var obj = new Message
                 {
                     MessageID = id,
+                    AgentID = agentID,
                     Payload = new EmptyAnswerPayload(),
                 };
 
-                var expectedJsonString = "{\"messageID\":" + (int)id + ",\"agentID\":0,\"payload\":\"{}\"}";
+                var expectedJsonString = "{\"messageID\":" + (int)id + ",\"agentID\":" + agentID + ",\"payload\":{}}";
                 var serializedObject = JsonConvert.SerializeObject(obj);
 
                 // Assert

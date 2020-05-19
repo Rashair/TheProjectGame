@@ -6,5 +6,14 @@ namespace Shared.Payloads
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class Payload
     {
+        public override bool Equals(object obj)
+        {
+            return this.GetType() == obj.GetType();
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

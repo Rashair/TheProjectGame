@@ -93,7 +93,7 @@ namespace Shared.Converters
                     return typeof(MovePayload);
             }
 
-            return null;
+            return typeof(EmptyAnswerPayload);
         }
 
         public static Payload GetPayload(this MessageID messageID, string json)

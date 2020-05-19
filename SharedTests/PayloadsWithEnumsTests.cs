@@ -35,10 +35,10 @@ namespace Shared.Tests
 
             // Act
             var expectedJsonString = "{\"askingID\":0,\"leader\":true,\"teamID\":\"red\"}";
-            var serializedPayload = payload;
+            var serializedPayload = JsonConvert.SerializeObject(payload);
 
             // Assert
-           // Assert.Equal(expectedJsonString, serializedPayload);
+            Assert.Equal(expectedJsonString, serializedPayload);
         }
 
         [Fact]
@@ -66,10 +66,10 @@ namespace Shared.Tests
 
             // Act
             var expectedJsonString = "{\"winner\":\"red\"}";
-            var serializedPayload = payload;
+            var serializedPayload = JsonConvert.SerializeObject(payload);
 
             // Assert
-           // Assert.Equal(expectedJsonString, serializedPayload);
+            Assert.Equal(expectedJsonString, serializedPayload);
         }
 
         [Fact]
@@ -130,10 +130,10 @@ namespace Shared.Tests
             var expectedJsonString = "{\"respondingID\":1,\"distances\":[[1,2],[0,1]]," +
                 "\"redTeamGoalAreaInformations\":[[\"IDK\",\"IDK\"],[\"N\",\"G\"]]," +
                 "\"blueTeamGoalAreaInformations\":[[\"IDK\",\"IDK\"],[\"N\",\"G\"]]}";
-            var serializedPayload = payload;
+            var serializedPayload = JsonConvert.SerializeObject(payload);
 
             // Assert
-            // Assert.Equal(expectedJsonString, serializedPayload);
+            Assert.Equal(expectedJsonString, serializedPayload);
         }
 
         [Fact]
@@ -194,10 +194,10 @@ namespace Shared.Tests
             var expectedJsonString = "{\"distances\":[[1,2],[0,1]],\"respondToID\":1," +
                 "\"redTeamGoalAreaInformations\":[[\"IDK\",\"IDK\"],[\"N\",\"G\"]]," +
                 "\"blueTeamGoalAreaInformations\":[[\"IDK\",\"IDK\"],[\"N\",\"G\"]]}";
-            var serializedPayload = payload;
+            var serializedPayload = JsonConvert.SerializeObject(payload);
 
             // Assert
-           // Assert.Equal(expectedJsonString, serializedPayload);
+            Assert.Equal(expectedJsonString, serializedPayload);
         }
 
         [Fact]
@@ -225,10 +225,10 @@ namespace Shared.Tests
 
             // Act
             var expectedJsonString = "{\"errorSubtype\":\"NothingThere\"}";
-            var serializedPayload = payload;
+            var serializedPayload = JsonConvert.SerializeObject(payload);
 
             // Assert
-            // Assert.Equal(expectedJsonString, serializedPayload);
+            Assert.Equal(expectedJsonString, serializedPayload);
         }
 
         [Fact]
@@ -256,10 +256,10 @@ namespace Shared.Tests
 
             // Act
             var expectedJsonString = "{\"errorSubtype\":\"CannotPutThere\"}";
-            var serializedPayload = payload;
+            var serializedPayload = JsonConvert.SerializeObject(payload);
 
             // Assert
-            // Assert.Equal(expectedJsonString, serializedPayload);
+            Assert.Equal(expectedJsonString, serializedPayload);
         }
     }
 }

@@ -28,9 +28,12 @@ namespace Shared.Converters
                 message.AgentID = agentID.ToObject<int?>();
             }
 
-            Type type = message.MessageID.GetPayloadType();
-            Payload payload = (Payload)jsonObject["payload"].ToObject(type);
-            message.Payload = payload;
+            var payloadObject = jsonObject["payload"];
+            if (payloadObject != null)
+            {
+                Type type = message.MessageID.GetPayloadType();
+                message.Payload = (Payload)payloadObject.ToObject(type);
+            }
 
             return message;
         }
