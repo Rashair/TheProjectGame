@@ -8,7 +8,7 @@ namespace Shared.Payloads
     {
         public override bool Equals(object obj)
         {
-            return this.GetType() == obj.GetType();
+            return this.GetType() == obj.GetType() && this.AreAllPropertiesTheSame(obj);
         }
 
         public override int GetHashCode()
