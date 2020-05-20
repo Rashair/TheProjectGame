@@ -11,9 +11,9 @@ using Microsoft.Extensions.Hosting;
 using Player.Models;
 using Player.Services;
 using Serilog;
-using Serilog.Events;
 using Shared;
 using Shared.Clients;
+using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
 
@@ -33,7 +33,7 @@ namespace Player
             Configuration = configuration;
         }
 
-        private ILogger GetLogger(string team, bool verbose)
+        private ILogger GetLogger(Team team, bool verbose)
         {
             LoggerLevel level = new LoggerLevel();
             Configuration.Bind("Serilog:MinimumLevel", level);
@@ -77,11 +77,11 @@ namespace Player
             services.AddSingleton(conf);
 
             // 'Try' for tests override
-            var logger = GetLogger(conf.TeamId, conf.Verbose);
+            var logger = GetLogger(conf.TeamID, conf.Verbose);
             services.TryAddSingleton<ILogger>(logger);
 
-            services.AddSingleton<ISocketClient<GMMessage, PlayerMessage>, TcpSocketClient<GMMessage, PlayerMessage>>();
-            services.AddSingleton<BufferBlock<GMMessage>>();
+            services.AddSingleton<ISocketClient<Message, Message>, TcpSocketClient<Message, Message>>();
+            services.AddSingleton<BufferBlock<Message>>();
             services.AddSingleton<Models.Player>();
 
             var sync = new ServiceSynchronization(0, 1);

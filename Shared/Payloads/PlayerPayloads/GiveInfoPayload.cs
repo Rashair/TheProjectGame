@@ -1,7 +1,5 @@
 using System.Text;
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Shared.Enums;
 
 namespace Shared.Payloads.PlayerPayloads
@@ -10,17 +8,15 @@ namespace Shared.Payloads.PlayerPayloads
     {
         public int[,] Distances { get; set; }
 
-        public int RespondToId { get; set; }
+        public int RespondToID { get; set; }
 
-        [JsonProperty("redTeamGoalAreaInformations", ItemConverterType = typeof(StringEnumConverter))]
         public GoalInfo[,] RedTeamGoalAreaInformations { get; set; }
 
-        [JsonProperty("blueTeamGoalAreaInformations", ItemConverterType = typeof(StringEnumConverter))]
         public GoalInfo[,] BlueTeamGoalAreaInformations { get; set; }
 
         public override string ToString()
         {
-            StringBuilder message = new StringBuilder($" RespondToId:{RespondToId})");
+            StringBuilder message = new StringBuilder($" RespondToId:{RespondToID})");
             message.AppendLine();
             message.Append("Distances:\n");
             for (int i = 0; i < Distances.GetLength(0); i++)

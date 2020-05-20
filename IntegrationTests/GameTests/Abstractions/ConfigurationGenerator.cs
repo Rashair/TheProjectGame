@@ -42,7 +42,7 @@ namespace IntegrationTests.GameTests.Abstractions
         {
             return new[]
             {
-                $"TeamId={team.ToString().ToLower()}",
+                $"TeamID={team.ToString().ToLower()}",
                 "urls=http://127.0.0.1:0",
                 $"CsIP={csIP}",
                 $"CsPort={port}",

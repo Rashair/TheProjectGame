@@ -11,8 +11,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
-using Serilog.Core;
-using Serilog.Events;
 using Shared;
 using Shared.Clients;
 using Shared.Managers;
@@ -39,7 +37,7 @@ namespace CommunicationServer
         {
             LoggerLevel level = new LoggerLevel();
             Configuration.Bind("Serilog:MinimumLevel", level);
-            
+
             string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "CommunicationServer");
             int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
             string fileName = $"cs-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
@@ -77,8 +75,8 @@ namespace CommunicationServer
             services.TryAddSingleton<ILogger>(logger);
 
             services.AddSingleton<ServiceShareContainer>();
-            services.AddSingleton<ISocketManager<ISocketClient<PlayerMessage, GMMessage>, GMMessage>,
-                TcpSocketManager<PlayerMessage, GMMessage>>();
+            services.AddSingleton<ISocketManager<ISocketClient<Message, Message>, Message>,
+                TcpSocketManager<Message, Message>>();
             services.AddSingleton<BufferBlock<Message>>();
 
             var sync = new ServiceSynchronization(0, 2);

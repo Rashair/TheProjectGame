@@ -25,7 +25,7 @@ namespace GameMaster.Tests
             public IEnumerator<object[]> GetEnumerator()
             {
                 var conf = Mock.Of<GameConfiguration>();
-                var socketClient = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+                var socketClient = new TcpSocketClient<Message, Message>(logger);
                 yield return new object[]
                 {
                     new List<GMPlayer>
@@ -71,11 +71,71 @@ namespace GameMaster.Tests
 
         public class PutGoalTestData : IEnumerable<object[]>
         {
+            private const int RandomY = 0;
+            private const int RandomX = 5;
+
             public IEnumerator<object[]> GetEnumerator()
             {
-                yield return new object[] { new List<AbstractPiece> { new NormalPiece(), new ShamPiece() }, PutEvent.ShamOnGoalArea };
-                yield return new object[] { new List<AbstractPiece> { new NormalPiece() }, PutEvent.NormalOnGoalField };
-                yield return new object[] { new List<AbstractPiece> { new ShamPiece() }, PutEvent.ShamOnGoalArea };
+                yield return new object[]
+                {
+                    new GoalField(RandomY, RandomX),
+                    new List<AbstractPiece> { new ShamPiece() },
+                    new List<PutEvent> { PutEvent.ShamOnGoalArea }
+                };
+                yield return new object[]
+                {
+                    new GoalField(RandomY, RandomX),
+                    new List<AbstractPiece> { new NormalPiece(), new ShamPiece() },
+                    new List<PutEvent> { PutEvent.NormalOnGoalField, PutEvent.ShamOnGoalArea }
+                };
+                yield return new object[]
+                {
+                    new GoalField(RandomY, RandomX),
+                    new List<AbstractPiece> { new NormalPiece(), new NormalPiece() },
+                    new List<PutEvent> { PutEvent.NormalOnGoalField, PutEvent.NormalOnNonGoalField }
+                };
+                yield return new object[]
+             {
+                    new GoalField(RandomY, RandomX),
+                    new List<AbstractPiece> { new ShamPiece(), new NormalPiece(), new NormalPiece() },
+                    new List<PutEvent> { PutEvent.ShamOnGoalArea, PutEvent.NormalOnGoalField, PutEvent.NormalOnNonGoalField }
+             };
+                yield return new object[]
+{
+                    new NonGoalField(RandomY, RandomX),
+                    new List<AbstractPiece> { new ShamPiece() },
+                    new List<PutEvent> { PutEvent.ShamOnGoalArea }
+};
+                yield return new object[]
+                {
+                    new NonGoalField(RandomY, RandomX),
+                    new List<AbstractPiece> { new NormalPiece(), new ShamPiece() },
+                    new List<PutEvent> { PutEvent.NormalOnNonGoalField, PutEvent.ShamOnGoalArea }
+                };
+                yield return new object[]
+                {
+                    new NonGoalField(RandomY, RandomX),
+                    new List<AbstractPiece> { new NormalPiece(), new NormalPiece() },
+                    new List<PutEvent> { PutEvent.NormalOnNonGoalField, PutEvent.NormalOnNonGoalField }
+                };
+                yield return new object[]
+{
+                    new TaskField(RandomY, RandomX),
+                    new List<AbstractPiece> { new ShamPiece() },
+                    new List<PutEvent> { PutEvent.TaskField }
+};
+                yield return new object[]
+                {
+                    new TaskField(RandomY, RandomX),
+                    new List<AbstractPiece> { new NormalPiece(), new ShamPiece() },
+                    new List<PutEvent> { PutEvent.TaskField, PutEvent.TaskField }
+                };
+                yield return new object[]
+                {
+                    new TaskField(RandomY, RandomX),
+                    new List<AbstractPiece> { new NormalPiece(), new NormalPiece() },
+                    new List<PutEvent> { PutEvent.TaskField, PutEvent.TaskField }
+                };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -83,20 +143,16 @@ namespace GameMaster.Tests
 
         [Theory]
         [ClassData(typeof(PutGoalTestData))]
-        public void PutGoalTest(List<AbstractPiece> pieces, PutEvent expected)
+        public void PutGoalTest(AbstractField field, List<AbstractPiece> pieces, List<PutEvent> expectedEvents)
         {
             // Arrange
-            GoalField goalField = new GoalField(5, 0);
-            PutEvent result = PutEvent.TaskField;
 
-            // Act
-            foreach (AbstractPiece p in pieces)
+            // Act & Assert
+            for (int i = 0; i < pieces.Count; ++i)
             {
-                result = goalField.Put(p).putEvent;
+                PutEvent result = field.Put(pieces[i]).putEvent;
+                Assert.Equal(expectedEvents[i], result);
             }
-
-            // Assert
-            Assert.Equal(expected, result);
         }
 
         [Theory]
@@ -108,7 +164,7 @@ namespace GameMaster.Tests
         {
             // Arrange
             var conf = Mock.Of<GameConfiguration>();
-            var socketClient = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var socketClient = new TcpSocketClient<Message, Message>(logger);
             GMPlayer gmPlayer = new GMPlayer(1, conf, socketClient, Shared.Enums.Team.Red, logger);
             TaskField taskField = new TaskField(2, 2);
             for (int i = 0; i < numPut; i++)

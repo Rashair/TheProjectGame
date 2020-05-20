@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using GameMaster.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
-using TestsShared;
 using Xunit;
 
 namespace IntegrationTests.GameTests.Abstractions
@@ -35,6 +33,7 @@ namespace IntegrationTests.GameTests.Abstractions
                 CheckInterval = 5000,
                 PositionNotChangedThreshold = 4,
                 NoNewPiecesThreshold = 5,
+                MinimumRunTimeSec = 30,
             };
         }
 
@@ -53,21 +52,13 @@ namespace IntegrationTests.GameTests.Abstractions
 
             await StartGame();
             await gameAsserter.CheckStart();
+            var startTime = DateTime.Now;
 
             await gameAsserter.CheckRuntime();
 
             await Task.Delay(2500);
 
-            gameAsserter.CheckEnd();
-        }
-
-        private async Task StartGame()
-        {
-            var responseConf = await Client.PostAsJsonAsync("api/Configuration", Conf);
-            var responseInit = await Client.PostAsync("api/InitGame", null);
-
-            Assert.Equal(System.Net.HttpStatusCode.Created, responseConf.StatusCode);
-            Assert.Equal(System.Net.HttpStatusCode.OK, responseInit.StatusCode);
+            gameAsserter.CheckEnd(startTime);
         }
 
         private async Task InitGame()
@@ -103,6 +94,15 @@ namespace IntegrationTests.GameTests.Abstractions
             {
                 BaseAddress = new Uri(gmUrl),
             };
+        }
+
+        private async Task StartGame()
+        {
+            var responseConf = await Client.PostAsJsonAsync("api/Configuration", Conf);
+            var responseInit = await Client.PostAsync("api/InitGame", null);
+
+            Assert.Equal(System.Net.HttpStatusCode.Created, responseConf.StatusCode);
+            Assert.Equal(System.Net.HttpStatusCode.OK, responseInit.StatusCode);
         }
 
         public void Dispose()

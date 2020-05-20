@@ -1,3 +1,5 @@
+using Shared.Enums;
+
 namespace Player.Models
 {
     public class PlayerConfiguration
@@ -6,7 +8,7 @@ namespace Player.Models
 
         public int CsPort { get; set; }
 
-        public string TeamId { get; set; }
+        public Team TeamID { get; set; }
 
         public int Strategy { get; set; }
 

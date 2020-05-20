@@ -31,7 +31,6 @@ namespace Shared.Clients
 
         public void Close()
         {
-            tcpClient.GetStream().Close();
             tcpClient.Close();
         }
     }
