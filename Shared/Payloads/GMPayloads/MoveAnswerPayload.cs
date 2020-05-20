@@ -8,7 +8,7 @@ namespace Shared.Payloads.GMPayloads
 
         public Position CurrentPosition { get; set; }
 
-        public int ClosestPiece { get; set; }
+        public int? ClosestPiece { get; set; }
 
         public override string ToString()
         {
