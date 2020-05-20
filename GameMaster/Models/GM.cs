@@ -323,7 +323,7 @@ namespace GameMaster.Models
                                 WasGameStarted = true;
                                 logger.Information("Game was started.");
                             }
-                        }
+                    }
                     break;
                 }
                 case MessageID.Move:
