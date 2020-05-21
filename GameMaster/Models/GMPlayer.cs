@@ -312,7 +312,7 @@ namespace GameMaster.Models
         {
             NotWaitedErrorPayload payload = new NotWaitedErrorPayload()
             {
-                WaitFor = (int)(lockedTill - DateTime.Now).TotalMilliseconds + conf.PrematureRequestPenalty,
+                WaitFor = (int)(lockedTill - DateTime.Now).TotalMilliseconds,
             };
             return new Message(MessageID.NotWaitedError, id, payload);
         }
