@@ -425,7 +425,7 @@ namespace Player.Models
                     break;
                 case GMMessageId.NotWaitedError:
                     NotWaitedErrorPayload errorPayload = JsonConvert.DeserializeObject<NotWaitedErrorPayload>(message.Payload);
-                    int toWait = (int)(DateTime.Now - errorPayload.WaitUntil).TotalMilliseconds;
+                    int toWait = (int)(errorPayload.WaitUntil - DateTime.Now).TotalMilliseconds;
                     if (toWait >= 0)
                     {
                         penaltyTime = toWait;
