@@ -329,13 +329,13 @@ namespace GameMaster.Models
                     switch (payloadMove.Direction)
                     {
                         case Direction.N:
-                            if (pos[0] + 1 < conf.Height && (player.Team == Team.Blue || pos[0] + 1 < SecondGoalAreaStart))
+                            if (pos[0] + 1 < conf.Height && (player.Team == Team.Red || pos[0] + 1 < SecondGoalAreaStart))
                             {
                                 field = board[pos[0] + 1][pos[1]];
                             }
                             break;
                         case Direction.S:
-                            if (pos[0] - 1 >= 0 && (player.Team == Team.Red || pos[0] - 1 >= conf.GoalAreaHeight))
+                            if (pos[0] - 1 >= 0 && (player.Team == Team.Blue || pos[0] - 1 >= conf.GoalAreaHeight))
                             {
                                 field = board[pos[0] - 1][pos[1]];
                             }
