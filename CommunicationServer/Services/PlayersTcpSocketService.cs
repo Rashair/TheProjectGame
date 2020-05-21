@@ -13,7 +13,7 @@ using Shared.Clients;
 using Shared.Enums;
 using Shared.Managers;
 using Shared.Messages;
-using Shared.Payloads.PlayerPayloads;
+using Shared.Payloads.CommunicationServerPayloads;
 
 namespace CommunicationServer.Services
 {
@@ -68,11 +68,14 @@ namespace CommunicationServer.Services
             }
             logger.Information($"Player {id} disconnected");
 
+            DisconnectPayload payload = new DisconnectPayload();
+            payload.AgentID = id;
+
             Message message = new Message()
             {
-                AgentID = id,
+                AgentID = -1,
                 MessageID = MessageID.PlayerDisconnected,
-                Payload = new EmptyPayload()
+                Payload = payload
             };
             await container.GMClient.SendAsync(message, cancellationToken);
         }
