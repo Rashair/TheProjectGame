@@ -79,7 +79,7 @@ namespace CommunicationServer
                 TcpSocketManager<Message, Message>>();
             services.AddSingleton<BufferBlock<Message>>();
 
-            var sync = new ServiceSynchronization(0, 2);
+            var sync = new ServiceSynchronization(0, 3);
             services.AddSingleton(sync);
             services.AddHostedService<GMTcpSocketService>();
             services.AddHostedService<PlayersTcpSocketService>();

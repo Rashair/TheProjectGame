@@ -57,6 +57,7 @@ namespace CommunicationServer.Services
                 {
                     await manager.SendMessageAsync(message.AgentID.Value, message, stoppingToken);
                     logger.Verbose(MessageLogger.Received(message) + ". Sent message to Player");
+                    await sync.SemaphoreSlim.WaitAsync();
                     if (!container.GameStarted)
                     {
                         if (message.MessageID == MessageID.JoinTheGameAnswer)
@@ -69,6 +70,7 @@ namespace CommunicationServer.Services
                             container.GameStarted = true;
                         }
                     }
+                    sync.SemaphoreSlim.Release(1);
                 }
             }
         }

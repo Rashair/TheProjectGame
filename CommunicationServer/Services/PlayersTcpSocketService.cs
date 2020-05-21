@@ -56,7 +56,9 @@ namespace CommunicationServer.Services
             }
             else
             {
+                sync.SemaphoreSlim.Wait();
                 container.ConfirmedAgents.Add(manager.GetId(client), false);
+                sync.SemaphoreSlim.Release(1);
             }
         }
 
@@ -96,7 +98,10 @@ namespace CommunicationServer.Services
             List<ConfiguredTaskAwaitable> tasks = new List<ConfiguredTaskAwaitable>();
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (listener.Pending() && !container.GameStarted)
+                await sync.SemaphoreSlim.WaitAsync();
+                bool canConnect = !container.GameStarted;
+                sync.SemaphoreSlim.Release(1);
+                if (listener.Pending() && canConnect)
                 {
                     var acceptedClient = await listener.AcceptTcpClientAsync();
                     IClient tcpClient = new TcpClientWrapper(acceptedClient);

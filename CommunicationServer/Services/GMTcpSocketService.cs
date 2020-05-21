@@ -77,7 +77,7 @@ namespace CommunicationServer.Services
             logger.Information("GM connected");
 
             // GM connected, ServiceShareContainer initiated, release another services and start async section.
-            sync.SemaphoreSlim.Release(2);
+            sync.SemaphoreSlim.Release(3);
             await Task.Yield();
             await ClientHandler(gmClient, stoppingToken);
         }
