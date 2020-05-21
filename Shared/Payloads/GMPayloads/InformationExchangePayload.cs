@@ -2,11 +2,11 @@
 {
     public class InformationExchangePayload : Payload
     {
-        public bool WasSent { get; set; }
+        public bool Succeeded { get; set; }
 
         public override string ToString()
         {
-            return $"Was the message send: {WasSent}";
+            return $"Was the message send: {Succeeded}";
         }
     }
 }

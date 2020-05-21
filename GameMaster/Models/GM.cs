@@ -202,7 +202,7 @@ namespace GameMaster.Models
         private async Task SendInformationExchangeMessage(MessageID messageId, int agentID, bool wasSent, CancellationToken cancellationToken)
         {
             Message confirmationMessage = new Message(messageId,
-                    agentID, new InformationExchangePayload() { WasSent = wasSent });
+                    agentID, new InformationExchangePayload() { Succeeded = wasSent });
             logger.Verbose("Sent message." + confirmationMessage.GetDescription());
             await socketClient.SendAsync(confirmationMessage, cancellationToken);
         }
