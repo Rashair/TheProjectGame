@@ -465,10 +465,6 @@ namespace GameMaster.Models
                     }
                 }
             }
-
-            if (distance == int.MaxValue)
-                return null;
-
             return distance;
         }
 
