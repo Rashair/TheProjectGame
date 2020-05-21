@@ -83,22 +83,12 @@ namespace Player.Models.Strategies
             Task decision;
             if (isInGoalArea)
             {
-                state = DiscoverState.ShouldDiscover;
                 decision = DoesNotHavePieceInGoalAreaDecision();
-            }
-            else if (distToPiece == 0)
-            {
-                decision = player.Pick(cancellationToken);
-                state = DiscoverState.NoAction;
-            }
-            else if (state == DiscoverState.ShouldDiscover) //// TODO: Trip around square when discoverCost > 8 * moveCost
-            {
-                decision = player.Discover(cancellationToken);
-                state = DiscoverState.Discovered;
+                state = DiscoverState.ShouldDiscover;
             }
             else
             {
-                decision = DoesNotHavePieceInTaskAreaMoveDecision();
+                decision = DoesNotHavePieceInTaskAreaDecision();
             }
 
             previousPosition = player.Position;
@@ -127,7 +117,23 @@ namespace Player.Models.Strategies
 
         private Task DoesNotHavePieceInTaskAreaDecision()
         {
-            return Task.CompletedTask;
+            Task decision;
+            if (distToPiece == 0)
+            {
+                decision = player.Pick(cancellationToken);
+                state = DiscoverState.NoAction;
+            }
+            else if (state == DiscoverState.ShouldDiscover) //// TODO: Trip around square when discoverCost > 8 * moveCost
+            {
+                decision = player.Discover(cancellationToken);
+                state = DiscoverState.Discovered;
+            }
+            else
+            {
+                decision = DoesNotHavePieceInTaskAreaMoveDecision();
+            }
+
+            return decision;
         }
 
         private Task DoesNotHavePieceInTaskAreaMoveDecision()
@@ -218,6 +224,9 @@ namespace Player.Models.Strategies
             return player.Move(moveDirection, cancellationToken);
         }
 
+        //// Utilites
+        //// -------------------------------------------------------------------------------------------
+
         private List<Direction> GetDirectionsInRange(int y1 = int.MinValue, int y2 = int.MaxValue)
         {
             List<Direction> directions = new List<Direction>(NumberOfPossibleDirections);
@@ -270,7 +279,7 @@ namespace Player.Models.Strategies
                 {
                     ind = 0;
                 }
-            } 
+            }
             while (ind != startInd);
 
             throw new InvalidOperationException($"None of the provided directions were in list, " +
