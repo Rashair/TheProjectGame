@@ -54,6 +54,10 @@ namespace CommunicationServer.Services
                 IClient socket = client.GetSocket();
                 logger.Error($"Failed to add socket: {socket.Endpoint}");
             }
+            else
+            {
+                container.ConfirmedAgents.Add(manager.GetId(client), false);
+            }
         }
 
         public override async Task OnDisconnectAsync(TcpSocketClient<Message, Message> client,
@@ -92,7 +96,7 @@ namespace CommunicationServer.Services
             List<ConfiguredTaskAwaitable> tasks = new List<ConfiguredTaskAwaitable>();
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (listener.Pending() && container.CanConnect)
+                if (listener.Pending() && !container.GameStarted)
                 {
                     var acceptedClient = await listener.AcceptTcpClientAsync();
                     IClient tcpClient = new TcpClientWrapper(acceptedClient);

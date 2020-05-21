@@ -1,4 +1,6 @@
-﻿using Shared.Clients;
+﻿using System.Collections.Generic;
+
+using Shared.Clients;
 using Shared.Messages;
 
 namespace CommunicationServer.Models
@@ -7,6 +9,8 @@ namespace CommunicationServer.Models
     {
         public ISocketClient<Message, Message> GMClient { get; set; }
 
-        public bool CanConnect { get; set; }
+        public Dictionary<int, bool> ConfirmedAgents { get; set; }
+
+        public bool GameStarted { get; set; }
     }
 }

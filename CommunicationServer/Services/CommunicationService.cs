@@ -56,8 +56,44 @@ namespace CommunicationServer.Services
                 else
                 {
                     await manager.SendMessageAsync(message.AgentID.Value, message, stoppingToken);
-                    if (message.MessageID == MessageID.StartGame) container.CanConnect = false;
                     logger.Verbose(MessageLogger.Received(message) + ". Sent message to Player");
+                    if (!container.GameStarted)
+                    {
+                        if (message.MessageID == MessageID.JoinTheGameAnswer)
+                        {
+                            ConfirmSocket(message);
+                        }
+                        else if (message.MessageID == MessageID.StartGame)
+                        {
+                            await CloseUnconfirmedSockets(stoppingToken);
+                            container.GameStarted = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ConfirmSocket(Message message)
+        {
+            if (message.AgentID != null && container.ConfirmedAgents.ContainsKey(message.AgentID.Value))
+            {
+                container.ConfirmedAgents[message.AgentID.Value] = true;
+            }
+        }
+
+        private async Task CloseUnconfirmedSockets(CancellationToken stoppingToken)
+        {
+            foreach (var elem in container.ConfirmedAgents)
+            {
+                if (!elem.Value)
+                {
+                    bool result = await manager.RemoveSocketAsync(elem.Key, stoppingToken);
+                    if (!result)
+                    {
+                        ISocketClient<Message, Message> socket = manager.GetSocketById(elem.Key);
+                        logger.Error($"Failed to remove socket: {socket.GetSocket().Endpoint}");
+                    }
+                    logger.Information($"Player {elem.Key} has been forced to disconnect - connection after game was started");
                 }
             }
         }

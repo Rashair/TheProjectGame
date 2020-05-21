@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -70,8 +71,9 @@ namespace CommunicationServer.Services
             }
 
             // Singleton initialization
+            container.GameStarted = false;
+            container.ConfirmedAgents = new Dictionary<int, bool>();
             container.GMClient = gmClient;
-            container.CanConnect = true;
             logger.Information("GM connected");
 
             // GM connected, ServiceShareContainer initiated, release another services and start async section.
