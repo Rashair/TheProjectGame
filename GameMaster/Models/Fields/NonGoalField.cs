@@ -15,12 +15,12 @@ namespace GameMaster.Models.Fields
             return false;
         }
 
-        public override (PutEvent putEvent, bool removed) Put(AbstractPiece piece)
+        public override (PutEvent putEvent, bool wasPieceRemoved) Put(AbstractPiece piece)
         {
             if (piece.CheckForSham() == false)
             {
                 Pieces.Add(piece);
-                return (PutEvent.NormalOnGoalField, true);
+                return (PutEvent.NormalOnNonGoalField, true);
             }
             else
             {

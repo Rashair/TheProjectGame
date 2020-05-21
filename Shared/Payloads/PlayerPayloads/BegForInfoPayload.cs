@@ -2,11 +2,11 @@
 {
     public class BegForInfoPayload : Payload
     {
-        public int AskedPlayerId { get; set; }
+        public int AskedAgentID { get; set; }
 
         public override string ToString()
         {
-            return $" AskedPlayerId:{AskedPlayerId}";
+            return $"AskedAgentID:{AskedAgentID}";
         }
     }
 }

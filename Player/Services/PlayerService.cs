@@ -15,7 +15,7 @@ namespace Player.Services
         private readonly ILogger logger;
         private readonly ServiceSynchronization synchronizationContext;
 
-        public PlayerService(Models.Player player, IApplicationLifetime lifetime, 
+        public PlayerService(Models.Player player, IApplicationLifetime lifetime,
             ILogger logger, ServiceSynchronization serviceSync)
         {
             this.player = player;

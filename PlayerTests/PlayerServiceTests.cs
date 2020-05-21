@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -34,16 +33,16 @@ namespace Player.Tests
             IServiceCollection services = new ServiceCollection();
             services.AddSingleton(logger);
 
-            var clientMock = MockGenerator.Get<ISocketClient<GMMessage, PlayerMessage>>();
+            var clientMock = MockGenerator.Get<ISocketClient<Message, Message>>();
             services.AddSingleton(clientMock);
-            var queue = new BufferBlock<GMMessage>();
+            var queue = new BufferBlock<Message>();
             StartGamePayload payloadStart = new StartGamePayload
             {
-                PlayerId = 1,
-                AlliesIds = new int[2] { 1, 2 },
-                LeaderId = 1,
-                EnemiesIds = new int[2] { 3, 4 },
-                TeamId = Team.Red,
+                AgentID = 1,
+                AlliesIDs = new int[2] { 1, 2 },
+                LeaderID = 1,
+                EnemiesIDs = new int[2] { 3, 4 },
+                TeamID = Team.Red,
                 BoardSize = new BoardSize { X = 3, Y = 3 },
                 GoalAreaSize = 1,
                 NumberOfPlayers = new NumberOfPlayers { Allies = 2, Enemies = 2 },
@@ -53,10 +52,10 @@ namespace Player.Tests
                 ShamPieceProbability = 0.5f,
                 Position = new Position { X = 1, Y = 1 },
             };
-            GMMessage messageStart = new GMMessage()
+            Message messageStart = new Message()
             {
-                MessageID = GMMessageId.StartGame,
-                Payload = payloadStart.Serialize(),
+                MessageID = MessageID.StartGame,
+                Payload = payloadStart,
             };
             queue.Post(messageStart);
             services.AddSingleton(queue);

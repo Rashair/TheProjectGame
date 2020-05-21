@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 using GameMaster.Models.Pieces;
 using Shared.Enums;
-using Shared.Models;
 
 namespace GameMaster.Models.Fields
 {
@@ -31,7 +29,7 @@ namespace GameMaster.Models.Fields
 
         public abstract bool PickUp(GMPlayer player);
 
-        public abstract (PutEvent putEvent, bool removed) Put(AbstractPiece piece);
+        public abstract (PutEvent putEvent, bool wasPieceRemoved) Put(AbstractPiece piece);
 
         public abstract bool CanPick();
 
