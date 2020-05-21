@@ -1,6 +1,9 @@
-﻿namespace Shared.Enums
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+namespace Shared.Enums
 {
-    // Add 'distance' in front of each enum to generate valid message
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum Direction
     {
         /// <summary> y + 1, x - 1 </summary>

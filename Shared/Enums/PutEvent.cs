@@ -4,10 +4,12 @@ using Newtonsoft.Json.Converters;
 namespace Shared.Enums
 {
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum PutError
+    public enum PutEvent
     {
-        Other,
-        AgentNotHolding,
-        CannotPutThere,
+        Unknown,
+        NormalOnGoalField,
+        NormalOnNonGoalField,
+        TaskField,
+        ShamOnGoalArea,
     }
 }

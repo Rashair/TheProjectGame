@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Net.Sockets;
 using System.Threading.Tasks.Dataflow;
 
 using GameMaster.Models;
@@ -13,9 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
-using Serilog.Events;
 using Shared.Clients;
-using Shared.Managers;
 using Shared.Messages;
 using Shared.Models;
 
@@ -71,28 +68,19 @@ namespace GameMaster
 
             // TODO: Restore if visualisation will be added
             // services.AddSingleton<TcpSocketManager<BackendMessage>>();
-            services.AddSingleton<ISocketClient<PlayerMessage, GMMessage>, TcpSocketClient<PlayerMessage, GMMessage>>();
-            services.AddSingleton<BufferBlock<PlayerMessage>>();
+            services.AddSingleton<ISocketClient<Message, Message>, TcpSocketClient<Message, Message>>();
+            services.AddSingleton<BufferBlock<Message>>();
 
-            GameConfiguration conf;
-            string path = Configuration.GetValue<string>("GameConfigPath");
-            if (File.Exists(path))
-            {
-                conf = new GameConfiguration(path);
-            }
-            else
-            {
-                conf = new GameConfiguration();
-                Configuration.Bind("DefaultGameConfig", conf);
-            }
+            GameConfiguration conf = GameConfiguration.GetConfiguration(Configuration);
             services.AddSingleton(conf);
-            
+
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/build";
             });
-            
-            services.TryAddSingleton<ILogger>(GetLogger(Configuration.GetValue<bool>("DefaultGameConfig:Verbose")));
+
+            services.TryAddSingleton<ILogger>(GetLogger(conf.Verbose ??
+                Configuration.GetValue<bool>("DefaultGameConfig:Verbose")));
 
             services.AddSingleton<GM>();
             services.AddHostedService<SocketService>();

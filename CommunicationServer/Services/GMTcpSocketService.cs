@@ -12,7 +12,7 @@ using Shared.Messages;
 
 namespace CommunicationServer.Services
 {
-    public class GMTcpSocketService : TcpSocketService<GMMessage, PlayerMessage>
+    public class GMTcpSocketService : TcpSocketService<Message, Message>
     {
         private readonly BufferBlock<Message> queue;
         private readonly ServiceShareContainer container;
@@ -33,28 +33,28 @@ namespace CommunicationServer.Services
             this.sync = sync;
         }
 
-        public override async Task OnMessageAsync(TcpSocketClient<GMMessage, PlayerMessage> client, GMMessage message,
+        public override async Task OnMessageAsync(TcpSocketClient<Message, Message> client, Message message,
             CancellationToken cancellationToken)
         {
             await queue.SendAsync(message, cancellationToken);
         }
 
-        public override void OnConnect(TcpSocketClient<GMMessage, PlayerMessage> client)
+        public override void OnConnect(TcpSocketClient<Message, Message> client)
         {
         }
 
-        public override async Task OnDisconnectAsync(TcpSocketClient<GMMessage, PlayerMessage> client,
+        public override async Task OnDisconnectAsync(TcpSocketClient<Message, Message> client,
             CancellationToken cancellationToken)
         {
+            await client.CloseAsync(cancellationToken);
             lifetime.StopApplication();
-            await Task.CompletedTask;
         }
 
-        public override async Task OnExceptionAsync(TcpSocketClient<GMMessage, PlayerMessage> client, Exception e,
+        public override Task OnExceptionAsync(TcpSocketClient<Message, Message> client, Exception e,
             CancellationToken cancellationToken)
         {
             logger.Warning($"IsOpen: {client.IsOpen}");
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -62,7 +62,7 @@ namespace CommunicationServer.Services
             logger.Information("Start waiting for gm");
 
             // Block another services untill GM connects, start sync section
-            TcpSocketClient<GMMessage, PlayerMessage> gmClient = await ConnectGM(conf.ListenerIP, conf.GMPort, 
+            TcpSocketClient<Message, Message> gmClient = await ConnectGM(conf.ListenerIP, conf.GMPort,
                 stoppingToken);
             if (gmClient == null)
             {
@@ -79,7 +79,7 @@ namespace CommunicationServer.Services
             await ClientHandler(gmClient, stoppingToken);
         }
 
-        private async Task<TcpSocketClient<GMMessage, PlayerMessage>> ConnectGM(string ip, int port,
+        private async Task<TcpSocketClient<Message, Message>> ConnectGM(string ip, int port,
             CancellationToken cancellationToken)
         {
             TcpListener gmListener = StartListener(ip, port);
@@ -93,7 +93,7 @@ namespace CommunicationServer.Services
                         acceptTask.Wait(cancellationToken);
                         IClient client = new TcpClientWrapper(acceptTask.Result);
 
-                        return new TcpSocketClient<GMMessage, PlayerMessage>(client, log);
+                        return new TcpSocketClient<Message, Message>(client, log);
                     }
                     catch (OperationCanceledException)
                     {

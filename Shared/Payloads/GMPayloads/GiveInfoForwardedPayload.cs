@@ -1,26 +1,22 @@
 using System.Text;
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Shared.Enums;
 
 namespace Shared.Payloads.GMPayloads
 {
     public class GiveInfoForwardedPayload : Payload
     {
-        public int AnsweringId { get; set; }
+        public int RespondingID { get; set; }
 
         public int[,] Distances { get; set; }
 
-        [JsonProperty("redTeamGoalAreaInformations", ItemConverterType = typeof(StringEnumConverter))]
         public GoalInfo[,] RedTeamGoalAreaInformations { get; set; }
 
-        [JsonProperty("blueTeamGoalAreaInformations", ItemConverterType = typeof(StringEnumConverter))]
         public GoalInfo[,] BlueTeamGoalAreaInformations { get; set; }
 
         public override string ToString()
         {
-            StringBuilder message = new StringBuilder($"AnsweringId:{AnsweringId}, ");
+            StringBuilder message = new StringBuilder($"respondingID:{RespondingID}, ");
             message.AppendLine("Distances:\n");
             for (int i = 0; i < Distances.GetLength(0); i++)
             {
@@ -31,7 +27,7 @@ namespace Shared.Payloads.GMPayloads
                 message.AppendLine();
             }
             message.AppendLine();
-            message.Append("RedTeamGoalAreaInformations:\n");
+            message.Append("RedTeamGoalAreaInformation:\n");
             for (int i = 0; i < RedTeamGoalAreaInformations.GetLength(0); i++)
             {
                 for (int j = 0; j < RedTeamGoalAreaInformations.GetLength(1); j++)
@@ -41,7 +37,7 @@ namespace Shared.Payloads.GMPayloads
                 message.AppendLine();
             }
             message.AppendLine();
-            message.Append("BlueTeamGoalAreaInformations:\n");
+            message.Append("BlueTeamGoalAreaInformation:\n");
             for (int i = 0; i < BlueTeamGoalAreaInformations.GetLength(0); i++)
             {
                 for (int j = 0; j < BlueTeamGoalAreaInformations.GetLength(1); j++)
@@ -53,5 +49,5 @@ namespace Shared.Payloads.GMPayloads
 
             return message.ToString();
         }
-    } 
+    }
 }

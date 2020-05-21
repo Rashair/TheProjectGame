@@ -17,9 +17,10 @@ namespace IntegrationTests.GameTests
                 CheckPenalty = 300,
                 MovePenalty = 300,
                 DestroyPenalty = 100,
-                PickPenalty = 100,
+                PickupPenalty = 100,
                 DiscoverPenalty = 700,
                 ResponsePenalty = 1500,
+                PrematureRequestPenalty = 1000,
                 Height = 20,
                 Width = 18,
                 GoalAreaHeight = 3,
@@ -29,6 +30,7 @@ namespace IntegrationTests.GameTests
                 ShamPieceProbability = 0.2f,
             };
 
+            TestConf.MinimumRunTimeSec = 60;
             TestConf.CheckInterval = 6000;
             TestConf.PositionNotChangedThreshold = 5;
         }

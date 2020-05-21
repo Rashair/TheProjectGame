@@ -1,4 +1,5 @@
 ﻿using GameMaster.Models.Fields;
+using Shared.Enums;
 
 namespace GameMaster.Models.Pieces
 {
@@ -6,9 +7,9 @@ namespace GameMaster.Models.Pieces
     {
         public abstract bool CheckForSham();
 
-        public (bool? goal, bool removed) Put(AbstractField abstractField)
+        public (PutEvent putEvent, bool wasPieceRemoved) Put(AbstractField field)
         {
-            return abstractField.Put(this);
+            return field.Put(this);
         }
     }
 }
