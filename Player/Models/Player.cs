@@ -454,7 +454,10 @@ namespace Player.Models
                     break;
                 case MessageID.UnknownError:
                     UnknownErrorPayload unknownErrorPayload = (UnknownErrorPayload)message.Payload;
-                    HasPiece = unknownErrorPayload.HoldingPiece;
+                    if (unknownErrorPayload.HoldingPiece != null)
+                    {
+                        HasPiece = unknownErrorPayload.HoldingPiece.Value;
+                    }
                     penaltyTime = 50;
                     break;
                 default:
