@@ -20,7 +20,7 @@ namespace Player.Tests
     {
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
 
-        [Fact(Timeout = 2500)]
+        [Fact(Timeout = 3000)]
         public async Task TestExecuteAsyncShouldReceiveAndSendMessages()
         {
             // Arrange
@@ -57,7 +57,7 @@ namespace Player.Tests
             var hostedService = (SocketService)serviceProvider.GetService<IHostedService>();
 
             // Act
-            int delay = 1000;
+            int delay = 1500;
             Task socketTask = Task.Run(async () =>
             {
                 await hostedService.StartAsync(CancellationToken.None);
