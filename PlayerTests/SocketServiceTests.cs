@@ -20,7 +20,7 @@ namespace Player.Tests
     {
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
 
-        [Fact(Timeout = 2500)]
+        [Fact(Timeout = 3500)]
         public async Task TestExecuteAsyncShouldReceiveAndSendMessages()
         {
             // Arrange
@@ -57,16 +57,17 @@ namespace Player.Tests
             var hostedService = (SocketService)serviceProvider.GetService<IHostedService>();
 
             // Act
-            int delay = 1000;
+            int socketDelay = 2000, syncDelay = 300;
             Task socketTask = Task.Run(async () =>
             {
                 await hostedService.StartAsync(CancellationToken.None);
-                await Task.Delay(delay);
+                await Task.Delay(socketDelay);
                 await hostedService.StopAsync(CancellationToken.None);
             });
             Task syncTask = Task.Run(async () =>
             {
                 await context.SemaphoreSlim.WaitAsync(CancellationToken.None);
+                await Task.Delay(syncDelay);
                 context.SemaphoreSlim.Release();
             });
 
