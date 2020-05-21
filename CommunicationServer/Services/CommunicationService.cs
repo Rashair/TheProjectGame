@@ -95,7 +95,7 @@ namespace CommunicationServer.Services
                         ISocketClient<Message, Message> socket = manager.GetSocketById(elem.Key);
                         logger.Error($"Failed to remove socket: {socket.GetSocket().Endpoint}");
                     }
-                    logger.Information($"Player {elem.Key} has been forced to disconnect - connection after game was started");
+                    logger.Information($"Player {elem.Key} has been forced to disconnect - connection after StartGame");
                 }
             }
         }
