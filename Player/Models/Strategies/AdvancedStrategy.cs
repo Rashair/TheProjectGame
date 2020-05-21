@@ -68,27 +68,27 @@ namespace Player.Models.Strategies
             Task decision;
             if (!player.HasPiece)
             {
-                decision = DoesNotHavePieceDecision();
+                decision = NoPiece();
             }
             else
             {
-                decision = HasPieceDecision();
+                decision = HasPiece();
             }
 
             return decision;
         }
 
-        public Task DoesNotHavePieceDecision()
+        public Task NoPiece()
         {
             Task decision;
             if (isInGoalArea)
             {
-                decision = DoesNotHavePieceInGoalAreaDecision();
+                decision = NoPieceInGoalArea();
                 state = DiscoverState.ShouldDiscover;
             }
             else
             {
-                decision = DoesNotHavePieceInTaskAreaDecision();
+                decision = NoPieceInTaskArea();
             }
 
             previousPosition = player.Position;
@@ -97,7 +97,7 @@ namespace Player.Models.Strategies
             return decision;
         }
 
-        private Task DoesNotHavePieceInGoalAreaDecision()
+        private Task NoPieceInGoalArea()
         {
             Direction currentDirection;
             if (previousDistToPiece == 0 || previousPosition != player.Position)
@@ -115,7 +115,7 @@ namespace Player.Models.Strategies
             return player.Move(currentDirection, cancellationToken);
         }
 
-        private Task DoesNotHavePieceInTaskAreaDecision()
+        private Task NoPieceInTaskArea()
         {
             Task decision;
             if (distToPiece == 0)
@@ -130,13 +130,13 @@ namespace Player.Models.Strategies
             }
             else
             {
-                decision = DoesNotHavePieceInTaskAreaMoveDecision();
+                decision = NoPieceInTaskAreaMove();
             }
 
             return decision;
         }
 
-        private Task DoesNotHavePieceInTaskAreaMoveDecision()
+        private Task NoPieceInTaskAreaMove()
         {
             Direction currentDirection = Direction.FromCurrent;
             if (state == DiscoverState.Discovered)
@@ -176,7 +176,7 @@ namespace Player.Models.Strategies
             return player.Move(currentDirection, cancellationToken);
         }
 
-        private Task HasPieceDecision()
+        private Task HasPiece()
         {
             if (player.IsHeldPieceSham == null)
             {
@@ -188,15 +188,15 @@ namespace Player.Models.Strategies
             }
             else if (isInGoalArea)
             {
-                return HasPieceInGoalAreaDecision();
+                return HasPieceInGoalArea();
             }
             else
             {
-                return HasPieceNotInGoalAreaDecision();
+                return HasPieceInTaskArea();
             }
         }
 
-        private Task HasPieceInGoalAreaDecision()
+        private Task HasPieceInGoalArea()
         {
             if (board[y, x].GoalInfo == GoalInfo.IDK)
             {
@@ -208,7 +208,7 @@ namespace Player.Models.Strategies
             return player.Move(GetRandomDirection(directions), cancellationToken);
         }
 
-        private Task HasPieceNotInGoalAreaDecision()
+        private Task HasPieceInTaskArea()
         {
             Direction moveDirection;
             if (random.IsLucky(80))
