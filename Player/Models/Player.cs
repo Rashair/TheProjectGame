@@ -381,9 +381,11 @@ namespace Player.Models
                     if (payloadMove.MadeMove)
                     {
                         Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
-                        
+
                         if (payloadMove.ClosestPiece != null)
                             Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece.Value;
+                        else
+                            Board[Position.y, Position.x].DistToPiece = int.MaxValue;
                     }
                     penaltyTime = PenaltiesTimes.Move;
                     break;
