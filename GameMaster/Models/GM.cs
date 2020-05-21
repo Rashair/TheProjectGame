@@ -9,10 +9,8 @@ using System.Threading.Tasks.Dataflow;
 using GameMaster.Models.Fields;
 using GameMaster.Models.Pieces;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using Serilog;
 using Shared.Clients;
-using Shared.Converters;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
@@ -451,7 +449,7 @@ namespace GameMaster.Models
             return discoveryResult;
         }
 
-        internal int FindClosestPiece(AbstractField field)
+        internal int? FindClosestPiece(AbstractField field)
         {
             int[] center = field.GetPosition();
             int distance = int.MaxValue;
@@ -467,6 +465,9 @@ namespace GameMaster.Models
                     }
                 }
             }
+
+            if (distance == int.MaxValue)
+                return null;
 
             return distance;
         }

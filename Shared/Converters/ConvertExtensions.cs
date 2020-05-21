@@ -91,6 +91,9 @@ namespace Shared.Converters
 
                 case MessageID.Move:
                     return typeof(MovePayload);
+
+                case MessageID.InvalidMoveError:
+                    return typeof(InvalidMoveErrorPayload);
             }
 
             return typeof(EmptyAnswerPayload);

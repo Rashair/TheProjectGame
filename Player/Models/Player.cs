@@ -381,7 +381,11 @@ namespace Player.Models
                     if (payloadMove.MadeMove)
                     {
                         Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
-                        Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece;
+
+                        if (payloadMove.ClosestPiece != null)
+                            Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece.Value;
+                        else
+                            Board[Position.y, Position.x].DistToPiece = int.MaxValue;
                     }
                     penaltyTime = PenaltiesTimes.Move;
                     break;
@@ -449,6 +453,8 @@ namespace Player.Models
                     penaltyTime = PenaltiesTimes.PutPiece;
                     break;
                 case MessageID.UnknownError:
+                    UnknownErrorPayload unknownErrorPayload = (UnknownErrorPayload)message.Payload;
+                    HasPiece = unknownErrorPayload.HoldingPiece;
                     penaltyTime = 50;
                     break;
                 default:
