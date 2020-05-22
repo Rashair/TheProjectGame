@@ -121,7 +121,7 @@ namespace GameMaster.Models
 
         private (int y1, int y2) GetBoundaries(Team team)
         {
-            if (team == Team.Red)
+            if (team == Team.Blue)
             {
                 return (0, SecondGoalAreaStart);
             }
