@@ -283,7 +283,7 @@ namespace Player.Models
                 case MessageID.CheckAnswer:
                     CheckAnswerPayload payloadCheck = (CheckAnswerPayload)message.Payload;
                     IsHeldPieceSham = payloadCheck.Sham;
-                    penaltyTime = PenaltiesTimes.CheckPiece;
+                    penaltyTime = PenaltiesTimes.CheckForSham;
                     break;
                 case MessageID.DestructionAnswer:
                     HasPiece = false;
@@ -309,7 +309,7 @@ namespace Player.Models
                         Board[Position.y + 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNE.Value;
                     if (Position.y > 0 && Position.x > 0)
                         Board[Position.y - 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSW.Value;
-                    penaltyTime = PenaltiesTimes.Discover;
+                    penaltyTime = PenaltiesTimes.Discovery;
                     break;
                 case MessageID.EndGame:
                     EndGamePayload payloadEnd = (EndGamePayload)message.Payload;
@@ -386,7 +386,7 @@ namespace Player.Models
                 case MessageID.PickAnswer:
                     HasPiece = true;
                     Board[Position.y, Position.x].DistToPiece = int.MaxValue;
-                    penaltyTime = PenaltiesTimes.PickupPiece;
+                    penaltyTime = PenaltiesTimes.Pickup;
                     break;
                 case MessageID.PutAnswer:
                     HasPiece = false;
@@ -441,7 +441,7 @@ namespace Player.Models
                     }
                     break;
                 case MessageID.PickError:
-                    penaltyTime = PenaltiesTimes.PickupPiece;
+                    penaltyTime = PenaltiesTimes.Pickup;
                     break;
                 case MessageID.PutError:
                     penaltyTime = PenaltiesTimes.PutPiece;

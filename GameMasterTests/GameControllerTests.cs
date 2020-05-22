@@ -115,8 +115,8 @@ namespace GameMaster.Tests
             // Assert
             Assert.IsType<ActionResult<GameConfiguration>>(result);
             Assert.Equal(gameConfig.AskPenalty, result.Value.AskPenalty);
-            Assert.Equal(gameConfig.CheckPenalty, result.Value.CheckPenalty);
-            Assert.Equal(gameConfig.DiscoverPenalty, result.Value.DiscoverPenalty);
+            Assert.Equal(gameConfig.CheckForShamPenalty, result.Value.CheckForShamPenalty);
+            Assert.Equal(gameConfig.DiscoveryPenalty, result.Value.DiscoveryPenalty);
             Assert.Equal(gameConfig.MovePenalty, result.Value.MovePenalty);
             Assert.Equal(gameConfig.PutPenalty, result.Value.PutPenalty);
             Assert.Equal(gameConfig.ResponsePenalty, result.Value.ResponsePenalty);

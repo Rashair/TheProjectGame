@@ -110,7 +110,7 @@ namespace GameMaster.Models
                     message = CheckAnswerMessage();
                 }
 
-                await SendAndLockAsync(message, conf.CheckPenalty, cancellationToken);
+                await SendAndLockAsync(message, conf.CheckForShamPenalty, cancellationToken);
             }
         }
 
@@ -121,7 +121,7 @@ namespace GameMaster.Models
             {
                 Message message = DiscoverAnswerMessage(gm);
 
-                await SendAndLockAsync(message, conf.DiscoverPenalty, cancellationToken);
+                await SendAndLockAsync(message, conf.DiscoveryPenalty, cancellationToken);
             }
         }
 

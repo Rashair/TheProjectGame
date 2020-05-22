@@ -135,9 +135,9 @@ namespace GameMaster.Models
                     Move = conf.MovePenalty,
                     Ask = conf.AskPenalty,
                     Response = conf.ResponsePenalty,
-                    Discover = conf.DiscoverPenalty,
-                    PickupPiece = conf.PickupPenalty,
-                    CheckPiece = conf.CheckPenalty,
+                    Discovery = conf.DiscoveryPenalty,
+                    Pickup = conf.PickupPenalty,
+                    CheckForSham = conf.CheckForShamPenalty,
                     DestroyPiece = conf.DestroyPenalty,
                     PutPiece = conf.PutPenalty,
                     PrematureRequest = conf.PrematureRequestPenalty

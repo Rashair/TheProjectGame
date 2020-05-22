@@ -18,11 +18,11 @@ namespace GameMaster.Models
 
         public int ResponsePenalty { get; set; }
 
-        public int DiscoverPenalty { get; set; }
+        public int DiscoveryPenalty { get; set; }
 
         public int PickupPenalty { get; set; }
 
-        public int CheckPenalty { get; set; }
+        public int CheckForShamPenalty { get; set; }
 
         public int PutPenalty { get; set; }
 
@@ -108,9 +108,9 @@ namespace GameMaster.Models
             hash.Add(MovePenalty);
             hash.Add(AskPenalty);
             hash.Add(ResponsePenalty);
-            hash.Add(DiscoverPenalty);
+            hash.Add(DiscoveryPenalty);
             hash.Add(PickupPenalty);
-            hash.Add(CheckPenalty);
+            hash.Add(CheckForShamPenalty);
             hash.Add(PutPenalty);
             hash.Add(DestroyPenalty);
             hash.Add(Width);
@@ -165,9 +165,9 @@ namespace GameMaster.Models
             int[] penalties = new int[]
             {
                 AskPenalty,
-                CheckPenalty,
+                CheckForShamPenalty,
                 DestroyPenalty,
-                DiscoverPenalty,
+                DiscoveryPenalty,
                 MovePenalty,
                 PickupPenalty,
                 PutPenalty,
