@@ -69,7 +69,7 @@ namespace Player.Models
 
         public (int y, int x) Position { get; private set; }
 
-        public List<int> WaitingPlayers { get; private set; }
+        public LinkedList<int> WaitingPlayers { get; private set; }
 
         public int[] TeamMatesIds { get; private set; }
 
@@ -205,9 +205,8 @@ namespace Player.Models
             }
             else
             {
-                // TODO: different algorithm - whole list is shifted, maybe from end?
-                response.RespondToID = WaitingPlayers[0];
-                WaitingPlayers.RemoveAt(0);
+                response.RespondToID = WaitingPlayers.Last.Value;
+                WaitingPlayers.RemoveLast();
             }
 
             response.Distances = new int[BoardSize.y, BoardSize.x];
@@ -242,8 +241,7 @@ namespace Player.Models
             }
             else
             {
-                // TODO: They are always in waiting, fix this!
-                WaitingPlayers.Add(respondToId);
+                WaitingPlayers.AddLast(respondToId);
             }
         }
 
@@ -359,7 +357,7 @@ namespace Player.Models
                     NumberOfPieces = payloadStart.NumberOfPieces;
                     NumberOfGoals = payloadStart.NumberOfGoals;
                     ShamPieceProbability = payloadStart.ShamPieceProbability;
-                    WaitingPlayers = new List<int>();
+                    WaitingPlayers = new LinkedList<int>();
                     break;
                 case MessageID.BegForInfoForwarded:
                     BegForInfoForwardedPayload payloadBeg = (BegForInfoForwardedPayload)message.Payload;
