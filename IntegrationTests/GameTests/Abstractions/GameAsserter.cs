@@ -45,13 +45,13 @@ namespace IntegrationTests.GameTests.Abstractions
             var playerRed = teamRed[0];
             Assert.True(playerRed.Team == Team.Red, "Player should have team passed with conf");
             Assert.True(playerRed.Position.y >= 0, "Player should have position set.");
-            Assert.True(playerRed.Position.y < conf.Height - conf.GoalAreaHeight, "Player should not be present on enemy team field");
+            Assert.True(playerRed.Position.y >= conf.GoalAreaHeight, "Player should not be present on enemy team field");
 
             Assert.True(teamBlue.Any(p => p.IsLeader), "Team blue should have leader");
             var playerBlue = teamBlue[0];
             Assert.True(playerBlue.Team == Team.Blue, "Player should have team passed with conf");
             Assert.True(playerBlue.Position.y >= 0, "Player should have position set.");
-            Assert.True(playerBlue.Position.y >= conf.GoalAreaHeight, "Player should not be present on enemy team field");
+            Assert.True(playerBlue.Position.y < conf.Height - conf.GoalAreaHeight, "Player should not be present on enemy team field");
         }
 
         public async Task CheckRuntime()
