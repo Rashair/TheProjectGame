@@ -168,8 +168,8 @@ export class Configuration extends Component {
           {CustomFieldset({
             id: "checkForShumPenalty",
             label: "Kara za sprawdzenie fragmentu",
-            value: this.state.checkForShumPenalty,
-            onChange: (e) => this.setState({ checkForShumPenalty: e.target.value }),
+            value: this.state.checkForShamPenalty,
+            onChange: (e) => this.setState({ checkForShamPenalty: e.target.value }),
           })}
           {CustomFieldset({
             id: "putPenalty",
