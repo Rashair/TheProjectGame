@@ -19,7 +19,7 @@ using Xunit;
 
 namespace CommunicationServerTests
 {
-    public class CommunicatorTests
+    public class CommunicationServiceTests
     {
         private Mock<ISocketManager<ISocketClient<Message, Message>, Message>> GetManagerMock(
             Action<Message> action = null)
