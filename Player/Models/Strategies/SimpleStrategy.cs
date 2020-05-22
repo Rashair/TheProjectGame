@@ -57,13 +57,13 @@ namespace Player.Models.Strategies
                     return;
                 }
 
-                // R 0 fffff
-                // T 1 ttttt
+                // R 3 fffff
                 // T 2 ttttt
-                // B 3 fffff
+                // T 1 ttttt
+                // B 0 fffff
                 switch (player.Team)
                 {
-                    case Team.Red:
+                    case Team.Blue:
                     {
                         if (y < player.GoalAreaSize)
                         {
@@ -106,7 +106,7 @@ namespace Player.Models.Strategies
                         }
                         break;
                     }
-                    case Team.Blue:
+                    case Team.Red:
                     {
                         int beginning = player.BoardSize.y - player.GoalAreaSize;
                         if (y >= beginning)

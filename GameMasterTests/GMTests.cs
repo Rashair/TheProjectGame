@@ -240,7 +240,7 @@ namespace GameMaster.Tests
             {
                 var playerA = players[i];
                 var posA = playerA.GetPosition();
-                (int y1, int y2) = playerA.Team == Team.Red ? (0, conf.Height - conf.GoalAreaHeight) :
+                (int y1, int y2) = playerA.Team == Team.Blue ? (0, conf.Height - conf.GoalAreaHeight) :
                     (conf.GoalAreaHeight, conf.Height);
                 Assert.False(posA[0] < y1 || posA[0] >= y2, "No players are placed on GoalArea of enemy");
                 for (int j = i + 1; j < players.Count; ++j)
