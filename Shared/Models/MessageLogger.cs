@@ -1,7 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 
-using Shared.Converters;
-using Shared.Enums;
 using Shared.Messages;
 
 namespace Shared.Models

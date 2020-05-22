@@ -21,7 +21,7 @@ namespace IntegrationTests.GameTests
                 DiscoverPenalty = 1000,
                 ResponsePenalty = 1500,
                 PrematureRequestPenalty = 1000,
-                Height = 16,
+                Height = 20,
                 Width = 18,
                 GoalAreaHeight = 4,
                 NumberOfGoals = 8,
@@ -35,7 +35,7 @@ namespace IntegrationTests.GameTests
             TestConf.PositionNotChangedThreshold = 5;
         }
 
-        [Fact(Timeout = 15 * 60 * 1000)]
+        [Fact(Timeout = 8 * 60 * 1000)]
         public override async void RunGameWithConfiguration()
         {
             await RunGame();

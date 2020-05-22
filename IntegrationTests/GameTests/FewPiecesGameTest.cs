@@ -30,11 +30,11 @@ namespace IntegrationTests.GameTests
                 ShamPieceProbability = 0.3f,
             };
 
-            TestConf.NoNewPiecesThreshold = 8;
-            TestConf.CheckInterval = 6000;
+            TestConf.NoNewPiecesThreshold = 6;
+            TestConf.CheckInterval = 5000;
         }
 
-        [Fact(Timeout = 10 * 60 * 1000)]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public override async void RunGameWithConfiguration()
         {
             await RunGame();
