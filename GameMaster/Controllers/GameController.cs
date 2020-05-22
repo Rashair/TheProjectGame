@@ -94,5 +94,12 @@ namespace GameMaster.Controllers
         {
             return gameMaster.WasGameStarted;
         }
+
+        [HttpGet]
+        [Route("[action]")]
+        public ActionResult<bool> WasGameFinished()
+        {
+            return gameMaster.WasGameFinished;
+        }
     }
 }
