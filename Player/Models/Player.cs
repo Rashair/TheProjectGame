@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-using Newtonsoft.Json;
 using Player.Models.Strategies;
 using Player.Models.Strategies.Utils;
 using Serilog;
@@ -26,8 +25,9 @@ namespace Player.Models
 
         private int id;
         private int penaltyTime;
-        private readonly IStrategy strategy;
         private bool isWorking;
+
+        private readonly IStrategy strategy;
         private readonly PlayerConfiguration conf;
         private Team? winner;
 
@@ -43,7 +43,7 @@ namespace Player.Models
             this.Position = (-1, -1);
         }
 
-        public int PreviousDistToPiece { get; private set; }
+        public int NotMadeMoveInRow { get; private set; }
 
         public Penalties PenaltiesTimes { get; private set; }
 
@@ -395,7 +395,13 @@ namespace Player.Models
                     if (payloadMove.MadeMove)
                     {
                         Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
+
                         Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece.Value;
+                        NotMadeMoveInRow = 0;
+                    }
+                    else
+                    {
+                        ++NotMadeMoveInRow;
                     }
                     penaltyTime = PenaltiesTimes.Move;
                     break;
