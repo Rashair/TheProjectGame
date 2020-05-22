@@ -33,9 +33,9 @@ export class Configuration extends Component {
       movePenalty: 0,
       askPenalty: 0,
       responsePenalty: 0,
-      discoverPenalty: 0,
+      discoveryPenalty: 0,
       pickupPenalty: 0,
-      checkPenalty: 0,
+      checkForShamPenalty: 0,
       putPenalty: 0,
       destroyPenalty: 0,
       width: 0,
@@ -160,8 +160,8 @@ export class Configuration extends Component {
           {CustomFieldset({
             id: "discoverPenalty",
             label: "Kara za akcję discovery",
-            value: this.state.discoverPenalty,
-            onChange: (e) => this.setState({ discoverPenalty: e.target.value }),
+            value: this.state.discoveryPenalty,
+            onChange: (e) => this.setState({ discoveryPenalty: e.target.value }),
           })}
           {CustomFieldset({
             id: "pickupPenalty",
@@ -170,10 +170,10 @@ export class Configuration extends Component {
             onChange: (e) => this.setState({ pickupPenalty: e.target.value }),
           })}
           {CustomFieldset({
-            id: "checkPenalty",
+            id: "checkForShamPenalty",
             label: "Kara za sprawdzenie fragmentu",
-            value: this.state.checkPenalty,
-            onChange: (e) => this.setState({ checkPenalty: e.target.value }),
+            value: this.state.checkForShamPenalty,
+            onChange: (e) => this.setState({ checkForShamPenalty: e.target.value }),
           })}
           {CustomFieldset({
             id: "putPenalty",

@@ -42,7 +42,7 @@ namespace Shared.Payloads.GMPayloads
             var penalty = Penalties;
 
             message.Append("Penalties: {" + $"Move:{penalty.Move}, Ask:{penalty.Ask}, Response:{penalty.Response}, ");
-            message.Append($"Discover:{penalty.Discover}, PrematureRequest{penalty.PrematureRequest}, PickupPiece {penalty.PickupPiece}, CheckPiece:{penalty.CheckPiece}, ");
+            message.Append($"Discover:{penalty.Discovery}, PrematureRequest{penalty.PrematureRequest}, PickupPiece {penalty.Pickup}, CheckPiece:{penalty.CheckForSham}, ");
             message.AppendLine($"PutPiece:{penalty.PutPiece}, DestroyPiece {penalty.DestroyPiece}}}");
 
             message.AppendLine($"ShamPieceProbability:{ShamPieceProbability}, Position:({Position.X},{Position.Y})");

@@ -11,9 +11,9 @@ namespace GameMaster.Tests.Mocks
             this.MovePenalty = 1500;
             this.AskPenalty = 1000;
             this.ResponsePenalty = 1000;
-            this.DiscoverPenalty = 700;
+            this.DiscoveryPenalty = 700;
             this.PutPenalty = 500;
-            this.CheckPenalty = 700;
+            this.CheckForShamPenalty = 700;
             this.DestroyPenalty = 100;
             this.PickupPenalty = 100;
             this.GoalAreaHeight = 5;
