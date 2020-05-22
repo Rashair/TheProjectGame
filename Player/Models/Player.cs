@@ -357,16 +357,15 @@ namespace Player.Models
                     EnemiesIds = payloadStart.EnemiesIDs;
 
                     GoalAreaSize = payloadStart.GoalAreaSize;
-                    switch (this.Team)
+                    if (this.Team == Team.Blue)
                     {
-                        case Team.Red:
-                            this.GoalAreaRange = (0, GoalAreaSize);
-                            this.GoalAreaDirection = Direction.S;
-                            break;
-                        case Team.Blue:
-                            this.GoalAreaRange = (BoardSize.y - GoalAreaSize, BoardSize.y);
-                            this.GoalAreaDirection = Direction.N;
-                            break;
+                        this.GoalAreaRange = (0, GoalAreaSize);
+                        this.GoalAreaDirection = Direction.S;
+                    }
+                    else
+                    {
+                        this.GoalAreaRange = (BoardSize.y - GoalAreaSize, BoardSize.y);
+                        this.GoalAreaDirection = Direction.N;
                     }
 
                     NumberOfPlayers = payloadStart.NumberOfPlayers;
