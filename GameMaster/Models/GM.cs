@@ -202,7 +202,7 @@ namespace GameMaster.Models
         private async Task SendInformationExchangeMessage(MessageID messageId, int agentID, bool wasSent, CancellationToken cancellationToken)
         {
             Message confirmationMessage = new Message(messageId,
-                    agentID, new InformationExchangePayload() { WasSent = wasSent });
+                    agentID, new InformationExchangePayload() { Succeeded = wasSent });
             logger.Verbose("Sent message." + confirmationMessage.GetDescription());
             await socketClient.SendAsync(confirmationMessage, cancellationToken);
         }
@@ -329,13 +329,13 @@ namespace GameMaster.Models
                     switch (payloadMove.Direction)
                     {
                         case Direction.N:
-                            if (pos[0] + 1 < conf.Height && (player.Team == Team.Blue || pos[0] + 1 < SecondGoalAreaStart))
+                            if (pos[0] + 1 < conf.Height && (player.Team == Team.Red || pos[0] + 1 < SecondGoalAreaStart))
                             {
                                 field = board[pos[0] + 1][pos[1]];
                             }
                             break;
                         case Direction.S:
-                            if (pos[0] - 1 >= 0 && (player.Team == Team.Red || pos[0] - 1 >= conf.GoalAreaHeight))
+                            if (pos[0] - 1 >= 0 && (player.Team == Team.Blue || pos[0] - 1 >= conf.GoalAreaHeight))
                             {
                                 field = board[pos[0] - 1][pos[1]];
                             }
@@ -465,10 +465,6 @@ namespace GameMaster.Models
                     }
                 }
             }
-
-            if (distance == int.MaxValue)
-                return null;
-
             return distance;
         }
 

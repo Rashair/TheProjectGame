@@ -16,7 +16,7 @@
     },
     "Player": {
       "commandName": "Project",
-      "applicationUrl": "https://localhost:0;http://localhost:0",
+      "applicationUrl": "https://127.0.0.1:0;http://127.0.0.1:0",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
