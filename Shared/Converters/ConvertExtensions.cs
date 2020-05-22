@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Newtonsoft.Json;
 using Shared.Enums;
 using Shared.Payloads;
+using Shared.Payloads.CommunicationServerPayloads;
 using Shared.Payloads.GMPayloads;
 using Shared.Payloads.PlayerPayloads;
 
@@ -94,6 +95,9 @@ namespace Shared.Converters
 
                 case MessageID.InvalidMoveError:
                     return typeof(InvalidMoveErrorPayload);
+
+                case MessageID.PlayerDisconnected:
+                    return typeof(DisconnectPayload);
             }
 
             return typeof(EmptyAnswerPayload);

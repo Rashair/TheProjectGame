@@ -14,6 +14,7 @@ using Shared.Clients;
 using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
+using Shared.Payloads.CommunicationServerPayloads;
 using Shared.Payloads.GMPayloads;
 using Shared.Payloads.PlayerPayloads;
 
@@ -273,7 +274,8 @@ namespace GameMaster.Models
                     break;
                 case MessageID.PlayerDisconnected:
                 {
-                    int key = agentID;
+                    DisconnectPayload payloadDisconnect = (DisconnectPayload)message.Payload;
+                    int key = payloadDisconnect.AgentID;
                     players.Remove(key);
                     logger.Verbose($"Player {key} disconnected");
                     if (WasGameStarted)
