@@ -45,7 +45,10 @@ namespace GameMaster.Controllers
         {
             HttpContext context = ControllerContext.HttpContext;
             if (!context.WebSockets.IsWebSocketRequest || !AcceptConnection())
+            {
+                Console.WriteLine("Not socket");
                 return;
+            }
 
             WebSocket socket = await context.WebSockets.AcceptWebSocketAsync();
             OnConnected(socket);
