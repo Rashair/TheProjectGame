@@ -23,7 +23,7 @@ namespace IntegrationTests.GameTests
                 PrematureRequestPenalty = 1000,
                 Height = 20,
                 Width = 18,
-                GoalAreaHeight = 4,
+                GoalAreaHeight = 5,
                 NumberOfGoals = 8,
                 NumberOfPiecesOnBoard = 20,
                 NumberOfPlayersPerTeam = 16,
