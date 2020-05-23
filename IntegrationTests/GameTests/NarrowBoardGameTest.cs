@@ -18,7 +18,7 @@ namespace IntegrationTests.GameTests
                 CheckForShamPenalty = 500,
                 DestroyPenalty = 100,
                 PickupPenalty = 100,
-                DiscoverPenalty = 1500,
+                DiscoveryPenalty = 1500,
                 ResponsePenalty = 5000,
                 PrematureRequestPenalty = 1000,
                 Height = 16,
