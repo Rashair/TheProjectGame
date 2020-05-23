@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 using Serilog;
+using Shared.Managers;
 
 namespace GameMaster.Managers
 {
@@ -16,6 +17,11 @@ namespace GameMaster.Managers
         public WebSocketManager()
         {
             this.logger = Log.ForContext<WebSocketManager<TMessage>>();
+        }
+
+        protected override bool IsOpen(WebSocket socket)
+        {
+            return socket.State == WebSocketState.Open;
         }
 
         protected override bool IsSame(WebSocket a, WebSocket b)

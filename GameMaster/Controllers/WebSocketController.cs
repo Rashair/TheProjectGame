@@ -27,7 +27,7 @@ namespace GameMaster.Controllers
 
         protected virtual void OnConnected(WebSocket socket)
         {
-            bool result = Manager.AddSocket(socket);
+            int result = Manager.AddSocket(socket);
         }
 
         protected virtual async Task OnDisconnectedAsync(WebSocket socket, CancellationToken cancellationToken)
