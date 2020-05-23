@@ -360,8 +360,9 @@ namespace GameMaster.Models
                 {
                     DisconnectPayload payloadDisconnect = (DisconnectPayload)message.Payload;
                     int key = payloadDisconnect.AgentID;
+                    players.TryGetValue(key, out player);
                     players.Remove(key);
-                    logger.Verbose($"Player {key} disconnected");
+                    logger.Information($"Player {key} disconnected");
                     
                     if (!(guiManager is null))
                     {
