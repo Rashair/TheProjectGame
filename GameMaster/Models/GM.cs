@@ -6,7 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
+using GameMaster.Managers;
 using GameMaster.Models.Fields;
+using GameMaster.Models.Messages;
 using GameMaster.Models.Pieces;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -37,6 +39,8 @@ namespace GameMaster.Models
         private int blueTeamPoints;
         private bool forceEndGame;
 
+        public readonly WebSocketManager<ClientMessage> GUIManager;
+
         public bool WasGameInitialized { get; private set; }
 
         public bool WasGameStarted { get; private set; }
@@ -47,7 +51,7 @@ namespace GameMaster.Models
 
         public GM(IApplicationLifetime lifetime, GameConfiguration conf,
             BufferBlock<Message> queue, ISocketClient<Message, Message> socketClient,
-            ILogger log)
+            ILogger log, WebSocketManager<ClientMessage> guiManager = null)
         {
             this.log = log;
             this.logger = log.ForContext<GM>();
@@ -55,6 +59,7 @@ namespace GameMaster.Models
             this.conf = conf;
             this.queue = queue;
             this.socketClient = socketClient;
+            this.GUIManager = guiManager;
 
             players = new Dictionary<int, GMPlayer>();
             legalKnowledgeReplies = new HashSet<(int, int)>();
