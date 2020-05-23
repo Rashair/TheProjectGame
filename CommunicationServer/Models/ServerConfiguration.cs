@@ -1,6 +1,6 @@
 ﻿namespace CommunicationServer.Models
 {
-    public class ServerConfigurations
+    public class ServerConfiguration
     {
         public int PlayerPort { get; set; }
 

@@ -16,13 +16,13 @@ namespace CommunicationServer.Services
     {
         private readonly BufferBlock<Message> queue;
         private readonly ServiceShareContainer container;
-        private readonly ServerConfigurations conf;
+        private readonly ServerConfiguration conf;
         private readonly IApplicationLifetime lifetime;
         private readonly Shared.ServiceSynchronization sync;
         protected readonly ILogger log;
 
         public GMTcpSocketService(BufferBlock<Message> queue, ServiceShareContainer container,
-            ServerConfigurations conf, IApplicationLifetime lifetime, ILogger log, Shared.ServiceSynchronization sync)
+            ServerConfiguration conf, IApplicationLifetime lifetime, ILogger log, Shared.ServiceSynchronization sync)
             : base(log.ForContext<GMTcpSocketService>())
         {
             this.queue = queue;

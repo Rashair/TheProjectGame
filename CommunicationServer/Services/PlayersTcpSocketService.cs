@@ -22,12 +22,12 @@ namespace CommunicationServer.Services
         private readonly ISocketManager<ISocketClient<Message, Message>, Message> manager;
         private readonly BufferBlock<Message> queue;
         private readonly ServiceShareContainer container;
-        private readonly ServerConfigurations conf;
+        private readonly ServerConfiguration conf;
         private readonly ServiceSynchronization sync;
         protected readonly ILogger log;
 
         public PlayersTcpSocketService(ISocketManager<ISocketClient<Message, Message>, Message> manager,
-            BufferBlock<Message> queue, ServiceShareContainer container, ServerConfigurations conf, ILogger log,
+            BufferBlock<Message> queue, ServiceShareContainer container, ServerConfiguration conf, ILogger log,
             ServiceSynchronization sync)
             : base(log.ForContext<PlayersTcpSocketService>())
         {

@@ -66,7 +66,7 @@ namespace CommunicationServer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkId=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            ServerConfigurations conf = new ServerConfigurations();
+            ServerConfiguration conf = new ServerConfiguration();
             Configuration.Bind("DefaultCommunicationServerConfig", conf);
             Configuration.Bind(conf);  // For console override;
             services.AddSingleton(conf);

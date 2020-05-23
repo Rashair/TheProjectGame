@@ -26,5 +26,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommunicationServer\CommunicationServer.csproj" />
+    <ProjectReference Include="..\GameMaster\GameMaster.csproj" />
+    <ProjectReference Include="..\Player\Player.csproj" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
+    <ProjectReference Include="..\TestsShared\TestsShared.csproj" />
   </ItemGroup>
 </Project>
