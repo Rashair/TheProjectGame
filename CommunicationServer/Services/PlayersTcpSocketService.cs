@@ -68,9 +68,10 @@ namespace CommunicationServer.Services
             }
             logger.Information($"Player {id} disconnected");
 
-            DisconnectPayload payload = new DisconnectPayload();
-            payload.AgentID = id;
-
+            DisconnectPayload payload = new DisconnectPayload()
+            {
+                AgentID = id
+            };
             Message message = new Message()
             {
                 AgentID = -1,
