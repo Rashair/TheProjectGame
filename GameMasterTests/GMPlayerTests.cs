@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -81,6 +82,16 @@ namespace GameMaster.Tests
             return gameMaster;
         }
 
+        public int? InvokeGetClosestPiece(GM gm, AbstractField pos)
+        {
+            return gm.Invoke<GM, int?>("FindClosestPiece", new object[] { pos });
+        }
+
+        public Dictionary<Direction, int?> InvokeDiscover(GM gm, AbstractField pos)
+        {
+            return gm.Invoke<GM, Dictionary<Direction, int?>>("Discover", new object[] { pos });
+        }
+
         [Fact]
         public async Task TestLock()
         {
@@ -109,12 +120,15 @@ namespace GameMaster.Tests
         public async Task TestMoveAsyncToEmpty()
         {
             var gm = GenerateGM();
+            Func<AbstractField, int?> getClosestPiece =
+    (AbstractField pos) => gm.Invoke<GM, int?>("FindClosestPiece", new object[] { pos });
+
             var player = GenerateGMPlayer();
             var playerStartField = new TaskField(0, 0);
             var playerEndField = new TaskField(0, 1);
             Assert.True(playerStartField.MoveHere(player));
 
-            bool moved = await player.MoveAsync(playerEndField, gm, CancellationToken.None);
+            bool moved = await player.MoveAsync(playerEndField, getClosestPiece, CancellationToken.None);
             Assert.True(moved);
             Assert.Equal(playerEndField, player.Position);
             Assert.Equal(MessageID.MoveAnswer, lastSended.MessageID);
@@ -130,6 +144,7 @@ namespace GameMaster.Tests
         public async Task TestMoveAsyncToFull()
         {
             var gm = GenerateGM();
+            Func<AbstractField, int?> getClosestPiece = (AbstractField pos) => InvokeGetClosestPiece(gm, pos);
             var firstPlayer = GenerateGMPlayer();
             var firstPlayerField = new TaskField(0, 0);
             Assert.True(firstPlayerField.MoveHere(firstPlayer));
@@ -139,7 +154,7 @@ namespace GameMaster.Tests
             Assert.True(secondPlayerField.MoveHere(secondPlayer));
 
             // Act
-            bool moved = await firstPlayer.MoveAsync(secondPlayerField, gm, CancellationToken.None);
+            bool moved = await firstPlayer.MoveAsync(secondPlayerField, getClosestPiece, CancellationToken.None);
             Assert.False(moved);
             Assert.Equal(firstPlayerField, firstPlayer.Position);
             Assert.Equal(secondPlayerField, secondPlayer.Position);
@@ -156,6 +171,7 @@ namespace GameMaster.Tests
         public async Task TestMoveAsyncToRelease()
         {
             var gm = GenerateGM();
+            Func<AbstractField, int?> getClosestPiece = (AbstractField pos) => InvokeGetClosestPiece(gm, pos);
             var firstPlayer = GenerateGMPlayer();
             var firstPlayerField = new TaskField(0, 0);
             Assert.True(firstPlayerField.MoveHere(firstPlayer));
@@ -166,7 +182,7 @@ namespace GameMaster.Tests
             Assert.True(secondPlayerField.MoveHere(secondPlayer));
 
             // Act
-            bool moved = await secondPlayer.MoveAsync(secondPlayerEndField, gm, CancellationToken.None);
+            bool moved = await secondPlayer.MoveAsync(secondPlayerEndField, getClosestPiece, CancellationToken.None);
             Assert.True(moved);
             Assert.Equal(MessageID.MoveAnswer, lastSended.MessageID);
             var payload = (MoveAnswerPayload)lastSended.Payload;
@@ -174,7 +190,7 @@ namespace GameMaster.Tests
             Assert.Null(prevSended);
 
             lastSended = null;
-            moved = await firstPlayer.MoveAsync(secondPlayerField, gm, CancellationToken.None);
+            moved = await firstPlayer.MoveAsync(secondPlayerField, getClosestPiece, CancellationToken.None);
             Assert.True(moved);
             Assert.Equal(MessageID.MoveAnswer, lastSended.MessageID);
             payload = (MoveAnswerPayload)lastSended.Payload;
@@ -185,6 +201,7 @@ namespace GameMaster.Tests
         public async Task TestMoveAsyncActivePenalty()
         {
             var gm = GenerateGM();
+            Func<AbstractField, int?> getClosestPiece = (AbstractField pos) => InvokeGetClosestPiece(gm, pos);
             var player = GenerateGMPlayer();
             var startField = new TaskField(0, 0);
             var firstField = new TaskField(0, 1);
@@ -192,13 +209,13 @@ namespace GameMaster.Tests
             Assert.True(startField.MoveHere(player));
 
             // Act
-            var moved = await player.MoveAsync(firstField, gm, CancellationToken.None);
+            var moved = await player.MoveAsync(firstField, getClosestPiece, CancellationToken.None);
             Assert.True(moved);
             Assert.Equal(MessageID.MoveAnswer, lastSended.MessageID);
             Assert.Null(prevSended);
 
             lastSended = null;
-            moved = await player.MoveAsync(secondField, gm, CancellationToken.None);
+            moved = await player.MoveAsync(secondField, getClosestPiece, CancellationToken.None);
             Assert.False(moved);
             Assert.Equal(MessageID.NotWaitedError, lastSended.MessageID);
         }
@@ -207,6 +224,7 @@ namespace GameMaster.Tests
         public async Task TestMoveAsyncAfterPenalty()
         {
             var gm = GenerateGM();
+            Func<AbstractField, int?> getClosestPiece = (AbstractField pos) => InvokeGetClosestPiece(gm, pos);
             var conf = GenerateConfiguration();
             var socketClient = GenerateSocketClient();
             var player = GenerateGMPlayer(conf, socketClient);
@@ -216,14 +234,14 @@ namespace GameMaster.Tests
             Assert.True(startField.MoveHere(player));
 
             // Act
-            var moved = await player.MoveAsync(firstField, gm, CancellationToken.None);
+            var moved = await player.MoveAsync(firstField, getClosestPiece, CancellationToken.None);
             Assert.True(moved);
             Assert.Equal(MessageID.MoveAnswer, lastSended.MessageID);
             Assert.Null(prevSended);
 
             await Task.Delay(conf.MovePenalty * 2);
             lastSended = null;
-            moved = await player.MoveAsync(secondField, gm, CancellationToken.None);
+            moved = await player.MoveAsync(secondField, getClosestPiece, CancellationToken.None);
             Assert.True(moved);
             Assert.Equal(MessageID.MoveAnswer, lastSended.MessageID);
         }
@@ -280,12 +298,13 @@ namespace GameMaster.Tests
         public async Task TestDiscoverAsync()
         {
             var gm = GenerateGM();
+            Func<AbstractField, Dictionary<Direction, int?>> discover = (AbstractField pos) => InvokeDiscover(gm, pos);
             var player = GenerateGMPlayer();
             var field = new TaskField(2, 2);
             Assert.True(field.MoveHere(player));
 
             // Act
-            await player.DiscoverAsync(gm, CancellationToken.None);
+            await player.DiscoverAsync(discover, CancellationToken.None);
             Assert.Equal(MessageID.DiscoverAnswer, lastSended.MessageID);
             Assert.Null(prevSended);
         }

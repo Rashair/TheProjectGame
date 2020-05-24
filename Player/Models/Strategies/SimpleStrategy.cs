@@ -9,9 +9,16 @@ namespace Player.Models.Strategies
 {
     public class SimpleStrategy : IStrategy
     {
-        private readonly Random random = new Random();
+        private readonly Random random;
+        private readonly Player player;
 
-        public async Task MakeDecision(Player player, CancellationToken cancellationToken)
+        public SimpleStrategy(Player player)
+        {
+            this.player = player;
+            this.random = new Random();
+        } 
+
+        public async Task MakeDecision(CancellationToken cancellationToken)
         {
             (int y, int x) = player.Position;
             if (!player.HasPiece)

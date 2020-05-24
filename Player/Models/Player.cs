@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-using Newtonsoft.Json;
 using Player.Models.Strategies;
 using Player.Models.Strategies.Utils;
 using Serilog;
@@ -26,8 +25,9 @@ namespace Player.Models
 
         private int id;
         private int penaltyTime;
-        private readonly IStrategy strategy;
         private bool isWorking;
+
+        private readonly IStrategy strategy;
         private readonly PlayerConfiguration conf;
         private Team? winner;
 
@@ -35,7 +35,7 @@ namespace Player.Models
             Message> client, ILogger log)
         {
             this.conf = conf;
-            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy);
+            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy, this);
             this.queue = queue;
             this.client = client;
             this.logger = log.ForContext<Player>();
@@ -43,7 +43,7 @@ namespace Player.Models
             this.Position = (-1, -1);
         }
 
-        public int PreviousDistToPiece { get; private set; }
+        public int NotMadeMoveInRow { get; private set; }
 
         public Penalties PenaltiesTimes { get; private set; }
 
@@ -78,6 +78,10 @@ namespace Player.Models
         public (int y, int x) BoardSize { get; private set; }
 
         public int GoalAreaSize { get; private set; }
+
+        public (int y1, int y2) GoalAreaRange { get; set; }
+
+        public Direction GoalAreaDirection { get; set; }
 
         internal async Task Start(CancellationToken cancellationToken)
         {
@@ -353,6 +357,17 @@ namespace Player.Models
                     EnemiesIds = payloadStart.EnemiesIDs;
 
                     GoalAreaSize = payloadStart.GoalAreaSize;
+                    if (this.Team == Team.Blue)
+                    {
+                        this.GoalAreaRange = (0, GoalAreaSize);
+                        this.GoalAreaDirection = Direction.S;
+                    }
+                    else
+                    {
+                        this.GoalAreaRange = (BoardSize.y - GoalAreaSize, BoardSize.y);
+                        this.GoalAreaDirection = Direction.N;
+                    }
+
                     NumberOfPlayers = payloadStart.NumberOfPlayers;
                     NumberOfPieces = payloadStart.NumberOfPieces;
                     NumberOfGoals = payloadStart.NumberOfGoals;
@@ -379,7 +394,13 @@ namespace Player.Models
                     if (payloadMove.MadeMove)
                     {
                         Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
+
                         Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece.Value;
+                        NotMadeMoveInRow = 0;
+                    }
+                    else
+                    {
+                        ++NotMadeMoveInRow;
                     }
                     penaltyTime = PenaltiesTimes.Move;
                     break;
@@ -489,7 +510,7 @@ namespace Player.Models
 
         public async Task MakeDecisionFromStrategy(CancellationToken cancellationToken)
         {
-            await strategy.MakeDecision(this, cancellationToken);
+            await strategy.MakeDecision(cancellationToken);
         }
 
         private async Task Communicate(Message message, CancellationToken cancellationToken)

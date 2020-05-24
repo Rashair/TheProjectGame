@@ -16,24 +16,24 @@ namespace IntegrationTests.GameTests
                 AskPenalty = 10000,
                 PutPenalty = 500,
                 CheckForShamPenalty = 750,
-                DestroyPenalty = 100,
-                PickupPenalty = 100,
-                DiscoveryPenalty = 3000,
+                DestroyPenalty = 150,
+                PickupPenalty = 150,
+                DiscoveryPenalty = 1200,
                 ResponsePenalty = 5000,
                 PrematureRequestPenalty = 1000,
                 Height = 12,
                 Width = 4,
                 GoalAreaHeight = 4,
-                NumberOfGoals = 4,
+                NumberOfGoals = 6,
                 NumberOfPiecesOnBoard = 6,
                 NumberOfPlayersPerTeam = 4,
                 ShamPieceProbability = 0.3f,
             };
 
-            TestConf.CheckInterval = 4000;
+            TestConf.CheckInterval = 3500;
         }
 
-        [Fact(Timeout = 8 * 60 * 1000)]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public override async void RunGameWithConfiguration()
         {
             await RunGame();

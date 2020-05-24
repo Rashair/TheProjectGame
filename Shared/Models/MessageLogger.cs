@@ -1,7 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 
-using Shared.Converters;
-using Shared.Enums;
 using Shared.Messages;
 
 namespace Shared.Models
@@ -10,7 +8,7 @@ namespace Shared.Models
     {
         public static string Received(this Message msg)
         {
-            return $"Received message: {GetDescription(msg)}";
+            return $"Received message: {msg.GetDescription()}";
         }
 
         public static string Sent(this Message msg)
@@ -20,8 +18,7 @@ namespace Shared.Models
 
         public static string GetDescription(this Message msg)
         {
-            MessageID messageID = msg.MessageID;
-            string messageLog = $"{messageID.GetDescription()}, {msg.AgentID.GetDescription()}, " +
+            string messageLog = $"{msg.MessageID.GetDescription("MessageID")}, {msg.AgentID.GetDescription("AgentID")}, " +
                 $"Payload: {{{msg.Payload?.ToString() ?? "null"}}}";
 
             return messageLog;

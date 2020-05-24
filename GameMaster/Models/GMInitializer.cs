@@ -28,7 +28,8 @@ namespace GameMaster.Models
                 board[i] = new AbstractField[conf.Width];
             }
 
-            GenerateGoalFields(conf.GoalAreaHeight);
+            GenerateGoalFields();
+
             AbstractField NonGoalFieldGenerator(int y, int x) => new NonGoalField(y, x);
             for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
             {
@@ -47,11 +48,11 @@ namespace GameMaster.Models
             }
         }
 
-        private void GenerateGoalFields(int goalAreaHeight)
+        private void GenerateGoalFields()
         {
             for (int i = 0; i < conf.NumberOfGoals; ++i)
             {
-                int row = rand.Next(0, goalAreaHeight);
+                int row = rand.Next(0, conf.GoalAreaHeight);
                 int col = rand.Next(conf.Width);
                 while (board[row][col] != null)
                 {
@@ -60,14 +61,14 @@ namespace GameMaster.Models
                     {
                         col = 0;
                         ++row;
-                        if (row == goalAreaHeight)
+                        if (row == conf.GoalAreaHeight)
                         {
                             row = 0;
                         }
                     }
                 }
                 board[row][col] = new GoalField(row, col);
-                board[conf.Height - 1 - row][col] = new GoalField(conf.Height - 1 - row, col);
+                board[conf.Height - row - 1][col] = new GoalField(conf.Height - row - 1, col);
             }
         }
 

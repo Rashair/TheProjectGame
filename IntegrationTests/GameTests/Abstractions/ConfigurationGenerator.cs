@@ -1,4 +1,5 @@
-﻿using Shared.Enums;
+﻿using Player.Models.Strategies.Utils;
+using Shared.Enums;
 
 namespace IntegrationTests.GameTests.Abstractions
 {
@@ -31,14 +32,13 @@ namespace IntegrationTests.GameTests.Abstractions
                 "Verbose=false"
             };
 
-            var redArgs = CreatePlayerConfig(Team.Red, playerPort);
-            var blueArgs = CreatePlayerConfig(Team.Blue, playerPort);
+            var redArgs = CreatePlayerConfig(Team.Red, playerPort, StrategyEnum.AdvancedStrategy);
+            var blueArgs = CreatePlayerConfig(Team.Blue, playerPort, StrategyEnum.AdvancedStrategy);
 
             return (csArgs, gmArgs, redArgs, blueArgs);
         }
 
-        // TODO: Add strategy here, when we will have second strategy :) 
-        private string[] CreatePlayerConfig(Team team, int port)
+        private string[] CreatePlayerConfig(Team team, int port, StrategyEnum strategy)
         {
             return new[]
             {
@@ -46,6 +46,7 @@ namespace IntegrationTests.GameTests.Abstractions
                 "urls=http://127.0.0.1:0",
                 $"CsIP={csIP}",
                 $"CsPort={port}",
+                $"Strategy={(int)strategy}",
                 "Verbose=false"
             };
         }
