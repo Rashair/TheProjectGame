@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using GameMaster.Managers;
 using GameMaster.Models.Fields;
+using GameMaster.Models.Messages;
+using GameMaster.Models.Payloads;
 using GameMaster.Models.Pieces;
-using Newtonsoft.Json;
 using Serilog;
 using Shared.Clients;
 using Shared.Enums;
@@ -24,6 +26,7 @@ namespace GameMaster.Models
         private readonly ISocketClient<Message, Message> socketClient;
         private DateTime lockedTill;
         private AbstractField position;
+        private readonly WebSocketManager<ClientMessage> guiManager;
 
         public AbstractField Position
         {
@@ -45,12 +48,14 @@ namespace GameMaster.Models
         public Team Team { get; }
 
         public GMPlayer(int id, GameConfiguration conf, ISocketClient<Message, Message> socketClient, Team team,
-            ILogger log, bool isLeader = false)
+            ILogger log, bool isLeader = false, WebSocketManager<ClientMessage> guiManager = null)
         {
             logger = log.ForContext<GMPlayer>();
             this.id = id;
             this.conf = conf;
             this.socketClient = socketClient;
+            this.guiManager = guiManager;
+
             Team = team;
             IsLeader = isLeader;
             lockedTill = DateTime.Now;
@@ -62,6 +67,22 @@ namespace GameMaster.Models
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
                 bool moved = field?.MoveHere(this) == true;
+
+                if (!(guiManager is null))
+                {
+                    ClientMessage clientMessage = new ClientMessage
+                    {
+                        Type = "Move",
+                        Payload = new MoveClientPayload
+                        {
+                            Id = id,
+                            X = this[1],
+                            Y = this[0]
+                        }
+                    };
+                    await guiManager.SendMessageToAllAsync(clientMessage, cancellationToken);
+                }
+
                 Message message = MoveAnswerMessage(moved, gm);
                 await SendAndLockAsync(message, conf.MovePenalty, cancellationToken);
 
@@ -81,6 +102,19 @@ namespace GameMaster.Models
                 {
                     message = DestructionAnswerMessage();
                     Holding = null;
+
+                    if (!(guiManager is null))
+                    {
+                        ClientMessage clientMessage = new ClientMessage
+                        {
+                            Type = "Destroy",
+                            Payload = new PlayerIdClientPayload
+                            {
+                                Id = id
+                            }
+                        };
+                        await guiManager.SendMessageToAllAsync(clientMessage, cancellationToken);
+                    }
                 }
                 else
                 {
@@ -140,6 +174,35 @@ namespace GameMaster.Models
                     (putEvent, wasPieceRemoved) = Holding.Put(Position);
                     message = PutAnswerMessage(putEvent);
                     Holding = null;
+
+                    if (!(guiManager is null))
+                    {
+                        string typeGUI;
+                        switch (putEvent)
+                        {
+                            case PutEvent.TaskField:
+                                typeGUI = "Put";
+                                break;
+
+                            case PutEvent.NormalOnGoalField:
+                                typeGUI = "Goal";
+                                break;
+
+                            default:
+                                typeGUI = "Destroy";
+                                break;
+                        }
+
+                        ClientMessage clientMessage = new ClientMessage
+                        {
+                            Type = typeGUI,
+                            Payload = new PlayerIdClientPayload
+                            {
+                                Id = id
+                            }
+                        };
+                        await guiManager.SendMessageToAllAsync(clientMessage, cancellationToken);
+                    }
                 }
                 else
                 {
@@ -236,6 +299,20 @@ namespace GameMaster.Models
                     if (picked)
                     {
                         message = PickAnswerMessage();
+
+                        if (!(guiManager is null))
+                        {
+                            ClientMessage clientMessage = new ClientMessage
+                            {
+                                Type = "Pick",
+                                Payload = new PickClientPayload
+                                {
+                                    Id = id,
+                                    ContainPieces = Position.ContainsPieces()
+                                }
+                            };
+                            await guiManager.SendMessageToAllAsync(clientMessage, cancellationToken);
+                        }
                     }
                     else
                     {
