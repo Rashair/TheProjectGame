@@ -648,12 +648,12 @@ namespace GameMaster.Tests
 
             await InitializeAndBegForInfo(gameMaster, player1ID, player2ID);
 
-            GiveInfoPayload giveInfoPayload = new GiveInfoPayload()
+            GiveInfoPayload giveInfoPayload = new GiveInfoPayload(conf.Width)
             {
                 RespondToID = player1ID,
-                Distances = new int[,] { { 1, 1 } },
-                RedTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },
-                BlueTeamGoalAreaInformations = new GoalInfo[,] { { GoalInfo.IDK } },
+                Distances = new int[] { 1, 1 },
+                RedTeamGoalAreaInformations = new GoalInfo[] { GoalInfo.IDK },
+                BlueTeamGoalAreaInformations = new GoalInfo[] { GoalInfo.IDK },
             };
             Message giveMessage1 = new Message()
             {

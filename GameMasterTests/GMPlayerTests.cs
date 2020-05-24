@@ -9,7 +9,6 @@ using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.Hosting;
 using Moq;
-using Newtonsoft.Json;
 using Serilog;
 using Shared.Clients;
 using Shared.Enums;

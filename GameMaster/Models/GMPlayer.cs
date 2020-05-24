@@ -228,7 +228,7 @@ namespace GameMaster.Models
             if (legalKnowledgeReplies.Contains((agentID, payload.RespondToID)) && isUnlocked)
             {
                 legalKnowledgeReplies.Remove((agentID, payload.RespondToID));
-                GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload()
+                GiveInfoForwardedPayload answerPayload = new GiveInfoForwardedPayload(conf.Width)
                 {
                     RespondingID = agentID,
                     Distances = payload.Distances,
