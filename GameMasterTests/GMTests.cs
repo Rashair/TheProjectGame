@@ -648,7 +648,7 @@ namespace GameMaster.Tests
 
             await InitializeAndBegForInfo(gameMaster, player1ID, player2ID);
 
-            GiveInfoPayload giveInfoPayload = new GiveInfoPayload(conf.Width)
+            GiveInfoPayload giveInfoPayload = new GiveInfoPayload()
             {
                 RespondToID = player1ID,
                 Distances = new int[] { 1, 1 },

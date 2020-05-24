@@ -106,7 +106,7 @@ namespace Shared.Tests
             // Arrange
             int width = 2;
             int height = 2;
-            var payload = new GiveInfoForwardedPayload(width)
+            var payload = new GiveInfoForwardedPayload()
             {
                 RespondingID = 1,
             };
@@ -173,7 +173,7 @@ namespace Shared.Tests
             // Arrange
             int width = 2;
             int height = 2;
-            var payload = new GiveInfoPayload(width)
+            var payload = new GiveInfoPayload()
             {
                 RespondToID = 1,
             };
