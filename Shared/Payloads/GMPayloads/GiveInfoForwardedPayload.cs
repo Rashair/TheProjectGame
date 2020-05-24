@@ -25,8 +25,7 @@ namespace Shared.Payloads.GMPayloads
         {
             StringBuilder message = new StringBuilder($"respondingID:{RespondingID}, ");
             message.AppendLine("Distances:\n");
-            int height = Distances.Length / boardWidth;
-            for (int i = 0; i < height; i += boardWidth)
+            for (int i = 0; i < Distances.Length; i += boardWidth)
             {
                 for (int j = 0; j < boardWidth; j++)
                 {
@@ -37,8 +36,7 @@ namespace Shared.Payloads.GMPayloads
             message.AppendLine();
 
             message.Append("RedTeamGoalAreaInformation:\n");
-            height = RedTeamGoalAreaInformations.Length / boardWidth;
-            for (int i = 0; i < height; i += boardWidth)
+            for (int i = 0; i < RedTeamGoalAreaInformations.Length; i += boardWidth)
             {
                 for (int j = 0; j < boardWidth; ++j)
                 {
@@ -49,8 +47,7 @@ namespace Shared.Payloads.GMPayloads
             message.AppendLine();
 
             message.Append("BlueTeamGoalAreaInformation:\n");
-            height = BlueTeamGoalAreaInformations.Length / boardWidth;
-            for (int i = 0; i < height; i += boardWidth)
+            for (int i = 0; i < BlueTeamGoalAreaInformations.Length; i += boardWidth)
             {
                 for (int j = 0; j < boardWidth; j++)
                 {

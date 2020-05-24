@@ -484,7 +484,7 @@ namespace Player.Tests
 
             int[] distBoard = new int[playerBoardSize.Y * playerBoardSize.X];
             GoalInfo[] infoBoard = new GoalInfo[playerBoardSize.Y * playerBoardSize.X];
-            for (int i = 0; i < playerBoardSize.Y; i += playerBoardSize.X)
+            for (int i = 0; i < distBoard.Length; i += playerBoardSize.X)
             {
                 for (int j = 0; j < playerBoardSize.X; j++)
                 {

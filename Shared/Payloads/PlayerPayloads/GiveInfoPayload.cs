@@ -27,8 +27,7 @@ namespace Shared.Payloads.PlayerPayloads
             message.AppendLine();
 
             message.Append("Distances:\n");
-            int height = Distances.Length / boardWidth;
-            for (int i = 0; i < height; i += boardWidth)
+            for (int i = 0; i < Distances.Length; i += boardWidth)
             {
                 for (int j = 0; j < boardWidth; j++)
                 {
@@ -39,8 +38,7 @@ namespace Shared.Payloads.PlayerPayloads
             message.AppendLine();
 
             message.Append("RedTeamGoalAreaInformations:\n");
-            height = RedTeamGoalAreaInformations.Length / boardWidth;
-            for (int i = 0; i < height; i += boardWidth)
+            for (int i = 0; i < RedTeamGoalAreaInformations.Length; i += boardWidth)
             {
                 for (int j = 0; j < boardWidth; ++j)
                 {
@@ -51,10 +49,9 @@ namespace Shared.Payloads.PlayerPayloads
             message.AppendLine();
 
             message.Append("BlueTeamGoalAreaInformations:\n");
-            height = BlueTeamGoalAreaInformations.Length / boardWidth;
-            for (int i = 0; i < height; i += boardWidth)
+            for (int i = 0; i < BlueTeamGoalAreaInformations.Length; i += boardWidth)
             {
-                for (int j = 0; j < boardWidth; j++)
+                for (int j = 0; j < boardWidth; ++j)
                 {
                     message.Append($"{BlueTeamGoalAreaInformations[i + j]}, ");
                 }

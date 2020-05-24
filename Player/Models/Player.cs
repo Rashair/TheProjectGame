@@ -407,21 +407,23 @@ namespace Player.Models
                     break;
                 case MessageID.GiveInfoForwarded:
                     GiveInfoForwardedPayload payloadGive = (GiveInfoForwardedPayload)message.Payload;
-                    for (int i = 0; i < BoardSize.y; i += BoardSize.x)
+                    int length = payloadGive.Distances.Length;
+                    for (int i = 0; i < length; i += BoardSize.x)
                     {
                         for (int j = 0; j < BoardSize.x; ++j)
                         {
+                            int row = i / BoardSize.x;
                             if (payloadGive.Distances[i + j] != int.MaxValue)
                             {
-                                Board[i, j].DistToPiece = payloadGive.Distances[i + j];
+                                Board[row, j].DistToPiece = payloadGive.Distances[i + j];
                             }
                             if (payloadGive.RedTeamGoalAreaInformations[i + j] != GoalInfo.IDK)
                             {
-                                Board[i, j].GoalInfo = payloadGive.RedTeamGoalAreaInformations[i + j];
+                                Board[row, j].GoalInfo = payloadGive.RedTeamGoalAreaInformations[i + j];
                             }
                             else if (payloadGive.BlueTeamGoalAreaInformations[i + j] != GoalInfo.IDK)
                             {
-                                Board[i, j].GoalInfo = payloadGive.BlueTeamGoalAreaInformations[i + j];
+                                Board[row, j].GoalInfo = payloadGive.BlueTeamGoalAreaInformations[i + j];
                             }
                         }
                     }
