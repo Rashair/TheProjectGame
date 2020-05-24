@@ -202,7 +202,7 @@ namespace Player.Models
                 AgentID = id,
             };
 
-            GiveInfoPayload response = new GiveInfoPayload();
+            GiveInfoPayload response = new GiveInfoPayload(BoardSize.y);
             if (toLeader)
             {
                 response.RespondToID = LeaderId;
@@ -213,24 +213,24 @@ namespace Player.Models
                 WaitingPlayers.RemoveLast();
             }
 
-            response.Distances = new int[BoardSize.y, BoardSize.x];
-            response.RedTeamGoalAreaInformations = new GoalInfo[BoardSize.y, BoardSize.x];
-            response.BlueTeamGoalAreaInformations = new GoalInfo[BoardSize.y, BoardSize.x];
+            response.Distances = new int[BoardSize.y * BoardSize.x];
+            response.RedTeamGoalAreaInformations = new GoalInfo[BoardSize.y * BoardSize.x];
+            response.BlueTeamGoalAreaInformations = new GoalInfo[BoardSize.y * BoardSize.x];
 
             for (int i = 0; i < Board.Length; ++i)
             {
                 int row = i / BoardSize.x;
                 int col = i % BoardSize.x;
-                response.Distances[row, col] = Board[row, col].DistToPiece;
+                response.Distances[row * col] = Board[row, col].DistToPiece;
                 if (Team == Team.Red)
                 {
-                    response.RedTeamGoalAreaInformations[row, col] = Board[row, col].GoalInfo;
-                    response.BlueTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
+                    response.RedTeamGoalAreaInformations[row * col] = Board[row, col].GoalInfo;
+                    response.BlueTeamGoalAreaInformations[row * col] = GoalInfo.IDK;
                 }
                 else
                 {
-                    response.BlueTeamGoalAreaInformations[row, col] = Board[row, col].GoalInfo;
-                    response.RedTeamGoalAreaInformations[row, col] = GoalInfo.IDK;
+                    response.BlueTeamGoalAreaInformations[row * col] = Board[row, col].GoalInfo;
+                    response.RedTeamGoalAreaInformations[row * col] = GoalInfo.IDK;
                 }
             }
             message.Payload = response;
@@ -428,21 +428,23 @@ namespace Player.Models
                     break;
                 case MessageID.GiveInfoForwarded:
                     GiveInfoForwardedPayload payloadGive = (GiveInfoForwardedPayload)message.Payload;
-                    for (int i = 0; i < payloadGive.Distances.GetLength(0); i++)
+                    int length = payloadGive.Distances.Length;
+                    for (int i = 0; i < length; i += BoardSize.x)
                     {
-                        for (int j = 0; j < payloadGive.Distances.GetLength(1); j++)
+                        for (int j = 0; j < BoardSize.x; ++j)
                         {
-                            if (payloadGive.Distances[i, j] != int.MaxValue)
+                            int row = i / BoardSize.x;
+                            if (payloadGive.Distances[i + j] != int.MaxValue)
                             {
-                                Board[i, j].DistToPiece = payloadGive.Distances[i, j];
+                                Board[row, j].DistToPiece = payloadGive.Distances[i + j];
                             }
-                            if (payloadGive.RedTeamGoalAreaInformations[i, j] != GoalInfo.IDK)
+                            if (payloadGive.RedTeamGoalAreaInformations[i + j] != GoalInfo.IDK)
                             {
-                                Board[i, j].GoalInfo = payloadGive.RedTeamGoalAreaInformations[i, j];
+                                Board[row, j].GoalInfo = payloadGive.RedTeamGoalAreaInformations[i + j];
                             }
-                            else if (payloadGive.BlueTeamGoalAreaInformations[i, j] != GoalInfo.IDK)
+                            else if (payloadGive.BlueTeamGoalAreaInformations[i + j] != GoalInfo.IDK)
                             {
-                                Board[i, j].GoalInfo = payloadGive.BlueTeamGoalAreaInformations[i, j];
+                                Board[row, j].GoalInfo = payloadGive.BlueTeamGoalAreaInformations[i + j];
                             }
                         }
                     }

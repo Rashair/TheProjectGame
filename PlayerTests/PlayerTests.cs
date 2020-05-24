@@ -482,19 +482,19 @@ namespace Player.Tests
             Position randomPosition2 = new Position { X = 2, Y = 2 };
             Position randomPosition3 = new Position { X = 2, Y = 1 };
 
-            int[,] distBoard = new int[playerBoardSize.Y, playerBoardSize.X];
-            GoalInfo[,] infoBoard = new GoalInfo[playerBoardSize.Y, playerBoardSize.X];
-            for (int i = 0; i < playerBoardSize.Y; i++)
+            int[] distBoard = new int[playerBoardSize.Y * playerBoardSize.X];
+            GoalInfo[] infoBoard = new GoalInfo[playerBoardSize.Y * playerBoardSize.X];
+            for (int i = 0; i < distBoard.Length; i += playerBoardSize.X)
             {
                 for (int j = 0; j < playerBoardSize.X; j++)
                 {
-                    distBoard[i, j] = randomDistance1;
-                    infoBoard[i, j] = GoalInfo.IDK;
+                    distBoard[i + j] = randomDistance1;
+                    infoBoard[i + j] = GoalInfo.IDK;
                 }
             }
-            distBoard[randomPosition2.Y, randomPosition2.X] = randomDistance2;
-            infoBoard[randomPosition3.Y, randomPosition3.X] = GoalInfo.DiscoveredGoal;
-            GiveInfoForwardedPayload payload = new GiveInfoForwardedPayload()
+            distBoard[(randomPosition2.Y * playerBoardSize.X) + randomPosition2.X] = randomDistance2;
+            infoBoard[(randomPosition3.Y * playerBoardSize.X) + randomPosition3.X] = GoalInfo.DiscoveredGoal;
+            GiveInfoForwardedPayload payload = new GiveInfoForwardedPayload(playerBoardSize.Y)
             {
                 Distances = distBoard,
                 RedTeamGoalAreaInformations = infoBoard,
