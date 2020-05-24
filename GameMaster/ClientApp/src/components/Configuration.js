@@ -1,9 +1,9 @@
 ﻿import React, { Component } from "react";
 import { error } from "../helpers/errors";
-import { API_URL } from "../helpers/constants";
+import { API_URL, NOTIFY_SHOW_TIME } from "../helpers/constants";
 import { notify } from "react-notify-toast";
 
-const CustomFieldset = ({ id, label, type = "number", min = 0, value, onChange, regex, title }) => {
+const CustomFieldset = ({ id, label, type = "number", min = 1, value, onChange, regex, title }) => {
   return (
     <fieldset className="form-group col-md-4 mb-4 pl-3 ">
       <label className="ml-1" htmlFor={id}>
@@ -33,9 +33,9 @@ export class Configuration extends Component {
       movePenalty: 0,
       askPenalty: 0,
       responsePenalty: 0,
-      discoverPenalty: 0,
+      discoveryPenalty: 0,
       pickupPenalty: 0,
-      checkPenalty: 0,
+      checkForShamPenalty: 0,
       putPenalty: 0,
       destroyPenalty: 0,
       width: 0,
@@ -45,7 +45,7 @@ export class Configuration extends Component {
       numberOfPlayersPerTeam: 0,
       shamPieceProbability: 0.0,
       numberOfPiecesOnBoard: 0,
-      prematureRequestPenalty:0
+      prematureRequestPenalty: 0,
     };
 
     this.sendData = this.sendData.bind(this);
@@ -71,13 +71,17 @@ export class Configuration extends Component {
         notify.show(
           "Liczba celów w przestrzeni bramkowej nie może być większa niż liczba pól w tym obszarze",
           "warning",
-          3000
+          NOTIFY_SHOW_TIME
         );
         return;
       }
 
     if (2 * this.state.numberOfPlayersPerTeam > this.state.width * this.state.height) {
-      notify.show("Liczba agentów w obu drużynach nie może przekraczać liczby pól na planszy", "warning", 3000);
+      notify.show(
+        "Liczba agentów w obu drużynach nie może przekraczać liczby pól na planszy",
+        "warning",
+        NOTIFY_SHOW_TIME
+      );
       return;
     }
 
@@ -86,14 +90,14 @@ export class Configuration extends Component {
       if (state.hasOwnProperty(key)) {
         const val = state[key];
         if (!isNaN(val) && val < 0) {
-          notify.show("Parametry nie mogą przyjmować wartości ujemnych", "warning", 3000);
+          notify.show("Parametry nie mogą przyjmować wartości ujemnych", "warning", NOTIFY_SHOW_TIME);
           return;
         }
       }
     }
 
     if (this.state.shamPieceProbability > 1) {
-      notify.show("Prawdopodobieństwo musi być liczbą z przedziału między 0 a 1.", "warning", 3000);
+      notify.show("Prawdopodobieństwo musi być liczbą z przedziału między 0 a 1.", "warning", NOTIFY_SHOW_TIME);
       return;
     }
 
@@ -103,7 +107,7 @@ export class Configuration extends Component {
       body: JSON.stringify(this.state),
     }).then((res) => {
       if (res.ok) {
-        notify.show("Konfiguracja zapisana!", "success", 3000);
+        notify.show("Konfiguracja zapisana!", "success", NOTIFY_SHOW_TIME);
         this.props.history.push("/");
       } else {
         error(res);
@@ -121,8 +125,8 @@ export class Configuration extends Component {
             type: "string",
             value: this.state.csIP,
             regex:
-              "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
-            title: "Wprowadź poprawny adres IP",
+              "^[-a-zA-Z0-9@:%._\+~#=]+$",
+            title: "Wprowadź poprawny adres",
             onChange: (e) => this.setState({ csIP: e.target.value }),
           })}
           {CustomFieldset({
@@ -156,8 +160,8 @@ export class Configuration extends Component {
           {CustomFieldset({
             id: "discoverPenalty",
             label: "Kara za akcję discovery",
-            value: this.state.discoverPenalty,
-            onChange: (e) => this.setState({ discoverPenalty: e.target.value }),
+            value: this.state.discoveryPenalty,
+            onChange: (e) => this.setState({ discoveryPenalty: e.target.value }),
           })}
           {CustomFieldset({
             id: "pickupPenalty",
@@ -166,10 +170,10 @@ export class Configuration extends Component {
             onChange: (e) => this.setState({ pickupPenalty: e.target.value }),
           })}
           {CustomFieldset({
-            id: "checkPenalty",
+            id: "checkForShamPenalty",
             label: "Kara za sprawdzenie fragmentu",
-            value: this.state.checkPenalty,
-            onChange: (e) => this.setState({ checkPenalty: e.target.value }),
+            value: this.state.checkForShamPenalty,
+            onChange: (e) => this.setState({ checkForShamPenalty: e.target.value }),
           })}
           {CustomFieldset({
             id: "putPenalty",
@@ -187,7 +191,7 @@ export class Configuration extends Component {
             id: "prematureRequestPenalty",
             label: "Kara za nie odczekanie",
             value: this.state.prematureRequestPenalty,
-            onChange: (e) => this.setState({prematureRequestPenalty: e.target.value }),
+            onChange: (e) => this.setState({ prematureRequestPenalty: e.target.value }),
           })}
         </div>
 
@@ -263,7 +267,7 @@ export class Configuration extends Component {
             value={this.state.shamPieceProbability}
             onChange={(e) => this.setState({ shamPieceProbability: e.target.value })}
           />
-            </fieldset>
+        </fieldset>
 
         <input className="btn btn-primary btn-block w-100" type="submit" value="Zapisz" />
       </form>

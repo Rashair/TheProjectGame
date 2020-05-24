@@ -2,7 +2,9 @@ using System;
 using System.IO;
 using System.Threading.Tasks.Dataflow;
 
+using GameMaster.Managers;
 using GameMaster.Models;
+using GameMaster.Models.Messages;
 using GameMaster.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -70,6 +72,7 @@ namespace GameMaster
             // services.AddSingleton<TcpSocketManager<BackendMessage>>();
             services.AddSingleton<ISocketClient<Message, Message>, TcpSocketClient<Message, Message>>();
             services.AddSingleton<BufferBlock<Message>>();
+            services.AddSingleton<WebSocketManager<ClientMessage>>();
 
             GameConfiguration conf = GameConfiguration.GetConfiguration(Configuration);
             services.AddSingleton(conf);
@@ -103,6 +106,7 @@ namespace GameMaster
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
+            app.UseWebSockets();
 
             app.UseMvc(routes =>
             {

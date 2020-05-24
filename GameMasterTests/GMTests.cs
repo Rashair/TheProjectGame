@@ -240,7 +240,7 @@ namespace GameMaster.Tests
             {
                 var playerA = players[i];
                 var posA = playerA.GetPosition();
-                (int y1, int y2) = playerA.Team == Team.Red ? (0, conf.Height - conf.GoalAreaHeight) :
+                (int y1, int y2) = playerA.Team == Team.Blue ? (0, conf.Height - conf.GoalAreaHeight) :
                     (conf.GoalAreaHeight, conf.Height);
                 Assert.False(posA[0] < y1 || posA[0] >= y2, "No players are placed on GoalArea of enemy");
                 for (int j = i + 1; j < players.Count; ++j)
@@ -611,7 +611,7 @@ namespace GameMaster.Tests
             var lastMessage = sendedMessages.Pop();
 
             Assert.Equal(MessageID.InformationExchangeRequest, lastMessage.MessageID);
-            Assert.True(((InformationExchangePayload)lastMessage.Payload).WasSent);
+            Assert.True(((InformationExchangePayload)lastMessage.Payload).Succeeded);
 
             BegForInfoPayload begForInfoPayload = new BegForInfoPayload()
             {
@@ -628,7 +628,7 @@ namespace GameMaster.Tests
             lastMessage = sendedMessages.Pop();
 
             Assert.Equal(MessageID.InformationExchangeRequest, lastMessage.MessageID);
-            Assert.False(((InformationExchangePayload)lastMessage.Payload).WasSent);
+            Assert.False(((InformationExchangePayload)lastMessage.Payload).Succeeded);
         }
 
         [Fact]
@@ -673,13 +673,13 @@ namespace GameMaster.Tests
             var lastMessage = sendedMessages.Pop();
 
             Assert.Equal(MessageID.InformationExchangeResponse, lastMessage.MessageID);
-            Assert.True(((InformationExchangePayload)lastMessage.Payload).WasSent);
+            Assert.True(((InformationExchangePayload)lastMessage.Payload).Succeeded);
 
             await gameMaster.AcceptMessage(giveMessage2, CancellationToken.None);
             lastMessage = sendedMessages.Pop();
 
             Assert.Equal(MessageID.InformationExchangeResponse, lastMessage.MessageID);
-            Assert.False(((InformationExchangePayload)lastMessage.Payload).WasSent);
+            Assert.False(((InformationExchangePayload)lastMessage.Payload).Succeeded);
         }
     }
 }

@@ -69,7 +69,7 @@ namespace Player.Models
 
         public (int y, int x) Position { get; private set; }
 
-        public List<int> WaitingPlayers { get; private set; }
+        public LinkedList<int> WaitingPlayers { get; private set; }
 
         public int[] TeamMatesIds { get; private set; }
 
@@ -205,9 +205,8 @@ namespace Player.Models
             }
             else
             {
-                // TODO: different algorithm - whole list is shifted, maybe from end?
-                response.RespondToID = WaitingPlayers[0];
-                WaitingPlayers.RemoveAt(0);
+                response.RespondToID = WaitingPlayers.Last.Value;
+                WaitingPlayers.RemoveLast();
             }
 
             response.Distances = new int[BoardSize.y, BoardSize.x];
@@ -242,8 +241,7 @@ namespace Player.Models
             }
             else
             {
-                // TODO: They are always in waiting, fix this!
-                WaitingPlayers.Add(respondToId);
+                WaitingPlayers.AddLast(respondToId);
             }
         }
 
@@ -285,7 +283,7 @@ namespace Player.Models
                 case MessageID.CheckAnswer:
                     CheckAnswerPayload payloadCheck = (CheckAnswerPayload)message.Payload;
                     IsHeldPieceSham = payloadCheck.Sham;
-                    penaltyTime = PenaltiesTimes.CheckPiece;
+                    penaltyTime = PenaltiesTimes.CheckForSham;
                     break;
                 case MessageID.DestructionAnswer:
                     HasPiece = false;
@@ -311,7 +309,7 @@ namespace Player.Models
                         Board[Position.y + 1, Position.x + 1].DistToPiece = payloadDiscover.DistanceNE.Value;
                     if (Position.y > 0 && Position.x > 0)
                         Board[Position.y - 1, Position.x - 1].DistToPiece = payloadDiscover.DistanceSW.Value;
-                    penaltyTime = PenaltiesTimes.Discover;
+                    penaltyTime = PenaltiesTimes.Discovery;
                     break;
                 case MessageID.EndGame:
                     EndGamePayload payloadEnd = (EndGamePayload)message.Payload;
@@ -359,7 +357,7 @@ namespace Player.Models
                     NumberOfPieces = payloadStart.NumberOfPieces;
                     NumberOfGoals = payloadStart.NumberOfGoals;
                     ShamPieceProbability = payloadStart.ShamPieceProbability;
-                    WaitingPlayers = new List<int>();
+                    WaitingPlayers = new LinkedList<int>();
                     break;
                 case MessageID.BegForInfoForwarded:
                     BegForInfoForwardedPayload payloadBeg = (BegForInfoForwardedPayload)message.Payload;
@@ -381,18 +379,14 @@ namespace Player.Models
                     if (payloadMove.MadeMove)
                     {
                         Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
-
-                        if (payloadMove.ClosestPiece != null)
-                            Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece.Value;
-                        else
-                            Board[Position.y, Position.x].DistToPiece = int.MaxValue;
+                        Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece.Value;
                     }
                     penaltyTime = PenaltiesTimes.Move;
                     break;
                 case MessageID.PickAnswer:
                     HasPiece = true;
                     Board[Position.y, Position.x].DistToPiece = int.MaxValue;
-                    penaltyTime = PenaltiesTimes.PickupPiece;
+                    penaltyTime = PenaltiesTimes.Pickup;
                     break;
                 case MessageID.PutAnswer:
                     HasPiece = false;
@@ -447,14 +441,17 @@ namespace Player.Models
                     }
                     break;
                 case MessageID.PickError:
-                    penaltyTime = PenaltiesTimes.PickupPiece;
+                    penaltyTime = PenaltiesTimes.Pickup;
                     break;
                 case MessageID.PutError:
                     penaltyTime = PenaltiesTimes.PutPiece;
                     break;
                 case MessageID.UnknownError:
                     UnknownErrorPayload unknownErrorPayload = (UnknownErrorPayload)message.Payload;
-                    HasPiece = unknownErrorPayload.HoldingPiece;
+                    if (unknownErrorPayload.HoldingPiece != null)
+                    {
+                        HasPiece = unknownErrorPayload.HoldingPiece.Value;
+                    }
                     penaltyTime = 50;
                     break;
                 default:

@@ -11,6 +11,7 @@ using Shared.Enums;
 using Shared.Managers;
 using Shared.Messages;
 using Shared.Models;
+using Shared.Payloads.GMPayloads;
 
 namespace CommunicationServer.Services
 {
@@ -62,7 +63,11 @@ namespace CommunicationServer.Services
                     {
                         if (message.MessageID == MessageID.JoinTheGameAnswer)
                         {
-                            ConfirmSocket(message);
+                            JoinAnswerPayload payload = (JoinAnswerPayload)message.Payload;
+                            if (payload.Accepted)
+                            {
+                                ConfirmSocket(message);
+                            }
                         }
                         else if (message.MessageID == MessageID.StartGame)
                         {

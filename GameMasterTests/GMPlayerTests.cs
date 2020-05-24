@@ -270,7 +270,7 @@ namespace GameMaster.Tests
             Assert.True(player.Holding is null);
             Assert.Null(prevSended);
 
-            await Task.Delay(conf.CheckPenalty * 2);
+            await Task.Delay(conf.CheckForShamPenalty * 2);
             player.Holding = piece;
             lastSended = null;
             await player.CheckHoldingAsync(CancellationToken.None);
