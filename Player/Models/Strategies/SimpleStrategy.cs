@@ -9,9 +9,16 @@ namespace Player.Models.Strategies
 {
     public class SimpleStrategy : IStrategy
     {
-        private readonly Random random = new Random();
+        private readonly Random random;
+        private readonly Player player;
 
-        public async Task MakeDecision(Player player, CancellationToken cancellationToken)
+        public SimpleStrategy(Player player)
+        {
+            this.player = player;
+            this.random = new Random();
+        } 
+
+        public async Task MakeDecision(CancellationToken cancellationToken)
         {
             (int y, int x) = player.Position;
             if (!player.HasPiece)
@@ -57,13 +64,13 @@ namespace Player.Models.Strategies
                     return;
                 }
 
-                // R 0 fffff
-                // T 1 ttttt
+                // R 3 fffff
                 // T 2 ttttt
-                // B 3 fffff
+                // T 1 ttttt
+                // B 0 fffff
                 switch (player.Team)
                 {
-                    case Team.Red:
+                    case Team.Blue:
                     {
                         if (y < player.GoalAreaSize)
                         {
@@ -106,7 +113,7 @@ namespace Player.Models.Strategies
                         }
                         break;
                     }
-                    case Team.Blue:
+                    case Team.Red:
                     {
                         int beginning = player.BoardSize.y - player.GoalAreaSize;
                         if (y >= beginning)

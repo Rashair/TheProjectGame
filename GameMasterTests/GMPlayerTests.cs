@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -9,7 +10,6 @@ using GameMaster.Models.Pieces;
 using GameMaster.Tests.Mocks;
 using Microsoft.Extensions.Hosting;
 using Moq;
-using Newtonsoft.Json;
 using Serilog;
 using Shared.Clients;
 using Shared.Enums;
@@ -28,13 +28,24 @@ namespace GameMaster.Tests
         private const bool DefaultIsLeader = false;
 
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
-        private GMMessage lastSended;
-    
-        private ISocketClient<PlayerMessage, GMMessage> GenerateSocketClient()
+        private Message prevSended;
+        private Message lastSended;
+
+        public GMPlayerTests()
         {
-            var mock = new Mock<ISocketClient<PlayerMessage, GMMessage>>();
-            mock.Setup(c => c.SendAsync(It.IsAny<GMMessage>(), It.IsAny<CancellationToken>())).
-                Callback<GMMessage, CancellationToken>((m, c) => lastSended = m);
+            lastSended = null;
+            prevSended = null;
+        }
+
+        private ISocketClient<Message, Message> GenerateSocketClient()
+        {
+            var mock = new Mock<ISocketClient<Message, Message>>();
+            mock.Setup(c => c.SendAsync(It.IsAny<Message>(), It.IsAny<CancellationToken>())).
+                Callback<Message, CancellationToken>((m, c) =>
+                {
+                    prevSended = lastSended;
+                    lastSended = m;
+                });
             return mock.Object;
         }
 
@@ -43,12 +54,12 @@ namespace GameMaster.Tests
             return new MockGameConfiguration();
         }
 
-        private BufferBlock<PlayerMessage> GenerateBuffer()
+        private BufferBlock<Message> GenerateBuffer()
         {
-            return new BufferBlock<PlayerMessage>();
+            return new BufferBlock<Message>();
         }
 
-        private GMPlayer GenerateGMPlayer(GameConfiguration conf, ISocketClient<PlayerMessage, GMMessage> socketClient,
+        private GMPlayer GenerateGMPlayer(GameConfiguration conf, ISocketClient<Message, Message> socketClient,
             int id = DefaultId, Team team = DefaultTeam, bool isLeader = DefaultIsLeader)
         {
             return new GMPlayer(id, conf, socketClient, team, logger, isLeader);
@@ -63,7 +74,7 @@ namespace GameMaster.Tests
         {
             var conf = GenerateConfiguration();
             var queue = GenerateBuffer();
-            var client = new TcpSocketClient<PlayerMessage, GMMessage>(logger);
+            var client = new TcpSocketClient<Message, Message>(logger);
             var lifetime = Mock.Of<IApplicationLifetime>();
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
@@ -71,34 +82,59 @@ namespace GameMaster.Tests
             return gameMaster;
         }
 
-        [Fact]
-        public async Task TestTryLock()
+        public int? InvokeGetClosestPiece(GM gm, AbstractField pos)
         {
+            return gm.Invoke<GM, int?>("FindClosestPiece", new object[] { pos });
+        }
+
+        public Dictionary<Direction, int?> InvokeDiscover(GM gm, AbstractField pos)
+        {
+            return gm.Invoke<GM, Dictionary<Direction, int?>>("Discover", new object[] { pos });
+        }
+
+        [Fact]
+        public async Task TestLock()
+        {
+            // Arrange
+            var token = CancellationToken.None;
             var player = GenerateGMPlayer();
             int delay = 100;
-            var lockSpan = TimeSpan.FromMilliseconds(delay);
-            Assert.True(player.TryLock(lockSpan));
-            Assert.False(player.TryLock(lockSpan));
-            await Task.Delay(delay * 2);
-            Assert.True(player.TryLock(lockSpan));
+
+            // TODO: Change from conf
+            int prematureRequestPenalty = 200;
+
+            // Act
+            player.Invoke("Lock", delay, DateTime.Now);
+
+            // Assert
+            bool gotLock = await player.TryGetLockAsync(token);
+            Assert.False(gotLock);
+
+            await Task.Delay((int)(delay * 1.5) + prematureRequestPenalty);
+
+            gotLock = await player.TryGetLockAsync(token);
+            Assert.True(gotLock);
         }
 
         [Fact]
         public async Task TestMoveAsyncToEmpty()
         {
             var gm = GenerateGM();
+            Func<AbstractField, int?> getClosestPiece =
+    (AbstractField pos) => gm.Invoke<GM, int?>("FindClosestPiece", new object[] { pos });
+
             var player = GenerateGMPlayer();
             var playerStartField = new TaskField(0, 0);
             var playerEndField = new TaskField(0, 1);
             Assert.True(playerStartField.MoveHere(player));
 
-            lastSended = null;
-            bool moved = await player.MoveAsync(playerEndField, gm, CancellationToken.None);
+            bool moved = await player.MoveAsync(playerEndField, getClosestPiece, CancellationToken.None);
             Assert.True(moved);
             Assert.Equal(playerEndField, player.Position);
-            Assert.Equal(GMMessageId.MoveAnswer, lastSended.MessageID);
+            Assert.Equal(MessageID.MoveAnswer, lastSended.MessageID);
+            Assert.Null(prevSended);
 
-            var payload = JsonConvert.DeserializeObject<MoveAnswerPayload>(lastSended.Payload);
+            var payload = (MoveAnswerPayload)lastSended.Payload;
             Assert.True(payload.MadeMove);
             Position expectedPos = playerEndField.GetPosition();
             Assert.True(payload.CurrentPosition.Equals(expectedPos));
@@ -108,6 +144,7 @@ namespace GameMaster.Tests
         public async Task TestMoveAsyncToFull()
         {
             var gm = GenerateGM();
+            Func<AbstractField, int?> getClosestPiece = (AbstractField pos) => InvokeGetClosestPiece(gm, pos);
             var firstPlayer = GenerateGMPlayer();
             var firstPlayerField = new TaskField(0, 0);
             Assert.True(firstPlayerField.MoveHere(firstPlayer));
@@ -116,14 +153,15 @@ namespace GameMaster.Tests
             var secondPlayerField = new TaskField(0, 1);
             Assert.True(secondPlayerField.MoveHere(secondPlayer));
 
-            lastSended = null;
-            bool moved = await firstPlayer.MoveAsync(secondPlayerField, gm, CancellationToken.None);
+            // Act
+            bool moved = await firstPlayer.MoveAsync(secondPlayerField, getClosestPiece, CancellationToken.None);
             Assert.False(moved);
             Assert.Equal(firstPlayerField, firstPlayer.Position);
             Assert.Equal(secondPlayerField, secondPlayer.Position);
-            Assert.Equal(GMMessageId.MoveAnswer, lastSended.MessageID);
+            Assert.Equal(MessageID.MoveAnswer, lastSended.MessageID);
+            Assert.Null(prevSended);
 
-            var payload = JsonConvert.DeserializeObject<MoveAnswerPayload>(lastSended.Payload);
+            var payload = (MoveAnswerPayload)lastSended.Payload;
             Assert.False(payload.MadeMove);
             Position expectedPos = firstPlayerField.GetPosition();
             Assert.True(payload.CurrentPosition.Equals(expectedPos));
@@ -133,6 +171,7 @@ namespace GameMaster.Tests
         public async Task TestMoveAsyncToRelease()
         {
             var gm = GenerateGM();
+            Func<AbstractField, int?> getClosestPiece = (AbstractField pos) => InvokeGetClosestPiece(gm, pos);
             var firstPlayer = GenerateGMPlayer();
             var firstPlayerField = new TaskField(0, 0);
             Assert.True(firstPlayerField.MoveHere(firstPlayer));
@@ -142,18 +181,19 @@ namespace GameMaster.Tests
             var secondPlayerEndField = new TaskField(1, 1);
             Assert.True(secondPlayerField.MoveHere(secondPlayer));
 
-            lastSended = null;
-            bool moved = await secondPlayer.MoveAsync(secondPlayerEndField, gm, CancellationToken.None);
+            // Act
+            bool moved = await secondPlayer.MoveAsync(secondPlayerEndField, getClosestPiece, CancellationToken.None);
             Assert.True(moved);
-            Assert.Equal(GMMessageId.MoveAnswer, lastSended.MessageID);
-            var payload = JsonConvert.DeserializeObject<MoveAnswerPayload>(lastSended.Payload);
+            Assert.Equal(MessageID.MoveAnswer, lastSended.MessageID);
+            var payload = (MoveAnswerPayload)lastSended.Payload;
             Assert.True(payload.MadeMove);
+            Assert.Null(prevSended);
 
             lastSended = null;
-            moved = await firstPlayer.MoveAsync(secondPlayerField, gm, CancellationToken.None);
+            moved = await firstPlayer.MoveAsync(secondPlayerField, getClosestPiece, CancellationToken.None);
             Assert.True(moved);
-            Assert.Equal(GMMessageId.MoveAnswer, lastSended.MessageID);
-            payload = JsonConvert.DeserializeObject<MoveAnswerPayload>(lastSended.Payload);
+            Assert.Equal(MessageID.MoveAnswer, lastSended.MessageID);
+            payload = (MoveAnswerPayload)lastSended.Payload;
             Assert.True(payload.MadeMove);
         }
 
@@ -161,27 +201,30 @@ namespace GameMaster.Tests
         public async Task TestMoveAsyncActivePenalty()
         {
             var gm = GenerateGM();
+            Func<AbstractField, int?> getClosestPiece = (AbstractField pos) => InvokeGetClosestPiece(gm, pos);
             var player = GenerateGMPlayer();
             var startField = new TaskField(0, 0);
             var firstField = new TaskField(0, 1);
             var secondField = new TaskField(1, 1);
             Assert.True(startField.MoveHere(player));
 
-            lastSended = null;
-            var moved = await player.MoveAsync(firstField, gm, CancellationToken.None);
+            // Act
+            var moved = await player.MoveAsync(firstField, getClosestPiece, CancellationToken.None);
             Assert.True(moved);
-            Assert.Equal(GMMessageId.MoveAnswer, lastSended.MessageID);
+            Assert.Equal(MessageID.MoveAnswer, lastSended.MessageID);
+            Assert.Null(prevSended);
 
             lastSended = null;
-            moved = await player.MoveAsync(secondField, gm, CancellationToken.None);
+            moved = await player.MoveAsync(secondField, getClosestPiece, CancellationToken.None);
             Assert.False(moved);
-            Assert.Equal(GMMessageId.NotWaitedError, lastSended.MessageID);
+            Assert.Equal(MessageID.NotWaitedError, lastSended.MessageID);
         }
 
         [Fact]
         public async Task TestMoveAsyncAfterPenalty()
         {
             var gm = GenerateGM();
+            Func<AbstractField, int?> getClosestPiece = (AbstractField pos) => InvokeGetClosestPiece(gm, pos);
             var conf = GenerateConfiguration();
             var socketClient = GenerateSocketClient();
             var player = GenerateGMPlayer(conf, socketClient);
@@ -190,16 +233,17 @@ namespace GameMaster.Tests
             var secondField = new TaskField(1, 1);
             Assert.True(startField.MoveHere(player));
 
-            lastSended = null;
-            var moved = await player.MoveAsync(firstField, gm, CancellationToken.None);
+            // Act
+            var moved = await player.MoveAsync(firstField, getClosestPiece, CancellationToken.None);
             Assert.True(moved);
-            Assert.Equal(GMMessageId.MoveAnswer, lastSended.MessageID);
+            Assert.Equal(MessageID.MoveAnswer, lastSended.MessageID);
+            Assert.Null(prevSended);
 
             await Task.Delay(conf.MovePenalty * 2);
             lastSended = null;
-            moved = await player.MoveAsync(secondField, gm, CancellationToken.None);
+            moved = await player.MoveAsync(secondField, getClosestPiece, CancellationToken.None);
             Assert.True(moved);
-            Assert.Equal(GMMessageId.MoveAnswer, lastSended.MessageID);
+            Assert.Equal(MessageID.MoveAnswer, lastSended.MessageID);
         }
 
         [Fact]
@@ -213,11 +257,12 @@ namespace GameMaster.Tests
             var field = new TaskField(0, 0);
             Assert.True(field.MoveHere(player));
 
-            lastSended = null;
+            // Act
             bool detroyed = await player.DestroyHoldingAsync(CancellationToken.None);
             Assert.True(detroyed);
             Assert.True(player.Holding is null);
-            Assert.Equal(GMMessageId.DestructionAnswer, lastSended.MessageID);
+            Assert.Equal(MessageID.DestructionAnswer, lastSended.MessageID);
+            Assert.Null(prevSended);
 
             // delay
             await Task.Delay(conf.DestroyPenalty * 2);
@@ -237,28 +282,31 @@ namespace GameMaster.Tests
             Assert.True(field.MoveHere(player));
             Assert.True(player.Holding is null);
 
-            lastSended = null;
+            // Act
             await player.CheckHoldingAsync(CancellationToken.None);
             Assert.True(player.Holding is null);
+            Assert.Null(prevSended);
 
-            await Task.Delay(conf.CheckPenalty * 2);
+            await Task.Delay(conf.CheckForShamPenalty * 2);
             player.Holding = piece;
             lastSended = null;
             await player.CheckHoldingAsync(CancellationToken.None);
-            Assert.Equal(GMMessageId.CheckAnswer, lastSended.MessageID);
+            Assert.Equal(MessageID.CheckAnswer, lastSended.MessageID);
         }
 
         [Fact]
         public async Task TestDiscoverAsync()
         {
             var gm = GenerateGM();
+            Func<AbstractField, Dictionary<Direction, int?>> discover = (AbstractField pos) => InvokeDiscover(gm, pos);
             var player = GenerateGMPlayer();
             var field = new TaskField(2, 2);
             Assert.True(field.MoveHere(player));
 
-            lastSended = null;
-            await player.DiscoverAsync(gm, CancellationToken.None);
-            Assert.Equal(GMMessageId.DiscoverAnswer, lastSended.MessageID);
+            // Act
+            await player.DiscoverAsync(discover, CancellationToken.None);
+            Assert.Equal(MessageID.DiscoverAnswer, lastSended.MessageID);
+            Assert.Null(prevSended);
         }
 
         [Fact]
@@ -272,18 +320,19 @@ namespace GameMaster.Tests
             player.Holding = piece;
             Assert.True(field.MoveHere(player));
 
-            lastSended = null;
-            (bool? goal, bool removed) = await player.PutAsync(CancellationToken.None);
-            Assert.True(goal == true && removed);
+            // Act
+            (PutEvent putEvent, bool removed) = await player.PutAsync(CancellationToken.None);
+            Assert.True(putEvent == PutEvent.NormalOnGoalField && removed);
             Assert.True(player.Holding is null);
-            Assert.Equal(GMMessageId.PutAnswer, lastSended.MessageID);
+            Assert.Equal(MessageID.PutAnswer, lastSended.MessageID);
+            Assert.Null(prevSended);
 
             await Task.Delay(conf.PutPenalty * 2);
             lastSended = null;
-            (goal, removed) = await player.PutAsync(CancellationToken.None);
-            Assert.False(goal == true || removed);
-            Assert.Equal(GMMessageId.PutError, lastSended.MessageID);
-            var payload = JsonConvert.DeserializeObject<PutErrorPayload>(lastSended.Payload);
+            (putEvent, removed) = await player.PutAsync(CancellationToken.None);
+            Assert.False(putEvent == PutEvent.NormalOnGoalField || removed);
+            Assert.Equal(MessageID.PutError, lastSended.MessageID);
+            var payload = (PutErrorPayload)lastSended.Payload;
             Assert.Equal(PutError.AgentNotHolding, payload.ErrorSubtype);
         }
 
@@ -298,43 +347,44 @@ namespace GameMaster.Tests
             Assert.True(field.MoveHere(player));
             Assert.True(player.Holding is null);
 
-            lastSended = null;
+            // Act
             bool picked = await player.PickAsync(CancellationToken.None);
             Assert.False(picked);
             Assert.True(player.Holding is null);
-            Assert.Equal(GMMessageId.PickError, lastSended.MessageID);
-            var payload = JsonConvert.DeserializeObject<PickErrorPayload>(lastSended.Payload);
+            Assert.Equal(MessageID.PickError, lastSended.MessageID);
+            var payload = (PickErrorPayload)lastSended.Payload;
             Assert.Equal(PickError.NothingThere, payload.ErrorSubtype);
+            Assert.Null(prevSended);
 
             // delay
-            await Task.Delay(conf.PickPenalty * 2);
+            await Task.Delay(conf.PickupPenalty * 2);
             field.Put(piece);
             lastSended = null;
             picked = await player.PickAsync(CancellationToken.None);
             Assert.True(picked);
             Assert.Equal(piece, player.Holding);
-            Assert.Equal(GMMessageId.PickAnswer, lastSended.MessageID);
+            Assert.Equal(MessageID.PickAnswer, lastSended.MessageID);
 
             // delay
-            await Task.Delay(conf.PickPenalty * 2);
+            await Task.Delay(conf.PickupPenalty * 2);
             lastSended = null;
             picked = await player.PickAsync(CancellationToken.None);
             Assert.False(picked);
             Assert.Equal(piece, player.Holding);
-            Assert.Equal(GMMessageId.PickError, lastSended.MessageID);
-            payload = JsonConvert.DeserializeObject<PickErrorPayload>(lastSended.Payload);
+            Assert.Equal(MessageID.PickError, lastSended.MessageID);
+            payload = (PickErrorPayload)lastSended.Payload;
             Assert.Equal(PickError.Other, payload.ErrorSubtype);
 
             // delay
-            await Task.Delay(conf.PickPenalty * 2);
+            await Task.Delay(conf.PickupPenalty * 2);
             var secondPiece = new NormalPiece();
             field.Put(secondPiece);
             lastSended = null;
             picked = await player.PickAsync(CancellationToken.None);
             Assert.False(picked);
             Assert.Equal(piece, player.Holding);
-            Assert.Equal(GMMessageId.PickError, lastSended.MessageID);
-            payload = JsonConvert.DeserializeObject<PickErrorPayload>(lastSended.Payload);
+            Assert.Equal(MessageID.PickError, lastSended.MessageID);
+            payload = (PickErrorPayload)lastSended.Payload;
             Assert.Equal(PickError.Other, payload.ErrorSubtype);
         }
     }

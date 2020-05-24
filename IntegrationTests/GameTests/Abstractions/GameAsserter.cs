@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,13 +45,13 @@ namespace IntegrationTests.GameTests.Abstractions
             var playerRed = teamRed[0];
             Assert.True(playerRed.Team == Team.Red, "Player should have team passed with conf");
             Assert.True(playerRed.Position.y >= 0, "Player should have position set.");
-            Assert.True(playerRed.Position.y < conf.Height - conf.GoalAreaHeight, "Player should not be present on enemy team field");
+            Assert.True(playerRed.Position.y >= conf.GoalAreaHeight, "Player should not be present on enemy team field");
 
             Assert.True(teamBlue.Any(p => p.IsLeader), "Team blue should have leader");
             var playerBlue = teamBlue[0];
             Assert.True(playerBlue.Team == Team.Blue, "Player should have team passed with conf");
             Assert.True(playerBlue.Position.y >= 0, "Player should have position set.");
-            Assert.True(playerBlue.Position.y >= conf.GoalAreaHeight, "Player should not be present on enemy team field");
+            Assert.True(playerBlue.Position.y < conf.Height - conf.GoalAreaHeight, "Player should not be present on enemy team field");
         }
 
         public async Task CheckRuntime()
@@ -110,7 +111,10 @@ namespace IntegrationTests.GameTests.Abstractions
                 if (team[i].Position == teamPositions[i])
                 {
                     ++positionsCounter[i];
-                    Assert.False(positionsCounter[i] > testConf.PositionNotChangedThreshold, "Player should not be stuck on one position");
+                    Assert.False(positionsCounter[i] > testConf.PositionNotChangedThreshold,
+                        $"Player should not be stuck on one position, team: {team[i].Team}, agentID: " +
+                        $"{team[i].GetValue<Player.Models.Player, int>("id")}.\n" +
+                        $"Stuck for: {team[i].NotMadeMoveInRow} moves.");
                 }
                 else
                 {
@@ -120,7 +124,7 @@ namespace IntegrationTests.GameTests.Abstractions
             }
         }
 
-        public void CheckEnd()
+        public void CheckEnd(DateTime startTime)
         {
             var winnerRed = teamRed[0].GetValue<Player.Models.Player, Team?>("winner");
             Assert.False(winnerRed == null, "Winner should not be null");
@@ -132,6 +136,9 @@ namespace IntegrationTests.GameTests.Abstractions
             var bluePoints = gameMaster.GetValue<GM, int>("blueTeamPoints");
             var expectedWinner = redPoints > bluePoints ? Team.Red : Team.Blue;
             Assert.True(winnerRed == expectedWinner, "GM and players should have same winner");
+
+            int runTime = (int)(DateTime.Now - startTime).TotalSeconds;
+            Assert.True(runTime > testConf.MinimumRunTimeSec, $"Game was too fast: {runTime} sec");
         }
     }
 }

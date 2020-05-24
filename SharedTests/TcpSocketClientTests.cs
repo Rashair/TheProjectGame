@@ -32,7 +32,7 @@ namespace Shared.Tests
         {
             // Arrange
             tcpClientMock.Setup(s => s.Connected).Returns(false);
-            var socketClient = new TcpSocketClient<PlayerMessage, GMMessage>(tcpClient, logger);
+            var socketClient = new TcpSocketClient<Message, Message>(tcpClient, logger);
 
             // Act
             bool open = socketClient.IsOpen;
@@ -45,22 +45,22 @@ namespace Shared.Tests
         public void GetSocket_Test()
         {
             // Arrange
-            var socketClient = new TcpSocketClient<PlayerMessage, GMMessage>(tcpClient, logger);
+            var socketClient = new TcpSocketClient<Message, Message>(tcpClient, logger);
 
             // Act
             var socket = socketClient.GetSocket();
 
             // Assert
-            Assert.True(socket == tcpClient, 
+            Assert.True(socket == tcpClient,
                 "Returned socket should be the same object which was passed via constructor");
         }
-        
+
         [Fact]
         public async void CloseAsync_Test()
         {
             // Arrange
             tcpClientMock.Setup(s => s.Connected).Returns(true);
-            var socketClient = new TcpSocketClient<PlayerMessage, GMMessage>(tcpClient, logger);
+            var socketClient = new TcpSocketClient<Message, Message>(tcpClient, logger);
             var token = CancellationToken.None;
 
             // Act
@@ -77,7 +77,7 @@ namespace Shared.Tests
         {
             // Arrange
             tcpClientMock.Setup(s => s.Connected).Returns(true);
-            var socketClient = new TcpSocketClient<PlayerMessage, GMMessage>(tcpClient, logger);
+            var socketClient = new TcpSocketClient<Message, Message>(tcpClient, logger);
             string host = "";
             int port = 0;
             var token = CancellationToken.None;
@@ -98,13 +98,13 @@ namespace Shared.Tests
             var stream = new MemoryStream(100);
             tcpClientMock.Setup(s => s.Connected).Returns(true);
             tcpClientMock.Setup(s => s.GetStream).Returns(stream);
-            var socketClient = new TcpSocketClient<PlayerMessage, GMMessage>(tcpClient, logger);
+            var socketClient = new TcpSocketClient<Message, Message>(tcpClient, logger);
             string host = "";
             int port = 0;
             var token = CancellationToken.None;
             await socketClient.ConnectAsync(host, port, token);
 
-            var message = new GMMessage(GMMessageId.Unknown, 1, new EmptyAnswerPayload());
+            var message = new Message(MessageID.Unknown, 1, new EmptyAnswerPayload());
 
             // Act
             await socketClient.SendAsync(message, token);
@@ -135,18 +135,18 @@ namespace Shared.Tests
             var stream = new MemoryStream(100);
             tcpClientMock.Setup(s => s.Connected).Returns(true);
             tcpClientMock.Setup(s => s.GetStream).Returns(stream);
-            var socketClient = new TcpSocketClient<GMMessage, GMMessage>(tcpClient, logger);
+            var socketClient = new TcpSocketClient<Message, Message>(tcpClient, logger);
             string host = "";
             int port = 0;
             var token = CancellationToken.None;
             await socketClient.ConnectAsync(host, port, token);
 
-            var sentMessage = new GMMessage(GMMessageId.Unknown, 1, new EmptyAnswerPayload());
+            var sentMessage = new Message(MessageID.Unknown, 1, new EmptyAnswerPayload());
             await socketClient.SendAsync(sentMessage, token);
             stream.Seek(0, SeekOrigin.Begin);
 
             // Act
-            (bool wasReceived, GMMessage message) = await socketClient.ReceiveAsync(token);
+            (bool wasReceived, Message message) = await socketClient.ReceiveAsync(token);
 
             // Assert
             Assert.True(wasReceived, "Should receive message");

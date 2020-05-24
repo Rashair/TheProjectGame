@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Serilog;
+﻿using Serilog;
 using Serilog.Events;
 
 namespace Shared.Models
@@ -19,7 +15,7 @@ namespace Shared.Models
         }
 
         public OverrideConfig Override { get; set; }
-        
+
         public void SetMinimumLevel(LoggerConfiguration logConfig)
         {
             switch (Default)

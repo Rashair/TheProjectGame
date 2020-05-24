@@ -28,7 +28,8 @@ namespace GameMaster.Models
                 board[i] = new AbstractField[conf.Width];
             }
 
-            GenerateGoalFields(0, conf.GoalAreaHeight);
+            GenerateGoalFields();
+
             AbstractField NonGoalFieldGenerator(int y, int x) => new NonGoalField(y, x);
             for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
             {
@@ -41,18 +42,17 @@ namespace GameMaster.Models
                 FillBoardRow(rowIt, TaskFieldGenerator);
             }
 
-            GenerateGoalFields(SecondGoalAreaStart, conf.Height);
             for (int rowIt = SecondGoalAreaStart; rowIt < conf.Height; ++rowIt)
             {
                 FillBoardRow(rowIt, NonGoalFieldGenerator);
             }
         }
 
-        private void GenerateGoalFields(int beg, int end)
+        private void GenerateGoalFields()
         {
             for (int i = 0; i < conf.NumberOfGoals; ++i)
             {
-                int row = rand.Next(beg, end);
+                int row = rand.Next(0, conf.GoalAreaHeight);
                 int col = rand.Next(conf.Width);
                 while (board[row][col] != null)
                 {
@@ -61,13 +61,14 @@ namespace GameMaster.Models
                     {
                         col = 0;
                         ++row;
-                        if (row == end)
+                        if (row == conf.GoalAreaHeight)
                         {
-                            row = beg;
+                            row = 0;
                         }
                     }
                 }
                 board[row][col] = new GoalField(row, col);
+                board[conf.Height - row - 1][col] = new GoalField(conf.Height - row - 1, col);
             }
         }
 
@@ -121,7 +122,7 @@ namespace GameMaster.Models
 
         private (int y1, int y2) GetBoundaries(Team team)
         {
-            if (team == Team.Red)
+            if (team == Team.Blue)
             {
                 return (0, SecondGoalAreaStart);
             }

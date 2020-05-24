@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace CommunicationServer.Models
+﻿namespace CommunicationServer.Models
 {
-    public class ServerConfigurations
+    public class ServerConfiguration
     {
         public int PlayerPort { get; set; }
 

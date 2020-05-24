@@ -1,57 +1,43 @@
 using System.Text;
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Shared.Enums;
 
 namespace Shared.Payloads.GMPayloads
 {
     public class GiveInfoForwardedPayload : Payload
     {
-        public int AnsweringId { get; set; }
+        public int RespondingID { get; set; }
 
-        public int[,] Distances { get; set; }
+        public int[] Distances { get; set; }
 
-        [JsonProperty("redTeamGoalAreaInformations", ItemConverterType = typeof(StringEnumConverter))]
-        public GoalInfo[,] RedTeamGoalAreaInformations { get; set; }
+        public GoalInfo[] RedTeamGoalAreaInformations { get; set; }
 
-        [JsonProperty("blueTeamGoalAreaInformations", ItemConverterType = typeof(StringEnumConverter))]
-        public GoalInfo[,] BlueTeamGoalAreaInformations { get; set; }
+        public GoalInfo[] BlueTeamGoalAreaInformations { get; set; }
 
         public override string ToString()
         {
-            StringBuilder message = new StringBuilder($"AnsweringId:{AnsweringId}, ");
+            StringBuilder message = new StringBuilder($"respondingID:{RespondingID}, ");
             message.AppendLine("Distances:\n");
-            for (int i = 0; i < Distances.GetLength(0); i++)
+            for (int i = 0; i < Distances.Length; ++i)
             {
-                for (int j = 0; j < Distances.GetLength(1); j++)
-                {
-                    message.Append($"{Distances[i, j]}, ");
-                }
-                message.AppendLine();
+                message.Append($"{Distances[i]}, ");
             }
             message.AppendLine();
-            message.Append("RedTeamGoalAreaInformations:\n");
-            for (int i = 0; i < RedTeamGoalAreaInformations.GetLength(0); i++)
+
+            message.Append("RedTeamGoalAreaInformation:\n");
+            for (int i = 0; i < RedTeamGoalAreaInformations.Length; ++i)
             {
-                for (int j = 0; j < RedTeamGoalAreaInformations.GetLength(1); j++)
-                {
-                    message.Append($"{RedTeamGoalAreaInformations[i, j]}, ");
-                }
-                message.AppendLine();
+                message.Append($"{RedTeamGoalAreaInformations[i]}, ");
             }
             message.AppendLine();
-            message.Append("BlueTeamGoalAreaInformations:\n");
-            for (int i = 0; i < BlueTeamGoalAreaInformations.GetLength(0); i++)
+
+            message.Append("BlueTeamGoalAreaInformation:\n");
+            for (int i = 0; i < BlueTeamGoalAreaInformations.Length; ++i)
             {
-                for (int j = 0; j < BlueTeamGoalAreaInformations.GetLength(1); j++)
-                {
-                    message.Append($"{BlueTeamGoalAreaInformations[i, j]}, ");
-                }
-                message.AppendLine();
+                message.Append($"{BlueTeamGoalAreaInformations[i]}, ");
             }
 
             return message.ToString();
         }
-    } 
+    }
 }

@@ -8,7 +8,9 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Shared;
 using Shared.Clients;
+using Shared.Enums;
 using Shared.Messages;
+using Shared.Payloads.PlayerPayloads;
 
 namespace GameMaster.Services
 {
@@ -17,13 +19,13 @@ namespace GameMaster.Services
         private const int ConnectRetries = 60;
         private const int RetryIntervalMs = 1000;
 
-        private readonly ISocketClient<PlayerMessage, GMMessage> client;
+        private readonly ISocketClient<Message, Message> client;
         private readonly GameConfiguration conf;
-        private readonly BufferBlock<PlayerMessage> queue;
+        private readonly BufferBlock<Message> queue;
         private readonly IApplicationLifetime lifetime;
 
-        public SocketService(GM gameMaster, ISocketClient<PlayerMessage, GMMessage> client, GameConfiguration conf,
-            BufferBlock<PlayerMessage> queue, IApplicationLifetime lifetime, ILogger log)
+        public SocketService(GM gameMaster, ISocketClient<Message, Message> client, GameConfiguration conf,
+            BufferBlock<Message> queue, IApplicationLifetime lifetime, ILogger log)
             : base(gameMaster, log.ForContext<GMService>())
         {
             this.client = client;
@@ -46,17 +48,25 @@ namespace GameMaster.Services
                 return;
             }
 
-            (bool receivedMessage, PlayerMessage message) = await client.ReceiveAsync(stoppingToken);
+            (bool receivedMessage, Message message) = await client.ReceiveAsync(stoppingToken);
             while (!stoppingToken.IsCancellationRequested && receivedMessage)
             {
                 bool sended = await queue.SendAsync(message, stoppingToken);
                 if (!sended)
                 {
-                    logger.Warning($"SocketService| PlayerMessage id: {message.MessageID} has been lost");
+                    logger.Warning($"SocketService| Message id: {message.MessageID} has been lost");
                 }
                 (receivedMessage, message) = await client.ReceiveAsync(stoppingToken);
             }
             await client.CloseAsync(stoppingToken);
+
+            message = new Message()
+            {
+                AgentID = -1,
+                MessageID = MessageID.CSDisconnected,
+                Payload = new EmptyPayload()
+            };
+            await queue.SendAsync(message, stoppingToken);
         }
     }
 }

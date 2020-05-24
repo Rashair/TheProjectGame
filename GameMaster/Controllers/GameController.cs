@@ -51,7 +51,7 @@ namespace GameMaster.Controllers
 
             gameConfiguration.Update(conf);
 
-            string gameConfigString = JsonConvert.SerializeObject(conf);
+            string gameConfigString = JsonConvert.SerializeObject(gameConfiguration);
             string path = configuration.GetValue<string>("GameConfigPath");
             try
             {
@@ -66,7 +66,7 @@ namespace GameMaster.Controllers
                 logger.Warning($"Error writing to file: {e}");
             }
 
-            return Created("/configuration", conf);
+            return Created("/configuration", gameConfiguration);
         }
 
         [HttpPost]
@@ -80,8 +80,12 @@ namespace GameMaster.Controllers
                 return Ok();
             }
 
-            gameMaster.InitGame();
-            return Ok();
+            bool result = gameMaster.InitGame();
+            if (result)
+            {
+                return Ok();
+            }
+            return BadRequest();
         }
 
         [HttpGet]
@@ -89,6 +93,13 @@ namespace GameMaster.Controllers
         public ActionResult<bool> WasGameStarted()
         {
             return gameMaster.WasGameStarted;
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public ActionResult<bool> WasGameFinished()
+        {
+            return gameMaster.WasGameFinished;
         }
     }
 }

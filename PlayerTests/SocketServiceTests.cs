@@ -20,22 +20,24 @@ namespace Player.Tests
     {
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
 
-        [Fact(Timeout = 2500)]
+        [Fact(Timeout = 3500)]
         public async Task TestExecuteAsyncShouldReceiveAndSendMessages()
         {
             // Arrange
             int numberOfMessages = 5;
 
-            var clientMock = new Mock<ISocketClient<GMMessage, PlayerMessage>>();
-            BufferBlock<GMMessage> queue = new BufferBlock<GMMessage>();
+            var clientMock = new Mock<ISocketClient<Message, Message>>();
+            BufferBlock<Message> queue = new BufferBlock<Message>();
             ServiceSynchronization context = new ServiceSynchronization(0, 1);
 
             var calls = 0;
             clientMock.Setup(m => m.ReceiveAsync(It.IsAny<CancellationToken>()))
             .Returns(() =>
             {
-                if (calls < numberOfMessages) return Task.FromResult((true, new GMMessage()));
-                else return Task.FromResult((false, new GMMessage()));
+                if (calls < numberOfMessages)
+                    return Task.FromResult((true, new Message()));
+                else
+                    return Task.FromResult((false, new Message()));
             })
             .Callback(() =>
             {
@@ -55,23 +57,24 @@ namespace Player.Tests
             var hostedService = (SocketService)serviceProvider.GetService<IHostedService>();
 
             // Act
-            int delay = 500;
+            int socketDelay = 2000, syncDelay = 300;
             Task socketTask = Task.Run(async () =>
             {
                 await hostedService.StartAsync(CancellationToken.None);
-                await Task.Delay(delay);
+                await Task.Delay(socketDelay);
                 await hostedService.StopAsync(CancellationToken.None);
             });
             Task syncTask = Task.Run(async () =>
             {
                 await context.SemaphoreSlim.WaitAsync(CancellationToken.None);
+                await Task.Delay(syncDelay);
                 context.SemaphoreSlim.Release();
             });
 
             await Task.WhenAll(new[] { socketTask, syncTask });
 
             // Assert
-            Assert.Equal(numberOfMessages, queue.Count);
+            Assert.Equal(numberOfMessages + 1, queue.Count);
         }
     }
 }
