@@ -61,7 +61,7 @@ namespace GameMaster.Models
             this.queue = queue;
             this.socketClient = socketClient;
             this.guiManager = guiManager;
-            
+
             players = new Dictionary<int, GMPlayer>();
             legalKnowledgeReplies = new HashSet<(int, int)>();
             rand = new Random();
@@ -127,7 +127,7 @@ namespace GameMaster.Models
                         FirstGoalLevel = conf.GoalAreaHeight - 1,
                         SecondGoalLevel = SecondGoalAreaStart,
                         Goals = goalFields
-                    },     
+                    },
                 };
                 await guiManager.SendMessageToAllAsync(clientMessage, cancellationToken);
 
@@ -363,13 +363,13 @@ namespace GameMaster.Models
                     players.TryGetValue(key, out player);
                     players.Remove(key);
                     logger.Information($"Player {key} disconnected");
-                    
+
                     if (!(guiManager is null))
                     {
                         ClientMessage clientMessage = new ClientMessage("Disconnected", $"Player {key} disconnected, team {player.Team}");
                         await guiManager.SendMessageToAllAsync(clientMessage, cancellationToken);
                     }
-                    
+
                     if (WasGameStarted)
                     {
                         if (player.Team == Team.Blue)
@@ -549,20 +549,23 @@ namespace GameMaster.Models
 
         internal int? FindClosestPiece(AbstractField field)
         {
-            int[] center = field.GetPosition();
+            Position center = field.GetPosition();
             int distance = int.MaxValue;
             for (int i = conf.GoalAreaHeight; i < SecondGoalAreaStart; i++)
             {
-                for (int j = 0; j < board[i].Length; j++)
+                for (int j = 0; j < conf.Width; j++)
                 {
                     if (board[i][j].ContainsPieces() && board[i][j].CanPick())
                     {
-                        int manhattanDistance = Math.Abs(center[0] - i) + Math.Abs(center[1] - j);
-                        if (manhattanDistance < distance)
+                        int manhattanDistance = Math.Abs(center.Y - i) + Math.Abs(center.X - j);
+                        if (distance > manhattanDistance)
+                        {
                             distance = manhattanDistance;
+                        }
                     }
                 }
             }
+
             return distance;
         }
 

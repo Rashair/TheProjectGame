@@ -475,7 +475,6 @@ namespace Player.Models
                     {
                         HasPiece = unknownErrorPayload.HoldingPiece.Value;
                     }
-                    penaltyTime = 50;
                     break;
                 default:
                     return MessageID.Unknown;

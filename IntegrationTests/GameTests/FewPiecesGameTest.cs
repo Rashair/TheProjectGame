@@ -22,7 +22,7 @@ namespace IntegrationTests.GameTests
                 PrematureRequestPenalty = 1000,
                 ResponsePenalty = 5000,
                 Height = 12,
-                Width = 5,
+                Width = 6,
                 GoalAreaHeight = 3,
                 NumberOfGoals = 4,
                 NumberOfPiecesOnBoard = 3,
@@ -31,6 +31,7 @@ namespace IntegrationTests.GameTests
             };
 
             TestConf.NoNewPiecesThreshold = 6;
+            TestConf.PositionNotChangedThreshold = 5;
             TestConf.CheckInterval = 5000;
         }
 

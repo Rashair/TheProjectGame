@@ -209,7 +209,7 @@ namespace Player.Models.Strategies
             Direction currentDirection;
             var directions = GetDirectionsInRange(goalAreaSize, boardSize.y - goalAreaSize);
             bool isPreviousDirPossible = directions.Contains(PreviousDir);
-            if (distToPiece < previousDistToPiece && isPreviousDirPossible && isNotStuckOnPreviousPosition)
+            if (distToPiece <= previousDistToPiece && isPreviousDirPossible && isNotStuckOnPreviousPosition)
             {
                 currentDirection = PreviousDir;
             }
