@@ -388,30 +388,33 @@ namespace GameMaster.Models
                     break;
                 case MessageID.JoinTheGame:
                 {
-                    JoinGamePayload payloadJoin = (JoinGamePayload)message.Payload;
-                    int key = agentID;
-                    bool accepted = TryToAddPlayer(key, payloadJoin.TeamID);
-                    JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
+                    if (!WasGameStarted)
                     {
-                        Accepted = accepted,
-                        AgentID = key,
-                    };
-                    Message answerJoin = new Message()
-                    {
-                        MessageID = MessageID.JoinTheGameAnswer,
-                        AgentID = key,
-                        Payload = answerJoinPayload,
-                    };
+                        JoinGamePayload payloadJoin = (JoinGamePayload)message.Payload;
+                        int key = agentID;
+                        bool accepted = TryToAddPlayer(key, payloadJoin.TeamID);
+                        JoinAnswerPayload answerJoinPayload = new JoinAnswerPayload()
+                        {
+                            Accepted = accepted,
+                            AgentID = key,
+                        };
+                        Message answerJoin = new Message()
+                        {
+                            MessageID = MessageID.JoinTheGameAnswer,
+                            AgentID = key,
+                            Payload = answerJoinPayload,
+                        };
 
-                    await socketClient.SendAsync(answerJoin, cancellationToken);
-                    logger.Verbose(MessageLogger.Sent(answerJoin));
+                        await socketClient.SendAsync(answerJoin, cancellationToken);
+                        logger.Verbose(MessageLogger.Sent(answerJoin));
 
-                    if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
-                        GetPlayersCount(Team.Blue) == conf.NumberOfPlayersPerTeam)
-                    {
-                        await StartGame(cancellationToken);
-                        WasGameStarted = true;
-                        logger.Information("Game was started.");
+                        if (GetPlayersCount(Team.Red) == conf.NumberOfPlayersPerTeam &&
+                            GetPlayersCount(Team.Blue) == conf.NumberOfPlayersPerTeam)
+                        {
+                            await StartGame(cancellationToken);
+                            WasGameStarted = true;
+                            logger.Information("Game was started.");
+                        }
                     }
                     break;
                 }

@@ -7,9 +7,11 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Shared;
 using Shared.Clients;
+using Shared.Enums;
 using Shared.Managers;
 using Shared.Messages;
 using Shared.Models;
+using Shared.Payloads.GMPayloads;
 
 namespace CommunicationServer.Services
 {
@@ -56,6 +58,49 @@ namespace CommunicationServer.Services
                 {
                     await manager.SendMessageAsync(message.AgentID.Value, message, stoppingToken);
                     logger.Verbose(MessageLogger.Received(message) + ". Sent message to Player");
+                    await sync.SemaphoreSlim.WaitAsync();
+                    if (!container.GameStarted)
+                    {
+                        if (message.MessageID == MessageID.JoinTheGameAnswer)
+                        {
+                            JoinAnswerPayload payload = (JoinAnswerPayload)message.Payload;
+                            if (payload.Accepted)
+                            {
+                                ConfirmSocket(message);
+                            }
+                        }
+                        else if (message.MessageID == MessageID.StartGame)
+                        {
+                            await CloseUnconfirmedSockets(stoppingToken);
+                            container.GameStarted = true;
+                        }
+                    }
+                    sync.SemaphoreSlim.Release(1);
+                }
+            }
+        }
+
+        private void ConfirmSocket(Message message)
+        {
+            if (message.AgentID != null && container.ConfirmedAgents.ContainsKey(message.AgentID.Value))
+            {
+                container.ConfirmedAgents[message.AgentID.Value] = true;
+            }
+        }
+
+        private async Task CloseUnconfirmedSockets(CancellationToken stoppingToken)
+        {
+            foreach (var elem in container.ConfirmedAgents)
+            {
+                if (!elem.Value)
+                {
+                    bool result = await manager.RemoveSocketAsync(elem.Key, stoppingToken);
+                    if (!result)
+                    {
+                        ISocketClient<Message, Message> socket = manager.GetSocketById(elem.Key);
+                        logger.Error($"Failed to remove socket: {socket.GetSocket().Endpoint}");
+                    }
+                    logger.Information($"Player {elem.Key} has been forced to disconnect - connection after StartGame");
                 }
             }
         }

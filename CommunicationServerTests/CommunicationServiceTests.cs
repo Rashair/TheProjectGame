@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -14,6 +15,8 @@ using Shared.Converters;
 using Shared.Enums;
 using Shared.Managers;
 using Shared.Messages;
+using Shared.Payloads;
+using Shared.Payloads.GMPayloads;
 using TestsShared;
 using Xunit;
 
@@ -48,7 +51,7 @@ namespace CommunicationServerTests
             return clientMock;
         }
 
-        private BufferBlock<Message> PrepareQueue(MessageID messageID, int msgCount = 10)
+        private BufferBlock<Message> PrepareQueue(MessageID messageID, int msgCount = 10, Payload payload = null)
         {
             BufferBlock<Message> queue = new BufferBlock<Message>();
             for (int i = 0; i < msgCount; ++i)
@@ -57,7 +60,7 @@ namespace CommunicationServerTests
                 {
                     MessageID = messageID,
                     AgentID = 1,
-                    Payload = messageID.GetPayload("")
+                    Payload = payload
                 });
             }
 
@@ -76,12 +79,14 @@ namespace CommunicationServerTests
 
             ServiceShareContainer shareContainer = new ServiceShareContainer
             {
+                GameStarted = false,
+                ConfirmedAgents = new Dictionary<int, bool>(),
                 GMClient = gmClient
             };
             services.AddSingleton(shareContainer);
 
             services.AddSingleton(Mock.Of<IApplicationLifetime>());
-            services.AddSingleton(new ServiceSynchronization(1, 1));
+            services.AddSingleton(new ServiceSynchronization(2, 2));
 
             services.AddHostedService<CommunicationService>();
 
@@ -149,7 +154,12 @@ namespace CommunicationServerTests
 
             int msgCount = 10;
             var msgID = MessageID.JoinTheGameAnswer;
-            var queue = PrepareQueue(msgID, msgCount);
+            var payload = new JoinAnswerPayload()
+            {
+                Accepted = true,
+                AgentID = 1
+            };
+            var queue = PrepareQueue(msgID, msgCount, payload);
             services.AddSingleton(queue);
 
             var serviceProvider = services.BuildServiceProvider();
