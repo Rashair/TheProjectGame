@@ -202,7 +202,7 @@ namespace Player.Models
                 AgentID = id,
             };
 
-            GiveInfoPayload response = new GiveInfoPayload(BoardSize.y);
+            GiveInfoPayload response = new GiveInfoPayload();
             if (toLeader)
             {
                 response.RespondToID = LeaderId;
