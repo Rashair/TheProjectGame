@@ -326,7 +326,7 @@ namespace GameMaster.Models
                     }
                     break;
                 case MessageID.Discover:
-                    await player.DiscoverAsync(this, cancellationToken);
+                    await player.DiscoverAsync(Discover, cancellationToken);
                     break;
                 case MessageID.GiveInfo:
                     if (player == null)
@@ -450,7 +450,7 @@ namespace GameMaster.Models
                             }
                             break;
                     }
-                    await player.MoveAsync(field, this, cancellationToken);
+                    await player.MoveAsync(field, FindClosestPiece, cancellationToken);
                     break;
                 }
                 case MessageID.Pick:

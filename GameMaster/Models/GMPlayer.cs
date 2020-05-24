@@ -61,7 +61,8 @@ namespace GameMaster.Models
             lockedTill = DateTime.Now;
         }
 
-        public async Task<bool> MoveAsync(AbstractField field, GM gm, CancellationToken cancellationToken)
+        public async Task<bool> MoveAsync(AbstractField field, Func<AbstractField, int?> findClosestPiece,
+            CancellationToken cancellationToken)
         {
             bool isUnlocked = await TryGetLockAsync(cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
@@ -83,7 +84,8 @@ namespace GameMaster.Models
                     await guiManager.SendMessageToAllAsync(clientMessage, cancellationToken);
                 }
 
-                Message message = MoveAnswerMessage(moved, gm);
+                int? closestPiece = findClosestPiece(Position);
+                Message message = MoveAnswerMessage(moved, closestPiece);
                 await SendAndLockAsync(message, conf.MovePenalty, cancellationToken);
 
                 return moved;
@@ -148,12 +150,14 @@ namespace GameMaster.Models
             }
         }
 
-        public async Task DiscoverAsync(GM gm, CancellationToken cancellationToken)
+        public async Task DiscoverAsync(Func<AbstractField, Dictionary<Direction, int?>> discover,
+            CancellationToken cancellationToken)
         {
             bool isUnlocked = await TryGetLockAsync(cancellationToken);
             if (!cancellationToken.IsCancellationRequested && isUnlocked)
             {
-                Message message = DiscoverAnswerMessage(gm);
+                var discoverResult = discover(Position);
+                Message message = DiscoverAnswerMessage(discoverResult);
 
                 await SendAndLockAsync(message, conf.DiscoveryPenalty, cancellationToken);
             }
@@ -394,11 +398,11 @@ namespace GameMaster.Models
             return new Message(MessageID.NotWaitedError, id, payload);
         }
 
-        private Message MoveAnswerMessage(bool madeMove, GM gm)
+        private Message MoveAnswerMessage(bool madeMove, int? closestPiece)
         {
             MoveAnswerPayload payload = new MoveAnswerPayload()
             {
-                ClosestPiece = gm.FindClosestPiece(Position),
+                ClosestPiece = closestPiece,
                 CurrentPosition = Position.GetPosition(),
                 MadeMove = madeMove,
             };
@@ -430,20 +434,19 @@ namespace GameMaster.Models
             return new Message(MessageID.CheckAnswer, id, payload);
         }
 
-        private Message DiscoverAnswerMessage(GM gm)
+        private Message DiscoverAnswerMessage(Dictionary<Direction, int?> discoverResult)
         {
-            var discovered = gm.Discover(Position);
             DiscoveryAnswerPayload payload = new DiscoveryAnswerPayload()
             {
-                DistanceNW = discovered[Direction.NW],
-                DistanceN = discovered[Direction.N],
-                DistanceNE = discovered[Direction.NE],
-                DistanceW = discovered[Direction.W],
-                DistanceFromCurrent = discovered[Direction.FromCurrent],
-                DistanceE = discovered[Direction.E],
-                DistanceSW = discovered[Direction.SW],
-                DistanceS = discovered[Direction.S],
-                DistanceSE = discovered[Direction.SE],
+                DistanceNW = discoverResult[Direction.NW],
+                DistanceN = discoverResult[Direction.N],
+                DistanceNE = discoverResult[Direction.NE],
+                DistanceW = discoverResult[Direction.W],
+                DistanceFromCurrent = discoverResult[Direction.FromCurrent],
+                DistanceE = discoverResult[Direction.E],
+                DistanceSW = discoverResult[Direction.SW],
+                DistanceS = discoverResult[Direction.S],
+                DistanceSE = discoverResult[Direction.SE],
             };
             return new Message(MessageID.DiscoverAnswer, id, payload);
         }
