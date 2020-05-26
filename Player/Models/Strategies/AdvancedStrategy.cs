@@ -13,7 +13,7 @@ namespace Player.Models.Strategies
     {
         private const int NumberOfPossibleDirections = 4;
         private const int ALotOfFalseMoves = 10;
-        private const int Max1DirectionsHistoryCount = 100;
+        private const int MaxDirectionsHistoryCount = 100;
         private readonly RandomGenerator random;
         private readonly Player player;
 
@@ -357,7 +357,7 @@ namespace Player.Models.Strategies
         {
             lastAction = LastAction.Move;
             directionsHistory.AddLast(dir);
-            if (directionsHistory.Count > Max1DirectionsHistoryCount)
+            if (directionsHistory.Count > MaxDirectionsHistoryCount)
             {
                 directionsHistory.RemoveFirst();
             }
