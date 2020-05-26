@@ -209,13 +209,21 @@ namespace Player.Models.Strategies
             Direction currentDirection;
             var directions = GetDirectionsInRange(goalAreaSize, boardSize.y - goalAreaSize);
             bool isPreviousDirPossible = directions.Contains(PreviousDir);
-            if (distToPiece <= previousDistToPiece && isPreviousDirPossible && isNotStuckOnPreviousPosition)
+            if (distToPiece < previousDistToPiece && isPreviousDirPossible && isNotStuckOnPreviousPosition)
             {
                 currentDirection = PreviousDir;
             }
             else if (distToPiece > previousDistToPiece)
             {
-                currentDirection = PreviousDir.GetOppositeDirection();
+                // Parallel piece
+                if (directionsHistory.Count >= 2 || directionsHistory.Last.Previous.Value == PreviousDir)
+                {
+                    state = DiscoverState.ShouldDiscover;
+                }
+                else
+                {
+                    currentDirection = PreviousDir.GetOppositeDirection();
+                }
             }
             else
             {
