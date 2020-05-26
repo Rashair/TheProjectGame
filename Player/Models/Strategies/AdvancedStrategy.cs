@@ -220,10 +220,7 @@ namespace Player.Models.Strategies
                 {
                     state = DiscoverState.ShouldDiscover;
                 }
-                else
-                {
-                    currentDirection = PreviousDir.GetOppositeDirection();
-                }
+                currentDirection = PreviousDir.GetOppositeDirection();
             }
             else
             {
