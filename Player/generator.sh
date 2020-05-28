@@ -92,12 +92,12 @@ function handle_run {
 		done
 	elif [[ "$OSTYPE" == "msys" ]]; then
 		for i in `seq 1 $num`; do
-			cmd //c start cmd //k "$2" & disown
+			cmd //c start cmd //k "$2" &
 			sleep 1
 		done
 	else
 		for i in `seq 1 $num`; do
-			gnome-terminal -e "$2" & disown
+			gnome-terminal -e "$2" &
 			sleep 1
 		done
 		#TODO: Other terminals

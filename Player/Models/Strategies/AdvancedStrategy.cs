@@ -5,7 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Player.Models.Strategies.Utils;
+using Serilog;
 using Shared.Enums;
+using Shared.Models;
 
 namespace Player.Models.Strategies
 {
@@ -14,25 +16,28 @@ namespace Player.Models.Strategies
         private const int NumberOfPossibleDirections = 4;
         private const int ALotOfFalseMoves = 10;
         private const int MaxDirectionsHistoryCount = 100;
+        private const int DiscoverPenaltyThreshold = 10;
+
         private readonly RandomGenerator random;
+        private readonly ILogger logger;
         private readonly Player player;
 
         // Strategy computed values
         private (int y, int x) previousPosition;
         private int previousDistToPiece;
-        private LinkedList<Direction> directionsHistory;
+        private readonly LinkedList<Direction> directionsHistory;
         private DiscoverState state;
         private LastAction lastAction;
 
-        public AdvancedStrategy(Player player)
+        public AdvancedStrategy(Player player, ILogger log)
         {
+            this.logger = log.ForContext<AdvancedStrategy>();
             this.player = player;
 
             this.random = new RandomGenerator();
             this.previousPosition = (-1, -1);
             this.previousDistToPiece = int.MaxValue;
             this.directionsHistory = new LinkedList<Direction>();
-            directionsHistory.AddLast(Direction.FromCurrent);
 
             this.state = DiscoverState.ShouldDiscover;
             this.lastAction = LastAction.None;
@@ -45,6 +50,7 @@ namespace Player.Models.Strategies
         private (int y, int x) boardSize;
         private int goalAreaSize;
         private (int y1, int y2) goalAreaRange;
+        private Penalties penalties;
 
         // Changing
         private CancellationToken cancellationToken;
@@ -63,6 +69,8 @@ namespace Player.Models.Strategies
                 boardSize = player.BoardSize;
                 goalAreaSize = player.GoalAreaSize;
                 goalAreaRange = player.GoalAreaRange;
+                penalties = player.PenaltiesTimes;
+                directionsHistory.AddLast(player.GoalAreaDirection.GetOppositeDirection());
             }
 
             cancellationToken = token;
@@ -138,8 +146,7 @@ namespace Player.Models.Strategies
         private Task NoPieceInGoalArea()
         {
             Direction currentDirection;
-            bool hadPiece = lastAction == LastAction.Put || lastAction == LastAction.Destroy;
-            if (hadPiece || isNotStuckOnPreviousPosition)
+            if (isNotStuckOnPreviousPosition)
             {
                 currentDirection = player.GoalAreaDirection.GetOppositeDirection();
             }
@@ -161,10 +168,8 @@ namespace Player.Models.Strategies
                 state = DiscoverState.NoAction;
                 lastAction = LastAction.Pick;
             }
-            else if (state == DiscoverState.ShouldDiscover ||
-                (state != DiscoverState.Discovered && PreviousDir == Direction.FromCurrent))
+            else if (ShouldDiscover())
             {
-                //// TODO: Trip around square when discoverCost > 8 * moveCost
                 decision = player.Discover(cancellationToken);
                 state = DiscoverState.Discovered;
                 lastAction = LastAction.Discover;
@@ -175,6 +180,17 @@ namespace Player.Models.Strategies
             }
 
             return decision;
+        }
+
+        private bool ShouldDiscover()
+        {
+            if (penalties.Discovery > DiscoverPenaltyThreshold * penalties.Move)
+            {
+                return false;
+            }
+
+            return state == DiscoverState.ShouldDiscover ||
+                  (state != DiscoverState.Discovered && PreviousDir == Direction.FromCurrent);
         }
 
         private Task NoPieceInTaskAreaMove()
@@ -216,19 +232,41 @@ namespace Player.Models.Strategies
             else if (distToPiece > previousDistToPiece)
             {
                 // Parallel piece
-                if (directionsHistory.Count >= 2 && directionsHistory.Last.Previous.Value == PreviousDir)
+                if (WasWalkingBackAndForward())
                 {
                     state = DiscoverState.ShouldDiscover;
+                    logger.Information("\n\nI am guilty, I was walking back and forward.\n\n");
+                    currentDirection = GetRandomPerpendicularDirection(directions, PreviousDir);
                 }
-                currentDirection = PreviousDir.GetOppositeDirection();
+                else
+                {
+                    currentDirection = PreviousDir.GetOppositeDirection();
+                }
             }
             else
             {
-                var (right, left) = PreviousDir.GetPerpendicularDirections();
-                currentDirection = GetRandomDirection(directions, right, left);
+                logger.Information("Prev dir: " + PreviousDir.ToString());
+                currentDirection = GetRandomPerpendicularDirection(directions, PreviousDir);
             }
 
             return MoveToDirection(currentDirection);
+        }
+
+        private bool WasWalkingBackAndForward()
+        {
+            if (directionsHistory.Count > 2)
+            {
+                var penultimateDir = directionsHistory.Last.Previous.Value;
+                if (penultimateDir == PreviousDir)
+                {
+                    var penultimatePos = penultimateDir.GetOppositeDirection().GetCoordinates(previousPosition);
+                    return board[penultimatePos.y, penultimatePos.x].DistToPiece == board[y, x].DistToPiece;
+                }
+
+                return false;
+            }
+
+            return false;
         }
 
         private Task HasPiece()
@@ -326,6 +364,25 @@ namespace Player.Models.Strategies
             return directions[random[directions.Count]];
         }
 
+        private Direction GetRandomPerpendicularDirection(List<Direction> directions, Direction previousDir)
+        {
+            var (right, left) = previousDir.GetPerpendicularDirections();
+            Direction result;
+            try
+            {
+                result = GetRandomDirection(directions, right, left);
+            }
+            catch (InvalidOperationException)
+            {
+                logger.Warning("Error in strategy logic. This case should never happen.");
+                throw;
+
+                // result = GetRandomDirection(directions);
+            }
+
+            return result;
+        }
+
         private Direction GetRandomDirection(List<Direction> directions, Direction right, Direction left)
         {
             int startInd = random[directions.Count];
@@ -350,7 +407,7 @@ namespace Player.Models.Strategies
             while (ind != startInd);
 
             throw new InvalidOperationException($"None of the provided directions were in list, " +
-                $"length: {directions.Count}");
+                $"length: {directions.Count}, left: {left}, right: {right}");
         }
 
         private Task MoveToDirection(Direction dir)

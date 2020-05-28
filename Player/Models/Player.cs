@@ -35,7 +35,7 @@ namespace Player.Models
             Message> client, ILogger log)
         {
             this.conf = conf;
-            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy, this);
+            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy, this, log);
             this.queue = queue;
             this.client = client;
             this.logger = log.ForContext<Player>();
