@@ -351,13 +351,7 @@ namespace Player.Models.Strategies
 
         private Task HasPieceInGoalAreaOnIncorrectColumn()
         {
-            if (board[y, x].GoalInfo == GoalInfo.IDK)
-            {
-                lastAction = LastAction.Put;
-                return player.Put(cancellationToken);
-            }
-
-            var directions = GetDirectionsInRange(goalAreaRange.y1, goalAreaRange.y2);
+            var directions = GetDirectionsInRange(goalAreaRange.y1, Math.Max(goalAreaRange.y2, 2));
             Direction currentDir;
             if (!isNotStuckOnPreviousPosition)
             {
@@ -365,10 +359,15 @@ namespace Player.Models.Strategies
             }
             else
             {
-                currentDir = PreviousDir;
+                currentDir = GetCurrentColumnDirection();
             }
 
             return MoveToDirection(currentDir);
+        }
+
+        private Direction GetCurrentColumnDirection()
+        {
+            return y < column.numOnBoard ? Direction.E : Direction.W; 
         }
 
         private Task HasPieceInTaskArea()
