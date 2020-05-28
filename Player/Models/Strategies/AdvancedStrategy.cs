@@ -229,6 +229,17 @@ namespace Player.Models.Strategies
             var directions = GetDirectionsInRange(goalAreaSize, boardSize.y - goalAreaSize);
             var moveDir = directions.Aggregate((d1, d2) =>
             {
+                if (!isNotStuckOnPreviousPosition)
+                {
+                    if (PreviousDir == d1)
+                    {
+                        return d2;
+                    }
+                    if (PreviousDir == d2)
+                    {
+                        return d1;
+                    }
+                }
                 (int y1, int x1) = d1.GetCoordinates((y, x));
                 (int y2, int x2) = d2.GetCoordinates((y, x));
 
@@ -450,9 +461,7 @@ namespace Player.Models.Strategies
             catch (InvalidOperationException)
             {
                 logger.Warning("Error in strategy logic. This case should never happen.");
-                throw;
-
-                // result = GetRandomDirection(directions);
+                result = GetRandomDirection(directions);
             }
 
             return result;
