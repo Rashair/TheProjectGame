@@ -7,7 +7,7 @@
         private readonly int numberOfPlayers;
         private readonly bool isInitialIdPrime;
         private readonly bool isWidthNotDivisibleByInitialId;
-        private readonly bool[] checkedColumns;
+        private readonly (bool isChecked, bool isPrime)[] checkedColumns;
 
         /// <summary>
         /// InitialID should start with 0
@@ -18,8 +18,13 @@
             this.width = width;
             this.numberOfPlayers = numberOfPlayers;
             this.isInitialIdPrime = IsPrime(this.initialID);
-            this.isWidthNotDivisibleByInitialId = width % initialID != 0;
-            this.checkedColumns = new bool[width];
+            this.isWidthNotDivisibleByInitialId = width % this.initialID != 0;
+
+            this.checkedColumns = new (bool, bool)[width];
+            for (int i = 2; i < width; ++i)
+            {
+                checkedColumns[i].isPrime = IsPrime(i);
+            }
         }
 
         public int GetColumnToHandle(int colNum)
@@ -49,22 +54,37 @@
             }
             else
             {
-                result = GetFirstNotCheckedColumn(initialID, -numberOfPlayers);
+                result = GetFirstPrimeColumn(initialID - numberOfPlayers + width - 1);
             }
 
-            if (checkedColumns[result])
+            if (checkedColumns[result].isChecked)
             {
-                result = GetFirstNotCheckedColumn(initialID, 1);
+                result = GetFirstNotCheckedColumn(result, 1);
             }
 
-            checkedColumns[result] = true;
+            checkedColumns[result].isChecked = true;
             return initialID;
+        }
+
+        public int GetFirstPrimeColumn(int start)
+        {
+            int initialStart = start;
+            while (!checkedColumns[start].isPrime)
+            {
+                --start;
+                if (start <= numberOfPlayers)
+                {
+                    return initialStart;
+                }
+            }
+
+            return start;
         }
 
         public int GetFirstNotCheckedColumn(int start, int iter)
         {
             int initialStart = start;
-            while (checkedColumns[start])
+            while (checkedColumns[start].isChecked)
             {
                 start += iter;
                 if (start >= checkedColumns.Length)

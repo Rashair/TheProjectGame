@@ -6,8 +6,6 @@ namespace Shared.Enums
     [JsonConverter(typeof(StringEnumConverter))]
     public enum Direction
     {
-        Unknown,
-
         /// <summary> y + 1, x - 1 </summary>
         NW,
 

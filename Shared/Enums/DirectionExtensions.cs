@@ -107,7 +107,7 @@ namespace Shared.Enums
                     return (Direction.SW, Direction.NE);
 
                 default:
-                    return (Direction.Unknown, Direction.Unknown);
+                    return (Direction.FromCurrent, Direction.FromCurrent);
             }
         }
     }
