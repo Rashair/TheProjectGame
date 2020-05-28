@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Player.Models.Strategies.AdvancedStrategyUtils;
 using Player.Models.Strategies.Utils;
 using Serilog;
 using Shared.Enums;
@@ -14,7 +15,7 @@ namespace Player.Models.Strategies
     public class AdvancedStrategy : IStrategy
     {
         private const int NumberOfPossibleDirections = 4;
-        private const int ALotOfFalseMoves = 10;
+        private const int ALotOfFalseMoves = 8;
         private const int MaxDirectionsHistoryCount = 100;
         private const int DiscoverPenaltyThreshold = 10;
 
@@ -23,11 +24,13 @@ namespace Player.Models.Strategies
         private readonly Player player;
 
         // Strategy computed values
+        private readonly LinkedList<Direction> directionsHistory;
         private (int y, int x) previousPosition;
         private int previousDistToPiece;
-        private readonly LinkedList<Direction> directionsHistory;
         private DiscoverState state;
         private LastAction lastAction;
+        private ColumnGenerator columnGenerator;
+        private (int numOnBoard, int checkedFields, int tier) column;
 
         public AdvancedStrategy(Player player, ILogger log)
         {
@@ -71,6 +74,8 @@ namespace Player.Models.Strategies
                 goalAreaRange = player.GoalAreaRange;
                 penalties = player.PenaltiesTimes;
                 directionsHistory.AddLast(player.GoalAreaDirection.GetOppositeDirection());
+                columnGenerator = new ColumnGenerator(player.NormalizedID, boardSize.x, player.EnemiesIds.Length);
+                column = (columnGenerator.GetColumnToHandle(1), 0, 1);
             }
 
             cancellationToken = token;
@@ -83,6 +88,17 @@ namespace Player.Models.Strategies
                 (previousPosition.y != y || previousPosition.x != x);
 
             isReallyStuck = !isNotStuckOnPreviousPosition && player.NotMadeMoveInRow > ALotOfFalseMoves;
+
+            if (lastAction == LastAction.Put && board[y, x].GoalInfo != GoalInfo.IDK)
+            {
+                ++column.checkedFields;
+                if (column.checkedFields == goalAreaSize)
+                {
+                    column.checkedFields = 0;
+                    ++column.tier;
+                    column.numOnBoard = columnGenerator.GetColumnToHandle(column.tier);
+                }
+            }
         }
 
         public Task MakeDecision(CancellationToken cancellationToken)
@@ -107,10 +123,13 @@ namespace Player.Models.Strategies
 
         private Task IsReallyStuck()
         {
-            var directions = GetDirectionsInRange();
+            var directions = GetDirectionsInRange(0, boardSize.y);
             var prevDirNode = directionsHistory.Last;
-            directions.Remove(prevDirNode.Value);
-            directions.Remove(prevDirNode.Previous.Value);
+            if (prevDirNode != null && prevDirNode.Previous != null)
+            {
+                directions.Remove(prevDirNode.Value);
+                directions.Remove(prevDirNode.Previous.Value);
+            }
 
             return MoveToDirection(GetRandomDirection(directions));
         }
@@ -235,7 +254,7 @@ namespace Player.Models.Strategies
                 if (WasWalkingBackAndForward())
                 {
                     state = DiscoverState.ShouldDiscover;
-                    logger.Information("\n\nI am guilty, I was walking back and forward.\n\n");
+                    logger.Information("\n\nI am guilty, I wanted to walk back and forward.\n\n");
                     currentDirection = GetRandomPerpendicularDirection(directions, PreviousDir);
                 }
                 else
@@ -293,6 +312,45 @@ namespace Player.Models.Strategies
 
         private Task HasPieceInGoalArea()
         {
+            if (column.numOnBoard == x)
+            {
+                return HasPieceInGoalAreaOnCorrectColumn();
+            }
+            else
+            {
+                return HasPieceInGoalAreaOnIncorrectColumn();
+            }
+        }
+
+        private Task HasPieceInGoalAreaOnCorrectColumn()
+        {
+            if (board[y, x].GoalInfo == GoalInfo.IDK)
+            {
+                lastAction = LastAction.Put;
+                return player.Put(cancellationToken);
+            }
+
+            var directions = GetVerticalDirections(goalAreaRange.y1, goalAreaRange.y2);
+            var prevDir = PreviousDir;
+            Direction currentDir;
+            if (!isNotStuckOnPreviousPosition)
+            {
+                currentDir = PreviousDir.GetOppositeDirection();
+            }
+            else if (prevDir == Direction.E || prevDir == Direction.W)
+            {
+                currentDir = GetRandomDirection(directions);
+            }
+            else
+            {
+                currentDir = prevDir;
+            }
+
+            return MoveToDirection(currentDir);
+        }
+
+        private Task HasPieceInGoalAreaOnIncorrectColumn()
+        {
             if (board[y, x].GoalInfo == GoalInfo.IDK)
             {
                 lastAction = LastAction.Put;
@@ -303,7 +361,6 @@ namespace Player.Models.Strategies
             Direction currentDir;
             if (!isNotStuckOnPreviousPosition)
             {
-                directions.Remove(PreviousDir);
                 currentDir = GetRandomDirection(directions);
             }
             else
@@ -323,7 +380,7 @@ namespace Player.Models.Strategies
             }
             else
             {
-                moveDirection = GetHorizontalDirectionWhenStuck();
+                moveDirection = GetDirectionWhenStuck(horizontal: true);
             }
 
             return MoveToDirection(moveDirection);
@@ -332,7 +389,7 @@ namespace Player.Models.Strategies
         //// Utilites
         //// -------------------------------------------------------------------------------------------
 
-        private List<Direction> GetDirectionsInRange(int y1 = int.MinValue, int y2 = int.MaxValue)
+        private List<Direction> GetDirectionsInRange(int y1, int y2)
         {
             List<Direction> directions = new List<Direction>(NumberOfPossibleDirections);
             if (x > 0)
@@ -355,6 +412,17 @@ namespace Player.Models.Strategies
                 directions.Add(Direction.W);
             if (x < boardSize.x - 1)
                 directions.Add(Direction.E);
+
+            return directions;
+        }
+
+        private List<Direction> GetVerticalDirections(int y1, int y2)
+        {
+            List<Direction> directions = new List<Direction>(NumberOfPossibleDirections / 2);
+            if (y > y1)
+                directions.Add(Direction.S);
+            if (y < y2)
+                directions.Add(Direction.N);
 
             return directions;
         }
@@ -422,9 +490,18 @@ namespace Player.Models.Strategies
             return player.Move(dir, cancellationToken);
         }
 
-        private Direction GetHorizontalDirectionWhenStuck()
+        private Direction GetDirectionWhenStuck(bool horizontal)
         {
-            var directions = GetHorizontalDirections();
+            List<Direction> directions;
+            if (horizontal)
+            {
+                directions = GetHorizontalDirections();
+            }
+            else
+            {
+                directions = GetVerticalDirections(0, boardSize.y);
+            }
+
             var prevDir = PreviousDir;
             if (directions.Count > 1)
             {

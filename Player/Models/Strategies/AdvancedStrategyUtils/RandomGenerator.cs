@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Player.Models.Strategies.Utils
+namespace Player.Models.Strategies.AdvancedStrategyUtils
 {
     public class RandomGenerator
     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -83,7 +84,9 @@ namespace Player.Models
 
         public Direction GoalAreaDirection { get; set; }
 
-        public int NormalizedId { get; set; }
+        public int NormalizedID { get; set; }
+
+        public int NumberOfPlayersPerTeam { get; set; }
 
         internal async Task Start(CancellationToken cancellationToken)
         {
@@ -449,7 +452,7 @@ namespace Player.Models
             Team = p.TeamID;
 
             TeamMatesIds = p.AlliesIDs;
-
+            NormalizedID = NormalizeId(p.AgentID, p.AlliesIDs);
             EnemiesIds = p.EnemiesIDs;
 
             BoardSize = (p.BoardSize.Y, p.BoardSize.X);
@@ -485,6 +488,20 @@ namespace Player.Models
             NumberOfGoals = p.NumberOfGoals;
             ShamPieceProbability = p.ShamPieceProbability;
             WaitingPlayers = new LinkedList<int>();
+        }
+
+        public static int NormalizeId(int agentId, int[] alliesIds)
+        {
+            int newId = 0;
+            for (int i = 0; i < alliesIds.Length; ++i)
+            {
+                if (alliesIds[i] > agentId)
+                {
+                    ++newId;
+                }
+            }
+
+            return newId;
         }
 
         private bool IsFarDistance(int row, int col)
