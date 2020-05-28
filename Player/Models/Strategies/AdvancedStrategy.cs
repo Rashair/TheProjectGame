@@ -367,15 +367,23 @@ namespace Player.Models.Strategies
 
         private Direction GetCurrentColumnDirection()
         {
-            return y < column.numOnBoard ? Direction.E : Direction.W; 
+            return y < column.numOnBoard ? Direction.E : Direction.W;
         }
 
         private Task HasPieceInTaskArea()
         {
             Direction moveDirection;
-            if (isNotStuckOnPreviousPosition || PreviousDir != player.GoalAreaDirection)
+            var prevDir = PreviousDir;
+            if (isNotStuckOnPreviousPosition || prevDir != player.GoalAreaDirection)
             {
-                moveDirection = player.GoalAreaDirection;
+                if (prevDir == player.GoalAreaDirection && y != column.numOnBoard)
+                {
+                    moveDirection = GetCurrentColumnDirection();
+                }
+                else
+                {
+                    moveDirection = player.GoalAreaDirection;
+                }
             }
             else
             {
