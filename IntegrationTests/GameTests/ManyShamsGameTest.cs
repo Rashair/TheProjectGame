@@ -12,7 +12,7 @@ namespace IntegrationTests.GameTests
             {
                 CsIP = "127.0.0.1",
                 CsPort = 6002,
-                MovePenalty = 200,
+                MovePenalty = 250,
                 AskPenalty = 1000,
                 PutPenalty = 300,
                 CheckForShamPenalty = 300,
@@ -27,7 +27,7 @@ namespace IntegrationTests.GameTests
                 NumberOfGoals = 6,
                 NumberOfPiecesOnBoard = 12,
                 NumberOfPlayersPerTeam = 5,
-                ShamPieceProbability = 0.75f,
+                ShamPieceProbability = 0.80f,
             };
 
             TestConf.MinimumRunTimeSec = 60;
