@@ -354,8 +354,8 @@ namespace Player.Models
                     if (payloadMove.MadeMove)
                     {
                         Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
-
-                        Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece.Value;
+                        Board[Position.y, Position.x].DistToPiece = HasPiece ? int.MaxValue : 
+                            payloadMove.ClosestPiece.Value;
                         NotMadeMoveInRow = 0;
                     }
                     else

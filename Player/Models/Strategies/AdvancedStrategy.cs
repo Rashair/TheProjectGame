@@ -76,6 +76,7 @@ namespace Player.Models.Strategies
                 directionsHistory.AddLast(player.GoalAreaDirection.GetOppositeDirection());
                 columnGenerator = new ColumnGenerator(player.NormalizedID, boardSize.x, player.EnemiesIds.Length);
                 column = (columnGenerator.GetColumnToHandle(1), 0, 1);
+                logger.Information($"Got column: {column.numOnBoard}");
             }
 
             cancellationToken = token;
@@ -97,6 +98,7 @@ namespace Player.Models.Strategies
                     column.checkedFields = 0;
                     ++column.tier;
                     column.numOnBoard = columnGenerator.GetColumnToHandle(column.tier);
+                    logger.Information($"Got column: {column.numOnBoard}");
                 }
             }
         }
@@ -123,7 +125,7 @@ namespace Player.Models.Strategies
 
         private Task IsReallyStuck()
         {
-            var directions = GetDirectionsInRange(0, boardSize.y);
+            var directions = GetDirectionsInRange(0, boardSize.y - 1);
             var prevDirNode = directionsHistory.Last;
             if (prevDirNode != null && prevDirNode.Previous != null)
             {
@@ -186,6 +188,7 @@ namespace Player.Models.Strategies
                 decision = player.Pick(cancellationToken);
                 state = DiscoverState.NoAction;
                 lastAction = LastAction.Pick;
+                logger.Information("Picked piece");
             }
             else if (ShouldDiscover())
             {
@@ -265,7 +268,6 @@ namespace Player.Models.Strategies
                 if (WasWalkingBackAndForward())
                 {
                     state = DiscoverState.ShouldDiscover;
-                    logger.Information("\n\nI am guilty, I wanted to walk back and forward.\n\n");
                     currentDirection = GetRandomPerpendicularDirection(directions, PreviousDir);
                 }
                 else
@@ -275,7 +277,6 @@ namespace Player.Models.Strategies
             }
             else
             {
-                logger.Information("Prev dir: " + PreviousDir.ToString());
                 currentDirection = GetRandomPerpendicularDirection(directions, PreviousDir);
             }
 
@@ -290,7 +291,8 @@ namespace Player.Models.Strategies
                 if (penultimateDir == PreviousDir)
                 {
                     var penultimatePos = penultimateDir.GetOppositeDirection().GetCoordinates(previousPosition);
-                    return board[penultimatePos.y, penultimatePos.x].DistToPiece == board[y, x].DistToPiece;
+                    return board[y, x].DistToPiece != int.MaxValue && 
+                        board[penultimatePos.y, penultimatePos.x].DistToPiece == board[y, x].DistToPiece;
                 }
 
                 return false;
@@ -317,6 +319,7 @@ namespace Player.Models.Strategies
             }
             else
             {
+                logger.Information("I am in task area");
                 return HasPieceInTaskArea();
             }
         }
@@ -329,6 +332,7 @@ namespace Player.Models.Strategies
             }
             else
             {
+                logger.Information($"Has piece on goal area with incorrect column: {x}");
                 return HasPieceInGoalAreaOnIncorrectColumn();
             }
         }
@@ -344,13 +348,14 @@ namespace Player.Models.Strategies
             var directions = GetVerticalDirections(goalAreaRange.y1, goalAreaRange.y2);
             var prevDir = PreviousDir;
             Direction currentDir;
-            if (!isNotStuckOnPreviousPosition)
-            {
-                currentDir = PreviousDir.GetOppositeDirection();
-            }
-            else if (prevDir == Direction.E || prevDir == Direction.W)
+            if (prevDir == Direction.E || prevDir == Direction.W)
             {
                 currentDir = GetRandomDirection(directions);
+            }
+            else if (!isNotStuckOnPreviousPosition)
+            {
+                logger.Information($"Was stuck piece with piece on correct column: {prevDir}");
+                currentDir = prevDir.GetOppositeDirection();
             }
             else
             {
@@ -362,10 +367,10 @@ namespace Player.Models.Strategies
 
         private Task HasPieceInGoalAreaOnIncorrectColumn()
         {
-            var directions = GetDirectionsInRange(goalAreaRange.y1, Math.Max(goalAreaRange.y2, 2));
             Direction currentDir;
             if (!isNotStuckOnPreviousPosition)
             {
+                var directions = GetDirectionsInRange(goalAreaRange.y1, Math.Max(goalAreaRange.y2, 2));
                 currentDir = GetRandomDirection(directions);
             }
             else
@@ -378,7 +383,7 @@ namespace Player.Models.Strategies
 
         private Direction GetCurrentColumnDirection()
         {
-            return y < column.numOnBoard ? Direction.E : Direction.W;
+            return x < column.numOnBoard ? Direction.E : Direction.W;
         }
 
         private Task HasPieceInTaskArea()
@@ -439,7 +444,7 @@ namespace Player.Models.Strategies
             List<Direction> directions = new List<Direction>(NumberOfPossibleDirections / 2);
             if (y > y1)
                 directions.Add(Direction.S);
-            if (y < y2)
+            if (y < y2 - 1)
                 directions.Add(Direction.N);
 
             return directions;
