@@ -11,7 +11,7 @@ namespace IntegrationTests.GameTests
             Conf = new GameConfiguration
             {
                 CsIP = "127.0.0.1",
-                CsPort = 5002,
+                CsPort = 6002,
                 MovePenalty = 200,
                 AskPenalty = 1000,
                 PutPenalty = 300,

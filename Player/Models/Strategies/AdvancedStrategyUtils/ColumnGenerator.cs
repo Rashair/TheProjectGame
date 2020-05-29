@@ -1,4 +1,6 @@
-﻿namespace Player.Models.Strategies.AdvancedStrategyUtils
+﻿using System.Collections.Generic;
+
+namespace Player.Models.Strategies.AdvancedStrategyUtils
 {
     public class ColumnGenerator
     {
@@ -47,25 +49,24 @@
                 }
                 else
                 {
-                    int start = (initialID - 1 + numberOfPlayers) % width;
-                    result = GetFirstNotCheckedColumn(start, 1);
+                    result = GetFirstNotCheckedNotPrime();
                 }
             }
             else
             {
-                result = GetFirstPrimeColumn(initialID - numberOfPlayers + width - 1);
+                result = GetFirstPrimeColumnIfNotTaken(initialID - numberOfPlayers + width - 1);
             }
 
             if (checkedColumns[result].isChecked)
             {
-                result = GetFirstNotCheckedColumn(result, 1);
+                result = GetFirstNotCheckedColumn(result);
             }
             checkedColumns[result].isChecked = true;
 
             return result;
         }
 
-        private int GetFirstPrimeColumn(int start)
+        private int GetFirstPrimeColumnIfNotTaken(int start)
         {
             int initialStart = start;
             while (!checkedColumns[start].isPrime)
@@ -80,7 +81,20 @@
             return start;
         }
 
-        private int GetFirstNotCheckedColumn(int start, int iter)
+        private int GetFirstNotCheckedNotPrime()
+        {
+            for (int i = checkedColumns.Length - 1; i >= 0; --i)
+            {
+                if (!checkedColumns[i].isPrime && !checkedColumns[i].isChecked)
+                {
+                    return i;
+                }
+            }
+
+            return GetFirstNotCheckedColumn(0);
+        }
+
+        private int GetFirstNotCheckedColumn(int start, int iter = 1)
         {
             int initialStart = start;
             while (checkedColumns[start].isChecked)
