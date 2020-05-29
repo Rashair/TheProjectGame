@@ -76,7 +76,7 @@ namespace IntegrationTests
         {
             // Arrange
             var source = new CancellationTokenSource();
-            string url = "http://127.0.0.1:5000";
+            string url = "http://127.0.0.1:3005";
             string[] args = new string[] { $"urls={url}", "CsPort=1" };
             var webhost = Utilities.CreateHostBuilder(typeof(GameMaster.Startup), args).
                 ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
@@ -107,12 +107,13 @@ namespace IntegrationTests
         {
             // Arrange
             var source = new CancellationTokenSource();
-            string[] csArgs = new string[] { $"urls=http://127.0.0.1:1025", "PlayerPort=2" };
+            int gmPort = 3003;
+            string[] csArgs = new string[] { $"urls=http://127.0.0.1:1025", "PlayerPort=2", $"GMPort={gmPort}" };
             var webhost = Utilities.CreateHostBuilder(typeof(CommunicationServer.Startup), csArgs).
                 ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
                 Build();
             string gmUrl = "http://127.0.0.1:4000";
-            string[] gmArgs = new string[] { $"urls={gmUrl}" };
+            string[] gmArgs = new string[] { $"urls={gmUrl}", $"CsPort={gmPort}" };
             var gmHost = Utilities.CreateHostBuilder(typeof(GameMaster.Startup), gmArgs).
                 ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
                 Build();
@@ -128,7 +129,7 @@ namespace IntegrationTests
                 client.BaseAddress = new Uri($"{gmUrl}");
                 response = await client.PostAsync("api/InitGame", null);
             }
-            await Task.Delay(10000);
+            await Task.Delay(8000);
             source.Cancel();
 
             // Assert
