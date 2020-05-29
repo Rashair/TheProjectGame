@@ -12,7 +12,7 @@ namespace IntegrationTests.GameTests
             {
                 CsIP = "127.0.0.1",
                 CsPort = 6001,
-                MovePenalty = 200,
+                MovePenalty = 250,
                 AskPenalty = 10000,
                 PutPenalty = 500,
                 CheckForShamPenalty = 750,

@@ -32,29 +32,33 @@ namespace Player.Models.Strategies.AdvancedStrategyUtils
         public int GetColumnToHandle(int colNum)
         {
             int result;
+            int shifted = initialID + ((colNum - 1) * numberOfPlayers);
             if (width <= numberOfPlayers)
             {
                 result = (initialID + colNum) % width;
             }
-            else if (isInitialIdPrime && isWidthNotDivisibleByInitialId)
+            else if (shifted <= width || (isInitialIdPrime && isWidthNotDivisibleByInitialId))
             {
-                result = (initialID * colNum) % width;
+                result = shifted % width;
             }
             else if (isInitialIdPrime)
             {
-                int multipliedID = colNum * initialID;
-                if (multipliedID <= width)
-                {
-                    result = multipliedID % width;
-                }
-                else
-                {
-                    result = GetFirstNotCheckedNotPrime();
-                }
+                result = GetFirstNotCheckedNotPrime();
             }
             else
             {
-                result = GetFirstPrimeColumnIfNotTaken(initialID - numberOfPlayers + width - 1);
+                if (initialID == 1)
+                {
+                    result = GetFirstPrimeColumnIfNotTaken(width - 1);
+                }
+                else if (shifted % 2 == 0)
+                {
+                    result = GetFirstNotCheckedNotPrime(shifted);
+                }
+                else
+                {
+                    result = GetFirstNotCheckedNotPrime(width - shifted);
+                }
             }
 
             if (checkedColumns[result].isChecked)
@@ -69,7 +73,7 @@ namespace Player.Models.Strategies.AdvancedStrategyUtils
         private int GetFirstPrimeColumnIfNotTaken(int start)
         {
             int initialStart = start;
-            while (!checkedColumns[start].isPrime)
+            while (!checkedColumns[start].isPrime && checkedColumns[start].isChecked)
             {
                 --start;
                 if (start <= numberOfPlayers)
@@ -81,9 +85,10 @@ namespace Player.Models.Strategies.AdvancedStrategyUtils
             return start;
         }
 
-        private int GetFirstNotCheckedNotPrime()
+        private int GetFirstNotCheckedNotPrime(int start = -1)
         {
-            for (int i = checkedColumns.Length - 1; i >= 0; --i)
+            start = start == -1 ? width - 1 : start;
+            for (int i = start % width; i >= 0; --i)
             {
                 if (!checkedColumns[i].isPrime && !checkedColumns[i].isChecked)
                 {
