@@ -47,17 +47,13 @@ namespace Player.Models.Strategies.AdvancedStrategyUtils
             }
             else
             {
-                if (initialID == 1)
+                if (initialID % 2 == 0)
                 {
-                    result = GetFirstPrimeColumnIfNotTaken(width - 1);
-                }
-                else if (shifted % 2 == 0)
-                {
-                    result = GetFirstNotCheckedNotPrime(shifted);
+                    result = GetFirstPrimeColumnIfNotTaken(width + initialID - numberOfPlayers - colNum);
                 }
                 else
                 {
-                    result = GetFirstNotCheckedNotPrime(width - shifted);
+                    result = GetFirstNotCheckedNotPrime(width - initialID);
                 }
             }
 
