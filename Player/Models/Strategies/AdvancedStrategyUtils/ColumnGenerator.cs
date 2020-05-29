@@ -29,26 +29,25 @@
 
         public int GetColumnToHandle(int colNum)
         {
+            int result;
             if (width <= numberOfPlayers)
             {
-                return (initialID + colNum) % width;
+                result = (initialID + colNum) % width;
             }
-
-            int result;
-            if (isInitialIdPrime && isWidthNotDivisibleByInitialId)
+            else if (isInitialIdPrime && isWidthNotDivisibleByInitialId)
             {
                 result = (initialID * colNum) % width;
             }
             else if (isInitialIdPrime)
             {
                 int multipliedID = colNum * initialID;
-                if (multipliedID < width)
+                if (multipliedID <= width)
                 {
-                    result = multipliedID;
+                    result = multipliedID % width;
                 }
                 else
                 {
-                    int start = (initialID + 1) % width;
+                    int start = (initialID - 1 + numberOfPlayers) % width;
                     result = GetFirstNotCheckedColumn(start, 1);
                 }
             }
@@ -61,12 +60,12 @@
             {
                 result = GetFirstNotCheckedColumn(result, 1);
             }
-
             checkedColumns[result].isChecked = true;
-            return initialID;
+
+            return result;
         }
 
-        public int GetFirstPrimeColumn(int start)
+        private int GetFirstPrimeColumn(int start)
         {
             int initialStart = start;
             while (!checkedColumns[start].isPrime)
@@ -81,7 +80,7 @@
             return start;
         }
 
-        public int GetFirstNotCheckedColumn(int start, int iter)
+        private int GetFirstNotCheckedColumn(int start, int iter)
         {
             int initialStart = start;
             while (checkedColumns[start].isChecked)

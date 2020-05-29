@@ -74,8 +74,12 @@ namespace Player.Models.Strategies
                 goalAreaRange = player.GoalAreaRange;
                 penalties = player.PenaltiesTimes;
                 directionsHistory.AddLast(player.GoalAreaDirection.GetOppositeDirection());
+                
                 columnGenerator = new ColumnGenerator(player.NormalizedID, boardSize.x, player.EnemiesIds.Length);
-                column = (columnGenerator.GetColumnToHandle(1), 0, 1);
+                logger.Information($"{player.NormalizedID}| {boardSize.x}| {player.EnemiesIds.Length}");
+                column.tier = 1;
+                column.checkedFields = 0;
+                column.numOnBoard = columnGenerator.GetColumnToHandle(column.tier);
                 logger.Information($"Got column: {column.numOnBoard}");
             }
 
@@ -96,7 +100,7 @@ namespace Player.Models.Strategies
                 if (column.checkedFields == goalAreaSize)
                 {
                     column.checkedFields = 0;
-                    ++column.tier;
+                    column.tier += 1;
                     column.numOnBoard = columnGenerator.GetColumnToHandle(column.tier);
                     logger.Information($"Got column: {column.numOnBoard}");
                 }
@@ -291,7 +295,7 @@ namespace Player.Models.Strategies
                 if (penultimateDir == PreviousDir)
                 {
                     var penultimatePos = penultimateDir.GetOppositeDirection().GetCoordinates(previousPosition);
-                    return board[y, x].DistToPiece != int.MaxValue && 
+                    return board[y, x].DistToPiece != int.MaxValue &&
                         board[penultimatePos.y, penultimatePos.x].DistToPiece == board[y, x].DistToPiece;
                 }
 
@@ -319,7 +323,6 @@ namespace Player.Models.Strategies
             }
             else
             {
-                logger.Information("I am in task area");
                 return HasPieceInTaskArea();
             }
         }
@@ -332,7 +335,6 @@ namespace Player.Models.Strategies
             }
             else
             {
-                logger.Information($"Has piece on goal area with incorrect column: {x}");
                 return HasPieceInGoalAreaOnIncorrectColumn();
             }
         }
@@ -354,12 +356,12 @@ namespace Player.Models.Strategies
             }
             else if (!isNotStuckOnPreviousPosition)
             {
-                logger.Information($"Was stuck piece with piece on correct column: {prevDir}");
                 currentDir = prevDir.GetOppositeDirection();
             }
             else
             {
-                currentDir = prevDir;
+                currentDir = directions.Count > 1 ? prevDir :
+                    directions[0];
             }
 
             return MoveToDirection(currentDir);
@@ -392,7 +394,7 @@ namespace Player.Models.Strategies
             var prevDir = PreviousDir;
             if (isNotStuckOnPreviousPosition || prevDir != player.GoalAreaDirection)
             {
-                if (prevDir == player.GoalAreaDirection && y != column.numOnBoard)
+                if (prevDir == player.GoalAreaDirection && x != column.numOnBoard)
                 {
                     moveDirection = GetCurrentColumnDirection();
                 }

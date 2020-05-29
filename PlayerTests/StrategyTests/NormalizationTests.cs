@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using Xunit;
 
-namespace Player.Tests
+namespace Player.StrategyTests
 {
     public class NormalizationTests
     {
-        public static IEnumerable<object[]> Data =>
+        public static IEnumerable<object[]> TestData =>
          new List<object[]>
          {
             //// Single number
@@ -55,7 +53,7 @@ namespace Player.Tests
          };
 
         [Theory]
-        [MemberData(nameof(Data))]
+        [MemberData(nameof(TestData))]
         public void TestIdNormalizationWithIdInAllies(params int[] teamIds)
         {
             // Arrange
@@ -80,7 +78,7 @@ namespace Player.Tests
         }
 
         [Theory]
-        [MemberData(nameof(Data))]
+        [MemberData(nameof(TestData))]
         public void TestIdNormalizationWithoutIdInAllies(params int[] teamIds)
         {
             // Arrange
