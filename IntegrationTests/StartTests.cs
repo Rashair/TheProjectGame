@@ -128,7 +128,7 @@ namespace IntegrationTests
                 client.BaseAddress = new Uri($"{gmUrl}");
                 response = await client.PostAsync("api/InitGame", null);
             }
-            await Task.Delay(6000);
+            await Task.Delay(10000);
             source.Cancel();
 
             // Assert
