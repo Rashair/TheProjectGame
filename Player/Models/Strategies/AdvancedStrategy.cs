@@ -216,7 +216,7 @@ namespace Player.Models.Strategies
             else if (distToPiece > previousDistToPiece)
             {
                 // Parallel piece
-                if (directionsHistory.Count >= 2 || directionsHistory.Last.Previous.Value == PreviousDir)
+                if (directionsHistory.Count >= 2 && directionsHistory.Last.Previous.Value == PreviousDir)
                 {
                     state = DiscoverState.ShouldDiscover;
                 }
