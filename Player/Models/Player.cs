@@ -164,7 +164,7 @@ namespace Player.Models
                 {
                     if (TeamMatesIds[i] != id)
                     {
-                        await BegForInfo(cancellationToken, i);
+                        await BegForInfo(cancellationToken, TeamMatesIds[i]);
                         await AcceptMessage(cancellationToken);
                         await Penalty(cancellationToken);
                     }
@@ -219,6 +219,7 @@ namespace Player.Models
                 AgentID = id,
             };
 
+            BegForInfoPayload payload = new BegForInfoPayload();
             if (index == -1)
             {
                 Random rnd = new Random();
@@ -227,11 +228,13 @@ namespace Player.Models
                 {
                     index = (index + 1) % TeamMatesIds.Length;
                 }
+
+                payload.AskedAgentID = TeamMatesIds[index];
             }
-            BegForInfoPayload payload = new BegForInfoPayload()
+            else
             {
-                AskedAgentID = TeamMatesIds[index],
-            };
+                payload.AskedAgentID = index;
+            }
 
             message.Payload = payload;
 
