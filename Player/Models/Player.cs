@@ -538,10 +538,9 @@ namespace Player.Models
             NumberOfGoals = p.NumberOfGoals;
             ShamPieceProbability = p.ShamPieceProbability;
             WaitingPlayers = new LinkedList<int>();
-
             int pomResult = ((BoardSize.y + BoardSize.x) * PenaltiesTimes.Move) + PenaltiesTimes.Pickup + PenaltiesTimes.PutPiece;
-            if (((BoardSize.x * GoalAreaSize) / NumberOfPlayers.Allies) * pomResult < (NumberOfPlayers.Allies * GoalAreaSize * pomResult)
-                && pomResult < (NumberOfPlayers.Allies * PenaltiesTimes.Response) && !(2 * NumberOfPlayers.Allies < BoardSize.x))
+            if (((BoardSize.x * GoalAreaSize) / NumberOfPlayers.Allies) * (pomResult + PenaltiesTimes.Response + PenaltiesTimes.Ask) < ((BoardSize.x / NumberOfPlayers.Allies) * GoalAreaSize * pomResult)
+            && pomResult < (NumberOfPlayers.Allies * PenaltiesTimes.Response) && !(2 * NumberOfPlayers.Allies < BoardSize.x))
             {
                 IsCommunicatinonWorthy = true;
 
