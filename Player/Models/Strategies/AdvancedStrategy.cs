@@ -30,7 +30,7 @@ namespace Player.Models.Strategies
         private DiscoverState state;
         private LastAction lastAction;
         private ColumnGenerator columnGenerator;
-        private (int numOnBoard, int checkedFields, int tier) column;
+        private (int numOnBoard, int checkedFieldsNum, bool[] checkedFields, int tier) column;
 
         public AdvancedStrategy(Player player, ILogger log)
         {
@@ -76,9 +76,10 @@ namespace Player.Models.Strategies
                 directionsHistory.AddLast(player.GoalAreaDirection.GetOppositeDirection());
 
                 columnGenerator = new ColumnGenerator(player.NormalizedID, boardSize.x, player.EnemiesIds.Length);
-                logger.Information($"{player.NormalizedID}| {boardSize.x}| {player.EnemiesIds.Length}");
+                logger.Information("Strategy info: " +
+                    $"{player.NormalizedID}| {boardSize.x}| {player.EnemiesIds.Length}");
                 column.tier = 1;
-                column.checkedFields = 0;
+                column.checkedFields = new bool[goalAreaSize];
                 column.numOnBoard = columnGenerator.GetColumnToHandle(column.tier);
                 logger.Information($"Got column: {column.numOnBoard}");
             }
@@ -96,14 +97,30 @@ namespace Player.Models.Strategies
 
             if (lastAction == LastAction.Put && board[y, x].GoalInfo != GoalInfo.IDK)
             {
-                ++column.checkedFields;
-                if (column.checkedFields == goalAreaSize)
-                {
-                    column.checkedFields = 0;
-                    ++column.tier;
-                    column.numOnBoard = columnGenerator.GetColumnToHandle(column.tier);
-                    logger.Information($"Got column: {column.numOnBoard}");
-                }
+                ++column.checkedFieldsNum;
+                column.checkedFields[y - goalAreaRange.y1] = true;
+            }
+
+            if (column.checkedFieldsNum == goalAreaSize)
+            {
+                GetNewColumn();
+            }
+        }
+
+        private void GetNewColumn()
+        {
+            InitColumnCheckedFields();
+            ++column.tier;
+            column.numOnBoard = columnGenerator.GetColumnToHandle(column.tier);
+            logger.Information($"Got column: {column.numOnBoard}");
+        }
+
+        private void InitColumnCheckedFields()
+        {
+            column.checkedFieldsNum = 0;
+            for (int i = 0; i < column.checkedFields.Length; ++i)
+            {
+                column.checkedFields[i] = false;
             }
         }
 
@@ -345,6 +362,18 @@ namespace Player.Models.Strategies
             {
                 lastAction = LastAction.Put;
                 return player.Put(cancellationToken);
+            }
+
+            int ind = y - goalAreaRange.y1;
+            if (!column.checkedFields[ind])
+            {
+                ++column.checkedFieldsNum;
+                column.checkedFields[ind] = true;
+                if (column.checkedFieldsNum == goalAreaSize)
+                {
+                    GetNewColumn();
+                    return HasPieceInGoalAreaOnIncorrectColumn();
+                }
             }
 
             var directions = GetVerticalDirections(goalAreaRange.y1, goalAreaRange.y2);
