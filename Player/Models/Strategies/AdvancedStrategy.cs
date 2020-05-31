@@ -74,7 +74,7 @@ namespace Player.Models.Strategies
                 goalAreaRange = player.GoalAreaRange;
                 penalties = player.PenaltiesTimes;
                 directionsHistory.AddLast(player.GoalAreaDirection.GetOppositeDirection());
-                
+
                 columnGenerator = new ColumnGenerator(player.NormalizedID, boardSize.x, player.EnemiesIds.Length);
                 logger.Information($"{player.NormalizedID}| {boardSize.x}| {player.EnemiesIds.Length}");
                 column.tier = 1;
@@ -100,7 +100,7 @@ namespace Player.Models.Strategies
                 if (column.checkedFields == goalAreaSize)
                 {
                     column.checkedFields = 0;
-                    column.tier += 1;
+                    ++column.tier;
                     column.numOnBoard = columnGenerator.GetColumnToHandle(column.tier);
                     logger.Information($"Got column: {column.numOnBoard}");
                 }

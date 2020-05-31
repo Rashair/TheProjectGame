@@ -19,7 +19,7 @@ namespace Player.Models.Strategies
             this.player = player;
             this.random = new Random();
             this.logger = log.ForContext<SimpleStrategy>();
-        } 
+        }
 
         public async Task MakeDecision(CancellationToken cancellationToken)
         {

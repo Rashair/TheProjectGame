@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -354,7 +353,7 @@ namespace Player.Models
                     if (payloadMove.MadeMove)
                     {
                         Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
-                        Board[Position.y, Position.x].DistToPiece = HasPiece ? int.MaxValue : 
+                        Board[Position.y, Position.x].DistToPiece = HasPiece ? int.MaxValue :
                             payloadMove.ClosestPiece.Value;
                         NotMadeMoveInRow = 0;
                     }

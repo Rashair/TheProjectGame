@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Player.Models.Strategies.AdvancedStrategyUtils
+﻿namespace Player.Models.Strategies.AdvancedStrategyUtils
 {
     public class ColumnGenerator
     {
