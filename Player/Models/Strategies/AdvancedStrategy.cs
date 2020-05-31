@@ -183,7 +183,7 @@ namespace Player.Models.Strategies
                 for (int y1 = taskAreaSize.yp; y1 <= taskAreaSize.yp; y1++)
                 {
                     (int x, int y) taskAreaPoint = (x1, y1);
-                    int[] d = new int[Math.Max(taskAreaSize.xk - taskAreaSize.xp, taskAreaSize.yk - taskAreaSize.yp)];
+                    int[] d = new int[Math.Max(taskAreaSize.xk - taskAreaSize.xp, taskAreaSize.yk - taskAreaSize.yp) + 1];
 
                     int maxDistance = 0;
                     for (int x2 = taskAreaSize.xp; x2 <= taskAreaSize.xk; x2++)
@@ -212,7 +212,7 @@ namespace Player.Models.Strategies
 
             int taskAreaFields = (taskAreaSize.yk - taskAreaSize.yp) * (taskAreaSize.xk - taskAreaSize.xp);
 
-            taskAreaToPiece = sum / BinomialCoefficent(taskAreaFields, player.NumberOfPieces) * taskAreaFields;
+            taskAreaToPiece = sum / (BinomialCoefficent(taskAreaFields, player.NumberOfPieces) * taskAreaFields);
         }
 
         private void GoalFieldToPieceDistance((int xp, int xk, int yp, int yk) taskAreaSize, (int xp, int xk, int yp, int yk) goalAreaSize)
@@ -223,7 +223,7 @@ namespace Player.Models.Strategies
                 for (int y1 = goalAreaSize.yp; y1 <= goalAreaSize.yp; y1++)
                 {
                     (int x, int y) goalAreaPoint = (x1, y1);
-                    int[] d = new int[Math.Max(taskAreaSize.xk - taskAreaSize.xp, taskAreaSize.yk - taskAreaSize.yp + goalAreaSize.yk - goalAreaSize.yp)];
+                    int[] d = new int[Math.Max(taskAreaSize.xk - taskAreaSize.xp, taskAreaSize.yk - taskAreaSize.yp + goalAreaSize.yk - goalAreaSize.yp) + 1];
 
                     int maxDistance = 0;
                     for (int x2 = taskAreaSize.xp; x2 <= taskAreaSize.xk; x2++)
@@ -253,7 +253,7 @@ namespace Player.Models.Strategies
             int taskAreaFields = (taskAreaSize.yk - taskAreaSize.yp) * (taskAreaSize.xk - taskAreaSize.xp);
             int goalAreaFields = (goalAreaSize.yk - goalAreaSize.yp) * (goalAreaSize.xk - goalAreaSize.xp);
 
-            goalFieldToPiece = sum / BinomialCoefficent(taskAreaFields, player.NumberOfPieces) * goalAreaFields;
+            goalFieldToPiece = sum / (BinomialCoefficent(taskAreaFields, player.NumberOfPieces) * goalAreaFields);
         }
 
         private void GetNewColumn()
