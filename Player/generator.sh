@@ -5,8 +5,8 @@ function usage {
     echo "USAGE:";
 	echo "$0" "num" "team_1_args" "team_2_args";
 	echo "num [number-of-players](def-2)";
-	echo "team_1_args: \"red|blue [color](def-blue) 1+[strategy-num](def-1) 0|1 [background-run](def-0)\""
-	echo "team_2_args: \"red|blue [color](def-red)  1+[strategy-num](def-1) 0|1 [background-run](def-0)\""
+	echo "team_1_args: red|blue [color](def-blue) 1+[strategy-num](def-1) 0|1 [background-run](def-0)"
+	echo "team_2_args: red|blue [color](def-red)  1+[strategy-num](def-1) 0|1 [background-run](def-0)"
 	echo "team_2_args can be empty to run 1 team"
 }
 
@@ -18,8 +18,12 @@ if (( $num < 1 || $num > 1000 )); then
 	exit 1;
 fi
 
-team_1_args="${2-red 1 0}" 
-team_2_args="${3-blue 1 0}" 
+team_1="${2-red}"
+strat_1="${3-2}"
+bg_1="${4-1}"
+team_2="${5-blue}"
+strat_2="${6-2}"
+bg_2="${7-1}"
 
 function trim {
 	echo $*
@@ -50,40 +54,28 @@ function validate_bg {
 		usage;
 		exit 1;
 	fi
-
 }
 
-function set_team_args {
+function validate_team_args {
 	if [[ $1 -eq 1 ]]; then
-		team_1="$(trim ${team_1_args:0:4})"
 		validate_team $team_1 1;
-		
-		strat_1="$(trim ${team_1_args:4:2})"
 		validate_strategy $strat_1 1
-		
-		bg_1="$(trim ${team_1_args:6:2})"
 		validate_bg $bg_1 1;
 	elif [[ $1 -eq 2 ]]; then
-		team_2="$(trim ${team_2_args:0:4})"
 		validate_team $team_2 2;
-		
-		strat_2="$(trim ${team_2_args:4:2})"
 		validate_strategy $strat_2 2
-		
-		bg_2="$(trim ${team_2_args:6:2})"
 		validate_bg $bg_2 2;
 	fi;
 }
 
-team_1_run=false;
+team_1_run=true;
 team_2_run=false;
-if [[ "$team_1_args" != "" ]]; then
-	set_team_args 1;
-	team_1_run=true;
+if [[ "$2" != "" ]]; then
+	validate_team_args 1;
 	echo "Team 1 set.";
 fi
-if [[ "$team_2_args" != "" ]]; then
-	set_team_args 2;
+if [[ "$5" != "" ]]; then
+	validate_team_args 2;
 	team_2_run=true;
 	echo "Team 2 set.";
 fi
@@ -100,12 +92,12 @@ function handle_run {
 		done
 	elif [[ "$OSTYPE" == "msys" ]]; then
 		for i in `seq 1 $num`; do
-			cmd //c start cmd //k "$2" & disown
+			cmd //c start cmd //k "$2" &
 			sleep 1
 		done
 	else
 		for i in `seq 1 $num`; do
-			gnome-terminal -e "$2" & disown
+			gnome-terminal -e "$2" &
 			sleep 1
 		done
 		#TODO: Other terminals

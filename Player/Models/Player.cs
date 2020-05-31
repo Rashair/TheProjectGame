@@ -35,7 +35,7 @@ namespace Player.Models
             Message> client, ILogger log)
         {
             this.conf = conf;
-            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy, this);
+            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy, this, log);
             this.queue = queue;
             this.client = client;
             this.logger = log.ForContext<Player>();
@@ -82,6 +82,10 @@ namespace Player.Models
         public (int y1, int y2) GoalAreaRange { get; set; }
 
         public Direction GoalAreaDirection { get; set; }
+
+        public int NormalizedID { get; set; }
+
+        public int NumberOfPlayersPerTeam { get; set; }
 
         internal async Task Start(CancellationToken cancellationToken)
         {
@@ -175,7 +179,7 @@ namespace Player.Models
             };
 
             Random rnd = new Random();
-            int index = rnd.Next(0, TeamMatesIds.Length - 1);
+            int index = rnd.Next(0, TeamMatesIds.Length);
             if (TeamMatesIds[index] == id)
             {
                 index = (index + 1) % TeamMatesIds.Length;
@@ -327,52 +331,7 @@ namespace Player.Models
                     break;
                 case MessageID.StartGame:
                     StartGamePayload payloadStart = (StartGamePayload)message.Payload;
-                    id = payloadStart.AgentID;
-                    TeamMatesIds = payloadStart.AlliesIDs;
-                    if (id == payloadStart.LeaderID)
-                    {
-                        IsLeader = true;
-                    }
-                    else
-                    {
-                        IsLeader = false;
-                    }
-                    LeaderId = payloadStart.LeaderID;
-                    Team = payloadStart.TeamID;
-                    BoardSize = (payloadStart.BoardSize.Y, payloadStart.BoardSize.X);
-                    Board = new Field[payloadStart.BoardSize.Y, payloadStart.BoardSize.X];
-                    for (int i = 0; i < payloadStart.BoardSize.Y; i++)
-                    {
-                        for (int j = 0; j < payloadStart.BoardSize.X; j++)
-                        {
-                            Board[i, j] = new Field
-                            {
-                                DistToPiece = int.MaxValue,
-                                GoalInfo = GoalInfo.IDK,
-                            };
-                        }
-                    }
-                    PenaltiesTimes = payloadStart.Penalties;
-                    Position = (payloadStart.Position.Y, payloadStart.Position.X);
-                    EnemiesIds = payloadStart.EnemiesIDs;
-
-                    GoalAreaSize = payloadStart.GoalAreaSize;
-                    if (this.Team == Team.Blue)
-                    {
-                        this.GoalAreaRange = (0, GoalAreaSize);
-                        this.GoalAreaDirection = Direction.S;
-                    }
-                    else
-                    {
-                        this.GoalAreaRange = (BoardSize.y - GoalAreaSize, BoardSize.y);
-                        this.GoalAreaDirection = Direction.N;
-                    }
-
-                    NumberOfPlayers = payloadStart.NumberOfPlayers;
-                    NumberOfPieces = payloadStart.NumberOfPieces;
-                    NumberOfGoals = payloadStart.NumberOfGoals;
-                    ShamPieceProbability = payloadStart.ShamPieceProbability;
-                    WaitingPlayers = new LinkedList<int>();
+                    AssignDataFromStartGame(payloadStart);
                     break;
                 case MessageID.BegForInfoForwarded:
                     BegForInfoForwardedPayload payloadBeg = (BegForInfoForwardedPayload)message.Payload;
@@ -394,8 +353,8 @@ namespace Player.Models
                     if (payloadMove.MadeMove)
                     {
                         Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
-
-                        Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece.Value;
+                        Board[Position.y, Position.x].DistToPiece = HasPiece ? int.MaxValue :
+                            payloadMove.ClosestPiece.Value;
                         NotMadeMoveInRow = 0;
                     }
                     else
@@ -434,7 +393,8 @@ namespace Player.Models
                         for (int j = 0; j < BoardSize.x; ++j)
                         {
                             int row = i / BoardSize.x;
-                            if (payloadGive.Distances[i + j] != int.MaxValue)
+                            if (payloadGive.Distances[i + j] != int.MaxValue
+                                && IsFarDistance(row, j))
                             {
                                 Board[row, j].DistToPiece = payloadGive.Distances[i + j];
                             }
@@ -481,6 +441,71 @@ namespace Player.Models
             }
 
             return message.MessageID;
+        }
+
+        private void AssignDataFromStartGame(StartGamePayload p)
+        {
+            id = p.AgentID;
+            IsLeader = id == p.LeaderID;
+            LeaderId = p.LeaderID;
+            Team = p.TeamID;
+
+            TeamMatesIds = p.AlliesIDs;
+            NormalizedID = NormalizeId(p.AgentID, p.AlliesIDs);
+            EnemiesIds = p.EnemiesIDs;
+
+            BoardSize = (p.BoardSize.Y, p.BoardSize.X);
+            Board = new Field[p.BoardSize.Y, p.BoardSize.X];
+            for (int i = 0; i < p.BoardSize.Y; i++)
+            {
+                for (int j = 0; j < p.BoardSize.X; j++)
+                {
+                    Board[i, j] = new Field
+                    {
+                        DistToPiece = int.MaxValue,
+                        GoalInfo = GoalInfo.IDK,
+                    };
+                }
+            }
+            PenaltiesTimes = p.Penalties;
+            Position = (p.Position.Y, p.Position.X);
+
+            GoalAreaSize = p.GoalAreaSize;
+            if (this.Team == Team.Blue)
+            {
+                this.GoalAreaRange = (0, GoalAreaSize);
+                this.GoalAreaDirection = Direction.S;
+            }
+            else
+            {
+                this.GoalAreaRange = (BoardSize.y - GoalAreaSize, BoardSize.y);
+                this.GoalAreaDirection = Direction.N;
+            }
+
+            NumberOfPlayers = p.NumberOfPlayers;
+            NumberOfPieces = p.NumberOfPieces;
+            NumberOfGoals = p.NumberOfGoals;
+            ShamPieceProbability = p.ShamPieceProbability;
+            WaitingPlayers = new LinkedList<int>();
+        }
+
+        public static int NormalizeId(int agentId, int[] alliesIds)
+        {
+            int newId = 0;
+            for (int i = 0; i < alliesIds.Length; ++i)
+            {
+                if (alliesIds[i] > agentId)
+                {
+                    ++newId;
+                }
+            }
+
+            return newId;
+        }
+
+        private bool IsFarDistance(int row, int col)
+        {
+            return Math.Abs(row - Position.y) > 1 || Math.Abs(col - Position.x) > 1;
         }
 
         public async Task DestroyPiece(CancellationToken cancellationToken)

@@ -11,13 +11,13 @@ namespace IntegrationTests.GameTests
             Conf = new GameConfiguration
             {
                 CsIP = "127.0.0.1",
-                CsPort = 5004,
-                MovePenalty = 200,
+                CsPort = 6004,
+                MovePenalty = 300,
                 AskPenalty = 10000,
                 PutPenalty = 400,
                 CheckForShamPenalty = 500,
-                DestroyPenalty = 100,
-                PickupPenalty = 100,
+                DestroyPenalty = 250,
+                PickupPenalty = 250,
                 DiscoveryPenalty = 1500,
                 ResponsePenalty = 5000,
                 PrematureRequestPenalty = 1000,
@@ -25,7 +25,7 @@ namespace IntegrationTests.GameTests
                 Width = 3,
                 GoalAreaHeight = 3,
                 NumberOfGoals = 6,
-                NumberOfPiecesOnBoard = 5,
+                NumberOfPiecesOnBoard = 4,
                 NumberOfPlayersPerTeam = 6,
                 ShamPieceProbability = 0.4f,
             };

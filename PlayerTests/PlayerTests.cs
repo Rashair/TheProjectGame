@@ -21,7 +21,7 @@ namespace Player.Tests
         private readonly ILogger logger = MockGenerator.Get<ILogger>();
         private readonly int agentID = 1;
         private Message lastSended;
-        private readonly BoardSize playerBoardSize = new BoardSize { X = 3, Y = 3 };
+        private readonly BoardSize playerBoardSize = new BoardSize { X = 4, Y = 4 };
 
         private ISocketClient<Message, Message> GenerateSocketClient()
         {
@@ -478,9 +478,10 @@ namespace Player.Tests
 
             int randomDistance1 = 7;
             int randomDistance2 = 0;
-            Position randomPosition1 = new Position { X = 1, Y = 1 };
-            Position randomPosition2 = new Position { X = 2, Y = 2 };
-            Position randomPosition3 = new Position { X = 2, Y = 1 };
+            (int y, int x) = player.Position;
+            Position randomPosition1 = new Position { X = x + 1, Y = y + 2 };
+            Position randomPosition2 = new Position { X = x + 2, Y = y + 2 };
+            Position randomPosition3 = new Position { X = x + 2, Y = y + 1 };
 
             int[] distBoard = new int[playerBoardSize.Y * playerBoardSize.X];
             GoalInfo[] infoBoard = new GoalInfo[playerBoardSize.Y * playerBoardSize.X];
