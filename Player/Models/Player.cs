@@ -92,6 +92,8 @@ namespace Player.Models
 
         public bool IsCommunicationMaster { get; set; }
 
+        public bool IsCommunicatinonWorthy { get; set; }
+
         internal async Task Start(CancellationToken cancellationToken)
         {
             isWorking = true;
@@ -134,6 +136,27 @@ namespace Player.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
+            if (IsCommunicatinonWorthy)
+            {
+                if (IsCommunicationMaster)
+                {
+                    for (int i = 0; i < TeamMatesIds.Length; ++i)
+                    {
+                        if (TeamMatesIds[i] != id)
+                        {
+                            await BegForInfo(cancellationToken, i);
+                            await AcceptMessage(cancellationToken);
+                            await Penalty(cancellationToken);
+                        }
+                    }
+                }
+                else if (!IsLeader)
+                {
+                    await BegForInfo(cancellationToken, CommunicationMasterId);
+                    await AcceptMessage(cancellationToken);
+                    await Penalty(cancellationToken);
+                }
+            }
             while (isWorking && !cancellationToken.IsCancellationRequested)
             {
                 await MakeDecisionFromStrategy(cancellationToken);
@@ -175,7 +198,7 @@ namespace Player.Models
             await Communicate(message, cancellationToken);
         }
 
-        public async Task BegForInfo(CancellationToken cancellationToken)
+        public async Task BegForInfo(CancellationToken cancellationToken, int index = -1)
         {
             Message message = new Message()
             {
@@ -183,13 +206,15 @@ namespace Player.Models
                 AgentID = id,
             };
 
-            Random rnd = new Random();
-            int index = rnd.Next(0, TeamMatesIds.Length);
-            if (TeamMatesIds[index] == id)
+            if (index == -1)
             {
-                index = (index + 1) % TeamMatesIds.Length;
+                Random rnd = new Random();
+                index = rnd.Next(0, TeamMatesIds.Length);
+                if (TeamMatesIds[index] == id)
+                {
+                    index = (index + 1) % TeamMatesIds.Length;
+                }
             }
-
             BegForInfoPayload payload = new BegForInfoPayload()
             {
                 AskedAgentID = TeamMatesIds[index],
@@ -493,14 +518,20 @@ namespace Player.Models
             ShamPieceProbability = p.ShamPieceProbability;
             WaitingPlayers = new LinkedList<int>();
 
-            List<int> teammates = TeamMatesIds.ToList<int>();
-            teammates.Remove(LeaderId);
-            if (!IsLeader)
-                teammates.Add(id);
-            teammates.Sort();
-            CommunicationMasterId = teammates[0];
-            IsCommunicationMaster = id == CommunicationMasterId;
-            logger.Warning("Is Commucication master? " + IsCommunicationMaster);
+            int pomResult = ((BoardSize.y + BoardSize.x) * PenaltiesTimes.Move) + PenaltiesTimes.Pickup + PenaltiesTimes.PutPiece;
+            if (((BoardSize.x * GoalAreaSize) / NumberOfPlayersPerTeam) * pomResult < (NumberOfPlayersPerTeam * GoalAreaSize * pomResult)
+                && pomResult < (NumberOfPlayersPerTeam * PenaltiesTimes.Response))
+            {
+                IsCommunicatinonWorthy = true;
+
+                List<int> teammates = TeamMatesIds.ToList<int>();
+                teammates.Remove(LeaderId);
+                if (!IsLeader)
+                    teammates.Add(id);
+                teammates.Sort();
+                CommunicationMasterId = teammates[0];
+                IsCommunicationMaster = id == CommunicationMasterId;
+            }
         }
 
         public static int NormalizeId(int agentId, int[] alliesIds)
