@@ -536,12 +536,12 @@ namespace Player.Models
             WaitingPlayers = new LinkedList<int>();
 
             int pomResult = ((BoardSize.y + BoardSize.x) * PenaltiesTimes.Move) + PenaltiesTimes.Pickup + PenaltiesTimes.PutPiece;
-            if (((BoardSize.x * GoalAreaSize) / NumberOfPlayersPerTeam) * pomResult < (NumberOfPlayersPerTeam * GoalAreaSize * pomResult)
-                && pomResult < (NumberOfPlayersPerTeam * PenaltiesTimes.Response) && !(2 * NumberOfPlayersPerTeam < BoardSize.x))
+            if (((BoardSize.x * GoalAreaSize) / NumberOfPlayers.Allies) * pomResult < (NumberOfPlayers.Allies * GoalAreaSize * pomResult)
+                && pomResult < (NumberOfPlayers.Allies * PenaltiesTimes.Response) && !(2 * NumberOfPlayers.Allies < BoardSize.x))
             {
                 IsCommunicatinonWorthy = true;
 
-                MaxGoalAreaChanges = NumberOfPlayersPerTeam > BoardSize.x ? BoardSize.x : NumberOfPlayersPerTeam;
+                MaxGoalAreaChanges = NumberOfPlayers.Allies > BoardSize.x ? BoardSize.x : NumberOfPlayers.Allies;
 
                 List<int> teammates = TeamMatesIds.ToList<int>();
                 teammates.Remove(LeaderId);
