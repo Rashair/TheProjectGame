@@ -453,6 +453,7 @@ namespace Player.Models
                             }
                         }
                     }
+                    GoalAreaState = GoalAreaActionsEnum.ExchangedInfo;
                     ++GoalAreaChangesCount;
                     IdToAsk = payloadGive.RespondingID;
                     break;
