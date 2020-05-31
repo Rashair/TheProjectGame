@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -86,6 +87,10 @@ namespace Player.Models
         public int NormalizedID { get; set; }
 
         public int NumberOfPlayersPerTeam { get; set; }
+
+        public int CommunicationMasterId { get; set; }
+
+        public bool IsCommunicationMaster { get; set; }
 
         internal async Task Start(CancellationToken cancellationToken)
         {
@@ -487,6 +492,15 @@ namespace Player.Models
             NumberOfGoals = p.NumberOfGoals;
             ShamPieceProbability = p.ShamPieceProbability;
             WaitingPlayers = new LinkedList<int>();
+
+            List<int> teammates = TeamMatesIds.ToList<int>();
+            teammates.Remove(LeaderId);
+            if (!IsLeader)
+                teammates.Add(id);
+            teammates.Sort();
+            CommunicationMasterId = teammates[0];
+            IsCommunicationMaster = id == CommunicationMasterId;
+            logger.Warning("Is Commucication master? " + IsCommunicationMaster);
         }
 
         public static int NormalizeId(int agentId, int[] alliesIds)
