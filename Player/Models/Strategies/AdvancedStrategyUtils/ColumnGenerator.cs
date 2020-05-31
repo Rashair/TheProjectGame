@@ -37,10 +37,6 @@
             {
                 result = shifted % width;
             }
-            else if (isInitialIdPrime)
-            {
-                result = GetFirstNotCheckedNotPrime();
-            }
             else
             {
                 if (initialID % 2 == 0)
