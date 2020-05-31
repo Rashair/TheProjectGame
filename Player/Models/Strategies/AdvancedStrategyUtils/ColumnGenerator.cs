@@ -6,7 +6,6 @@
         private readonly int width;
         private readonly int numberOfPlayers;
         private readonly bool isInitialIdPrime;
-        private readonly bool isWidthNotDivisibleByInitialId;
         private readonly (bool isChecked, bool isPrime)[] checkedColumns;
 
         /// <summary>
@@ -18,7 +17,6 @@
             this.width = width;
             this.numberOfPlayers = numberOfPlayers;
             this.isInitialIdPrime = IsPrime(this.initialID);
-            this.isWidthNotDivisibleByInitialId = width % this.initialID != 0;
 
             this.checkedColumns = new (bool, bool)[width];
             for (int i = 2; i < width; ++i)
@@ -35,7 +33,7 @@
             {
                 result = (initialID + colNum) % width;
             }
-            else if (shifted <= width || (isInitialIdPrime && isWidthNotDivisibleByInitialId))
+            else if (shifted <= width || isInitialIdPrime)
             {
                 result = shifted % width;
             }
@@ -47,7 +45,9 @@
             {
                 if (initialID % 2 == 0)
                 {
-                    result = GetFirstPrimeColumnIfNotTaken(width + initialID - numberOfPlayers - colNum);
+                    // colNum > 1 here
+                    // initialID <= numberOfPlayers
+                    result = GetFirstPrimeColumnIfNotTaken(width + initialID - numberOfPlayers - colNum + 1);
                 }
                 else
                 {
