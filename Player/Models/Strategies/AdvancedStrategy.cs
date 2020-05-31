@@ -59,6 +59,9 @@ namespace Player.Models.Strategies
         private double taskAreaToGoalField;
         private double taskAreaToPiece;
         private double goalFieldToPiece;
+        private double taskAreaToGoalFieldCost;
+        private double taskAreaToPieceCost;
+        private double goalFieldToPieceCost;
 
         // Changing
         private CancellationToken cancellationToken;
@@ -115,7 +118,15 @@ namespace Player.Models.Strategies
             if (!estimationsInitialized)
             {
                 EstimateDistances();
+                GetEstimatedCosts();
             }
+        }
+
+        private void GetEstimatedCosts()
+        {
+            taskAreaToGoalFieldCost = (taskAreaToGoalField * player.PenaltiesTimes.Move) + player.PenaltiesTimes.PutPiece;
+            taskAreaToPieceCost = (taskAreaToPiece * player.PenaltiesTimes.Move) + player.PenaltiesTimes.Pickup;
+            goalFieldToPieceCost = (goalFieldToPieceCost * player.PenaltiesTimes.Move) + player.PenaltiesTimes.Pickup;
         }
 
         private void EstimateDistances()
@@ -473,7 +484,9 @@ namespace Player.Models.Strategies
 
         private Task HasPiece()
         {
-            if (player.IsHeldPieceSham == null)
+            bool shouldCheck = player.PenaltiesTimes.CheckForSham <= player.ShamPieceProbability * (goalFieldToPieceCost + taskAreaToGoalFieldCost - taskAreaToPieceCost);
+
+            if (player.IsHeldPieceSham == null && shouldCheck)
             {
                 lastAction = LastAction.Check;
                 return player.CheckPiece(cancellationToken);
