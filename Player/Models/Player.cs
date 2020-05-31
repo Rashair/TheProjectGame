@@ -94,6 +94,14 @@ namespace Player.Models
 
         public bool IsCommunicatinonWorthy { get; set; }
 
+        public int GoalAreaChangesCount { get; set; }
+
+        public int MaxGoalAreaChanges { get; set; }
+
+        public GoalAreaActionsEnum GoalAreaState { get; set; }
+
+        public int IdToAsk = -1;
+
         internal async Task Start(CancellationToken cancellationToken)
         {
             isWorking = true;
@@ -138,28 +146,33 @@ namespace Player.Models
         {
             if (IsCommunicatinonWorthy)
             {
-                if (IsCommunicationMaster)
-                {
-                    for (int i = 0; i < TeamMatesIds.Length; ++i)
-                    {
-                        if (TeamMatesIds[i] != id)
-                        {
-                            await BegForInfo(cancellationToken, i);
-                            await AcceptMessage(cancellationToken);
-                            await Penalty(cancellationToken);
-                        }
-                    }
-                }
-                else if (!IsLeader)
-                {
-                    await BegForInfo(cancellationToken, CommunicationMasterId);
-                    await AcceptMessage(cancellationToken);
-                    await Penalty(cancellationToken);
-                }
+                await AskAll(cancellationToken);
             }
             while (isWorking && !cancellationToken.IsCancellationRequested)
             {
                 await MakeDecisionFromStrategy(cancellationToken);
+                await AcceptMessage(cancellationToken);
+                await Penalty(cancellationToken);
+            }
+        }
+
+        private async Task AskAll(CancellationToken cancellationToken)
+        {
+            if (IsCommunicationMaster)
+            {
+                for (int i = 0; i < TeamMatesIds.Length; ++i)
+                {
+                    if (TeamMatesIds[i] != id)
+                    {
+                        await BegForInfo(cancellationToken, i);
+                        await AcceptMessage(cancellationToken);
+                        await Penalty(cancellationToken);
+                    }
+                }
+            }
+            else if (!IsLeader)
+            {
+                await BegForInfo(cancellationToken, CommunicationMasterId);
                 await AcceptMessage(cancellationToken);
                 await Penalty(cancellationToken);
             }
@@ -407,10 +420,12 @@ namespace Player.Models
                     {
                         Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredGoal;
                         logger.Information($"GOT GOAL at ({Position.y}, {Position.x}) !!!");
+                        GoalAreaState = GoalAreaActionsEnum.GoalAreaChanged;
                     }
                     else if (payload.PutEvent == PutEvent.NormalOnNonGoalField)
                     {
                         Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredNotGoal;
+                        GoalAreaState = GoalAreaActionsEnum.GoalAreaChanged;
                     }
 
                     penaltyTime = PenaltiesTimes.PutPiece;
@@ -438,6 +453,8 @@ namespace Player.Models
                             }
                         }
                     }
+                    ++GoalAreaChangesCount;
+                    IdToAsk = payloadGive.RespondingID;
                     break;
                 case MessageID.InformationExchangeResponse:
                     penaltyTime = PenaltiesTimes.Response;
@@ -520,9 +537,11 @@ namespace Player.Models
 
             int pomResult = ((BoardSize.y + BoardSize.x) * PenaltiesTimes.Move) + PenaltiesTimes.Pickup + PenaltiesTimes.PutPiece;
             if (((BoardSize.x * GoalAreaSize) / NumberOfPlayersPerTeam) * pomResult < (NumberOfPlayersPerTeam * GoalAreaSize * pomResult)
-                && pomResult < (NumberOfPlayersPerTeam * PenaltiesTimes.Response))
+                && pomResult < (NumberOfPlayersPerTeam * PenaltiesTimes.Response) && !(2 * NumberOfPlayersPerTeam < BoardSize.x))
             {
                 IsCommunicatinonWorthy = true;
+
+                MaxGoalAreaChanges = NumberOfPlayersPerTeam > BoardSize.x ? BoardSize.x : NumberOfPlayersPerTeam;
 
                 List<int> teammates = TeamMatesIds.ToList<int>();
                 teammates.Remove(LeaderId);
