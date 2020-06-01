@@ -55,6 +55,14 @@ namespace Player.Models.Strategies
         private (int y1, int y2) goalAreaRange;
         private Penalties penalties;
 
+        // Estimated values
+        private double taskAreaToGoalField;
+        private double taskAreaToPiece;
+        private double goalFieldToPiece;
+        private double taskAreaToGoalFieldCost;
+        private double taskAreaToPieceCost;
+        private double goalFieldToPieceCost;
+
         // Changing
         private CancellationToken cancellationToken;
         private int y;
@@ -64,6 +72,7 @@ namespace Player.Models.Strategies
         private bool isInGoalArea;
         private bool isNotStuckOnPreviousPosition;
         private bool isReallyStuck;
+        private bool estimationsInitialized;
 
         private void CacheCurrentState(CancellationToken token)
         {
@@ -106,6 +115,77 @@ namespace Player.Models.Strategies
             {
                 GetNewColumn();
             }
+
+            if (!estimationsInitialized)
+            {
+                EstimateDistances();
+                GetEstimatedCosts();
+
+                estimationsInitialized = true;
+            }
+        }
+
+        private void GetEstimatedCosts()
+        {
+            taskAreaToGoalFieldCost = (taskAreaToGoalField * player.PenaltiesTimes.Move) + player.PenaltiesTimes.PutPiece;
+            taskAreaToPieceCost = (taskAreaToPiece * player.PenaltiesTimes.Move) + player.PenaltiesTimes.Pickup;
+            goalFieldToPieceCost = (goalFieldToPiece * player.PenaltiesTimes.Move) + player.PenaltiesTimes.Pickup;
+        }
+
+        private void EstimateDistances()
+        {
+            (int xFrom, int xTo, int yFrom, int yTo) taskAreaSize = (
+                0, 
+                player.BoardSize.x - 1, 
+                player.GoalAreaSize, 
+                player.BoardSize.y - player.GoalAreaSize - 1);
+
+            (int xFrom, int xTo, int yFrom, int yTo) goalAreaSize = (
+                0,
+                player.BoardSize.x - 1, 
+                0,
+                player.GoalAreaSize - 1);
+
+            TaskAreaToGoalFieldDistance(taskAreaSize, goalAreaSize);
+            TaskAreaToPieceDistance(taskAreaSize);
+            GoalFieldToPieceDistance(taskAreaSize, goalAreaSize);
+        }
+
+        private void TaskAreaToGoalFieldDistance((int xFrom, int xTo, int yFrom, int yTo) taskAreaSize, (int xFrom, int xTo, int yFrom, int yTo) goalAreaSize)
+        {
+            double sum = 0;
+            for (int x1 = taskAreaSize.xFrom; x1 <= taskAreaSize.xTo; x1++)
+            {
+                for (int y1 = taskAreaSize.yFrom; y1 <= taskAreaSize.yTo; y1++)
+                {
+                    (int x, int y) taskAreaPoint = (x1, y1);
+
+                    for (int x2 = goalAreaSize.xFrom; x2 <= goalAreaSize.xTo; x2++)
+                    {
+                        for (int y2 = goalAreaSize.yFrom; y2 <= goalAreaSize.yTo; y2++)
+                        {
+                            (int x, int y) goalAreaPoint = (x2, y2);
+
+                            sum += PlayerDistance(taskAreaPoint, goalAreaPoint);
+                        }
+                    }
+                }
+            }
+
+            int taskAreaFields = (taskAreaSize.yTo - taskAreaSize.yFrom + 1) * (taskAreaSize.xTo - taskAreaSize.xFrom + 1);
+            int goalAreaFields = (goalAreaSize.yTo - goalAreaSize.yFrom + 1) * (goalAreaSize.xTo - goalAreaSize.xFrom + 1);
+
+            taskAreaToGoalField = sum / (taskAreaFields * goalAreaFields);
+        }
+
+        private void TaskAreaToPieceDistance((int xFrom, int xTo, int yFrom, int yTo) taskAreaSize)
+        {
+            taskAreaToPiece = PlayerDistance((taskAreaSize.xFrom, taskAreaSize.yFrom), (taskAreaSize.xTo, taskAreaSize.yTo)) / 2.0;
+        }
+
+        private void GoalFieldToPieceDistance((int xFrom, int xTo, int yFrom, int yTo) taskAreaSize, (int xFrom, int xTo, int yFrom, int yTo) goalAreaSize)
+        {
+            goalFieldToPiece = PlayerDistance((goalAreaSize.xFrom, goalAreaSize.yFrom), (taskAreaSize.xTo, taskAreaSize.yTo)) / 2.0;
         }
 
         private void GetNewColumn()
@@ -359,7 +439,9 @@ namespace Player.Models.Strategies
 
         private Task HasPiece()
         {
-            if (player.IsHeldPieceSham == null)
+            bool shouldCheck = player.PenaltiesTimes.CheckForSham <= player.ShamPieceProbability * (goalFieldToPieceCost + taskAreaToGoalFieldCost - taskAreaToPieceCost);
+
+            if (player.IsHeldPieceSham == null && shouldCheck)
             {
                 lastAction = LastAction.Check;
                 return player.CheckPiece(cancellationToken);
@@ -477,6 +559,11 @@ namespace Player.Models.Strategies
 
         //// Utilites
         //// -------------------------------------------------------------------------------------------
+        
+        private int PlayerDistance((int x, int y) p1, (int x, int y) p2)
+        {
+            return Math.Max(Math.Abs(p2.x - p1.x), Math.Abs(p2.y - p1.y));
+        }
 
         private List<Direction> GetDirectionsInRange(int y1, int y2)
         {
