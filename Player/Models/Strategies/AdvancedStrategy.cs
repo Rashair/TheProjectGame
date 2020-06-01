@@ -559,17 +559,6 @@ namespace Player.Models.Strategies
 
         //// Utilites
         //// -------------------------------------------------------------------------------------------
-
-        private double BinomialCoefficent(int n, int k)
-        {
-            decimal result = 1;
-            for (int i = 1; i <= k; i++)
-            {
-                result *= n - (k - i);
-                result /= i;
-            }
-            return (double)result;
-        }
         
         private int PlayerDistance((int x, int y) p1, (int x, int y) p2)
         {
