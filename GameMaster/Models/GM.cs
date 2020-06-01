@@ -310,8 +310,13 @@ namespace GameMaster.Models
                 return;
             }
 
-            int agentID = message.AgentID.Value;
-            players.TryGetValue(agentID, out GMPlayer player);
+            GMPlayer player = null;
+            int agentID = 0;
+            if (message.AgentID.HasValue)
+            {
+                agentID = message.AgentID.Value;
+                players.TryGetValue(agentID, out player);
+            }
             switch (message.MessageID)
             {
                 case MessageID.CheckPiece:

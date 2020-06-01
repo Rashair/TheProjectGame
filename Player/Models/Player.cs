@@ -480,6 +480,9 @@ namespace Player.Models
                 case MessageID.PutError:
                     penaltyTime = PenaltiesTimes.PutPiece;
                     break;
+                case MessageID.InvalidMoveError:
+                    penaltyTime = PenaltiesTimes.Move;
+                    break;
                 case MessageID.UnknownError:
                     UnknownErrorPayload unknownErrorPayload = (UnknownErrorPayload)message.Payload;
                     if (unknownErrorPayload.HoldingPiece != null)
