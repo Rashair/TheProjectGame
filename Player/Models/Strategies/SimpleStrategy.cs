@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Serilog;
 using Shared.Enums;
 
 namespace Player.Models.Strategies
@@ -10,13 +11,15 @@ namespace Player.Models.Strategies
     public class SimpleStrategy : IStrategy
     {
         private readonly Random random;
+        private readonly ILogger logger;
         private readonly Player player;
 
-        public SimpleStrategy(Player player)
+        public SimpleStrategy(Player player, ILogger log)
         {
             this.player = player;
             this.random = new Random();
-        } 
+            this.logger = log.ForContext<SimpleStrategy>();
+        }
 
         public async Task MakeDecision(CancellationToken cancellationToken)
         {

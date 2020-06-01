@@ -17,8 +17,6 @@ using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
 
-using static System.Environment;
-
 namespace Player
 {
     public class Startup
@@ -42,7 +40,8 @@ namespace Player
             int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
             string teamId = team.ToString().Substring(0, 3);
             string fileName = $"{teamId}-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
-            string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
+                folderName, fileName);
             var logConfig = new LoggerConfiguration()
                .Enrich.FromLogContext()
                .WriteTo.File(

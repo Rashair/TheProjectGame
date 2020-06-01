@@ -157,7 +157,7 @@ namespace GameMaster.Models
                 return (false, "NumberOfPiecesOnBoard must be in range (0, (Height - (GoalAreaHeight * 2)) * Width]");
             }
 
-            if (ShamPieceProbability <= 0 || ShamPieceProbability >= 1)
+            if (ShamPieceProbability < 0 || ShamPieceProbability >= 1)
             {
                 return (false, "ShamPieceProbability must be in range (0, 1)");
             }
@@ -175,7 +175,7 @@ namespace GameMaster.Models
             };
             foreach (int penalty in penalties)
             {
-                if (penalty <= 0)
+                if (penalty < 0)
                 {
                     return (false, "Every penalty must be greater than 0");
                 }

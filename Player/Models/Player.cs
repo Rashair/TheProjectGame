@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -35,7 +36,7 @@ namespace Player.Models
             Message> client, ILogger log)
         {
             this.conf = conf;
-            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy, this);
+            this.strategy = StrategyFactory.Create((StrategyEnum)conf.Strategy, this, log);
             this.queue = queue;
             this.client = client;
             this.logger = log.ForContext<Player>();
@@ -83,6 +84,24 @@ namespace Player.Models
 
         public Direction GoalAreaDirection { get; set; }
 
+        public int NormalizedID { get; set; }
+
+        public int NumberOfPlayersPerTeam { get; set; }
+
+        public int CommunicationMasterId { get; set; }
+
+        public bool IsCommunicationMaster { get; set; }
+
+        public bool IsCommunicatinonWorthy { get; set; }
+
+        public int GoalAreaChangesCount { get; set; }
+
+        public int MaxGoalAreaChanges { get; set; }
+
+        public GoalAreaActionsEnum GoalAreaState { get; set; }
+
+        public int IdToAsk = -1;
+
         internal async Task Start(CancellationToken cancellationToken)
         {
             isWorking = true;
@@ -125,9 +144,35 @@ namespace Player.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
+            if (IsCommunicatinonWorthy)
+            {
+                await AskAll(cancellationToken);
+            }
             while (isWorking && !cancellationToken.IsCancellationRequested)
             {
                 await MakeDecisionFromStrategy(cancellationToken);
+                await AcceptMessage(cancellationToken);
+                await Penalty(cancellationToken);
+            }
+        }
+
+        private async Task AskAll(CancellationToken cancellationToken)
+        {
+            if (IsCommunicationMaster)
+            {
+                for (int i = 0; i < TeamMatesIds.Length; ++i)
+                {
+                    if (TeamMatesIds[i] != id)
+                    {
+                        await BegForInfo(cancellationToken, TeamMatesIds[i]);
+                        await AcceptMessage(cancellationToken);
+                        await Penalty(cancellationToken);
+                    }
+                }
+            }
+            else if (!IsLeader)
+            {
+                await BegForInfo(cancellationToken, CommunicationMasterId);
                 await AcceptMessage(cancellationToken);
                 await Penalty(cancellationToken);
             }
@@ -166,7 +211,7 @@ namespace Player.Models
             await Communicate(message, cancellationToken);
         }
 
-        public async Task BegForInfo(CancellationToken cancellationToken)
+        public async Task BegForInfo(CancellationToken cancellationToken, int index = -1)
         {
             Message message = new Message()
             {
@@ -174,17 +219,22 @@ namespace Player.Models
                 AgentID = id,
             };
 
-            Random rnd = new Random();
-            int index = rnd.Next(0, TeamMatesIds.Length - 1);
-            if (TeamMatesIds[index] == id)
+            BegForInfoPayload payload = new BegForInfoPayload();
+            if (index == -1)
             {
-                index = (index + 1) % TeamMatesIds.Length;
-            }
+                Random rnd = new Random();
+                index = rnd.Next(0, TeamMatesIds.Length);
+                if (TeamMatesIds[index] == id)
+                {
+                    index = (index + 1) % TeamMatesIds.Length;
+                }
 
-            BegForInfoPayload payload = new BegForInfoPayload()
+                payload.AskedAgentID = TeamMatesIds[index];
+            }
+            else
             {
-                AskedAgentID = TeamMatesIds[index],
-            };
+                payload.AskedAgentID = index;
+            }
 
             message.Payload = payload;
 
@@ -327,52 +377,7 @@ namespace Player.Models
                     break;
                 case MessageID.StartGame:
                     StartGamePayload payloadStart = (StartGamePayload)message.Payload;
-                    id = payloadStart.AgentID;
-                    TeamMatesIds = payloadStart.AlliesIDs;
-                    if (id == payloadStart.LeaderID)
-                    {
-                        IsLeader = true;
-                    }
-                    else
-                    {
-                        IsLeader = false;
-                    }
-                    LeaderId = payloadStart.LeaderID;
-                    Team = payloadStart.TeamID;
-                    BoardSize = (payloadStart.BoardSize.Y, payloadStart.BoardSize.X);
-                    Board = new Field[payloadStart.BoardSize.Y, payloadStart.BoardSize.X];
-                    for (int i = 0; i < payloadStart.BoardSize.Y; i++)
-                    {
-                        for (int j = 0; j < payloadStart.BoardSize.X; j++)
-                        {
-                            Board[i, j] = new Field
-                            {
-                                DistToPiece = int.MaxValue,
-                                GoalInfo = GoalInfo.IDK,
-                            };
-                        }
-                    }
-                    PenaltiesTimes = payloadStart.Penalties;
-                    Position = (payloadStart.Position.Y, payloadStart.Position.X);
-                    EnemiesIds = payloadStart.EnemiesIDs;
-
-                    GoalAreaSize = payloadStart.GoalAreaSize;
-                    if (this.Team == Team.Blue)
-                    {
-                        this.GoalAreaRange = (0, GoalAreaSize);
-                        this.GoalAreaDirection = Direction.S;
-                    }
-                    else
-                    {
-                        this.GoalAreaRange = (BoardSize.y - GoalAreaSize, BoardSize.y);
-                        this.GoalAreaDirection = Direction.N;
-                    }
-
-                    NumberOfPlayers = payloadStart.NumberOfPlayers;
-                    NumberOfPieces = payloadStart.NumberOfPieces;
-                    NumberOfGoals = payloadStart.NumberOfGoals;
-                    ShamPieceProbability = payloadStart.ShamPieceProbability;
-                    WaitingPlayers = new LinkedList<int>();
+                    AssignDataFromStartGame(payloadStart);
                     break;
                 case MessageID.BegForInfoForwarded:
                     BegForInfoForwardedPayload payloadBeg = (BegForInfoForwardedPayload)message.Payload;
@@ -394,8 +399,8 @@ namespace Player.Models
                     if (payloadMove.MadeMove)
                     {
                         Position = (payloadMove.CurrentPosition.Y, payloadMove.CurrentPosition.X);
-
-                        Board[Position.y, Position.x].DistToPiece = payloadMove.ClosestPiece.Value;
+                        Board[Position.y, Position.x].DistToPiece = HasPiece ? int.MaxValue :
+                            payloadMove.ClosestPiece.Value;
                         NotMadeMoveInRow = 0;
                     }
                     else
@@ -418,10 +423,12 @@ namespace Player.Models
                     {
                         Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredGoal;
                         logger.Information($"GOT GOAL at ({Position.y}, {Position.x}) !!!");
+                        GoalAreaState = GoalAreaActionsEnum.GoalAreaChanged;
                     }
                     else if (payload.PutEvent == PutEvent.NormalOnNonGoalField)
                     {
                         Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredNotGoal;
+                        GoalAreaState = GoalAreaActionsEnum.GoalAreaChanged;
                     }
 
                     penaltyTime = PenaltiesTimes.PutPiece;
@@ -434,7 +441,8 @@ namespace Player.Models
                         for (int j = 0; j < BoardSize.x; ++j)
                         {
                             int row = i / BoardSize.x;
-                            if (payloadGive.Distances[i + j] != int.MaxValue)
+                            if (payloadGive.Distances[i + j] != int.MaxValue
+                                && IsFarDistance(row, j))
                             {
                                 Board[row, j].DistToPiece = payloadGive.Distances[i + j];
                             }
@@ -448,6 +456,9 @@ namespace Player.Models
                             }
                         }
                     }
+                    GoalAreaState = GoalAreaActionsEnum.ExchangedInfo;
+                    ++GoalAreaChangesCount;
+                    IdToAsk = payloadGive.RespondingID;
                     break;
                 case MessageID.InformationExchangeResponse:
                     penaltyTime = PenaltiesTimes.Response;
@@ -481,6 +492,87 @@ namespace Player.Models
             }
 
             return message.MessageID;
+        }
+
+        private void AssignDataFromStartGame(StartGamePayload p)
+        {
+            id = p.AgentID;
+            IsLeader = id == p.LeaderID;
+            LeaderId = p.LeaderID;
+            Team = p.TeamID;
+
+            TeamMatesIds = p.AlliesIDs;
+            NormalizedID = NormalizeId(p.AgentID, p.AlliesIDs);
+            EnemiesIds = p.EnemiesIDs;
+
+            BoardSize = (p.BoardSize.Y, p.BoardSize.X);
+            Board = new Field[p.BoardSize.Y, p.BoardSize.X];
+            for (int i = 0; i < p.BoardSize.Y; i++)
+            {
+                for (int j = 0; j < p.BoardSize.X; j++)
+                {
+                    Board[i, j] = new Field
+                    {
+                        DistToPiece = int.MaxValue,
+                        GoalInfo = GoalInfo.IDK,
+                    };
+                }
+            }
+            PenaltiesTimes = p.Penalties;
+            Position = (p.Position.Y, p.Position.X);
+
+            GoalAreaSize = p.GoalAreaSize;
+            if (this.Team == Team.Blue)
+            {
+                this.GoalAreaRange = (0, GoalAreaSize);
+                this.GoalAreaDirection = Direction.S;
+            }
+            else
+            {
+                this.GoalAreaRange = (BoardSize.y - GoalAreaSize, BoardSize.y);
+                this.GoalAreaDirection = Direction.N;
+            }
+
+            NumberOfPlayers = p.NumberOfPlayers;
+            NumberOfPieces = p.NumberOfPieces;
+            NumberOfGoals = p.NumberOfGoals;
+            ShamPieceProbability = p.ShamPieceProbability;
+            WaitingPlayers = new LinkedList<int>();
+            int pomResult = ((BoardSize.y + BoardSize.x) * PenaltiesTimes.Move) + PenaltiesTimes.Pickup + PenaltiesTimes.PutPiece;
+            if (((double)(BoardSize.x * GoalAreaSize) / NumberOfPlayers.Allies) * (pomResult + PenaltiesTimes.Response + PenaltiesTimes.Ask) < (((double)BoardSize.x / NumberOfPlayers.Allies) * GoalAreaSize * pomResult)
+            && pomResult < (NumberOfPlayers.Allies * PenaltiesTimes.Response) && !(2 * NumberOfPlayers.Allies < BoardSize.x))
+            {
+                IsCommunicatinonWorthy = true;
+
+                MaxGoalAreaChanges = NumberOfPlayers.Allies > BoardSize.x ? BoardSize.x : NumberOfPlayers.Allies;
+
+                List<int> teammates = TeamMatesIds.ToList<int>();
+                teammates.Remove(LeaderId);
+                if (!IsLeader)
+                    teammates.Add(id);
+                teammates.Sort();
+                CommunicationMasterId = teammates[0];
+                IsCommunicationMaster = id == CommunicationMasterId;
+            }
+        }
+
+        public static int NormalizeId(int agentId, int[] alliesIds)
+        {
+            int newId = 0;
+            for (int i = 0; i < alliesIds.Length; ++i)
+            {
+                if (alliesIds[i] > agentId)
+                {
+                    ++newId;
+                }
+            }
+
+            return newId;
+        }
+
+        private bool IsFarDistance(int row, int col)
+        {
+            return Math.Abs(row - Position.y) > 1 || Math.Abs(col - Position.x) > 1;
         }
 
         public async Task DestroyPiece(CancellationToken cancellationToken)

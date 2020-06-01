@@ -527,7 +527,7 @@ namespace GameMaster.Tests
             // Arrange
             var conf = new MockGameConfiguration()
             {
-                PickupPenalty = 0
+                PickupPenalty = -1
             };
             var gameMaster = ValidationConfGMHelper(conf);
 
