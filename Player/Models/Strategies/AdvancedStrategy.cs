@@ -68,6 +68,7 @@ namespace Player.Models.Strategies
         private int y;
         private int x;
         private int distToPiece;
+        private List<int> askIds = new List<int>();
         private bool isInGoalArea;
         private bool isNotStuckOnPreviousPosition;
         private bool isReallyStuck;
@@ -292,6 +293,40 @@ namespace Player.Models.Strategies
             CacheCurrentState(cancellationToken);
 
             Task decision;
+            if (player.IsCommunicatinonWorthy)
+            {
+                if (player.IsCommunicationMaster)
+                {
+                    if (player.GoalAreaChangesCount == player.MaxGoalAreaChanges)
+                    {
+                        if (player.WaitingPlayers.Count == 0)
+                        {
+                            player.GoalAreaChangesCount = 0;
+                        }
+                        else
+                        {
+                            return player.GiveInfo(cancellationToken);
+                        }
+                    }
+                    else if (player.IdToAsk != -1)
+                    {
+                        var id = player.IdToAsk;
+                        player.IdToAsk = -1;
+                        return player.BegForInfo(cancellationToken, id);
+                    }
+                }
+                else if (player.GoalAreaState == GoalAreaActionsEnum.GoalAreaChanged && player.WaitingPlayers.Count > 0)
+                {
+                    player.GoalAreaState = GoalAreaActionsEnum.None;
+                    return player.GiveInfo(cancellationToken);
+                }
+                else if (player.GoalAreaState == GoalAreaActionsEnum.ExchangedInfo)
+                {
+                    player.GoalAreaState = GoalAreaActionsEnum.None;
+                    return player.BegForInfo(cancellationToken, player.CommunicationMasterId);
+                }
+            }
+
             if (isReallyStuck)
             {
                 decision = IsReallyStuck();

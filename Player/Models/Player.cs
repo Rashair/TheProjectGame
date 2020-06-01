@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -87,6 +88,20 @@ namespace Player.Models
 
         public int NumberOfPlayersPerTeam { get; set; }
 
+        public int CommunicationMasterId { get; set; }
+
+        public bool IsCommunicationMaster { get; set; }
+
+        public bool IsCommunicatinonWorthy { get; set; }
+
+        public int GoalAreaChangesCount { get; set; }
+
+        public int MaxGoalAreaChanges { get; set; }
+
+        public GoalAreaActionsEnum GoalAreaState { get; set; }
+
+        public int IdToAsk = -1;
+
         internal async Task Start(CancellationToken cancellationToken)
         {
             isWorking = true;
@@ -129,9 +144,35 @@ namespace Player.Models
 
         internal async Task Work(CancellationToken cancellationToken)
         {
+            if (IsCommunicatinonWorthy)
+            {
+                await AskAll(cancellationToken);
+            }
             while (isWorking && !cancellationToken.IsCancellationRequested)
             {
                 await MakeDecisionFromStrategy(cancellationToken);
+                await AcceptMessage(cancellationToken);
+                await Penalty(cancellationToken);
+            }
+        }
+
+        private async Task AskAll(CancellationToken cancellationToken)
+        {
+            if (IsCommunicationMaster)
+            {
+                for (int i = 0; i < TeamMatesIds.Length; ++i)
+                {
+                    if (TeamMatesIds[i] != id)
+                    {
+                        await BegForInfo(cancellationToken, TeamMatesIds[i]);
+                        await AcceptMessage(cancellationToken);
+                        await Penalty(cancellationToken);
+                    }
+                }
+            }
+            else if (!IsLeader)
+            {
+                await BegForInfo(cancellationToken, CommunicationMasterId);
                 await AcceptMessage(cancellationToken);
                 await Penalty(cancellationToken);
             }
@@ -170,7 +211,7 @@ namespace Player.Models
             await Communicate(message, cancellationToken);
         }
 
-        public async Task BegForInfo(CancellationToken cancellationToken)
+        public async Task BegForInfo(CancellationToken cancellationToken, int index = -1)
         {
             Message message = new Message()
             {
@@ -178,17 +219,22 @@ namespace Player.Models
                 AgentID = id,
             };
 
-            Random rnd = new Random();
-            int index = rnd.Next(0, TeamMatesIds.Length);
-            if (TeamMatesIds[index] == id)
+            BegForInfoPayload payload = new BegForInfoPayload();
+            if (index == -1)
             {
-                index = (index + 1) % TeamMatesIds.Length;
-            }
+                Random rnd = new Random();
+                index = rnd.Next(0, TeamMatesIds.Length);
+                if (TeamMatesIds[index] == id)
+                {
+                    index = (index + 1) % TeamMatesIds.Length;
+                }
 
-            BegForInfoPayload payload = new BegForInfoPayload()
+                payload.AskedAgentID = TeamMatesIds[index];
+            }
+            else
             {
-                AskedAgentID = TeamMatesIds[index],
-            };
+                payload.AskedAgentID = index;
+            }
 
             message.Payload = payload;
 
@@ -377,10 +423,12 @@ namespace Player.Models
                     {
                         Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredGoal;
                         logger.Information($"GOT GOAL at ({Position.y}, {Position.x}) !!!");
+                        GoalAreaState = GoalAreaActionsEnum.GoalAreaChanged;
                     }
                     else if (payload.PutEvent == PutEvent.NormalOnNonGoalField)
                     {
                         Board[Position.y, Position.x].GoalInfo = GoalInfo.DiscoveredNotGoal;
+                        GoalAreaState = GoalAreaActionsEnum.GoalAreaChanged;
                     }
 
                     penaltyTime = PenaltiesTimes.PutPiece;
@@ -408,6 +456,9 @@ namespace Player.Models
                             }
                         }
                     }
+                    GoalAreaState = GoalAreaActionsEnum.ExchangedInfo;
+                    ++GoalAreaChangesCount;
+                    IdToAsk = payloadGive.RespondingID;
                     break;
                 case MessageID.InformationExchangeResponse:
                     penaltyTime = PenaltiesTimes.Response;
@@ -487,6 +538,22 @@ namespace Player.Models
             NumberOfGoals = p.NumberOfGoals;
             ShamPieceProbability = p.ShamPieceProbability;
             WaitingPlayers = new LinkedList<int>();
+            int pomResult = ((BoardSize.y + BoardSize.x) * PenaltiesTimes.Move) + PenaltiesTimes.Pickup + PenaltiesTimes.PutPiece;
+            if (((BoardSize.x * GoalAreaSize) / NumberOfPlayers.Allies) * (pomResult + PenaltiesTimes.Response + PenaltiesTimes.Ask) < ((BoardSize.x / NumberOfPlayers.Allies) * GoalAreaSize * pomResult)
+            && pomResult < (NumberOfPlayers.Allies * PenaltiesTimes.Response) && !(2 * NumberOfPlayers.Allies < BoardSize.x))
+            {
+                IsCommunicatinonWorthy = true;
+
+                MaxGoalAreaChanges = NumberOfPlayers.Allies > BoardSize.x ? BoardSize.x : NumberOfPlayers.Allies;
+
+                List<int> teammates = TeamMatesIds.ToList<int>();
+                teammates.Remove(LeaderId);
+                if (!IsLeader)
+                    teammates.Add(id);
+                teammates.Sort();
+                CommunicationMasterId = teammates[0];
+                IsCommunicationMaster = id == CommunicationMasterId;
+            }
         }
 
         public static int NormalizeId(int agentId, int[] alliesIds)
