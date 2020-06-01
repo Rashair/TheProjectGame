@@ -129,11 +129,6 @@ namespace Player.Models.Strategies
             taskAreaToGoalFieldCost = (taskAreaToGoalField * player.PenaltiesTimes.Move) + player.PenaltiesTimes.PutPiece;
             taskAreaToPieceCost = (taskAreaToPiece * player.PenaltiesTimes.Move) + player.PenaltiesTimes.Pickup;
             goalFieldToPieceCost = (goalFieldToPiece * player.PenaltiesTimes.Move) + player.PenaltiesTimes.Pickup;
-
-            string s = "taskAreaToGoalField: " + taskAreaToGoalField + "\n";
-            s += "taskAreaToPiece: " + taskAreaToPiece + "\n";
-            s += "goalFieldToPiece: " + goalFieldToPiece + "\n";
-            logger.Information(s);
         }
 
         private void EstimateDistances()
@@ -159,9 +154,6 @@ namespace Player.Models.Strategies
                 goalAreaSize.yk = player.BoardSize.y - 1;
             }
 
-            logger.Information("goalArea: " + goalAreaSize.xp + ", " + goalAreaSize.xk + ", " + goalAreaSize.yp + ", " + goalAreaSize.yk);
-            logger.Information("taskArea: " + taskAreaSize.xp + ", " + taskAreaSize.xk + ", " + taskAreaSize.yp + ", " + taskAreaSize.yk);
-
             TaskAreaToGoalFieldDistance(taskAreaSize, goalAreaSize);
             TaskAreaToPieceDistance(taskAreaSize);
             GoalFieldToPieceDistance(taskAreaSize, goalAreaSize);
@@ -183,8 +175,6 @@ namespace Player.Models.Strategies
                             (int x, int y) goalAreaPoint = (x2, y2);
 
                             sum += PlayerDistance(taskAreaPoint, goalAreaPoint);
-
-                            logger.Information("Points: (" + x1 + ", " + y1 + "), (" + x2 + ", " + y2 + ")");
                         }
                     }
                 }
