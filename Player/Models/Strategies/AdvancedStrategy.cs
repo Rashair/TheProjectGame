@@ -134,44 +134,35 @@ namespace Player.Models.Strategies
 
         private void EstimateDistances()
         {
-            (int xp, int xk, int yp, int yk) taskAreaSize = (0, 0, 0, 0);
-            (int xp, int xk, int yp, int yk) goalAreaSize = (0, 0, 0, 0);
+            (int xFrom, int xTo, int yFrom, int yTo) taskAreaSize = (
+                0, 
+                player.BoardSize.x - 1, 
+                player.GoalAreaSize, 
+                player.BoardSize.y - player.GoalAreaSize - 1);
 
-            taskAreaSize.xp = 0;
-            taskAreaSize.xk = player.BoardSize.x - 1;
-            taskAreaSize.yp = player.GoalAreaSize;
-            taskAreaSize.yk = player.BoardSize.y - player.GoalAreaSize - 1;
-
-            goalAreaSize.xp = 0;
-            goalAreaSize.xk = player.BoardSize.x - 1;
-            if (player.Team == Team.Blue)
-            {
-                goalAreaSize.yp = 0;
-                goalAreaSize.yk = player.GoalAreaSize - 1;
-            }
-            else
-            {
-                goalAreaSize.yp = player.BoardSize.y - player.GoalAreaSize;
-                goalAreaSize.yk = player.BoardSize.y - 1;
-            }
+            (int xFrom, int xTo, int yFrom, int yTo) goalAreaSize = (
+                0,
+                player.BoardSize.x - 1, 
+                0,
+                player.GoalAreaSize - 1);
 
             TaskAreaToGoalFieldDistance(taskAreaSize, goalAreaSize);
             TaskAreaToPieceDistance(taskAreaSize);
             GoalFieldToPieceDistance(taskAreaSize, goalAreaSize);
         }
 
-        private void TaskAreaToGoalFieldDistance((int xp, int xk, int yp, int yk) taskAreaSize, (int xp, int xk, int yp, int yk) goalAreaSize)
+        private void TaskAreaToGoalFieldDistance((int xFrom, int xTo, int yFrom, int yTo) taskAreaSize, (int xFrom, int xTo, int yFrom, int yTo) goalAreaSize)
         {
             double sum = 0;
-            for (int x1 = taskAreaSize.xp; x1 <= taskAreaSize.xk; x1++)
+            for (int x1 = taskAreaSize.xFrom; x1 <= taskAreaSize.xTo; x1++)
             {
-                for (int y1 = taskAreaSize.yp; y1 <= taskAreaSize.yk; y1++)
+                for (int y1 = taskAreaSize.yFrom; y1 <= taskAreaSize.yTo; y1++)
                 {
                     (int x, int y) taskAreaPoint = (x1, y1);
 
-                    for (int x2 = goalAreaSize.xp; x2 <= goalAreaSize.xk; x2++)
+                    for (int x2 = goalAreaSize.xFrom; x2 <= goalAreaSize.xTo; x2++)
                     {
-                        for (int y2 = goalAreaSize.yp; y2 <= goalAreaSize.yk; y2++)
+                        for (int y2 = goalAreaSize.yFrom; y2 <= goalAreaSize.yTo; y2++)
                         {
                             (int x, int y) goalAreaPoint = (x2, y2);
 
@@ -181,94 +172,20 @@ namespace Player.Models.Strategies
                 }
             }
 
-            int taskAreaFields = (taskAreaSize.yk - taskAreaSize.yp + 1) * (taskAreaSize.xk - taskAreaSize.xp + 1);
-            int goalAreaFields = (goalAreaSize.yk - goalAreaSize.yp + 1) * (goalAreaSize.xk - goalAreaSize.xp + 1);
+            int taskAreaFields = (taskAreaSize.yTo - taskAreaSize.yFrom + 1) * (taskAreaSize.xTo - taskAreaSize.xFrom + 1);
+            int goalAreaFields = (goalAreaSize.yTo - goalAreaSize.yFrom + 1) * (goalAreaSize.xTo - goalAreaSize.xFrom + 1);
 
             taskAreaToGoalField = sum / (taskAreaFields * goalAreaFields);
         }
 
-        private void TaskAreaToPieceDistance((int xp, int xk, int yp, int yk) taskAreaSize)
+        private void TaskAreaToPieceDistance((int xFrom, int xTo, int yFrom, int yTo) taskAreaSize)
         {
-            double sum = 0;
-            for (int x1 = taskAreaSize.xp; x1 <= taskAreaSize.xk; x1++)
-            {
-                for (int y1 = taskAreaSize.yp; y1 <= taskAreaSize.yp; y1++)
-                {
-                    (int x, int y) taskAreaPoint = (x1, y1);
-                    int[] d = new int[Math.Max(taskAreaSize.xk - taskAreaSize.xp, taskAreaSize.yk - taskAreaSize.yp) + 1];
-
-                    int maxDistance = 0;
-                    for (int x2 = taskAreaSize.xp; x2 <= taskAreaSize.xk; x2++)
-                    {
-                        for (int y2 = taskAreaSize.yp; y2 <= taskAreaSize.yk; y2++)
-                        {
-                            (int x, int y) piecePoint = (x2, y2);
-                            int dist = PlayerDistance(taskAreaPoint, piecePoint);
-                            d[dist]++;
-                            if (dist > maxDistance) maxDistance = dist;
-                        }
-                    }
-
-                    for (int distToClosestPiece = 0; distToClosestPiece <= maxDistance; distToClosestPiece++)
-                    {
-                        int placesForFurtherPieces = 0;
-                        for (int i = distToClosestPiece + 1; i <= maxDistance; i++)
-                        {
-                            placesForFurtherPieces += d[i];
-                        }
-
-                        double possibleSetups = BinomialCoefficent(d[distToClosestPiece] + placesForFurtherPieces, player.NumberOfPieces) - BinomialCoefficent(placesForFurtherPieces, player.NumberOfPieces);
-                        sum += distToClosestPiece * possibleSetups;
-                    }
-                }
-            }
-
-            int taskAreaFields = (taskAreaSize.yk - taskAreaSize.yp + 1) * (taskAreaSize.xk - taskAreaSize.xp + 1);
-
-            taskAreaToPiece = sum / (BinomialCoefficent(taskAreaFields, player.NumberOfPieces) * taskAreaFields);
+            taskAreaToPiece = PlayerDistance((taskAreaSize.xFrom, taskAreaSize.yFrom), (taskAreaSize.xTo, taskAreaSize.yTo)) / 2.0;
         }
 
-        private void GoalFieldToPieceDistance((int xp, int xk, int yp, int yk) taskAreaSize, (int xp, int xk, int yp, int yk) goalAreaSize)
+        private void GoalFieldToPieceDistance((int xFrom, int xTo, int yFrom, int yTo) taskAreaSize, (int xFrom, int xTo, int yFrom, int yTo) goalAreaSize)
         {
-            double sum = 0;
-            for (int x1 = goalAreaSize.xp; x1 <= goalAreaSize.xk; x1++)
-            {
-                for (int y1 = goalAreaSize.yp; y1 <= goalAreaSize.yp; y1++)
-                {
-                    (int x, int y) goalAreaPoint = (x1, y1);
-                    int[] d = new int[Math.Max(taskAreaSize.xk - taskAreaSize.xp, taskAreaSize.yk - taskAreaSize.yp + goalAreaSize.yk - goalAreaSize.yp) + 1];
-
-                    int maxDistance = 0;
-                    for (int x2 = taskAreaSize.xp; x2 <= taskAreaSize.xk; x2++)
-                    {
-                        for (int y2 = taskAreaSize.yp; y2 <= taskAreaSize.yk; y2++)
-                        {
-                            (int x, int y) piecePoint = (x2, y2);
-                            int dist = PlayerDistance(goalAreaPoint, piecePoint);
-                            d[dist]++;
-                            if (dist > maxDistance) maxDistance = dist;
-                        }
-                    }
-
-                    for (int distToClosestPiece = 0; distToClosestPiece <= maxDistance; distToClosestPiece++)
-                    {
-                        int placesForFurtherPieces = 0;
-                        for (int i = distToClosestPiece + 1; i <= maxDistance; i++)
-                        {
-                            placesForFurtherPieces += d[i];
-                        }
-
-                        double possibleSetups = BinomialCoefficent(d[distToClosestPiece] + placesForFurtherPieces, player.NumberOfPieces) - BinomialCoefficent(placesForFurtherPieces, player.NumberOfPieces);
-
-                        sum += distToClosestPiece * possibleSetups;
-                    }
-                }
-            }
-
-            int taskAreaFields = (taskAreaSize.yk - taskAreaSize.yp + 1) * (taskAreaSize.xk - taskAreaSize.xp + 1);
-            int goalAreaFields = (goalAreaSize.yk - goalAreaSize.yp + 1) * (goalAreaSize.xk - goalAreaSize.xp + 1);
-
-            goalFieldToPiece = sum / (BinomialCoefficent(taskAreaFields, player.NumberOfPieces) * goalAreaFields);
+            goalFieldToPiece = PlayerDistance((goalAreaSize.xFrom, goalAreaSize.yFrom), (taskAreaSize.xTo, taskAreaSize.yTo)) / 2.0;
         }
 
         private void GetNewColumn()

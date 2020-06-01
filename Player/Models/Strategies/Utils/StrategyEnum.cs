@@ -3,6 +3,6 @@
     public enum StrategyEnum
     {
         SimpleStrategy = 1,
-        AdvancedStrategy = 2,
+        AdvancedStrategy = 2
     }
 }
