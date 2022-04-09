@@ -1,10 +1,9 @@
-﻿namespace GameMaster.Models.Pieces
+﻿namespace GameMaster.Models.Pieces;
+
+public class ShamPiece : AbstractPiece
 {
-    public class ShamPiece : AbstractPiece
+    public override bool CheckForSham()
     {
-        public override bool CheckForSham()
-        {
-            return true;
-        }
+        return true;
     }
 }

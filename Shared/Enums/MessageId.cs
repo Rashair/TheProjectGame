@@ -1,40 +1,39 @@
-﻿namespace Shared.Enums
+﻿namespace Shared.Enums;
+
+public enum MessageID
 {
-    public enum MessageID
-    {
-        Unknown,
+    Unknown,
 
-        CheckPiece,
-        PieceDestruction,
-        Discover,
-        GiveInfo,
-        BegForInfo,
-        JoinTheGame,
-        Move,
-        Pick,
-        Put,
+    CheckPiece,
+    PieceDestruction,
+    Discover,
+    GiveInfo,
+    BegForInfo,
+    JoinTheGame,
+    Move,
+    Pick,
+    Put,
 
-        CheckAnswer = 101,
-        DestructionAnswer,
-        DiscoverAnswer,
-        EndGame,
-        StartGame,
-        BegForInfoForwarded,
-        JoinTheGameAnswer,
-        MoveAnswer,
-        PickAnswer,
-        PutAnswer,
-        GiveInfoForwarded,
-        InformationExchangeResponse,
-        InformationExchangeRequest,
+    CheckAnswer = 101,
+    DestructionAnswer,
+    DiscoverAnswer,
+    EndGame,
+    StartGame,
+    BegForInfoForwarded,
+    JoinTheGameAnswer,
+    MoveAnswer,
+    PickAnswer,
+    PutAnswer,
+    GiveInfoForwarded,
+    InformationExchangeResponse,
+    InformationExchangeRequest,
 
-        InvalidMoveError = 901,
-        PickError, // TODO Issue 111
-        PutError,
-        NotWaitedError,
-        UnknownError,
-        PlayerDisconnected,
+    InvalidMoveError = 901,
+    PickError, // TODO Issue 111
+    PutError,
+    NotWaitedError,
+    UnknownError,
+    PlayerDisconnected,
 
-        CSDisconnected = 1001, // inside type
-    }
+    CSDisconnected = 1001, // inside type
 }

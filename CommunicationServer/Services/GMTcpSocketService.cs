@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
@@ -11,103 +11,102 @@ using Serilog;
 using Shared.Clients;
 using Shared.Messages;
 
-namespace CommunicationServer.Services
+namespace CommunicationServer.Services;
+
+public class GMTcpSocketService : TcpSocketService<Message, Message>
 {
-    public class GMTcpSocketService : TcpSocketService<Message, Message>
+    private readonly BufferBlock<Message> queue;
+    private readonly ServiceShareContainer container;
+    private readonly ServerConfiguration conf;
+    private readonly IHostApplicationLifetime lifetime;
+    private readonly Shared.ServiceSynchronization sync;
+    protected readonly ILogger log;
+
+    public GMTcpSocketService(BufferBlock<Message> queue, ServiceShareContainer container,
+        ServerConfiguration conf, IHostApplicationLifetime lifetime, ILogger log, Shared.ServiceSynchronization sync)
+        : base(log.ForContext<GMTcpSocketService>())
     {
-        private readonly BufferBlock<Message> queue;
-        private readonly ServiceShareContainer container;
-        private readonly ServerConfiguration conf;
-        private readonly IApplicationLifetime lifetime;
-        private readonly Shared.ServiceSynchronization sync;
-        protected readonly ILogger log;
+        this.queue = queue;
+        this.container = container;
+        this.conf = conf;
+        this.lifetime = lifetime;
+        this.log = log;
+        this.sync = sync;
+    }
 
-        public GMTcpSocketService(BufferBlock<Message> queue, ServiceShareContainer container,
-            ServerConfiguration conf, IApplicationLifetime lifetime, ILogger log, Shared.ServiceSynchronization sync)
-            : base(log.ForContext<GMTcpSocketService>())
+    public override async Task OnMessageAsync(TcpSocketClient<Message, Message> client, Message message,
+        CancellationToken cancellationToken)
+    {
+        await queue.SendAsync(message, cancellationToken);
+    }
+
+    public override void OnConnect(TcpSocketClient<Message, Message> client)
+    {
+    }
+
+    public override async Task OnDisconnectAsync(TcpSocketClient<Message, Message> client,
+        CancellationToken cancellationToken)
+    {
+        await client.CloseAsync(cancellationToken);
+        lifetime.StopApplication();
+    }
+
+    public override Task OnExceptionAsync(TcpSocketClient<Message, Message> client, Exception e,
+        CancellationToken cancellationToken)
+    {
+        logger.Warning($"IsOpen: {client.IsOpen}");
+        return Task.CompletedTask;
+    }
+
+    protected async override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        logger.Information("Start waiting for gm");
+
+        // Block another services untill GM connects, start sync section
+        TcpSocketClient<Message, Message> gmClient = await ConnectGM(conf.ListenerIP, conf.GMPort,
+            stoppingToken);
+        if (gmClient == null)
         {
-            this.queue = queue;
-            this.container = container;
-            this.conf = conf;
-            this.lifetime = lifetime;
-            this.log = log;
-            this.sync = sync;
+            return;
         }
 
-        public override async Task OnMessageAsync(TcpSocketClient<Message, Message> client, Message message,
-            CancellationToken cancellationToken)
-        {
-            await queue.SendAsync(message, cancellationToken);
-        }
+        // Singleton initialization
+        container.GameStarted = false;
+        container.ConfirmedAgents = new Dictionary<int, bool>();
+        container.GMClient = gmClient;
+        logger.Information("GM connected");
 
-        public override void OnConnect(TcpSocketClient<Message, Message> client)
-        {
-        }
+        // GM connected, ServiceShareContainer initiated, release another services and start async section.
+        sync.SemaphoreSlim.Release(3);
+        await Task.Yield();
+        await ClientHandler(gmClient, stoppingToken);
+    }
 
-        public override async Task OnDisconnectAsync(TcpSocketClient<Message, Message> client,
-            CancellationToken cancellationToken)
+    private async Task<TcpSocketClient<Message, Message>> ConnectGM(string ip, int port,
+        CancellationToken cancellationToken)
+    {
+        TcpListener gmListener = StartListener(ip, port);
+        while (!cancellationToken.IsCancellationRequested)
         {
-            await client.CloseAsync(cancellationToken);
-            lifetime.StopApplication();
-        }
-
-        public override Task OnExceptionAsync(TcpSocketClient<Message, Message> client, Exception e,
-            CancellationToken cancellationToken)
-        {
-            logger.Warning($"IsOpen: {client.IsOpen}");
-            return Task.CompletedTask;
-        }
-
-        protected async override Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            logger.Information("Start waiting for gm");
-
-            // Block another services untill GM connects, start sync section
-            TcpSocketClient<Message, Message> gmClient = await ConnectGM(conf.ListenerIP, conf.GMPort,
-                stoppingToken);
-            if (gmClient == null)
+            if (gmListener.Pending())
             {
-                return;
-            }
-
-            // Singleton initialization
-            container.GameStarted = false;
-            container.ConfirmedAgents = new Dictionary<int, bool>();
-            container.GMClient = gmClient;
-            logger.Information("GM connected");
-
-            // GM connected, ServiceShareContainer initiated, release another services and start async section.
-            sync.SemaphoreSlim.Release(3);
-            await Task.Yield();
-            await ClientHandler(gmClient, stoppingToken);
-        }
-
-        private async Task<TcpSocketClient<Message, Message>> ConnectGM(string ip, int port,
-            CancellationToken cancellationToken)
-        {
-            TcpListener gmListener = StartListener(ip, port);
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                if (gmListener.Pending())
+                try
                 {
-                    try
-                    {
-                        Task<TcpClient> acceptTask = gmListener.AcceptTcpClientAsync();
-                        acceptTask.Wait(cancellationToken);
-                        IClient client = new TcpClientWrapper(acceptTask.Result);
+                    Task<TcpClient> acceptTask = gmListener.AcceptTcpClientAsync();
+                    acceptTask.Wait(cancellationToken);
+                    IClient client = new TcpClientWrapper(acceptTask.Result);
 
-                        return new TcpSocketClient<Message, Message>(client, log);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        logger.Error("Operation was canceled during GM connection.");
-                        break;
-                    }
+                    return new TcpSocketClient<Message, Message>(client, log);
                 }
-                await Task.Delay(Wait, cancellationToken);
+                catch (OperationCanceledException)
+                {
+                    logger.Error("Operation was canceled during GM connection.");
+                    break;
+                }
             }
-
-            return null;
+            await Task.Delay(Wait, cancellationToken);
         }
+
+        return null;
     }
 }

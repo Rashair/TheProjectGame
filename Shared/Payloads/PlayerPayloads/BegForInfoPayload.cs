@@ -1,12 +1,11 @@
-﻿namespace Shared.Payloads.PlayerPayloads
-{
-    public class BegForInfoPayload : Payload
-    {
-        public int AskedAgentID { get; set; }
+﻿namespace Shared.Payloads.PlayerPayloads;
 
-        public override string ToString()
-        {
-            return $"AskedAgentID:{AskedAgentID}";
-        }
+public class BegForInfoPayload : Payload
+{
+    public int AskedAgentID { get; set; }
+
+    public override string ToString()
+    {
+        return $"AskedAgentID:{AskedAgentID}";
     }
 }

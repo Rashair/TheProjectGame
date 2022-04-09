@@ -4,130 +4,129 @@ using System.Collections.Generic;
 using GameMaster.Models.Fields;
 using Shared.Enums;
 
-namespace GameMaster.Models
+namespace GameMaster.Models;
+
+public class GMInitializer
 {
-    public class GMInitializer
+    private readonly GameConfiguration conf;
+    private readonly AbstractField[][] board;
+    private readonly Random rand;
+
+    public int SecondGoalAreaStart { get => conf.Height - conf.GoalAreaHeight; }
+
+    public GMInitializer(GameConfiguration conf, AbstractField[][] board)
     {
-        private readonly GameConfiguration conf;
-        private readonly AbstractField[][] board;
-        private readonly Random rand;
+        this.conf = conf;
+        this.board = board;
+        this.rand = new Random();
+    }
 
-        public int SecondGoalAreaStart { get => conf.Height - conf.GoalAreaHeight; }
-
-        public GMInitializer(GameConfiguration conf, AbstractField[][] board)
+    public void InitializeBoard()
+    {
+        for (int i = 0; i < board.Length; ++i)
         {
-            this.conf = conf;
-            this.board = board;
-            this.rand = new Random();
+            board[i] = new AbstractField[conf.Width];
         }
 
-        public void InitializeBoard()
+        GenerateGoalFields();
+
+        AbstractField NonGoalFieldGenerator(int y, int x) => new NonGoalField(y, x);
+        for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
         {
-            for (int i = 0; i < board.Length; ++i)
-            {
-                board[i] = new AbstractField[conf.Width];
-            }
-
-            GenerateGoalFields();
-
-            AbstractField NonGoalFieldGenerator(int y, int x) => new NonGoalField(y, x);
-            for (int rowIt = 0; rowIt < conf.GoalAreaHeight; ++rowIt)
-            {
-                FillBoardRow(rowIt, NonGoalFieldGenerator);
-            }
-
-            AbstractField TaskFieldGenerator(int y, int x) => new TaskField(y, x);
-            for (int rowIt = conf.GoalAreaHeight; rowIt < SecondGoalAreaStart; ++rowIt)
-            {
-                FillBoardRow(rowIt, TaskFieldGenerator);
-            }
-
-            for (int rowIt = SecondGoalAreaStart; rowIt < conf.Height; ++rowIt)
-            {
-                FillBoardRow(rowIt, NonGoalFieldGenerator);
-            }
+            FillBoardRow(rowIt, NonGoalFieldGenerator);
         }
 
-        private void GenerateGoalFields()
+        AbstractField TaskFieldGenerator(int y, int x) => new TaskField(y, x);
+        for (int rowIt = conf.GoalAreaHeight; rowIt < SecondGoalAreaStart; ++rowIt)
         {
-            for (int i = 0; i < conf.NumberOfGoals; ++i)
+            FillBoardRow(rowIt, TaskFieldGenerator);
+        }
+
+        for (int rowIt = SecondGoalAreaStart; rowIt < conf.Height; ++rowIt)
+        {
+            FillBoardRow(rowIt, NonGoalFieldGenerator);
+        }
+    }
+
+    private void GenerateGoalFields()
+    {
+        for (int i = 0; i < conf.NumberOfGoals; ++i)
+        {
+            int row = rand.Next(0, conf.GoalAreaHeight);
+            int col = rand.Next(conf.Width);
+            while (board[row][col] != null)
             {
-                int row = rand.Next(0, conf.GoalAreaHeight);
-                int col = rand.Next(conf.Width);
-                while (board[row][col] != null)
+                ++col;
+                if (col == conf.Width)
                 {
-                    ++col;
-                    if (col == conf.Width)
+                    col = 0;
+                    ++row;
+                    if (row == conf.GoalAreaHeight)
                     {
-                        col = 0;
-                        ++row;
-                        if (row == conf.GoalAreaHeight)
-                        {
-                            row = 0;
-                        }
+                        row = 0;
                     }
                 }
-                board[row][col] = new GoalField(row, col);
-                board[conf.Height - row - 1][col] = new GoalField(conf.Height - row - 1, col);
+            }
+            board[row][col] = new GoalField(row, col);
+            board[conf.Height - row - 1][col] = new GoalField(conf.Height - row - 1, col);
+        }
+    }
+
+    private void FillBoardRow(int row, Func<int, int, AbstractField> getField)
+    {
+        for (int col = 0; col < board[row].Length; ++col)
+        {
+            // Goal-field generation
+            if (board[row][col] == null)
+            {
+                board[row][col] = getField(row, col);
             }
         }
+    }
 
-        private void FillBoardRow(int row, Func<int, int, AbstractField> getField)
+    public void GenerateAllPieces(Action generator)
+    {
+        for (int i = 0; i < conf.NumberOfPiecesOnBoard; ++i)
         {
-            for (int col = 0; col < board[row].Length; ++col)
+            generator();
+        }
+    }
+
+    public void InitializePlayersPoisitions(IEnumerable<KeyValuePair<int, GMPlayer>> players)
+    {
+        foreach (var p in players)
+        {
+            GMPlayer player = p.Value;
+            (int y1, int y2) = GetBoundaries(player.Team);
+            int y = rand.Next(y1, y2);
+            int x = rand.Next(0, conf.Width);
+
+            AbstractField pos = board[y][x];
+            while (!pos.MoveHere(player))
             {
-                // Goal-field generation
-                if (board[row][col] == null)
+                ++x;
+                if (x == conf.Width)
                 {
-                    board[row][col] = getField(row, col);
-                }
-            }
-        }
-
-        public void GenerateAllPieces(Action generator)
-        {
-            for (int i = 0; i < conf.NumberOfPiecesOnBoard; ++i)
-            {
-                generator();
-            }
-        }
-
-        public void InitializePlayersPoisitions(IEnumerable<KeyValuePair<int, GMPlayer>> players)
-        {
-            foreach (var p in players)
-            {
-                GMPlayer player = p.Value;
-                (int y1, int y2) = GetBoundaries(player.Team);
-                int y = rand.Next(y1, y2);
-                int x = rand.Next(0, conf.Width);
-
-                AbstractField pos = board[y][x];
-                while (!pos.MoveHere(player))
-                {
-                    ++x;
-                    if (x == conf.Width)
+                    x = 0;
+                    ++y;
+                    if (y == y2)
                     {
-                        x = 0;
-                        ++y;
-                        if (y == y2)
-                        {
-                            y = y1;
-                        }
+                        y = y1;
                     }
-
-                    pos = board[y][x];
                 }
+
+                pos = board[y][x];
             }
         }
+    }
 
-        private (int y1, int y2) GetBoundaries(Team team)
+    private (int y1, int y2) GetBoundaries(Team team)
+    {
+        if (team == Team.Blue)
         {
-            if (team == Team.Blue)
-            {
-                return (0, SecondGoalAreaStart);
-            }
-
-            return (conf.GoalAreaHeight, conf.Height);
+            return (0, SecondGoalAreaStart);
         }
+
+        return (conf.GoalAreaHeight, conf.Height);
     }
 }

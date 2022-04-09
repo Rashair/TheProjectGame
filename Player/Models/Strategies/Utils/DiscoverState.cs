@@ -1,9 +1,8 @@
-﻿namespace Player.Models.Strategies.Utils
+﻿namespace Player.Models.Strategies.Utils;
+
+public enum DiscoverState
 {
-    public enum DiscoverState
-    {
-        NoAction,
-        ShouldDiscover,
-        Discovered,
-    }
+    NoAction,
+    ShouldDiscover,
+    Discovered,
 }

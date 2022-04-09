@@ -1,9 +1,8 @@
-﻿namespace Shared.Models
-{
-    public class NumberOfPlayers
-    {
-        public int Allies { get; set; }
+﻿namespace Shared.Models;
 
-        public int Enemies { get; set; }
-    }
+public class NumberOfPlayers
+{
+    public int Allies { get; set; }
+
+    public int Enemies { get; set; }
 }

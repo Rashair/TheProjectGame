@@ -2,12 +2,11 @@
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 
-namespace Shared.Enums
+namespace Shared.Enums;
+
+[JsonConverter(typeof(StringEnumConverter), new object[] { typeof(CamelCaseNamingStrategy) })]
+public enum Team
 {
-    [JsonConverter(typeof(StringEnumConverter), new object[] { typeof(CamelCaseNamingStrategy) })]
-    public enum Team
-    {
-        Red,
-        Blue,
-    }
+    Red,
+    Blue,
 }

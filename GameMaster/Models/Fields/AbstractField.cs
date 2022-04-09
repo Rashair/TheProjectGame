@@ -3,56 +3,55 @@
 using GameMaster.Models.Pieces;
 using Shared.Enums;
 
-namespace GameMaster.Models.Fields
+namespace GameMaster.Models.Fields;
+
+public abstract class AbstractField
 {
-    public abstract class AbstractField
+    private readonly int y;
+    private readonly int x;
+    private GMPlayer whosHere;
+
+    protected HashSet<AbstractPiece> Pieces { get; set; }
+
+    public int PiecesCount => Pieces.Count;
+
+    public AbstractField(int y, int x)
     {
-        private readonly int y;
-        private readonly int x;
-        private GMPlayer whosHere;
+        this.y = y;
+        this.x = x;
+        Pieces = new HashSet<AbstractPiece>();
+    }
 
-        protected HashSet<AbstractPiece> Pieces { get; set; }
+    public void Leave(GMPlayer player)
+    {
+        whosHere = null;
+    }
 
-        public int PiecesCount => Pieces.Count;
+    public abstract bool PickUp(GMPlayer player);
 
-        public AbstractField(int y, int x)
+    public abstract (PutEvent putEvent, bool wasPieceRemoved) Put(AbstractPiece piece);
+
+    public abstract bool CanPick();
+
+    public bool MoveHere(GMPlayer player)
+    {
+        if (whosHere == null && player != null)
         {
-            this.y = y;
-            this.x = x;
-            Pieces = new HashSet<AbstractPiece>();
+            player.Position = this;
+            whosHere = player;
+            return true;
         }
 
-        public void Leave(GMPlayer player)
-        {
-            whosHere = null;
-        }
+        return false;
+    }
 
-        public abstract bool PickUp(GMPlayer player);
+    public bool ContainsPieces()
+    {
+        return Pieces.Count > 0;
+    }
 
-        public abstract (PutEvent putEvent, bool wasPieceRemoved) Put(AbstractPiece piece);
-
-        public abstract bool CanPick();
-
-        public bool MoveHere(GMPlayer player)
-        {
-            if (whosHere == null && player != null)
-            {
-                player.Position = this;
-                whosHere = player;
-                return true;
-            }
-
-            return false;
-        }
-
-        public bool ContainsPieces()
-        {
-            return Pieces.Count > 0;
-        }
-
-        public int[] GetPosition()
-        {
-            return new int[2] { y, x };
-        }
+    public int[] GetPosition()
+    {
+        return new int[2] { y, x };
     }
 }

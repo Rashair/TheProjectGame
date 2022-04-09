@@ -1,10 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Player.Models.Strategies
+namespace Player.Models.Strategies;
+
+public interface IStrategy
 {
-    public interface IStrategy
-    {
-        Task MakeDecision(CancellationToken cancellationToken);
-    }
+    Task MakeDecision(CancellationToken cancellationToken);
 }

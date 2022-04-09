@@ -1,12 +1,11 @@
-﻿namespace Shared.Payloads.GMPayloads
-{
-    public class CheckAnswerPayload : Payload
-    {
-        public bool Sham { get; set; }
+﻿namespace Shared.Payloads.GMPayloads;
 
-        public override string ToString()
-        {
-            return $"Sham:{Sham}";
-        }
+public class CheckAnswerPayload : Payload
+{
+    public bool Sham { get; set; }
+
+    public override string ToString()
+    {
+        return $"Sham:{Sham}";
     }
 }

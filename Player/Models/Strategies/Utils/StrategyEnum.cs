@@ -1,8 +1,7 @@
-﻿namespace Player.Models.Strategies.Utils
+﻿namespace Player.Models.Strategies.Utils;
+
+public enum StrategyEnum
 {
-    public enum StrategyEnum
-    {
-        SimpleStrategy = 1,
-        AdvancedStrategy = 2,
-    }
+    SimpleStrategy = 1,
+    AdvancedStrategy = 2,
 }

@@ -1,13 +1,12 @@
-﻿namespace Player.Models.Strategies.Utils
+﻿namespace Player.Models.Strategies.Utils;
+
+public enum LastAction
 {
-    public enum LastAction
-    {
-        None,
-        Move,
-        Discover,
-        Check,
-        Pick,
-        Put,
-        Destroy,
-    }
+    None,
+    Move,
+    Discover,
+    Check,
+    Pick,
+    Put,
+    Destroy,
 }

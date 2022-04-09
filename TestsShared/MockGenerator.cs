@@ -1,13 +1,12 @@
 ﻿using Moq;
 
-namespace TestsShared
+namespace TestsShared;
+
+public class MockGenerator
 {
-    public class MockGenerator
+    public static T Get<T>()
+        where T : class
     {
-        public static T Get<T>()
-            where T : class
-        {
-            return new Mock<T>() { DefaultValue = DefaultValue.Mock }.Object;
-        }
+        return new Mock<T>() { DefaultValue = DefaultValue.Mock }.Object;
     }
 }

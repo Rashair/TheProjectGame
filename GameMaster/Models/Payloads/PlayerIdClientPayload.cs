@@ -1,7 +1,6 @@
-﻿namespace GameMaster.Models.Payloads
+﻿namespace GameMaster.Models.Payloads;
+
+public class PlayerIdClientPayload : ClientPayload
 {
-    public class PlayerIdClientPayload : ClientPayload
-    {
-        public int Id { get; set; }
-    }
+    public int Id { get; set; }
 }

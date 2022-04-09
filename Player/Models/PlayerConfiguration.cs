@@ -1,17 +1,16 @@
 using Shared.Enums;
 
-namespace Player.Models
+namespace Player.Models;
+
+public class PlayerConfiguration
 {
-    public class PlayerConfiguration
-    {
-        public string CsIP { get; set; }
+    public string CsIP { get; set; }
 
-        public int CsPort { get; set; }
+    public int CsPort { get; set; }
 
-        public Team TeamID { get; set; }
+    public Team TeamID { get; set; }
 
-        public int Strategy { get; set; }
+    public int Strategy { get; set; }
 
-        public bool Verbose { get; set; }
-    }
+    public bool Verbose { get; set; }
 }

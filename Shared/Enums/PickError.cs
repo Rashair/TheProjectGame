@@ -1,12 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Shared.Enums
+namespace Shared.Enums;
+
+[JsonConverter(typeof(StringEnumConverter))]
+public enum PickError
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum PickError
-    {
-        Other,
-        NothingThere,
-    }
+    Other,
+    NothingThere,
 }

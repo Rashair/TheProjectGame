@@ -1,10 +1,9 @@
-﻿namespace Shared.Payloads.GMPayloads
+﻿namespace Shared.Payloads.GMPayloads;
+
+public class EmptyAnswerPayload : Payload
 {
-    public class EmptyAnswerPayload : Payload
+    public override string ToString()
     {
-        public override string ToString()
-        {
-            return "";
-        }
+        return "";
     }
 }
