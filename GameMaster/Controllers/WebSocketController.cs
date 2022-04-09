@@ -8,58 +8,57 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
-namespace GameMaster.Controllers
+namespace GameMaster.Controllers;
+
+public abstract class WebSocketController<T> : ControllerBase
 {
-    public abstract class WebSocketController<T> : ControllerBase
+    private const int BufferSize = 1024 * 4;
+    private readonly ILogger logger;
+
+    public WebSocketManager<T> Manager { get; }
+
+    public WebSocketController(WebSocketManager<T> manager)
     {
-        private const int BufferSize = 1024 * 4;
-        private readonly ILogger logger;
+        logger = Log.ForContext<WebSocketController<T>>();
+        Manager = manager;
+    }
 
-        public WebSocketManager<T> Manager { get; }
+    protected abstract Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer);
 
-        public WebSocketController(WebSocketManager<T> manager)
+    protected virtual void OnConnected(WebSocket socket)
+    {
+        Manager.AddSocket(socket);
+    }
+
+    protected virtual async Task OnDisconnectedAsync(WebSocket socket, CancellationToken cancellationToken)
+    {
+        await Manager.RemoveSocketAsync(Manager.GetId(socket), cancellationToken);
+    }
+
+    protected virtual bool AcceptConnection()
+    {
+        return true;
+    }
+
+    [HttpGet]
+    public async Task Get(CancellationToken cancellationToken)
+    {
+        HttpContext context = ControllerContext.HttpContext;
+        if (!context.WebSockets.IsWebSocketRequest || !AcceptConnection())
         {
-            logger = Log.ForContext<WebSocketController<T>>();
-            Manager = manager;
+            return;
         }
 
-        protected abstract Task OnMessageAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer);
-
-        protected virtual void OnConnected(WebSocket socket)
+        WebSocket socket = await context.WebSockets.AcceptWebSocketAsync();
+        OnConnected(socket);
+        byte[] buffer = new byte[BufferSize];
+        WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer),
+            cancellationToken);
+        while (!result.CloseStatus.HasValue && !cancellationToken.IsCancellationRequested)
         {
-            Manager.AddSocket(socket);
+            await OnMessageAsync(socket, result, buffer);
+            result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
         }
-
-        protected virtual async Task OnDisconnectedAsync(WebSocket socket, CancellationToken cancellationToken)
-        {
-            await Manager.RemoveSocketAsync(Manager.GetId(socket), cancellationToken);
-        }
-
-        protected virtual bool AcceptConnection()
-        {
-            return true;
-        }
-
-        [HttpGet]
-        public async Task Get(CancellationToken cancellationToken)
-        {
-            HttpContext context = ControllerContext.HttpContext;
-            if (!context.WebSockets.IsWebSocketRequest || !AcceptConnection())
-            {
-                return;
-            }
-
-            WebSocket socket = await context.WebSockets.AcceptWebSocketAsync();
-            OnConnected(socket);
-            byte[] buffer = new byte[BufferSize];
-            WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer),
-                cancellationToken);
-            while (!result.CloseStatus.HasValue && !cancellationToken.IsCancellationRequested)
-            {
-                await OnMessageAsync(socket, result, buffer);
-                result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
-            }
-            await OnDisconnectedAsync(socket, cancellationToken);
-        }
+        await OnDisconnectedAsync(socket, cancellationToken);
     }
 }

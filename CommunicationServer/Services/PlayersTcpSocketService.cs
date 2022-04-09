@@ -15,115 +15,114 @@ using Shared.Managers;
 using Shared.Messages;
 using Shared.Payloads.CommunicationServerPayloads;
 
-namespace CommunicationServer.Services
+namespace CommunicationServer.Services;
+
+public class PlayersTcpSocketService : TcpSocketService<Message, Message>
 {
-    public class PlayersTcpSocketService : TcpSocketService<Message, Message>
+    private readonly ISocketManager<ISocketClient<Message, Message>, Message> manager;
+    private readonly BufferBlock<Message> queue;
+    private readonly ServiceShareContainer container;
+    private readonly ServerConfiguration conf;
+    private readonly ServiceSynchronization sync;
+    protected readonly ILogger log;
+
+    public PlayersTcpSocketService(ISocketManager<ISocketClient<Message, Message>, Message> manager,
+        BufferBlock<Message> queue, ServiceShareContainer container, ServerConfiguration conf, ILogger log,
+        ServiceSynchronization sync)
+        : base(log.ForContext<PlayersTcpSocketService>())
     {
-        private readonly ISocketManager<ISocketClient<Message, Message>, Message> manager;
-        private readonly BufferBlock<Message> queue;
-        private readonly ServiceShareContainer container;
-        private readonly ServerConfiguration conf;
-        private readonly ServiceSynchronization sync;
-        protected readonly ILogger log;
+        this.manager = manager;
+        this.queue = queue;
+        this.container = container;
+        this.conf = conf;
+        this.log = log;
+        this.sync = sync;
+    }
 
-        public PlayersTcpSocketService(ISocketManager<ISocketClient<Message, Message>, Message> manager,
-            BufferBlock<Message> queue, ServiceShareContainer container, ServerConfiguration conf, ILogger log,
-            ServiceSynchronization sync)
-            : base(log.ForContext<PlayersTcpSocketService>())
+    public override async Task OnMessageAsync(TcpSocketClient<Message, Message> client,
+        Message message, CancellationToken cancellationToken)
+    {
+        message.AgentID = manager.GetId(client);
+        await queue.SendAsync(message, cancellationToken);
+    }
+
+    public override void OnConnect(TcpSocketClient<Message, Message> client)
+    {
+        int id = manager.AddSocket(client);
+        if (id == -1)
         {
-            this.manager = manager;
-            this.queue = queue;
-            this.container = container;
-            this.conf = conf;
-            this.log = log;
-            this.sync = sync;
+            IClient socket = client.GetSocket();
+            logger.Error($"Failed to add socket: {socket.Endpoint}");
         }
-
-        public override async Task OnMessageAsync(TcpSocketClient<Message, Message> client,
-            Message message, CancellationToken cancellationToken)
+        else
         {
-            message.AgentID = manager.GetId(client);
-            await queue.SendAsync(message, cancellationToken);
+            sync.SemaphoreSlim.Wait();
+            container.ConfirmedAgents.Add(manager.GetId(client), false);
+            sync.SemaphoreSlim.Release(1);
         }
+    }
 
-        public override void OnConnect(TcpSocketClient<Message, Message> client)
+    public override async Task OnDisconnectAsync(TcpSocketClient<Message, Message> client,
+        CancellationToken cancellationToken)
+    {
+        int id = manager.GetId(client);
+        bool result = await manager.RemoveSocketAsync(id, cancellationToken);
+        if (!result)
         {
-            int id = manager.AddSocket(client);
-            if (id == -1)
+            IClient socket = client.GetSocket();
+            logger.Error($"Failed to remove socket: {socket.Endpoint}");
+        }
+        logger.Information($"Player {id} disconnected");
+
+        DisconnectPayload payload = new DisconnectPayload()
+        {
+            AgentID = id
+        };
+        Message message = new Message()
+        {
+            AgentID = -1,
+            MessageID = MessageID.PlayerDisconnected,
+            Payload = payload
+        };
+        await container.GMClient.SendAsync(message, cancellationToken);
+    }
+
+    public override async Task OnExceptionAsync(TcpSocketClient<Message, Message> client, Exception e,
+        CancellationToken cancellationToken)
+    {
+        logger.Warning(e, $"IsOpen: {client.IsOpen}");
+        await Task.CompletedTask;
+    }
+
+    protected async override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        await sync.SemaphoreSlim.WaitAsync();
+        logger.Information("Started PlayersTcpSocketService");
+        TcpListener listener = StartListener(conf.ListenerIP, conf.PlayerPort);
+        List<ConfiguredTaskAwaitable> tasks = new List<ConfiguredTaskAwaitable>();
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            await sync.SemaphoreSlim.WaitAsync();
+            bool canConnect = !container.GameStarted;
+            sync.SemaphoreSlim.Release(1);
+            if (listener.Pending() && canConnect)
             {
-                IClient socket = client.GetSocket();
-                logger.Error($"Failed to add socket: {socket.Endpoint}");
+                var acceptedClient = await listener.AcceptTcpClientAsync();
+                IClient tcpClient = new TcpClientWrapper(acceptedClient);
+                var socketClient = new TcpSocketClient<Message, Message>(tcpClient, log);
+                var handlerTask = ClientHandler(socketClient, stoppingToken).ConfigureAwait(false);
+                tasks.Add(handlerTask);
             }
             else
             {
-                sync.SemaphoreSlim.Wait();
-                container.ConfirmedAgents.Add(manager.GetId(client), false);
-                sync.SemaphoreSlim.Release(1);
+                await Task.Delay(Wait, stoppingToken);
             }
         }
 
-        public override async Task OnDisconnectAsync(TcpSocketClient<Message, Message> client,
-            CancellationToken cancellationToken)
+        for (int i = 0; i < tasks.Count && !stoppingToken.IsCancellationRequested; ++i)
         {
-            int id = manager.GetId(client);
-            bool result = await manager.RemoveSocketAsync(id, cancellationToken);
-            if (!result)
-            {
-                IClient socket = client.GetSocket();
-                logger.Error($"Failed to remove socket: {socket.Endpoint}");
-            }
-            logger.Information($"Player {id} disconnected");
-
-            DisconnectPayload payload = new DisconnectPayload()
-            {
-                AgentID = id
-            };
-            Message message = new Message()
-            {
-                AgentID = -1,
-                MessageID = MessageID.PlayerDisconnected,
-                Payload = payload
-            };
-            await container.GMClient.SendAsync(message, cancellationToken);
+            await tasks[i];
         }
-
-        public override async Task OnExceptionAsync(TcpSocketClient<Message, Message> client, Exception e,
-            CancellationToken cancellationToken)
-        {
-            logger.Warning(e, $"IsOpen: {client.IsOpen}");
-            await Task.CompletedTask;
-        }
-
-        protected async override Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            await sync.SemaphoreSlim.WaitAsync();
-            logger.Information("Started PlayersTcpSocketService");
-            TcpListener listener = StartListener(conf.ListenerIP, conf.PlayerPort);
-            List<ConfiguredTaskAwaitable> tasks = new List<ConfiguredTaskAwaitable>();
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                await sync.SemaphoreSlim.WaitAsync();
-                bool canConnect = !container.GameStarted;
-                sync.SemaphoreSlim.Release(1);
-                if (listener.Pending() && canConnect)
-                {
-                    var acceptedClient = await listener.AcceptTcpClientAsync();
-                    IClient tcpClient = new TcpClientWrapper(acceptedClient);
-                    var socketClient = new TcpSocketClient<Message, Message>(tcpClient, log);
-                    var handlerTask = ClientHandler(socketClient, stoppingToken).ConfigureAwait(false);
-                    tasks.Add(handlerTask);
-                }
-                else
-                {
-                    await Task.Delay(Wait, stoppingToken);
-                }
-            }
-
-            for (int i = 0; i < tasks.Count && !stoppingToken.IsCancellationRequested; ++i)
-            {
-                await tasks[i];
-            }
-            logger.Information("Stopping PlayersTcpSocketService");
-        }
+        logger.Information("Stopping PlayersTcpSocketService");
     }
 }

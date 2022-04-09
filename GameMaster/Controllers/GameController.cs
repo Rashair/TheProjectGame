@@ -10,96 +10,95 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Serilog;
 
-namespace GameMaster.Controllers
+namespace GameMaster.Controllers;
+
+[ApiController]
+[Route("/api")]
+public class GameController : ControllerBase
 {
-    [ApiController]
-    [Route("/api")]
-    public class GameController : ControllerBase
+    private readonly ILogger logger;
+    private readonly IConfiguration configuration;
+    private readonly GameConfiguration gameConfiguration;
+    private readonly GM gameMaster;
+
+    public GameController(IConfiguration configuration, GameConfiguration gameConfiguration, GM gameMaster,
+        ILogger log)
     {
-        private readonly ILogger logger;
-        private readonly IConfiguration configuration;
-        private readonly GameConfiguration gameConfiguration;
-        private readonly GM gameMaster;
+        this.logger = log.ForContext<GameController>();
+        this.configuration = configuration;
+        this.gameConfiguration = gameConfiguration;
+        this.gameMaster = gameMaster;
+    }
 
-        public GameController(IConfiguration configuration, GameConfiguration gameConfiguration, GM gameMaster,
-            ILogger log)
+    [HttpGet]
+    [Route("[action]")]
+    public ActionResult<GameConfiguration> Configuration()
+    {
+        return gameConfiguration;
+    }
+
+    [HttpPost]
+    [Route("[action]")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    public async Task<ActionResult<GameConfiguration>> Configuration(GameConfiguration conf)
+    {
+        if (conf == null || string.IsNullOrEmpty(conf.CsIP))
         {
-            this.logger = log.ForContext<GameController>();
-            this.configuration = configuration;
-            this.gameConfiguration = gameConfiguration;
-            this.gameMaster = gameMaster;
+            var msg = "Received empty configuration";
+            logger.Warning(msg);
+            return BadRequest(msg);
         }
 
-        [HttpGet]
-        [Route("[action]")]
-        public ActionResult<GameConfiguration> Configuration()
-        {
-            return gameConfiguration;
-        }
+        gameConfiguration.Update(conf);
 
-        [HttpPost]
-        [Route("[action]")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<ActionResult<GameConfiguration>> Configuration(GameConfiguration conf)
+        string gameConfigString = JsonConvert.SerializeObject(gameConfiguration);
+        string path = configuration.GetValue<string>("GameConfigPath");
+        try
         {
-            if (conf == null || string.IsNullOrEmpty(conf.CsIP))
+            using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                var msg = "Received empty configuration";
-                logger.Warning(msg);
-                return BadRequest(msg);
+                var buffer = Encoding.UTF8.GetBytes(gameConfigString);
+                await fileStream.WriteAsync(buffer);
             }
-
-            gameConfiguration.Update(conf);
-
-            string gameConfigString = JsonConvert.SerializeObject(gameConfiguration);
-            string path = configuration.GetValue<string>("GameConfigPath");
-            try
-            {
-                using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    var buffer = Encoding.UTF8.GetBytes(gameConfigString);
-                    await fileStream.WriteAsync(buffer);
-                }
-            }
-            catch (Exception e)
-            {
-                logger.Warning($"Error writing to file: {e}");
-            }
-
-            return Created("/configuration", gameConfiguration);
         }
-
-        [HttpPost]
-        [Route("[action]")]
-        public IActionResult InitGame()
+        catch (Exception e)
         {
-            if (gameMaster.WasGameInitialized)
-            {
-                // Should be BadRequest, but it more handy in development - TODO: change later
-                logger.Warning("Game was already initialized");
-                return Ok();
-            }
-
-            bool result = gameMaster.InitGame();
-            if (result)
-            {
-                return Ok();
-            }
-            return BadRequest();
+            logger.Warning($"Error writing to file: {e}");
         }
 
-        [HttpGet]
-        [Route("[action]")]
-        public ActionResult<bool> WasGameStarted()
+        return Created("/configuration", gameConfiguration);
+    }
+
+    [HttpPost]
+    [Route("[action]")]
+    public IActionResult InitGame()
+    {
+        if (gameMaster.WasGameInitialized)
         {
-            return gameMaster.WasGameStarted;
+            // Should be BadRequest, but it more handy in development - TODO: change later
+            logger.Warning("Game was already initialized");
+            return Ok();
         }
 
-        [HttpGet]
-        [Route("[action]")]
-        public ActionResult<bool> WasGameFinished()
+        bool result = gameMaster.InitGame();
+        if (result)
         {
-            return gameMaster.WasGameFinished;
+            return Ok();
         }
+        return BadRequest();
+    }
+
+    [HttpGet]
+    [Route("[action]")]
+    public ActionResult<bool> WasGameStarted()
+    {
+        return gameMaster.WasGameStarted;
+    }
+
+    [HttpGet]
+    [Route("[action]")]
+    public ActionResult<bool> WasGameFinished()
+    {
+        return gameMaster.WasGameFinished;
     }
 }

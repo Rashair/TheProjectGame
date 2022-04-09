@@ -478,3 +478,6 @@ dotnet_diagnostic.IDE0053.severity = suggestion
 
 # Unused expression value
 dotnet_diagnostic.IDE0058.severity = silent
+
+# CA1304: Specify CultureInfo
+dotnet_diagnostic.CA1304.severity = none

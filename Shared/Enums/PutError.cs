@@ -1,13 +1,12 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Shared.Enums
+namespace Shared.Enums;
+
+[JsonConverter(typeof(StringEnumConverter))]
+public enum PutError
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum PutError
-    {
-        Other,
-        AgentNotHolding,
-        CannotPutThere,
-    }
+    Other,
+    AgentNotHolding,
+    CannotPutThere,
 }

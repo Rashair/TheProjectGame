@@ -1,10 +1,9 @@
-﻿namespace Shared.Payloads.PlayerPayloads
+﻿namespace Shared.Payloads.PlayerPayloads;
+
+public class EmptyPayload : Payload
 {
-    public class EmptyPayload : Payload
+    public override string ToString()
     {
-        public override string ToString()
-        {
-            return "";
-        }
+        return "";
     }
 }

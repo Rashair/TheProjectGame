@@ -1,9 +1,8 @@
-﻿namespace Shared.Models
-{
-    public class BoardSize
-    {
-        public int X { get; set; }
+﻿namespace Shared.Models;
 
-        public int Y { get; set; }
-    }
+public class BoardSize
+{
+    public int X { get; set; }
+
+    public int Y { get; set; }
 }

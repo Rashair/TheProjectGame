@@ -1,9 +1,8 @@
-﻿namespace Player.Models.Strategies.Utils
+﻿namespace Player.Models.Strategies.Utils;
+
+public enum GoalAreaActionsEnum
 {
-    public enum GoalAreaActionsEnum
-    {
-        None,
-        GoalAreaChanged,
-        ExchangedInfo
-    }
+    None,
+    GoalAreaChanged,
+    ExchangedInfo
 }

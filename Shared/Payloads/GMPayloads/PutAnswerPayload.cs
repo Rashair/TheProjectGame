@@ -2,17 +2,16 @@
 
 using Shared.Enums;
 
-namespace Shared.Payloads.GMPayloads
-{
-    public class PutAnswerPayload : Payload
-    {
-        public PutEvent PutEvent { get; set; }
+namespace Shared.Payloads.GMPayloads;
 
-        public override string ToString()
-        {
-            string message = "";
-            message += $" PutEvent: {Enum.GetName(typeof(PutEvent), PutEvent)}";
-            return message;
-        }
+public class PutAnswerPayload : Payload
+{
+    public PutEvent PutEvent { get; set; }
+
+    public override string ToString()
+    {
+        string message = "";
+        message += $" PutEvent: {Enum.GetName(typeof(PutEvent), PutEvent)}";
+        return message;
     }
 }

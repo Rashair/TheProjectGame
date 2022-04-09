@@ -18,90 +18,89 @@ using Shared.Enums;
 using Shared.Messages;
 using Shared.Models;
 
-namespace Player
+namespace Player;
+
+public class Startup
 {
-    public class Startup
+    public const string LoggerTemplate =
+        "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
+
+    public IConfiguration Configuration { get; }
+
+    public Startup(IConfiguration configuration)
     {
-        public const string LoggerTemplate =
-            "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
+        Configuration = configuration;
+    }
 
-        public IConfiguration Configuration { get; }
+    private ILogger GetLogger(Team team, bool verbose)
+    {
+        LoggerLevel level = new LoggerLevel();
+        Configuration.Bind("Serilog:MinimumLevel", level);
 
-        public Startup(IConfiguration configuration)
+        string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "Player");
+        int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
+        string teamId = team.ToString().Substring(0, 3);
+        string fileName = $"{teamId}-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
+        string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
+            folderName, fileName);
+        var logConfig = new LoggerConfiguration()
+           .Enrich.FromLogContext()
+           .WriteTo.File(
+           path: path,
+           rollOnFileSizeLimit: true,
+           outputTemplate: LoggerTemplate)
+           .WriteTo.Console(outputTemplate: LoggerTemplate)
+            .MinimumLevel.Override("Microsoft", level.Override.Microsoft)
+            .MinimumLevel.Override("System", level.Override.System);
+        level.SetMinimumLevel(logConfig);
+
+        if (verbose)
         {
-            Configuration = configuration;
+            logConfig.MinimumLevel.Verbose();
         }
-
-        private ILogger GetLogger(Team team, bool verbose)
+        else
         {
-            LoggerLevel level = new LoggerLevel();
-            Configuration.Bind("Serilog:MinimumLevel", level);
-
-            string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "Player");
-            int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
-            string teamId = team.ToString().Substring(0, 3);
-            string fileName = $"{teamId}-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
-                folderName, fileName);
-            var logConfig = new LoggerConfiguration()
-               .Enrich.FromLogContext()
-               .WriteTo.File(
-               path: path,
-               rollOnFileSizeLimit: true,
-               outputTemplate: LoggerTemplate)
-               .WriteTo.Console(outputTemplate: LoggerTemplate)
-                .MinimumLevel.Override("Microsoft", level.Override.Microsoft)
-                .MinimumLevel.Override("System", level.Override.System);
             level.SetMinimumLevel(logConfig);
-
-            if (verbose)
-            {
-                logConfig.MinimumLevel.Verbose();
-            }
-            else
-            {
-                level.SetMinimumLevel(logConfig);
-            }
-            return logConfig.CreateLogger();
         }
+        return logConfig.CreateLogger();
+    }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkId=398940
-        public void ConfigureServices(IServiceCollection services)
+    // This method gets called by the runtime. Use this method to add services to the container.
+    // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkId=398940
+    public void ConfigureServices(IServiceCollection services)
+    {
+        PlayerConfiguration conf = new PlayerConfiguration();
+        Configuration.Bind("DefaultPlayerConfig", conf);
+
+        // For console override.
+        Configuration.Bind(conf);
+        services.AddSingleton(conf);
+
+        // 'Try' for tests override
+        var logger = GetLogger(conf.TeamID, conf.Verbose);
+        services.TryAddSingleton<ILogger>(logger);
+
+        services.AddSingleton<ISocketClient<Message, Message>, TcpSocketClient<Message, Message>>();
+        services.AddSingleton<BufferBlock<Message>>();
+        services.AddSingleton<Models.Player>();
+
+        var sync = new ServiceSynchronization(0, 1);
+        services.AddSingleton(sync);
+        services.AddHostedService<SocketService>();
+        services.AddHostedService<PlayerService>();
+    }
+
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        if (env.IsDevelopment())
         {
-            PlayerConfiguration conf = new PlayerConfiguration();
-            Configuration.Bind("DefaultPlayerConfig", conf);
-
-            // For console override.
-            Configuration.Bind(conf);
-            services.AddSingleton(conf);
-
-            // 'Try' for tests override
-            var logger = GetLogger(conf.TeamID, conf.Verbose);
-            services.TryAddSingleton<ILogger>(logger);
-
-            services.AddSingleton<ISocketClient<Message, Message>, TcpSocketClient<Message, Message>>();
-            services.AddSingleton<BufferBlock<Message>>();
-            services.AddSingleton<Models.Player>();
-
-            var sync = new ServiceSynchronization(0, 1);
-            services.AddSingleton(sync);
-            services.AddHostedService<SocketService>();
-            services.AddHostedService<PlayerService>();
+            app.UseDeveloperExceptionPage();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        app.Run(async (context) =>
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Hello World!");
-            });
-        }
+            await context.Response.WriteAsync("Hello World!");
+        });
     }
 }

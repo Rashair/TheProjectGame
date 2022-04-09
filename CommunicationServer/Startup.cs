@@ -20,85 +20,84 @@ using Shared.Models;
 
 using static System.Environment;
 
-namespace CommunicationServer
+namespace CommunicationServer;
+
+public class Startup
 {
-    public class Startup
+    public const string LoggerTemplate =
+        "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
+
+    public IConfiguration Configuration { get; }
+
+    public Startup(IConfiguration configuration)
     {
-        public const string LoggerTemplate =
-            "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {SourceContext}{NewLine}[{Level}] {Message}{NewLine}{Exception}";
+        Configuration = configuration;
+    }
 
-        public IConfiguration Configuration { get; }
+    private ILogger GetLogger(bool verbose)
+    {
+        LoggerLevel level = new LoggerLevel();
+        Configuration.Bind("Serilog:MinimumLevel", level);
 
-        public Startup(IConfiguration configuration)
+        string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "CommunicationServer");
+        int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
+        string fileName = $"cs-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
+        string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
+        var logConfig = new LoggerConfiguration()
+           .Enrich.FromLogContext()
+           .WriteTo.File(
+           path: path,
+           rollOnFileSizeLimit: true,
+           outputTemplate: LoggerTemplate)
+           .WriteTo.Console(outputTemplate: LoggerTemplate)
+            .MinimumLevel.Override("Microsoft", level.Override.Microsoft)
+            .MinimumLevel.Override("System", level.Override.System);
+        if (verbose)
         {
-            Configuration = configuration;
+            logConfig.MinimumLevel.Verbose();
+        }
+        else
+        {
+            level.SetMinimumLevel(logConfig);
+        }
+        return logConfig.CreateLogger();
+    }
+
+    // This method gets called by the runtime. Use this method to add services to the container.
+    // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkId=398940
+    public void ConfigureServices(IServiceCollection services)
+    {
+        var conf = new ServerConfiguration();
+        Configuration.Bind("DefaultCommunicationServerConfig", conf);
+        Configuration.Bind(conf);  // For console override.
+        services.AddSingleton(conf);
+
+        var logger = GetLogger(conf.Verbose);
+        services.TryAddSingleton<ILogger>(logger);
+
+        services.AddSingleton<ServiceShareContainer>();
+        services.AddSingleton<ISocketManager<ISocketClient<Message, Message>, Message>,
+            TcpSocketManager<Message, Message>>();
+        services.AddSingleton<BufferBlock<Message>>();
+
+        var sync = new ServiceSynchronization(0, 3);
+        services.AddSingleton(sync);
+        services.AddHostedService<GMTcpSocketService>();
+        services.AddHostedService<PlayersTcpSocketService>();
+        services.AddHostedService<CommunicationService>();
+    }
+
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
         }
 
-        private ILogger GetLogger(bool verbose)
+        app.Run(async (context) =>
         {
-            LoggerLevel level = new LoggerLevel();
-            Configuration.Bind("Serilog:MinimumLevel", level);
-
-            string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "CommunicationServer");
-            int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
-            string fileName = $"cs-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
-            string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
-            var logConfig = new LoggerConfiguration()
-               .Enrich.FromLogContext()
-               .WriteTo.File(
-               path: path,
-               rollOnFileSizeLimit: true,
-               outputTemplate: LoggerTemplate)
-               .WriteTo.Console(outputTemplate: LoggerTemplate)
-                .MinimumLevel.Override("Microsoft", level.Override.Microsoft)
-                .MinimumLevel.Override("System", level.Override.System);
-            if (verbose)
-            {
-                logConfig.MinimumLevel.Verbose();
-            }
-            else
-            {
-                level.SetMinimumLevel(logConfig);
-            }
-            return logConfig.CreateLogger();
-        }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkId=398940
-        public void ConfigureServices(IServiceCollection services)
-        {
-            var conf = new ServerConfiguration();
-            Configuration.Bind("DefaultCommunicationServerConfig", conf);
-            Configuration.Bind(conf);  // For console override.
-            services.AddSingleton(conf);
-
-            var logger = GetLogger(conf.Verbose);
-            services.TryAddSingleton<ILogger>(logger);
-
-            services.AddSingleton<ServiceShareContainer>();
-            services.AddSingleton<ISocketManager<ISocketClient<Message, Message>, Message>,
-                TcpSocketManager<Message, Message>>();
-            services.AddSingleton<BufferBlock<Message>>();
-
-            var sync = new ServiceSynchronization(0, 3);
-            services.AddSingleton(sync);
-            services.AddHostedService<GMTcpSocketService>();
-            services.AddHostedService<PlayersTcpSocketService>();
-            services.AddHostedService<CommunicationService>();
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Hello World!");
-            });
-        }
+            await context.Response.WriteAsync("Hello World!");
+        });
     }
 }

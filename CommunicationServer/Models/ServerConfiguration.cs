@@ -1,13 +1,12 @@
-﻿namespace CommunicationServer.Models
+﻿namespace CommunicationServer.Models;
+
+public class ServerConfiguration
 {
-    public class ServerConfiguration
-    {
-        public int PlayerPort { get; set; }
+    public int PlayerPort { get; set; }
 
-        public int GMPort { get; set; }
+    public int GMPort { get; set; }
 
-        public string ListenerIP { get; set; }
+    public string ListenerIP { get; set; }
 
-        public bool Verbose { get; set; }
-    }
+    public bool Verbose { get; set; }
 }
