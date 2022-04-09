@@ -471,3 +471,10 @@ dotnet_diagnostic.CA1051.severity = silent
 
 # S1172: Unused method parameters should be removed
 dotnet_diagnostic.S1172.severity = none
+
+
+# Lambda expression body
+dotnet_diagnostic.IDE0053.severity = suggestion
+
+# Unused expression value
+dotnet_diagnostic.IDE0058.severity = silent
