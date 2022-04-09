@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29613.14
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player", "Player\Player.csproj", "{C5A62113-DF7D-4EC6-9F09-19BF9DA7E7BD}"
 EndProject
@@ -24,13 +24,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.Tests", "SharedTests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{319743E1-A59C-44C5-A951-6F310417165C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommunicationServer.Dir", "CommunicationServer.Dir", "{0C3A9D45-0B82-491E-8B34-80DD77E064D1}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommunicationServer", "CommunicationServer", "{0C3A9D45-0B82-491E-8B34-80DD77E064D1}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameMaster.Dir", "GameMaster.Dir", "{11C8A357-23B8-4290-B584-B5526E80873E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameMaster", "GameMaster", "{11C8A357-23B8-4290-B584-B5526E80873E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Player.Dir", "Player.Dir", "{15B1B56B-576C-4F76-9545-3D4BF8BC9CFC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Player", "Player", "{15B1B56B-576C-4F76-9545-3D4BF8BC9CFC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared.Dir", "Shared.Dir", "{9FFC9D17-4224-425C-9860-9EABD57BE363}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{9FFC9D17-4224-425C-9860-9EABD57BE363}"
 	ProjectSection(SolutionItems) = preProject
 		Player\Services\SynchronizationContext.cs = Player\Services\SynchronizationContext.cs
 	EndProjectSection
