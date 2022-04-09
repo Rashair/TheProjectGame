@@ -9,7 +9,7 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
     <AssemblyName>GameMaster</AssemblyName>
     <RootNamespace>GameMaster</RootNamespace>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
