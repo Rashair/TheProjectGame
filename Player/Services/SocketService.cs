@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -21,12 +21,12 @@ namespace Player.Services
         private readonly ISocketClient<Message, Message> client;
         private readonly PlayerConfiguration conf;
         private readonly BufferBlock<Message> queue;
-        private readonly IApplicationLifetime lifetime;
+        private readonly IHostApplicationLifetime lifetime;
         private readonly ILogger logger;
         private readonly ServiceSynchronization synchronizationContext;
 
         public SocketService(ISocketClient<Message, Message> client, PlayerConfiguration conf,
-            BufferBlock<Message> queue, IApplicationLifetime lifetime, ILogger log,
+            BufferBlock<Message> queue, IHostApplicationLifetime lifetime, ILogger log,
             ServiceSynchronization serviceSync)
         {
             this.client = client;

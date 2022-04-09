@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,11 +11,11 @@ namespace Player.Services
     public class PlayerService : BackgroundService
     {
         private readonly Models.Player player;
-        private readonly IApplicationLifetime lifetime;
+        private readonly IHostApplicationLifetime lifetime;
         private readonly ILogger logger;
         private readonly ServiceSynchronization synchronizationContext;
 
-        public PlayerService(Models.Player player, IApplicationLifetime lifetime,
+        public PlayerService(Models.Player player, IHostApplicationLifetime lifetime,
             ILogger logger, ServiceSynchronization serviceSync)
         {
             this.player = player;

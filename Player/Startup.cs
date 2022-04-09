@@ -72,7 +72,7 @@ namespace Player
             PlayerConfiguration conf = new PlayerConfiguration();
             Configuration.Bind("DefaultPlayerConfig", conf);
 
-            // For console override;
+            // For console override.
             Configuration.Bind(conf);
             services.AddSingleton(conf);
 

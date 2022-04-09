@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -75,7 +75,7 @@ namespace GameMaster.Tests
             var conf = GenerateConfiguration();
             var queue = GenerateBuffer();
             var client = new TcpSocketClient<Message, Message>(logger);
-            var lifetime = Mock.Of<IApplicationLifetime>();
+            var lifetime = Mock.Of<IHostApplicationLifetime>();
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
             gameMaster.Invoke("GeneratePiece");

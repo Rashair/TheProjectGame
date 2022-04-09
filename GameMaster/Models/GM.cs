@@ -28,7 +28,7 @@ namespace GameMaster.Models
     {
         private readonly ILogger log;
         private readonly ILogger logger;
-        private readonly IApplicationLifetime lifetime;
+        private readonly IHostApplicationLifetime lifetime;
         private readonly BufferBlock<Message> queue;
         private readonly ISocketClient<Message, Message> socketClient;
         private readonly HashSet<(int recipient, int sender)> legalKnowledgeReplies;
@@ -50,7 +50,7 @@ namespace GameMaster.Models
 
         public int SecondGoalAreaStart { get => conf.Height - conf.GoalAreaHeight; }
 
-        public GM(IApplicationLifetime lifetime, GameConfiguration conf,
+        public GM(IHostApplicationLifetime lifetime, GameConfiguration conf,
             BufferBlock<Message> queue, ISocketClient<Message, Message> socketClient,
             ILogger log, WebSocketManager<ClientMessage> guiManager = null)
         {

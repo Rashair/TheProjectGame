@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -25,7 +25,7 @@ namespace GameMaster.Tests
             IServiceCollection services = new ServiceCollection();
             var conf = new MockGameConfiguration();
             services.AddSingleton<GameConfiguration>(conf);
-            services.AddSingleton(Mock.Of<IApplicationLifetime>());
+            services.AddSingleton(Mock.Of<IHostApplicationLifetime>());
             services.AddSingleton<ISocketClient<Message, Message>, TcpSocketClient<Message, Message>>();
             int messagesNum = 10;
             var queue = new BufferBlock<Message>();
@@ -66,7 +66,7 @@ namespace GameMaster.Tests
             IServiceCollection services = new ServiceCollection();
             AddLogging(services);
             var conf = new MockGameConfiguration();
-            services.AddSingleton(Mock.Of<IApplicationLifetime>());
+            services.AddSingleton(Mock.Of<IHostApplicationLifetime>());
             services.AddSingleton<GameConfiguration>(conf);
             services.AddSingleton<ISocketClient<Message, Message>, TcpSocketClient<Message, Message>>();
             int messagesNum = 10;

@@ -85,7 +85,7 @@ namespace CommunicationServerTests
             };
             services.AddSingleton(shareContainer);
 
-            services.AddSingleton(Mock.Of<IApplicationLifetime>());
+            services.AddSingleton(Mock.Of<IHostApplicationLifetime>());
             services.AddSingleton(new ServiceSynchronization(2, 2));
 
             services.AddHostedService<CommunicationService>();

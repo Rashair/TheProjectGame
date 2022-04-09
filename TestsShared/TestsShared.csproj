@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AdditionalFiles Remove="D:\Source\cka\theprojectgame\stylecop.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Moq" Version="4.13.1" />
   </ItemGroup>
 

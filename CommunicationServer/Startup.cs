@@ -69,7 +69,7 @@ namespace CommunicationServer
         {
             ServerConfiguration conf = new ServerConfiguration();
             Configuration.Bind("DefaultCommunicationServerConfig", conf);
-            Configuration.Bind(conf);  // For console override;
+            Configuration.Bind(conf);  // For console override.
             services.AddSingleton(conf);
 
             var logger = GetLogger(conf.Verbose);

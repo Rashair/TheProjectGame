@@ -1,4 +1,4 @@
-﻿using System.Net.Sockets;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -22,10 +22,10 @@ namespace GameMaster.Services
         private readonly ISocketClient<Message, Message> client;
         private readonly GameConfiguration conf;
         private readonly BufferBlock<Message> queue;
-        private readonly IApplicationLifetime lifetime;
+        private readonly IHostApplicationLifetime lifetime;
 
         public SocketService(GM gameMaster, ISocketClient<Message, Message> client, GameConfiguration conf,
-            BufferBlock<Message> queue, IApplicationLifetime lifetime, ILogger log)
+            BufferBlock<Message> queue, IHostApplicationLifetime lifetime, ILogger log)
             : base(gameMaster, log.ForContext<GMService>())
         {
             this.client = client;

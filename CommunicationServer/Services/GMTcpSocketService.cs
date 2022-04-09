@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
@@ -18,12 +18,12 @@ namespace CommunicationServer.Services
         private readonly BufferBlock<Message> queue;
         private readonly ServiceShareContainer container;
         private readonly ServerConfiguration conf;
-        private readonly IApplicationLifetime lifetime;
+        private readonly IHostApplicationLifetime lifetime;
         private readonly Shared.ServiceSynchronization sync;
         protected readonly ILogger log;
 
         public GMTcpSocketService(BufferBlock<Message> queue, ServiceShareContainer container,
-            ServerConfiguration conf, IApplicationLifetime lifetime, ILogger log, Shared.ServiceSynchronization sync)
+            ServerConfiguration conf, IHostApplicationLifetime lifetime, ILogger log, Shared.ServiceSynchronization sync)
             : base(log.ForContext<GMTcpSocketService>())
         {
             this.queue = queue;

@@ -41,7 +41,7 @@ namespace GameMaster.Tests
                 NumberOfPiecesOnBoard = 1
             };
             var queue = new BufferBlock<Message>();
-            var lifetime = Mock.Of<IApplicationLifetime>();
+            var lifetime = Mock.Of<IHostApplicationLifetime>();
             var client = new TcpSocketClient<Message, Message>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
@@ -140,7 +140,7 @@ namespace GameMaster.Tests
         {
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<Message>();
-            var lifetime = Mock.Of<IApplicationLifetime>();
+            var lifetime = Mock.Of<IHostApplicationLifetime>();
             var client = new TcpSocketClient<Message, Message>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
@@ -211,7 +211,7 @@ namespace GameMaster.Tests
             // Arrange
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<Message>();
-            var lifetime = Mock.Of<IApplicationLifetime>();
+            var lifetime = Mock.Of<IHostApplicationLifetime>();
             var client = new TcpSocketClient<Message, Message>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
@@ -258,7 +258,7 @@ namespace GameMaster.Tests
             // Arrange
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<Message>();
-            var lifetime = Mock.Of<IApplicationLifetime>();
+            var lifetime = Mock.Of<IHostApplicationLifetime>();
             var client = new TcpSocketClient<Message, Message>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
 
@@ -336,7 +336,7 @@ namespace GameMaster.Tests
             // Arrange
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<Message>();
-            var lifetime = Mock.Of<IApplicationLifetime>();
+            var lifetime = Mock.Of<IHostApplicationLifetime>();
             var client = new TcpSocketClient<Message, Message>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             var players = gameMaster.GetValue<GM, Dictionary<int, GMPlayer>>("players");
@@ -368,7 +368,7 @@ namespace GameMaster.Tests
             // Arrange
             var conf = new MockGameConfiguration();
             var queue = new BufferBlock<Message>();
-            var lifetime = Mock.Of<IApplicationLifetime>();
+            var lifetime = Mock.Of<IHostApplicationLifetime>();
             var client = new TcpSocketClient<Message, Message>(logger);
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
@@ -391,7 +391,7 @@ namespace GameMaster.Tests
         private GM ValidationConfGMHelper(GameConfiguration conf)
         {
             var queue = new BufferBlock<Message>();
-            var lifetime = Mock.Of<IApplicationLifetime>();
+            var lifetime = Mock.Of<IHostApplicationLifetime>();
             var client = new TcpSocketClient<Message, Message>(logger);
             return new GM(lifetime, conf, queue, client, logger);
         }
@@ -598,7 +598,7 @@ namespace GameMaster.Tests
             var conf = GenerateConfiguration();
             var queue = GenerateBuffer();
             var client = GenerateSocketClient();
-            var lifetime = Mock.Of<IApplicationLifetime>();
+            var lifetime = Mock.Of<IHostApplicationLifetime>();
 
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");
@@ -637,7 +637,7 @@ namespace GameMaster.Tests
             var conf = GenerateConfiguration();
             var queue = GenerateBuffer();
             var client = GenerateSocketClient();
-            var lifetime = Mock.Of<IApplicationLifetime>();
+            var lifetime = Mock.Of<IHostApplicationLifetime>();
 
             var gameMaster = new GM(lifetime, conf, queue, client, logger);
             gameMaster.Invoke("InitGame");

@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -49,7 +49,7 @@ namespace Player.Tests
             services.AddSingleton(clientMock.Object);
             services.AddSingleton<PlayerConfiguration>();
             services.AddSingleton(queue);
-            services.AddSingleton(Mock.Of<IApplicationLifetime>());
+            services.AddSingleton(Mock.Of<IHostApplicationLifetime>());
             services.AddSingleton(context);
 
             services.AddHostedService<SocketService>();
