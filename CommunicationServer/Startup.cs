@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks.Dataflow;
 
@@ -67,7 +67,7 @@ namespace CommunicationServer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkId=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            ServerConfiguration conf = new ServerConfiguration();
+            var conf = new ServerConfiguration();
             Configuration.Bind("DefaultCommunicationServerConfig", conf);
             Configuration.Bind(conf);  // For console override.
             services.AddSingleton(conf);

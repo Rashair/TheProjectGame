@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using GameMaster.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace IntegrationTests.GameTests.Abstractions
@@ -15,10 +16,10 @@ namespace IntegrationTests.GameTests.Abstractions
     public abstract class GameTest : IDisposable
     {
         protected readonly CancellationTokenSource tokenSource;
-        protected IWebHost csHost;
-        protected IWebHost gmHost;
-        protected IWebHost[] redPlayersHosts;
-        protected IWebHost[] bluePlayersHosts;
+        protected IHost csHost;
+        protected IHost gmHost;
+        protected IHost[] redPlayersHosts;
+        protected IHost[] bluePlayersHosts;
 
         protected GameConfiguration Conf { get; set; }
 
@@ -71,8 +72,8 @@ namespace IntegrationTests.GameTests.Abstractions
             csHost = Utilities.CreateHostBuilder(typeof(CommunicationServer.Startup), csArgs).Build();
             gmHost = Utilities.CreateHostBuilder(typeof(GameMaster.Startup), gmArgs).Build();
             int playersCount = Conf.NumberOfPlayersPerTeam;
-            redPlayersHosts = new IWebHost[playersCount];
-            bluePlayersHosts = new IWebHost[playersCount];
+            redPlayersHosts = new IHost[playersCount];
+            bluePlayersHosts = new IHost[playersCount];
             for (int i = 0; i < playersCount; ++i)
             {
                 var builderRed = Utilities.CreateHostBuilder(typeof(Player.Startup), redArgs);

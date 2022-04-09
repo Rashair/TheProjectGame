@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
 
@@ -11,12 +11,17 @@ namespace IntegrationTests
 {
     public static class Utilities
     {
-        public static IWebHostBuilder CreateHostBuilder(Type startupType, string[] args = null)
+        public static IHostBuilder CreateHostBuilder(Type startupType, string[] args = null)
         {
-            args = args ?? new string[] { };
+            args = args ?? Array.Empty<string>();
             var projectDir = GetProjectPath("", startupType.GetTypeInfo().Assembly);
-            var builder = new WebHostBuilder()
-                .UseKestrel()
+            var builder = new HostBuilder()
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseKestrel();
+                    webBuilder.UseConfiguration(new ConfigurationBuilder().AddCommandLine(args).Build());
+                    webBuilder.UseStartup(startupType);
+                })
                 .UseContentRoot(projectDir)
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
@@ -28,9 +33,7 @@ namespace IntegrationTests
                 {
                     options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
                 })
-                .UseConfiguration(new ConfigurationBuilder().AddCommandLine(args).Build())
-                .UseSerilog()
-                .UseStartup(startupType);
+                .UseSerilog();
 
             return builder;
         }

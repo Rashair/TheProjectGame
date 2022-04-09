@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using CommunicationServer.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 using Shared.Enums;
 using TestsShared;
@@ -18,7 +19,7 @@ namespace IntegrationTests
 {
     public class StartTests : IDisposable
     {
-        private readonly List<IWebHost> hosts = new List<IWebHost>(15);
+        private readonly List<IHost> hosts = new List<IHost>(15);
 
         public StartTests()
         {
@@ -37,12 +38,12 @@ namespace IntegrationTests
             var source = new CancellationTokenSource();
             string[] argsRed = new string[] { "TeamID=red", "urls=https://127.0.0.1:0", "CsPort=1" };
             string[] argsBlue = new string[] { "TeamID=blue", "urls=https://127.0.0.1:0", "CsPort=1" };
-            IWebHost[] webHostsRed = new IWebHost[playersCount];
-            IWebHost[] webHostsBlue = new IWebHost[playersCount];
+            var webHostsRed = new IHost[playersCount];
+            var webHostsBlue = new IHost[playersCount];
             for (int i = 0; i < playersCount; ++i)
             {
                 webHostsRed[i] = Utilities.CreateHostBuilder(typeof(Player.Startup), argsRed).
-                                     ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
+                                     ConfigureServices((serv) => serv.AddSingleton(MockGenerator.Get<ILogger>())).
                                      Build();
                 webHostsBlue[i] = Utilities.CreateHostBuilder(typeof(Player.Startup), argsBlue).
                                     ConfigureServices(serv => serv.AddSingleton(MockGenerator.Get<ILogger>())).
@@ -72,7 +73,7 @@ namespace IntegrationTests
         }
 
         [Fact(Timeout = 2 * 1000)]
-        public async void GameMasterStarts()
+        public async Task GameMasterStarts()
         {
             // Arrange
             var source = new CancellationTokenSource();
