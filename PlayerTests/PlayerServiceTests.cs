@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -62,7 +62,7 @@ namespace Player.Tests
             services.AddSingleton<PlayerConfiguration>();
             services.AddSingleton(MockGenerator.Get<IStrategy>());
             services.AddSingleton<Models.Player>();
-            services.AddSingleton(Mock.Of<IApplicationLifetime>());
+            services.AddSingleton(Mock.Of<IHostApplicationLifetime>());
             var context = new ServiceSynchronization(1, 1);
             services.AddSingleton(context);
 
