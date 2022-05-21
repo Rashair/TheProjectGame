@@ -1,0 +1,8 @@
+version: '3.9'
+
+services:
+  communication-server:
+    image: game/communication-server
+    build:
+      context: .
+      dockerfile: CommunicationServer/Dockerfile
