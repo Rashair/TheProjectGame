@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,26 +15,27 @@ public abstract class WaitForInitService : BackgroundService
 
     public int WaitForInitDelay { get; protected set; }
 
-    public WaitForInitService(GM gameMaster, ILogger logger)
+    protected WaitForInitService(GM gameMaster, ILogger logger)
     {
         this.logger = logger;
         this.gameMaster = gameMaster;
         WaitForInitDelay = 1000;
     }
 
-    protected abstract Task RunService(CancellationToken cancellationToken);
+    protected abstract Task RunService(CancellationToken stoppingToken);
 
-    protected async override Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await WaitForInit(cancellationToken);
+        logger.Information($"Started service. Waiting for init...");
+        await WaitForInit(stoppingToken);
 
         logger.Information("Finished waiting");
 
-        if (!cancellationToken.IsCancellationRequested)
+        if (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                await RunService(cancellationToken);
+                await RunService(stoppingToken);
             }
             catch (Exception e)
             {
@@ -43,11 +44,11 @@ public abstract class WaitForInitService : BackgroundService
         }
     }
 
-    private async Task WaitForInit(CancellationToken cancellationToken)
+    private async Task WaitForInit(CancellationToken stoppingToken)
     {
-        while (!(gameMaster.WasGameInitialized || cancellationToken.IsCancellationRequested))
+        while (!(gameMaster.WasGameInitialized || stoppingToken.IsCancellationRequested))
         {
-            await Task.Delay(WaitForInitDelay, cancellationToken);
+            await Task.Delay(WaitForInitDelay, stoppingToken);
         }
     }
 }
