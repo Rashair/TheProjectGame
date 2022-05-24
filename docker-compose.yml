@@ -6,3 +6,16 @@ services:
     build:
       context: .
       dockerfile: CommunicationServer/Dockerfile
+    ports:
+      -  "44360:44360"
+      -  "44370:44370"
+
+
+  game-master:
+    image: game/game-master
+    build:
+      context: .
+      dockerfile: GameMaster/Dockerfile
+    ports:
+      -  "5000:80"
+      -  "44370:44370"
