@@ -39,11 +39,13 @@ public class SocketService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        logger.Information("Started. Trying to connect...");
         var (success, errorMessage) = await Helpers.Retry(async () =>
         {
             await client.ConnectAsync(conf.CsIP, conf.CsPort, stoppingToken);
             return true;
         }, ConnectRetries, RetryIntervalMs, stoppingToken);
+
         if (!success)
         {
             logger.Error($"No connection could be made. Error: {errorMessage}");
