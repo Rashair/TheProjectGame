@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -46,7 +46,7 @@ public class PlayersTcpSocketService : TcpSocketService<Message, Message>
         await queue.SendAsync(message, cancellationToken);
     }
 
-    public override void OnConnect(TcpSocketClient<Message, Message> client)
+    public override async Task OnConnect(TcpSocketClient<Message, Message> client, CancellationToken stoppingToken)
     {
         int id = manager.AddSocket(client);
         if (id == -1)
@@ -56,7 +56,7 @@ public class PlayersTcpSocketService : TcpSocketService<Message, Message>
         }
         else
         {
-            sync.SemaphoreSlim.Wait();
+            await sync.SemaphoreSlim.WaitAsync(stoppingToken);
             container.ConfirmedAgents.Add(manager.GetId(client), false);
             sync.SemaphoreSlim.Release(1);
         }
@@ -74,11 +74,11 @@ public class PlayersTcpSocketService : TcpSocketService<Message, Message>
         }
         logger.Information($"Player {id} disconnected");
 
-        DisconnectPayload payload = new DisconnectPayload()
+        var payload = new DisconnectPayload()
         {
             AgentID = id
         };
-        Message message = new Message()
+        var message = new Message()
         {
             AgentID = -1,
             MessageID = MessageID.PlayerDisconnected,
@@ -96,18 +96,18 @@ public class PlayersTcpSocketService : TcpSocketService<Message, Message>
 
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await sync.SemaphoreSlim.WaitAsync();
+        await sync.SemaphoreSlim.WaitAsync(stoppingToken);
         logger.Information("Started PlayersTcpSocketService");
         TcpListener listener = StartListener(conf.ListenerIP, conf.PlayerPort);
         List<ConfiguredTaskAwaitable> tasks = new List<ConfiguredTaskAwaitable>();
         while (!stoppingToken.IsCancellationRequested)
         {
-            await sync.SemaphoreSlim.WaitAsync();
+            await sync.SemaphoreSlim.WaitAsync(stoppingToken);
             bool canConnect = !container.GameStarted;
             sync.SemaphoreSlim.Release(1);
             if (listener.Pending() && canConnect)
             {
-                var acceptedClient = await listener.AcceptTcpClientAsync();
+                var acceptedClient = await listener.AcceptTcpClientAsync(stoppingToken);
                 IClient tcpClient = new TcpClientWrapper(acceptedClient);
                 var socketClient = new TcpSocketClient<Message, Message>(tcpClient, log);
                 var handlerTask = ClientHandler(socketClient, stoppingToken).ConfigureAwait(false);

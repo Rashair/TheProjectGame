@@ -40,8 +40,9 @@ public class GMTcpSocketService : TcpSocketService<Message, Message>
         await queue.SendAsync(message, cancellationToken);
     }
 
-    public override void OnConnect(TcpSocketClient<Message, Message> client)
+    public override Task OnConnect(TcpSocketClient<Message, Message> client, CancellationToken stoppingToken)
     {
+        return Task.CompletedTask;
     }
 
     public override async Task OnDisconnectAsync(TcpSocketClient<Message, Message> client,
