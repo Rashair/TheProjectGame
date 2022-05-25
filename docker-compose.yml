@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: CommunicationServer/Dockerfile
     #ports:
-    #  #-  "44360:44360"
+    #  #-  "44360:44390"
     #  #-  "44370:44370"
 
 
@@ -19,3 +19,38 @@ services:
     ports:
       -  "5000:80"
       -  "44370:44370"
+
+
+  player-red:
+    image: game/player
+    build:
+      context: .
+      dockerfile: Player/Dockerfile
+    command: TeamId=0
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 1s
+        max_attempts: 3
+        window: 5s
+    ports:
+      -  "80"
+      # -  "44360:44380"
+
+  player-blue:
+    image: game/player
+    build:
+      context: .
+      dockerfile: Player/Dockerfile
+    command: TeamId=1
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 1s
+        max_attempts: 3
+        window: 5s
+    ports:
+      -  "80"
+      # -  "44360:44380"
