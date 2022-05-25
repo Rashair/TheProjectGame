@@ -1,13 +1,12 @@
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-bullseye-slim AS base
+FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 44370
 
-FROM node:16-bullseye-slim AS node_base
-FROM mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim AS dotnet-sdk
+# TODO: update node to 18?
+FROM node:16-alpine AS node_base
+FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS dotnet-sdk
 COPY --from=node_base . .
-RUN echo "NODE Version:" && node --version
-RUN echo "NPM Version:" && npm --version
 
 FROM dotnet-sdk as build
 WORKDIR /src
@@ -20,6 +19,7 @@ RUN dotnet build "GameMaster.csproj" -c Release -o /app/build
 
 FROM build AS publish
 ENV NODE_ENV=production
+# TODO: separate npm install / publish
 RUN dotnet publish "GameMaster.csproj" -c Release -o /app/publish
 
 FROM base AS final

@@ -3,12 +3,12 @@ version: '3.9'
 services:
   communication-server:
     image: game/communication-server
-    build:
+    build: 
       context: .
       dockerfile: CommunicationServer/Dockerfile
-    ports:
-      -  "44360:44360"
-      -  "44370:44370"
+    #ports:
+    #  #-  "44360:44360"
+    #  #-  "44370:44370"
 
 
   game-master:
