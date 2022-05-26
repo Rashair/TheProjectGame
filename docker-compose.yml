@@ -51,6 +51,3 @@ services:
         delay: 1s
         max_attempts: 3
         window: 5s
-    ports:
-      -  "80"
-      # -  "44360:44380"
