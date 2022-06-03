@@ -27,6 +27,7 @@ public class PlayerService : BackgroundService
     protected async override Task ExecuteAsync(CancellationToken cancellationToken)
     {
         // Inital count = 0, so it will wait until socket service connects
+        logger.Information("Started. Waiting for connection...");
         await synchronizationContext.SemaphoreSlim.WaitAsync(cancellationToken);
 
         await Task.Run(async () =>

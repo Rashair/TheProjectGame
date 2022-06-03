@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -24,7 +24,7 @@ public abstract class TcpSocketService<R, S> : BackgroundService
     public abstract Task OnMessageAsync(TcpSocketClient<R, S> client, R message,
         CancellationToken cancellationToken);
 
-    public abstract void OnConnect(TcpSocketClient<R, S> client);
+    public abstract Task OnConnect(TcpSocketClient<R, S> client, CancellationToken stoppingToken);
 
     public abstract Task OnDisconnectAsync(TcpSocketClient<R, S> client, CancellationToken cancellationToken);
 
@@ -33,7 +33,7 @@ public abstract class TcpSocketService<R, S> : BackgroundService
 
     public async Task ClientHandler(TcpSocketClient<R, S> client, CancellationToken cancellationToken)
     {
-        OnConnect(client);
+        await OnConnect(client, cancellationToken);
         await ClientLoopAsync(client, cancellationToken);
         await OnDisconnectAsync(client, cancellationToken);
     }
@@ -70,10 +70,10 @@ public abstract class TcpSocketService<R, S> : BackgroundService
 
     public TcpListener StartListener(string ip, int port)
     {
-        IPAddress address = IPAddress.Parse(ip);
+        var address = IPAddress.Parse(ip);
         try
         {
-            TcpListener listener = new TcpListener(address, port);
+            var listener = new TcpListener(address, port);
             listener.Start();
             return listener;
         }

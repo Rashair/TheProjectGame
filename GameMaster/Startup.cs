@@ -19,8 +19,6 @@ using Shared.Clients;
 using Shared.Messages;
 using Shared.Models;
 
-using static System.Environment;
-
 namespace GameMaster;
 
 public class Startup
@@ -41,9 +39,9 @@ public class Startup
         Configuration.Bind("Serilog:MinimumLevel", level);
 
         string folderName = Path.Combine("TheProjectGameLogs", DateTime.Today.ToString("yyyy-MM-dd"), "GameMaster");
-        int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
+        int processId = Environment.ProcessId;
         string fileName = $"gm-{DateTime.Now:HH-mm-ss}-{processId:000000}.log";
-        string path = Path.Combine(GetFolderPath(SpecialFolder.MyDocuments), folderName, fileName);
+        string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), folderName, fileName);
         var logConfig = new LoggerConfiguration()
            .Enrich.FromLogContext()
            .WriteTo.File(
@@ -75,7 +73,7 @@ public class Startup
         services.AddSingleton<BufferBlock<Message>>();
         services.AddSingleton<WebSocketManager<ClientMessage>>();
 
-        GameConfiguration conf = GameConfiguration.GetConfiguration(Configuration);
+        var conf = GameConfiguration.GetConfiguration(Configuration);
         services.AddSingleton(conf);
 
         services.AddSpaStaticFiles(configuration =>

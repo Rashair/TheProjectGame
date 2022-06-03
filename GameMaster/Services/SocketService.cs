@@ -26,7 +26,7 @@ public class SocketService : WaitForInitService
 
     public SocketService(GM gameMaster, ISocketClient<Message, Message> client, GameConfiguration conf,
         BufferBlock<Message> queue, IHostApplicationLifetime lifetime, ILogger log)
-        : base(gameMaster, log.ForContext<GMService>())
+        : base(gameMaster, log.ForContext<SocketService>())
     {
         this.client = client;
         this.conf = conf;

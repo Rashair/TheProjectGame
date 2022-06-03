@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -36,7 +36,7 @@ public class CommunicationService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await sync.SemaphoreSlim.WaitAsync();
+        await sync.SemaphoreSlim.WaitAsync(stoppingToken);
         logger.Information("Started CommunicationService");
         gmClient = container.GMClient;
 
