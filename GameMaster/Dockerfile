@@ -5,7 +5,7 @@ EXPOSE 44370
 
 # TODO: update node to 18?
 FROM node:16-alpine AS node_base
-WORKDIR "/client_app"
+WORKDIR "/src/GameMaster/ClientApp"
 COPY "GameMaster/ClientApp/package.json" .
 COPY "GameMaster/ClientApp/package-lock.json" .
 ENV NODE_ENV=production
@@ -23,9 +23,7 @@ COPY . .
 WORKDIR "/src/GameMaster"
 RUN dotnet build "GameMaster.csproj" -c Release -o /app/build
 
-ENV NODE_ENV=production
 WORKDIR "/src/GameMaster/ClientApp"
-COPY --from=node_base "/client_app/node_modules" "./node_modules"
 RUN npm run build --prod
 
 FROM build AS publish
